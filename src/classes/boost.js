@@ -1,4 +1,4 @@
-const { E } = require("../src/eMath.js"); // actually ../../src/eMath.js
+const { E } = require("../../src/eMath.js"); // actually ../../src/eMath.js
 
 /**
  * Represents a boost manager that applies various effects to a base value.
