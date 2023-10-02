@@ -383,3 +383,16 @@ function formatPercent(ex) { ex = E(ex); return format(ex.mul(100))+"%" }
 function formatMult(ex,acc=2) { ex = E(ex); return ex.gte(1)?"×"+ex.format(acc):"/"+ex.pow(-1).format(acc)}
 
 function expMult(a,b,base=10) { return Decimal.gte(a,10) ? Decimal.pow(base,Decimal.log(a,base).pow(b)) : E(a) }
+
+module.exports = {...FORMATS, ...{
+  toSubscript,
+  toSuperscript,
+  formatST,
+  format,
+  formatGain,
+  formatTime,
+  formatReduction,
+  formatPercent,
+  formatMult,
+  expMult
+}};

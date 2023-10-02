@@ -4,17 +4,17 @@ const Decimal = require("break_eternity.js");
 const DecimalClone = Decimal;
 
 const eMath = {
-    version: "etherealArithmetic Indev 0.4a",
-    changeLogs: {
-        indev: {
-            "0.4": "Added changelogs, random() quantity, scuffed median",
-            "0.4a": "Added quick sort, moved onload to init"
-        }
-    },
-    settings: [
-        0, //notation: 0 = scientific; 1 = engineering
-        0, //display: 0 = (+); 1 = ()
-    ],
+    // version: "etherealArithmetic Indev 0.4a",
+    // changeLogs: {
+    //     indev: {
+    //         "0.4": "Added changelogs, random() quantity, scuffed median",
+    //         "0.4a": "Added quick sort, moved onload to init"
+    //     }
+    // },
+    // settings: [
+    //     0, //notation: 0 = scientific; 1 = engineering
+    //     0, //display: 0 = (+); 1 = ()
+    // ],
     time: function(funct, rep) {
         let timeStart = new Date();
         for (i = 0; i < (rep ? rep : 1); i++) {

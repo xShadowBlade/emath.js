@@ -34,15 +34,29 @@ import * as eMath from "emath.js";
 ```
 
 ### Include using CDN
-
+#### Development Build
 Using JSDelivr:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.bundle.js"></script>
 ```
 
 Using Github:
 
 ```html
-<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/index.js"></script>
+<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.bundle.js"></script>
+```
+
+#### Production Build
+
+Using JSDelivr:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.bundle.js"></script>
+```
+
+Using Github:
+
+```html
+<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.bundle.js"></script>
 ```

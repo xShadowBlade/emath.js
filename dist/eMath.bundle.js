@@ -3115,19 +3115,17 @@
       var Decimal = require_break_eternity();
       var DecimalClone = Decimal;
       var eMath = {
-        version: "etherealArithmetic Indev 0.4a",
-        changeLogs: {
-          indev: {
-            "0.4": "Added changelogs, random() quantity, scuffed median",
-            "0.4a": "Added quick sort, moved onload to init"
-          }
-        },
-        settings: [
-          0,
-          //notation: 0 = scientific; 1 = engineering
-          0
-          //display: 0 = (+); 1 = ()
-        ],
+        // version: "etherealArithmetic Indev 0.4a",
+        // changeLogs: {
+        //     indev: {
+        //         "0.4": "Added changelogs, random() quantity, scuffed median",
+        //         "0.4a": "Added quick sort, moved onload to init"
+        //     }
+        // },
+        // settings: [
+        //     0, //notation: 0 = scientific; 1 = engineering
+        //     0, //display: 0 = (+); 1 = ()
+        // ],
         time: function(funct, rep) {
           let timeStart = /* @__PURE__ */ new Date();
           for (i = 0; i < (rep ? rep : 1); i++) {
@@ -3896,15 +3894,20 @@
       var { boostStatic } = require_boost();
       var { currency, currencyStatic } = require_currency();
       var { staticAttribute } = require_attribute();
-      module.exports = {
-        eMath,
+      var eMathClone = { ...eMath, ...{
         Decimal,
         E,
-        boostStatic,
-        currency,
-        currencyStatic,
-        staticAttribute
-      };
+        classes: {
+          boostStatic,
+          currency,
+          currencyStatic,
+          staticAttribute
+        }
+      } };
+      if (typeof window != "undefined") {
+        window["eMath"] = eMathClone;
+      }
+      module.exports = eMathClone;
     }
   });
   require_src();
