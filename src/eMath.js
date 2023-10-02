@@ -1,4 +1,7 @@
+/* eslint-disable */
+
 const Decimal = require("break_eternity.js");
+const DecimalClone = Decimal;
 
 const eMath = {
     version: "etherealArithmetic Indev 0.4a",
@@ -93,7 +96,7 @@ const eMath = {
     {   
         name: "mean",
         value: (array) => {
-            let sum = new Decimal();
+            let sum = new DecimalClone();
             let total = 0;
             for (let x of array) {
                 total++;
@@ -104,7 +107,7 @@ const eMath = {
     },
     {
         name: "median", //bugs
-        value: (array, sort = Decimal.sort, mean = Decimal.mean) => !array.length % 2 ? sort(array)[Math.floor(array.length / 2)] : mean([sort(array)[array.length], sort(array)[array.length - 1]])
+        value: (array, sort = DecimalClone.sort, mean = DecimalClone.mean) => !array.length % 2 ? sort(array)[Math.floor(array.length / 2)] : mean([sort(array)[array.length], sort(array)[array.length - 1]])
     },
     {
         name: "mode", //also bugs
@@ -205,20 +208,20 @@ const eMath = {
         */
         // logNum: class {
         //     constructor() {
-        //         this.layer = new Decimal();
+        //         this.layer = new DecimalClone();
         //         this.mag0 = new Decimal(); //"lower number"
         //         this.mantissa = new Decimal(); //"upper number decimal"
         //         this.mag = new Decimal(); //"upper number tier/whole number"
         //     }
-        //     static upperBoundLayer = new Decimal("(e^1000)1");
+        //     static upperBoundLayer = new DecimalClone("(e^1000)1");
         //     update() {
         //         if (this.mag0.greaterThan(eMath.decimal.logNum.upperBoundLayer)) { //if is greater than e^1000
         //             this.mag = this.mag.plus("1");
-        //             this.mag0 = new Decimal("0");
+        //             this.mag0 = new DecimalClone("0");
         //         }
         //         if (this.mag.greaterThan(eMath.decimal.logNum.upperBoundLayer)) { //if is greater than e^1000
         //             this.layer = this.mag.plus("1");
-        //             this.mag = new Decimal("0");
+        //             this.mag = new DecimalClone("0");
         //         }
         //         this.mantissa = this.mag0.log(10).divide(eMath.decimal.logNum.upperBoundLayer);
         //     }
@@ -276,6 +279,7 @@ const eMath = {
         return current + change;
     }
 }
+/*
 { // String Prototypes
 String.prototype.forEach = function(callbackfn) {
     for(i = 0; i < this.length; i++) {
@@ -340,7 +344,7 @@ Array.prototype.random = function(qty) {
     }} else {output = this[eMath.random(0, this.length)]}
     return output;
 }
-
+*/
 eMath.getFast = function(object, id) { // search by convert to string, fast but omits document and class data
     object = JSON.stringify(object);
     const length = id.toString().replace(/\\/g, "").length;
@@ -425,22 +429,22 @@ eMath.get = function (object, id) { // recursive search
 // Object.prototype.get = function (id) { return Object.get(this, id) }
 // //Types
 // String.prototype.isString = true;
-// Decimal.prototype.isDecimal = true;
+// DecimalClone.prototype.isDecimal = true;
 // Object.prototype.isObject = true;
 // Array.prototype.isArray = true;
 // Array.prototype.isObject = false; //this because all arrays are objects but not all objects are arrays for some reason
 // }
 eMath.decimal = {};
 for (let x of eMath.decimalFunctions) {
-    Decimal[x["name"]] = x["value"];
+    DecimalClone[x["name"]] = x["value"];
     eMath.decimal[x["name"]] = x["value"];
 }
-function E(x){return new Decimal(x)};
+function E(x){return new DecimalClone(x)};
 
 const TS = x => new Date(x != undefined ? x : new Date());
 
 const VER = 0.0306
-const EINF = Decimal.dInf
+const EINF = DecimalClone.dInf
 
 // Math.lerp = function (value1, value2, amount) {
 // 	amount = amount < 0 ? 0 : amount;
@@ -448,11 +452,11 @@ const EINF = Decimal.dInf
 // 	return value1 + (value2 - value1) * amount;
 // };
 
-Decimal.prototype.clone = function() {
+DecimalClone.prototype.clone = function() {
     return this;
 }
 
-Decimal.prototype.modular=Decimal.prototype.mod=function (other){
+DecimalClone.prototype.modular=DecimalClone.prototype.mod = function (other) {
     other=E(other);
     if (other.eq(0)) return E(0);
     if (this.sign*other.sign==-1) return this.abs().mod(other.abs()).neg();
@@ -461,15 +465,15 @@ Decimal.prototype.modular=Decimal.prototype.mod=function (other){
 };
 
 /**
- * Applies a soft cap to a Decimal value using a specified soft cap function.
+ * Applies a soft cap to a DecimalClone value using a specified soft cap function.
  *
- * @param {Decimal} start - The value at which the soft cap starts.
+ * @param {DecimalClone} start - The value at which the soft cap starts.
  * @param {number} power - The power or factor used in the soft cap calculation.
  * @param {string} mode - The soft cap mode. Use "pow" for power soft cap, "mul" for multiplication soft cap,
  *                       or "exp" for exponential soft cap.
- * @returns {Decimal} - The Decimal value after applying the soft cap.
+ * @returns {DecimalClone} - The DecimalClone value after applying the soft cap.
  */
-Decimal.prototype.softcap = function (start, power, mode) {
+DecimalClone.prototype.softcap = function (start, power, mode) {
     var x = this.clone()
     if (x.gte(start)) {
         if ([0, "pow"].includes(mode)) x = x.div(start).pow(power).mul(start)
@@ -481,24 +485,24 @@ Decimal.prototype.softcap = function (start, power, mode) {
 /**
  * Scales a currency value using a specified scaling function.
  *
- * @param {Decimal} x - The value of the currency to be scaled.
- * @param {Decimal} s - The value at which scaling starts.
- * @param {Decimal} p - The scaling factor.
+ * @param {DecimalClone} x - The value of the currency to be scaled.
+ * @param {DecimalClone} s - The value at which scaling starts.
+ * @param {DecimalClone} p - The scaling factor.
  * @param {string} mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
  * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
- * @returns {Decimal} - The scaled currency value.
+ * @returns {DecimalClone} - The scaled currency value.
  */
 function scale(x, s, p, mode, rev=false) {
     s = E(s)
     p = E(p)
     if (x.gte(s)) {
         if ([0, "pow"].includes(mode)) x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)))
-        if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p,x.sub(s)).mul(s)
+        if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : DecimalClone.pow(p,x.sub(s)).mul(s)
     }
     return x
 }
 
-Decimal.prototype.toRoman = function() {
+DecimalClone.prototype.toRoman = function() {
     let num = this.clone();
     if (num.gte(5000)) return num;
     num = num.toNumber();
@@ -514,21 +518,21 @@ Decimal.prototype.toRoman = function() {
     return Array(+digits.join("") + 1).join("M") + roman;
 }
 
-Decimal.prototype.scale = function (s, p, mode, rev=false) {
+DecimalClone.prototype.scale = function (s, p, mode, rev=false) {
     s = E(s)
     p = E(p)
     var x = this.clone()
     if (x.gte(s)) {
         if ([0, "pow"].includes(mode)) x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)))
-        if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p,x.sub(s)).mul(s)
+        if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : DecimalClone.pow(p,x.sub(s)).mul(s)
     }
     return x
 }
 
-Decimal.prototype.format = function (acc=2, max=9) { return format(this.clone(), acc, max) }
+DecimalClone.prototype.format = function (acc=2, max=9) { return format(this.clone(), acc, max) }
 
-Decimal.prototype.formatST = function (acc=2, max=9, type="st") { return format(this.clone(), acc, max, type) }
+DecimalClone.prototype.formatST = function (acc=2, max=9, type="st") { return format(this.clone(), acc, max, type) }
 
-Decimal.prototype.formatGain = function (gain, mass=false) { return formatGain(this.clone(), gain, mass) }
+DecimalClone.prototype.formatGain = function (gain, mass=false) { return formatGain(this.clone(), gain, mass) }
 
-module.exports = { eMath, Decimal, E };
+module.exports = { eMath, Decimal: DecimalClone, E, TS };
