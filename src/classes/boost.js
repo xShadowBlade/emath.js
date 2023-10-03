@@ -4,7 +4,7 @@ const { E } = require("../../src/eMath.js"); // actually ../../src/eMath.js
  * Represents a boost manager that applies various effects to a base value.
  *
  * @class
- * @param {number|Decimal} baseEffect - The base effect value to which boosts are applied.
+ * @param {number|E} baseEffect - The base effect value to which boosts are applied.
  * @param {...Object} boosts - An array of boost objects to initialize with.
  * @example
  * const myBoost = new Game.classes.boost(100, {
@@ -39,7 +39,7 @@ const boostStatic = class {
 
 		/**
          * The base effect value.
-         * @type {Decimal}
+         * @type {E}
          */
 		this.baseEffect = E(baseEffect);
 	}
@@ -107,8 +107,8 @@ const boostStatic = class {
 	/**
      * Calculates the cumulative effect of all boosts on the base effect.
      *
-     * @param {number|Decimal} [base=this.baseEffect] - The base effect value to calculate with.
-     * @returns {Decimal} The calculated effect after applying boosts.
+     * @param {number|E} [base=this.baseEffect] - The base effect value to calculate with.
+     * @returns {E} The calculated effect after applying boosts.
      */
 	calculate (base = this.baseEffect) {
 		let output = E(base);
