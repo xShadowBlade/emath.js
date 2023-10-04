@@ -20,14 +20,7 @@ eMath.js is a JavaScript library designed to provide essential functionality for
 npm install emath.js
 ```
 
-Use as the following:
-<br> CommonJS:
-
-```js
-const eMath = require("emath.js");
-```
-
-ESM:
+The ESM package exports a default export ``eMath``. Use as the following: (note CJS is not supported)
 
 ```js
 import eMath from "emath.js";
@@ -52,11 +45,11 @@ Using Github:
 Using JSDelivr:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.min.js"></script>
 ```
 
 Using Github:
 
 ```html
-<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.bundle.js"></script>
+<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.min.js"></script>
 ```
