@@ -20,7 +20,7 @@ eMath.js is a JavaScript library designed to provide essential functionality for
 npm install emath.js
 ```
 
-There is no default export. Use as the following:
+Use as the following:
 <br> CommonJS:
 
 ```js
@@ -30,7 +30,7 @@ const eMath = require("emath.js");
 ESM:
 
 ```js
-import * as eMath from "emath.js";
+import eMath from "emath.js";
 ```
 
 ### Include using CDN

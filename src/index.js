@@ -1,22 +1,22 @@
-const { eMath, E, TS, formats } = require("../src/eMath.js");
-const { boostStatic } = require("../src/classes/boost.js");
-const { currency, currencyStatic } = require("../src/classes/currency.js");
-const { staticAttribute } = require("../src/classes/attribute.js");
+"use strict";
+import { eMath, E, formats } from "../src/eMath.js";
+import { boostStatic } from "../src/classes/boost.js";
+import { currency, currencyStatic } from "../src/classes/currency.js";
+import { staticAttribute } from "../src/classes/attribute.js";
 const eMathClone = { ...eMath, ...{
-	E,
-	classes: {
-		boostStatic,
+    E,
+    classes: {
+        boostStatic,
 
-		currency,
-		currencyStatic,
+        currency,
+        currencyStatic,
 
-		staticAttribute,
-	},
-	formats,
-	TS,
+        staticAttribute,
+    },
+    formats,
 }};
 if (typeof window != "undefined") {
-	// eslint-disable-next-line no-undef
-	window["eMath"] = eMathClone;
+    // eslint-disable-next-line no-undef
+    window["eMath"] = eMathClone;
 }
-module.exports = eMathClone;
+export default eMathClone;

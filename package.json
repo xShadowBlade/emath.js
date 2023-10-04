@@ -2,7 +2,8 @@
     "name": "emath.js",
     "version": "1.2.0",
     "description": "A math library for incremental games based on break_eternity.js",
-    "main": "src/index.js",
+    "exports": "./src/index.js",
+    "type": "module",
     "unpkg": "dist/eMath.bundle.js",
     "scripts": {
         "fix": "prettier-eslint --write path/to/your/directory/*.js",
