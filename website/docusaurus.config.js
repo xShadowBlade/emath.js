@@ -7,7 +7,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').Config} */
 const config = {
     title: "eMath.js Documentation",
-    tagline: "Elevating incremental game dev with management for various game classes",
+    tagline: "Elevating incremental game dev with management for various game classes.",
     favicon: "img/favicon.ico",
 
     // Set the production url of your site here

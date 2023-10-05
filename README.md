@@ -55,3 +55,7 @@ Using Github:
 ```html
 <script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.min.js"></script>
 ```
+
+---
+
+Check out the [documentation](https://xshadowblade.github.io/emath.js/)!
