@@ -20,4 +20,4 @@ Welcome to the documentation for eMath.js - a JavaScript library for enhancing i
 
 ### Getting Started
 
-To get started with eMath.js, check out the installation guide and basic usage examples in the sidebar. If you encounter any issues or have questions, feel free to explore the comprehensive documentation.
+To get started with eMath.js, check out the [installation guide](./install) and [basic usage examples](./usage). If you encounter any issues or have questions, feel free to explore the comprehensive documentation.

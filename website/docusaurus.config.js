@@ -99,8 +99,8 @@ const config = {
                         title: "Community",
                         items: [
                             {
-                                label: "Discord",
-                                href: "a",
+                                label: "Discord (WIP)",
+                                href: "https://discord.com/channels/@me",
                             },
                         ],
                     },

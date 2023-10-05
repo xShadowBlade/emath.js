@@ -9,7 +9,7 @@ The ``E`` function is the main feature of this package. It is based on [break_et
 
 ### Usage
 
-Assuming that you already followed the instructions in the [usage guide](./usage), you can use it as:
+Assuming that you already followed the instructions in the [usage guide](../../usage), you can use it as:
 ```js
 const { E } = eMath;
 const newNum2 = E(2300) // Number with value 2300
