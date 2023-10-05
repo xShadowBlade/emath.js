@@ -16,7 +16,7 @@ import { E } from "../../src/eMath.js"; // actually ../../src/eMath.js
  *   value: E(124),
  * });
  */
-const boostStatic = class {
+const boost = class {
     /**
      * Constructs a new boost manager.
      *
@@ -124,4 +124,4 @@ const boostStatic = class {
 // Game.classes.boost = class {
 
 // }
-export { boostStatic };
+export { boost };

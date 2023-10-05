@@ -1,17 +1,17 @@
 "use strict";
 import { eMath, E, formats } from "../src/eMath.js";
-import { boostStatic } from "../src/classes/boost.js";
+import { boost } from "../src/classes/boost.js";
 import { currency, currencyStatic } from "../src/classes/currency.js";
-import { staticAttribute } from "../src/classes/attribute.js";
+import { attribute } from "../src/classes/attribute.js";
 const eMathClone = { ...eMath, ...{
     E,
     classes: {
-        boostStatic,
+        boost,
 
         currency,
         currencyStatic,
 
-        staticAttribute,
+        attribute,
     },
     formats,
 }};

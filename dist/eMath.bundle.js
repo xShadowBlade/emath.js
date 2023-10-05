@@ -4111,7 +4111,7 @@
   });
 
   // src/classes/boost.js
-  var boostStatic = class {
+  var boost = class {
     /**
      * Constructs a new boost manager.
      *
@@ -4229,15 +4229,13 @@
   };
   var currencyStatic = class {
     /**
-     * Constructs the backend for a currency
-     *
      * @constructor
      * @param {function} pointer - returns Game.classes.currency
      */
     constructor(pointer) {
       this.upgrades = [];
       this.pointer = pointer;
-      this.boost = new boostStatic(1);
+      this.boost = new boost(1);
     }
     /**
      * The new currency value after applying the boost.
@@ -4261,15 +4259,6 @@
      *
      * @param {Array<CurrencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
-     * @example
-     * const myCurrency = new currency([
-     *     {
-     *         cost: E(10), // The cost of the first upgrade
-     *
-     *         // Additional properties specific to this upgrade
-     *     },
-     *     // Add more upgrades here...
-     * ]);
      */
     addUpgrade(upgrades, runEffectInstantly = true) {
       for (let i = 0; i < upgrades.length; i++) {
@@ -4406,7 +4395,7 @@
   };
 
   // src/classes/attribute.js
-  var staticAttribute = class {
+  var attribute = class {
     /**
      * Constructs a static attribute with an initial effect.
      *
@@ -4416,7 +4405,7 @@
     constructor(initial) {
       this.initial = initial;
       this.value = E(initial);
-      this.boost = new boostStatic(1);
+      this.boost = new boost(1);
     }
     /**
      * Updates the value of the attribute based on the provided effect function and initial value.
@@ -4435,10 +4424,10 @@
   var eMathClone = { ...eMath, ...{
     E,
     classes: {
-      boostStatic,
+      boost,
       currency,
       currencyStatic,
-      staticAttribute
+      attribute
     },
     formats
   } };

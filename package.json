@@ -7,7 +7,7 @@
     "unpkg": "dist/eMath.bundle.js",
     "scripts": {
         "fix": "prettier-eslint --write path/to/your/directory/*.js",
-        "build": "npm-run-all build:bundle build:minify",
+        "build": "run-p build:bundle build:minify",
         "build:bundle": "esbuild src/index.js --bundle --format=iife --outfile=dist/eMath.bundle.js",
         "build:minify": "esbuild src/index.js --bundle --minify --format=iife --outfile=dist/eMath.min.js",
         "test": "mocha"

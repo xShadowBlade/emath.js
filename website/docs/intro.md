@@ -1,47 +1,23 @@
 ---
-sidebar_position: 1
+id: intro
+title: Welcome to eMath.js Documentation
+sidebar_label: Introduction
 ---
 
-# Tutorial Intro
+---
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Welcome to the documentation for eMath.js - a JavaScript library for enhancing incremental game development.
 
-## Getting Started
+### Features
 
-Get started by **creating a new site**.
+- **Support for Node.js and HTML**: eMath.js can be used in both Node.js and HTML projects.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+- **Integration**: eMath.js integrates with break_eternity.js, providing a robust foundation for your game development projects.
 
-### What you'll need
+- **Advanced Formatting**: Enjoy advanced formatting capabilities to enhance the visual appeal of your in-game elements.
 
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+- **Boosts, Currency, and Attributes Management**: Leverage eMath.js classes to effortlessly manage boosts, currency, and attributes within your game.
 
-## Generate a new site
+### Getting Started
 
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
-```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+To get started with eMath.js, check out the installation guide and basic usage examples in the sidebar. If you encounter any issues or have questions, feel free to explore the comprehensive documentation.

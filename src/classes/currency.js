@@ -1,9 +1,9 @@
 "use strict";
 import { E } from "../../src/eMath.js";
-import { boostStatic } from "../../src/classes/boost.js";
+import { boost } from "../../src/classes/boost.js";
 
 /**
- * Represents a currency in the game.
+ * Represents the frontend for a currency.
  *
  * @class
  */
@@ -19,12 +19,6 @@ const currency = class {
          * @type {E}
          */
         this.value = E(0);
-
-        /**
-         * A boost object that affects the currency gain.
-         * @type {Game.classes.boost}
-         */
-        // this.boost = new Game.classes.boost(1);
 
         /**
          * An array that represents upgrades and their levels.
@@ -57,8 +51,6 @@ const currency = class {
  */
 const currencyStatic = class {
     /**
-     * Constructs the backend for a currency
-     *
      * @constructor
      * @param {function} pointer - returns Game.classes.currency
      */
@@ -77,9 +69,9 @@ const currencyStatic = class {
 
         /**
          * A boost object that affects the currency gain.
-         * @type {boostStatic}
+         * @type {boost}
          */
-        this.boost = new boostStatic(1);
+        this.boost = new boost(1);
     }
 
     /**
@@ -105,15 +97,6 @@ const currencyStatic = class {
      *
      * @param {Array<CurrencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
-     * @example
-     * const myCurrency = new currency([
-     *     {
-     *         cost: E(10), // The cost of the first upgrade
-     *
-     *         // Additional properties specific to this upgrade
-     *     },
-     *     // Add more upgrades here...
-     * ]);
      */
     addUpgrade (upgrades, runEffectInstantly = true) {
         for (let i = 0; i < upgrades.length; i++) {

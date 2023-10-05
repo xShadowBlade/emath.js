@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-nocheck
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const lightCodeTheme = require("prism-react-renderer/themes/github");
@@ -7,7 +7,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').Config} */
 const config = {
     title: "eMath.js Documentation",
-    tagline: "a",
+    tagline: "Elevating incremental game dev with management for various game classes",
     favicon: "img/favicon.ico",
 
     // Set the production url of your site here
@@ -42,14 +42,14 @@ const config = {
                     // Please change this to your repo.
                     // Remove this to remove the "edit this page" links.
                     editUrl:
-                        "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+                        "https://github.com/xShadowBlade/emath.js/tree/main/website",
                 },
                 blog: {
                     showReadingTime: true,
                     // Please change this to your repo.
                     // Remove this to remove the "edit this page" links.
                     editUrl:
-                        "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+                        "https://github.com/xShadowBlade/emath.js/tree/main/website",
                 },
                 theme: {
                     customCss: require.resolve("./src/css/custom.css"),
@@ -64,21 +64,20 @@ const config = {
             // Replace with your project's social card
             image: "img/docusaurus-social-card.jpg",
             navbar: {
-                title: "My Site",
+                title: "Home",
                 logo: {
                     alt: "My Site Logo",
-                    src: "img/logo.svg",
+                    src: "img/favicon.ico",
                 },
                 items: [
                     {
                         type: "docSidebar",
                         sidebarId: "tutorialSidebar",
                         position: "left",
-                        label: "Tutorial",
+                        label: "Docs",
                     },
-                    { to: "/blog", label: "Blog", position: "left" },
                     {
-                        href: "https://github.com/facebook/docusaurus",
+                        href: "https://github.com/xShadowBlade/emath.js",
                         label: "GitHub",
                         position: "right",
                     },
@@ -100,16 +99,8 @@ const config = {
                         title: "Community",
                         items: [
                             {
-                                label: "Stack Overflow",
-                                href: "https://stackoverflow.com/questions/tagged/docusaurus",
-                            },
-                            {
                                 label: "Discord",
-                                href: "https://discordapp.com/invite/docusaurus",
-                            },
-                            {
-                                label: "Twitter",
-                                href: "https://twitter.com/docusaurus",
+                                href: "a",
                             },
                         ],
                     },
@@ -117,17 +108,17 @@ const config = {
                         title: "More",
                         items: [
                             {
-                                label: "Blog",
-                                to: "/blog",
+                                label: "GitHub",
+                                href: "https://github.com/xShadowBlade/emath.js",
                             },
                             {
-                                label: "GitHub",
-                                href: "https://github.com/facebook/docusaurus",
+                                label: "npm",
+                                href: "https://www.npmjs.com/package/emath.js",
                             },
                         ],
                     },
                 ],
-                copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+                copyright: `WIP. Copyright © ${new Date().getFullYear()} xShadowBlade. Built with Docusaurus.`,
             },
             prism: {
                 theme: lightCodeTheme,

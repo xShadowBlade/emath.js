@@ -1,13 +1,13 @@
 "use strict";
 import { E } from "../../src/eMath.js"; // actually ../../src/eMath.js
-import { boostStatic } from "../../src/classes/boost.js"; // actually ../../src/classes/boost.js
+import { boost } from "../../src/classes/boost.js"; // actually ../../src/classes/boost.js
 
 /**
  * Represents a static attribute in the game.
  *
  * @class
  */
-const staticAttribute = class {
+const attribute = class {
     /**
      * Constructs a static attribute with an initial effect.
      *
@@ -31,7 +31,7 @@ const staticAttribute = class {
          * A boost object that affects the attribute.
          * @type {Game.classes.boost}
          */
-        this.boost = new boostStatic(1);
+        this.boost = new boost(1);
     }
     /**
      * Updates the value of the attribute based on the provided effect function and initial value.
@@ -51,4 +51,4 @@ const staticAttribute = class {
     }
 };
 
-export { staticAttribute };
+export { attribute };
