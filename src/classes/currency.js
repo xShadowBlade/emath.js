@@ -3,7 +3,7 @@ import { E } from "../../src/eMath.js";
 import { boost } from "../../src/classes/boost.js";
 
 /**
- * Represents the frontend for a currency.
+ * Represents the frontend READONLY for a currency.
  *
  * @class
  */
@@ -25,16 +25,6 @@ const currency = class {
          * @type {Array}
          */
         this.upgrades = [];
-    }
-
-    /**
-     * The new currency value after applying the boost.
-     * @type {E}
-     * @returns {E}
-     */
-    gain () {
-        this.value = this.value.add(this.boost.calculate());
-        return this.value;
     }
 
     addUpgrade (upgrades) {
@@ -77,10 +67,11 @@ const currencyStatic = class {
     /**
      * The new currency value after applying the boost.
      * @type {E}
+     * @param {number|E} [dt=1000] Deltatime
      * @returns {E}
      */
-    gain () {
-        this.pointer().value = this.pointer().value.add(this.boost.calculate());
+    gain (dt = 1000) {
+        this.pointer().value = this.pointer().value.add(this.boost.calculate().mul(E(dt).div(1000)));
         return this.value;
     }
 
@@ -99,12 +90,15 @@ const currencyStatic = class {
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
     addUpgrade (upgrades, runEffectInstantly = true) {
+        function pointerAddUpgrade (upgrades1) {
+            upgrades1 = upgrades1.level ? { level: upgrades1.level } : { level: E(1) };
+            this.pointer().upgrades.push(upgrades1);
+            return upgrades1;
+        }
         for (let i = 0; i < upgrades.length; i++) {
-            this.pointer().addUpgrade(upgrades[i]);
+            pointerAddUpgrade(upgrades[i]);
             upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
-            upgrades[i].setLevel = (n) =>
-                (this.pointer().upgrades[i].level =
-                    this.pointer().upgrades[i].level.add(n));
+            upgrades[i].setLevel = (n) => (this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n));
             if (runEffectInstantly) upgrades[i].effect(upgrades.level);
         }
         this.upgrades = this.upgrades.concat(upgrades);
@@ -276,12 +270,12 @@ const currencyStatic = class {
             const condition = maxAffordableQuantity[0].lte(target);
 
             // Update the affordable quantity and cost if needed
-            maxAffordableQuantity[0] = condition
-                ? maxAffordableQuantity[0]
-                : target;
-            maxAffordableQuantity[1] = condition
-                ? maxAffordableQuantity[1]
-                : this.calculateSum(upgrade.costScaling, target);
+            // maxAffordableQuantity[0] = condition
+            //     ? maxAffordableQuantity[0]
+            //     : target;
+            // maxAffordableQuantity[1] = condition
+            //     ? maxAffordableQuantity[1]
+            //     : this.calculateSum(upgrade.costScaling, target);
 
             // Deduct the cost from available currency and increase the upgrade level
             this.pointer().value = this.pointer().value.sub(

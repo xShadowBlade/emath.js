@@ -81,7 +81,7 @@ const boost = class {
      */
     bSet (id, name, desc, value, order) {
         const bCheck = this.bGet(id);
-        console.log(this.bGet(id));
+
         if (!bCheck) {
             this.boost.push({ id, name, desc, value, order });
         } else {

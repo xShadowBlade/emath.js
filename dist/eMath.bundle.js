@@ -4162,7 +4162,6 @@
      */
     bSet(id, name, desc, value, order) {
       const bCheck = this.bGet(id);
-      console.log(this.bGet(id));
       if (!bCheck) {
         this.boost.push({ id, name, desc, value, order });
       } else {
@@ -4212,15 +4211,6 @@
       this.value = E(0);
       this.upgrades = [];
     }
-    /**
-     * The new currency value after applying the boost.
-     * @type {E}
-     * @returns {E}
-     */
-    gain() {
-      this.value = this.value.add(this.boost.calculate());
-      return this.value;
-    }
     addUpgrade(upgrades) {
       upgrades = upgrades.level ? { level: upgrades.level } : { level: E(1) };
       this.upgrades.push(upgrades);
@@ -4240,10 +4230,11 @@
     /**
      * The new currency value after applying the boost.
      * @type {E}
+     * @param {number|E} [dt=1000] Deltatime
      * @returns {E}
      */
-    gain() {
-      this.pointer().value = this.pointer().value.add(this.boost.calculate());
+    gain(dt = 1e3) {
+      this.pointer().value = this.pointer().value.add(this.boost.calculate().mul(E(dt).div(1e3)));
       return this.value;
     }
     /**
@@ -4261,8 +4252,13 @@
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
     addUpgrade(upgrades, runEffectInstantly = true) {
+      function pointerAddUpgrade(upgrades1) {
+        upgrades1 = upgrades1.level ? { level: upgrades1.level } : { level: E(1) };
+        this.pointer().upgrades.push(upgrades1);
+        return upgrades1;
+      }
       for (let i = 0; i < upgrades.length; i++) {
-        this.pointer().addUpgrade(upgrades[i]);
+        pointerAddUpgrade(upgrades[i]);
         upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
         upgrades[i].setLevel = (n) => this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n);
         if (runEffectInstantly)
@@ -4378,8 +4374,6 @@
       if (!maxAffordableQuantity[0].lte(0)) {
         target = upgrade.getLevel().add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.getLevel());
         const condition = maxAffordableQuantity[0].lte(target);
-        maxAffordableQuantity[0] = condition ? maxAffordableQuantity[0] : target;
-        maxAffordableQuantity[1] = condition ? maxAffordableQuantity[1] : this.calculateSum(upgrade.costScaling, target);
         this.pointer().value = this.pointer().value.sub(
           maxAffordableQuantity[1]
         );
