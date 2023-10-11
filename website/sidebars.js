@@ -30,6 +30,7 @@ const sidebars = {
                     label: "E",
                     items: [
                         "eMath/E/E",
+                        "eMath/E/format"
                     ],
                 },
                 {
