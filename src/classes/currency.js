@@ -3,7 +3,7 @@ import { E } from "../../src/eMath.js";
 import { boost } from "../../src/classes/boost.js";
 
 /**
- * Represents the frontend READONLY for a currency.
+ * Represents the frontend READONLY for a currency. (unless you want to hack in currency or smth)
  *
  * @class
  */
@@ -25,12 +25,6 @@ const currency = class {
          * @type {Array}
          */
         this.upgrades = [];
-    }
-
-    addUpgrade (upgrades) {
-        upgrades = upgrades.level ? { level: upgrades.level } : { level: E(1) };
-        this.upgrades.push(upgrades);
-        return upgrades;
     }
 };
 
@@ -108,7 +102,7 @@ const currencyStatic = class {
      *
      * @param {*} id
      * @param {*} target
-     * @param {boolean} [el=false] - Flag to exclude the sum calculation and only perform binary search.
+     * @param {boolean} [el=false] - ie Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns {array} - [amount, cost]
      */
     calculateUpgrade (id, target, el = false) {
@@ -209,7 +203,7 @@ const currencyStatic = class {
         }
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
-        return findHighestB(
+        return findHighestB (
             (level) => upgrade.costScaling(upgrade.getLevel().add(level)),
             this.pointer().value,
         );

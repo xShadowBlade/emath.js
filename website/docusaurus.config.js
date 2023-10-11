@@ -72,9 +72,15 @@ const config = {
                 items: [
                     {
                         type: "docSidebar",
-                        sidebarId: "tutorialSidebar",
+                        sidebarId: "doc1Sidebar",
                         position: "left",
                         label: "Docs",
+                    },
+                    {
+                        type: "docSidebar",
+                        sidebarId: "tutorialSidebar",
+                        position: "left",
+                        label: "Tutorials",
                     },
                     {
                         href: "https://github.com/xShadowBlade/emath.js",
@@ -90,8 +96,12 @@ const config = {
                         title: "Docs",
                         items: [
                             {
-                                label: "Tutorial",
+                                label: "Intro",
                                 to: "/docs/intro",
+                            },
+                            {
+                                label: "Tutorials",
+                                to: "/docs/tutorials/coinGame/intro",
                             },
                         ],
                     },

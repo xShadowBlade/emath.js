@@ -929,6 +929,7 @@ const { format, formatGain } = formats;
  * @returns {string} A string representing the formatted E value.
  */
 DecimalClone.prototype.format = function (acc = 2, max = 9) { return format(this.clone(), acc, max); };
+DecimalClone.format = function (e, acc = 2, max = 9) { return format(e.clone(), acc, max); };
 
 /**
  * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.

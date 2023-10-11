@@ -4096,6 +4096,9 @@
   DecimalClone.prototype.format = function(acc = 2, max = 9) {
     return format(this.clone(), acc, max);
   };
+  DecimalClone.format = function(e, acc = 2, max = 9) {
+    return format(e.clone(), acc, max);
+  };
   DecimalClone.prototype.formatST = function(acc = 2, max = 9, type = "st") {
     return format(this.clone(), acc, max, type);
   };
@@ -4211,11 +4214,6 @@
       this.value = E(0);
       this.upgrades = [];
     }
-    addUpgrade(upgrades) {
-      upgrades = upgrades.level ? { level: upgrades.level } : { level: E(1) };
-      this.upgrades.push(upgrades);
-      return upgrades;
-    }
   };
   var currencyStatic = class {
     /**
@@ -4271,7 +4269,7 @@
      *
      * @param {*} id
      * @param {*} target
-     * @param {boolean} [el=false] - Flag to exclude the sum calculation and only perform binary search.
+     * @param {boolean} [el=false] - ie Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns {array} - [amount, cost]
      */
     calculateUpgrade(id, target, el = false) {
