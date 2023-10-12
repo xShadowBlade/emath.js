@@ -46,6 +46,7 @@ const sidebars = {
         },
     ],
     tutorialSidebar: [
+        "tutorials/tutorials",
         {
             type: "category",
             label: "Coin Game",
@@ -53,6 +54,8 @@ const sidebars = {
                 "tutorials/coinGame/intro",
                 "tutorials/coinGame/setup",
                 "tutorials/coinGame/currency",
+                "tutorials/coinGame/upgrades",
+                
             ],
         },
     ],

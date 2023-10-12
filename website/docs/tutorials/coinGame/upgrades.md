@@ -1,10 +1,17 @@
-/*
-* In this example, we will create a button
-* that when pressed gives you coins that you can use
-* on an upgrade that gives you more coins on gain.
-*/
+---
+id: upgrades
+title: Setting up Upgrading
+sidebar_label: Upgrades
+---
 
-/* global window document eMath */
+---
+
+Welcome to the final part of this basics tutorial.
+
+WIP coming soon ;\)
+
+Final code:
+```js
 window.addEventListener("load", () => {
     const { E } = eMath;
 
@@ -77,3 +84,4 @@ window.addEventListener("load", () => {
         updateDisplay();
     });
 });
+```
