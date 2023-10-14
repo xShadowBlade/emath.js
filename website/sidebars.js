@@ -55,7 +55,6 @@ const sidebars = {
                 "tutorials/coinGame/setup",
                 "tutorials/coinGame/currency",
                 "tutorials/coinGame/upgrades",
-                
             ],
         },
     ],

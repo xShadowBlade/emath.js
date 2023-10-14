@@ -3425,9 +3425,9 @@
     }
     return x;
   };
-  DecimalClone.prototype.toRoman = function() {
+  DecimalClone.prototype.toRoman = function(max = 5e3) {
     let num = this.clone();
-    if (num.gte(5e3))
+    if (num.gte(max))
       return num;
     num = num.toNumber();
     const digits = String(+num).split(""), key = [

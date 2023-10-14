@@ -367,12 +367,13 @@ DecimalClone.prototype.softcap = function (start, power, mode) {
  * @function
  * @memberof E.prototype
  * @name toRoman
+ * @param {number|E} [max=5000] - Max before it returns the original
  * @returns {string|E} A string representing the Roman numeral equivalent of the E value,
  * or the original E instance if it is greater than or equal to 5000.
  */
-DecimalClone.prototype.toRoman = function () {
+DecimalClone.prototype.toRoman = function (max = 5000) {
     let num = this.clone();
-    if (num.gte(5000)) return num;
+    if (num.gte(max)) return num;
     num = num.toNumber();
 
     const digits = String(+num).split(""), key = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
