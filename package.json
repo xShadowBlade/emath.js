@@ -1,6 +1,6 @@
 {
     "name": "emath.js",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "description": "A math library for incremental games based on break_eternity.js",
     "exports": "./src/index.js",
     "type": "module",
