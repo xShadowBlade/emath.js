@@ -3239,7 +3239,7 @@
         * @param {E} deltaTime - The time elapsed since the last frame in seconds.
         * @returns {E} - The interpolated value between `current` and `target`.
         */
-        value: (current, target, smoothing, deltaTime) => current.add(target.minus(current).times(smoothing).times(deltaTime))
+        value: (current, target, smoothing, deltaTime) => current.add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)))
       }
     ]
   };
