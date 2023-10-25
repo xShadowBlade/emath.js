@@ -1,20 +1,22 @@
 {
 	"compilerOptions": {
-	  "target": "es6",
-	  "module": "ESNext",
-	  "strict": false, // change later
-	  "lib": ["ESNext", "dom"],
-	  "esModuleInterop": true,
-	  "skipLibCheck": true,
-	  "forceConsistentCasingInFileNames": true,
-	  "moduleResolution": "node",
-	  "baseUrl": "./src",  // Adjust this based on your project structure
-	  "outDir": "./dist",  // Adjust this based on your project structure
-	  "sourceMap": true
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"allowJs": true,
+		"target": "es6",
+		"module": "NodeNext",
+		"strict": false, // change later
+		"lib": ["ESNext", "dom"],
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"moduleResolution": "NodeNext",
+		"baseUrl": "./src",  // Adjust this based on your project structure
+		"outDir": "./dist",  // Adjust this based on your project structure
+		"sourceMap": true
 	},
-	"include": [
-	  "src/**/*.ts", "src/eMath.js", "src/classes/boost.ts", "src/index.js"],
+	"include": ["src/**/*.ts"],
 	"exclude": [
-	  "node_modules"
+	  	"node_modules"
 	]
 }

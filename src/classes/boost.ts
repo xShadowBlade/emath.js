@@ -1,5 +1,5 @@
 "use strict";
-import { E } from "../../src/eMath";
+import { E } from "../../src/eMath.ts";
 
 /**
  * Represents a boost manager that applies various effects to a base value.

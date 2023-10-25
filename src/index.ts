@@ -1,10 +1,10 @@
 "use strict";
 /* global window */
-import { eMath as eMathE, E, formats } from "./eMath";
-import { boost } from "./classes/boost";
-import { currency, currencyStatic } from "./classes/currency";
-import { attribute } from "./classes/attribute";
-import { grid } from "./classes/grid";
+import { eMath as eMathE, E, formats } from "./eMath.js";
+import { boost } from "./classes/boost.js";
+import { currency, currencyStatic } from "./classes/currency.js";
+import { attribute } from "./classes/attribute.js";
+import { grid } from "./classes/grid.js";
 const eMath = { ...eMathE, ...{
     E,
     classes: {

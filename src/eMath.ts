@@ -1,7 +1,7 @@
 "use strict";
 
 import Decimal from "break_eternity.js";
-import formats from "./format";
+import formats from "./format.js";
 
 const { format, formatGain } = formats;
 

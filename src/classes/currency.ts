@@ -1,13 +1,13 @@
 "use strict";
-import { E } from "../eMath";
-import { boost } from "./boost";
+import { E } from "../eMath.ts";
+import { boost } from "./boost.ts";
 
 /**
  * Upgrades
  *
  * @property {string} [id] - id
  * @property {string} [name] - name
- * @property {E} cost - The cost of the first upgrade
+ * @property {E} cost - The cost of the first upgrade (deprecated)
  * @property {function} costScaling - Scalar function for cost with param level
  * @property {E} [maxLevel] - Max level
  * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context

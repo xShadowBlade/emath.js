@@ -4124,6 +4124,7 @@
      * @returns {array} - [amount, cost]
      */
     calculateUpgrade(id, target, el = false) {
+      target = E(target);
       function calculateSum(f, b) {
         let sum = E();
         for (let n = E(0); n.lte(b); n = n.add(1)) {
@@ -4401,7 +4402,7 @@
     }
   };
 
-  // src/index.js
+  // src/index.ts
   var eMath2 = {
     ...eMath,
     ...{
