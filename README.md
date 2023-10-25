@@ -16,6 +16,7 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 
 Massive credits to [MrRedShark77](https://github.com/MrRedShark77/) for the formats and inspiration.
 
+(yes, I know it is no longer a purely js library, deal with it)
 ## Installation
 
 ### Install via npm:
@@ -24,7 +25,7 @@ Massive credits to [MrRedShark77](https://github.com/MrRedShark77/) for the form
 npm install emath.js
 ```
 
-The ESM package exports a default export ``eMath``. Use as the following: (note CJS is not supported)
+The package exports a default export named ``eMath``. Use as the following: (CJS support only in version ^2.0.0)
 
 ```js
 import eMath from "emath.js";
@@ -33,30 +34,15 @@ import eMath from "emath.js";
 ### Include using CDN
 **NOTE: This will not include types**
 #### Development Build
-Using JSDelivr:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.bundle.js"></script>
 ```
 
-Using Github:
-
-```html
-<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.bundle.js"></script>
-```
-
-#### Production Build
-
-Using JSDelivr:
+#### Production/Minified Build
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.min.js"></script>
-```
-
-Using Github:
-
-```html
-<script src="https://raw.githubusercontent.com/xShadowBlade/emath.js/main/dist/eMath.min.js"></script>
 ```
 
 ---

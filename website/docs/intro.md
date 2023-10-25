@@ -12,6 +12,8 @@ Welcome to the documentation for eMath.js - a JavaScript library for enhancing i
 
 - **Support for Node.js and HTML**: eMath.js can be used in both Node.js and HTML projects.
 
+- **Support for Typescript**: eMath.js exports type definitions to help develop your projects.
+
 - **Integration**: eMath.js integrates with break_eternity.js, providing a robust foundation for your game development projects.
 
 - **Advanced Formatting**: Enjoy advanced formatting capabilities to enhance the visual appeal of your in-game elements.

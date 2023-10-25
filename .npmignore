@@ -1,9 +1,5 @@
-website/
-test/
-images/
-dist/
-.github/
-.eslintignore
-.eslintrc.json
-.prettierignore
-.prettierrc
+# Ignore everything
+/*
+# Allow src and dist directories
+!/src
+!/dist

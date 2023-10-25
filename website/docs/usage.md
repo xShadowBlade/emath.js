@@ -10,7 +10,7 @@ After you have installed it via [npm](./install#install-via-npm) or [HTML CDN](.
 
 ### Node.js Usage
 
-The ESM package exports a default export ``eMath``. Use as the following: (note CJS is not supported)
+The ESM package exports a default export ``eMath``. Use as the following: (CJS support only in version ^2.0.0)
 
 ```js
 import eMath from "emath.js";
