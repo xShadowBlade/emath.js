@@ -5,7 +5,7 @@
 		"allowJs": true,
 		"target": "es6",
 		"module": "NodeNext",
-		"strict": false, // change later
+		"strict": true, // change later
 		"lib": ["ESNext", "dom"],
 		"esModuleInterop": true,
 		"skipLibCheck": true,

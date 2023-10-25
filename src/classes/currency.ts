@@ -13,6 +13,7 @@ import { boost } from "./boost.ts";
  * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
  */
 interface upgrade {
+    /* eslint-disable no-unused-vars */
     id?: string | number,
     name?: string,
     cost?: E, // Deprecated
@@ -24,6 +25,7 @@ interface upgrade {
     getLevel?: () => E,
     setLevel?: (n: E) => void,
     level?: E,
+    /* eslint-enable */
 }
 
 /**

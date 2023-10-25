@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* eslint-disable no-unreachable */
 import Decimal from "break_eternity.js";
 
 const formats = (() => {

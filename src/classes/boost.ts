@@ -24,7 +24,7 @@ interface boostsObject {
     // eslint-disable-next-line no-unused-vars
     value: (input: E) => E,
     order?: number,
-    index?: number,
+    index: number,
 }
 class boost {
     /**
@@ -48,7 +48,7 @@ class boost {
      */
     constructor (baseEffect?: number, boosts?: boostsObject[]) {
         baseEffect = baseEffect ? baseEffect : 1;
-        this.boostArray = boosts;
+        this.boostArray = boosts ? boosts : [];
         this.baseEffect = E(baseEffect);
     }
 
@@ -59,7 +59,7 @@ class boost {
      * @returns {boostsObject|null} The boost object if found, or null if not found.
      */
     public bGet (id: string): boostsObject | null {
-        let output: boostsObject | null;
+        let output: boostsObject | null = null;
         for (let i = 0; i < this.boostArray.length; i++) {
             if (i === this.boostArray.length) break;
             if (id === this.boostArray[i].id) {
@@ -75,7 +75,12 @@ class boost {
      *
      * @param {string} id - The ID of the boost to remove.
      */
-    public bRemove (id: string): void { delete this.boostArray[this.bGet(id).index]; }
+    public bRemove (id: string): void {
+        const bCheck: boostsObject | null = this.bGet(id);
+        if (bCheck) {
+            delete this.boostArray[bCheck.index];
+        }
+    }
 
     /**
      * Sets or updates a boost with the given parameters.
@@ -90,9 +95,9 @@ class boost {
         const bCheck: boostsObject | null = this.bGet(id);
 
         if (!bCheck) {
-            this.boostArray.push({ id, name, desc, type, value, order });
+            this.boostArray.push({ id, name, desc, type, value, order, index: this.boostArray.length });
         } else {
-            this.boostArray[bCheck.index] = { id, name, desc, type, value, order };
+            this.boostArray[bCheck.index] = { id, name, desc, type, value, order, index: this.boostArray.length };
         }
     }
 
@@ -103,11 +108,12 @@ class boost {
      */
     public bSetAdvanced (...x: boostsObject[]): void {
         for (let i = 0; i < x.length; i++) {
-            if (!this.bGet(x[i].id)) {
+            const bCheck: boostsObject | null = this.bGet(x[i].id);
+            if (!bCheck) {
                 this.boostArray = this.boostArray.concat(x[i]);
             } else {
                 console.log(i);
-                this.boostArray[this.bGet(x[i].id).index] = x[i];
+                this.boostArray[bCheck.index] = x[i];
             }
         }
     }

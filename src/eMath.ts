@@ -5,9 +5,9 @@ import formats from "./format.js";
 
 const { format, formatGain } = formats;
 
-const DecimalClone = Decimal;
+const DecimalClone: any = Decimal;
 
-function E (x?: number|string|Decimal): Decimal { return new DecimalClone(x); };
+const E:any = (x?: number|string|Decimal): Decimal => { return new DecimalClone(x); };
 
 const eMath = {};
 
@@ -61,7 +61,8 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * @name clone
          * @returns {E} A new DecimalClone instance that is a clone of the original.
          */
-        value: function (): Decimal {
+        // eslint-disable-next-line no-unused-vars
+        value: function (this: Decimal): Decimal {
             return this;
         },
     },
@@ -80,11 +81,11 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * @returns {E} A new DecimalClone instance representing the result of the modular operation.
          */
         value: function (other: Decimal | number | string): Decimal {
-            other = E(other);
-            if (other.eq(0)) return E(0);
-            if (this.sign * other.sign == -1) return this.abs().mod(other.abs()).neg();
-            if (this.sign == -1) return this.abs().mod(other.abs());
-            return this.sub(this.div(other).floor().mul(other));
+            const other1: E = E(other);
+            if (other1.eq(0)) return E(0);
+            if (this.sign * other1.sign == -1) return this.abs().mod(other1.abs()).neg();
+            if (this.sign == -1) return this.abs().mod(other1.abs());
+            return this.sub(this.div(other1).floor().mul(other1));
         },
     },
     {
@@ -184,7 +185,7 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * const formatted = currency.formatGain(currencyGain);
          * console.log(formatted); // should return "(+12/sec)"
          */
-        value: function (gain: Decimal | number | string, mass: boolean = false): string { return formatGain(this.clone(), gain, mass); },
+        value: function (gain: Decimal | number | string): string { return formatGain(this.clone(), gain); },
     },
     {
         name: "toRoman",
@@ -201,17 +202,25 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
         value: function (max: number | Decimal): string | Decimal {
             max = max ? max : 5000;
 
-            let num = this.clone();
+            const num: E = this.clone();
             if (num.gte(max)) return num;
-            num = num.toNumber();
+            const newNum: number = num.toNumber();
 
-            const digits = String(+num).split(""), key = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
+            const digits = String(+newNum).split("");
+            const key = [
+                "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
                 "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC",
-                "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+                "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX",
+            ];
 
             let roman = "", i = 3;
-            while (i--) {roman = (key[+digits.pop() + (i * 10)] || "") + roman;}
-            return Array(+digits.join("") + 1).join("M") + roman;
+            if (typeof digits.pop() !== "undefined") {
+                // @ts-ignore
+                while (i--) {roman = (key[+digits.pop() + (i * 10)] || "") + roman;}
+                return Array(+digits.join("") + 1).join("M") + roman;
+            } else {
+                return "";
+            }
         },
     },
 ];

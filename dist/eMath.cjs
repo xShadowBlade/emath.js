@@ -3737,9 +3737,9 @@ var format_default = formats;
 // src/eMath.ts
 var { format, formatGain } = format_default;
 var DecimalClone = Decimal;
-function E(x) {
+var E = (x) => {
   return new DecimalClone(x);
-}
+};
 var eMath = {};
 var decimalFunctions = [
   {
@@ -3788,6 +3788,7 @@ var decimalPrototypeFunctions = [
      * @name clone
      * @returns {E} A new DecimalClone instance that is a clone of the original.
      */
+    // eslint-disable-next-line no-unused-vars
     value: function() {
       return this;
     }
@@ -3805,14 +3806,14 @@ var decimalPrototypeFunctions = [
      * @returns {E} A new DecimalClone instance representing the result of the modular operation.
      */
     value: function(other) {
-      other = E(other);
-      if (other.eq(0))
+      const other1 = E(other);
+      if (other1.eq(0))
         return E(0);
-      if (this.sign * other.sign == -1)
-        return this.abs().mod(other.abs()).neg();
+      if (this.sign * other1.sign == -1)
+        return this.abs().mod(other1.abs()).neg();
       if (this.sign == -1)
-        return this.abs().mod(other.abs());
-      return this.sub(this.div(other).floor().mul(other));
+        return this.abs().mod(other1.abs());
+      return this.sub(this.div(other1).floor().mul(other1));
     }
   },
   {
@@ -3914,8 +3915,8 @@ var decimalPrototypeFunctions = [
      * const formatted = currency.formatGain(currencyGain);
      * console.log(formatted); // should return "(+12/sec)"
      */
-    value: function(gain, mass = false) {
-      return formatGain(this.clone(), gain, mass);
+    value: function(gain) {
+      return formatGain(this.clone(), gain);
     }
   },
   {
@@ -3932,11 +3933,12 @@ var decimalPrototypeFunctions = [
      */
     value: function(max) {
       max = max ? max : 5e3;
-      let num = this.clone();
+      const num = this.clone();
       if (num.gte(max))
         return num;
-      num = num.toNumber();
-      const digits = String(+num).split(""), key = [
+      const newNum = num.toNumber();
+      const digits = String(+newNum).split("");
+      const key = [
         "",
         "C",
         "CC",
@@ -3969,10 +3971,14 @@ var decimalPrototypeFunctions = [
         "IX"
       ];
       let roman = "", i = 3;
-      while (i--) {
-        roman = (key[+digits.pop() + i * 10] || "") + roman;
+      if (typeof digits.pop() !== "undefined") {
+        while (i--) {
+          roman = (key[+digits.pop() + i * 10] || "") + roman;
+        }
+        return Array(+digits.join("") + 1).join("M") + roman;
+      } else {
+        return "";
       }
-      return Array(+digits.join("") + 1).join("M") + roman;
     }
   }
 ];
@@ -3998,7 +4004,7 @@ var boost = class {
    */
   constructor(baseEffect, boosts) {
     baseEffect = baseEffect ? baseEffect : 1;
-    this.boostArray = boosts;
+    this.boostArray = boosts ? boosts : [];
     this.baseEffect = E(baseEffect);
   }
   /**
@@ -4008,7 +4014,7 @@ var boost = class {
    * @returns {boostsObject|null} The boost object if found, or null if not found.
    */
   bGet(id) {
-    let output;
+    let output = null;
     for (let i = 0; i < this.boostArray.length; i++) {
       if (i === this.boostArray.length)
         break;
@@ -4025,7 +4031,10 @@ var boost = class {
    * @param {string} id - The ID of the boost to remove.
    */
   bRemove(id) {
-    delete this.boostArray[this.bGet(id).index];
+    const bCheck = this.bGet(id);
+    if (bCheck) {
+      delete this.boostArray[bCheck.index];
+    }
   }
   /**
    * Sets or updates a boost with the given parameters.
@@ -4039,9 +4048,9 @@ var boost = class {
   bSet(id, name, desc, type, value, order) {
     const bCheck = this.bGet(id);
     if (!bCheck) {
-      this.boostArray.push({ id, name, desc, type, value, order });
+      this.boostArray.push({ id, name, desc, type, value, order, index: this.boostArray.length });
     } else {
-      this.boostArray[bCheck.index] = { id, name, desc, type, value, order };
+      this.boostArray[bCheck.index] = { id, name, desc, type, value, order, index: this.boostArray.length };
     }
   }
   /**
@@ -4051,11 +4060,12 @@ var boost = class {
    */
   bSetAdvanced(...x) {
     for (let i = 0; i < x.length; i++) {
-      if (!this.bGet(x[i].id)) {
+      const bCheck = this.bGet(x[i].id);
+      if (!bCheck) {
         this.boostArray = this.boostArray.concat(x[i]);
       } else {
         console.log(i);
-        this.boostArray[this.bGet(x[i].id).index] = x[i];
+        this.boostArray[bCheck.index] = x[i];
       }
     }
   }
@@ -4441,7 +4451,7 @@ var eMath2 = {
     formats: format_default
   }
 };
-if (typeof window != "undefined") {
+if (typeof process !== "object" && typeof window !== "undefined") {
   window["eMath"] = eMath2;
 }
 var src_default = eMath2;

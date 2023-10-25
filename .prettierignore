@@ -1,6 +1,5 @@
 dist/
-formatE.js
-testNoReq.js
+src/format.js
 
 # Logs
 logs

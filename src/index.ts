@@ -19,7 +19,7 @@ const eMath = { ...eMathE, ...{
     formats,
 },
 };
-if (typeof window != "undefined") {
-    window["eMath"] = eMath;
+if (typeof process !== "object" && typeof window !== "undefined") {
+    (window as any)["eMath"] = eMath;
 }
 export default eMath;
