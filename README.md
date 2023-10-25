@@ -14,6 +14,8 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 <br><img src="https://img.shields.io/badge/Made%20by%3A-xShadowBlade%232720-blue?style=social&logo=discord">
 </div>
 
+Massive credits to [MrRedShark77](https://github.com/MrRedShark77/) for the formats and inspiration.
+
 ## Installation
 
 ### Install via npm:
@@ -29,6 +31,7 @@ import eMath from "emath.js";
 ```
 
 ### Include using CDN
+**NOTE: This will not include types**
 #### Development Build
 Using JSDelivr:
 

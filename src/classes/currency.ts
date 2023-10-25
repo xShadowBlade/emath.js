@@ -1,60 +1,67 @@
 "use strict";
-import { E } from "../../src/eMath.js";
-import { boost } from "../../src/classes/boost.js";
+import { E } from "../eMath";
+import { boost } from "./boost";
 
 /**
  * Represents the frontend READONLY for a currency. (unless you want to hack in currency or smth)
  *
  * @class
  */
-const currency = class {
+class currency {
+    /**
+     * The current value of the currency.
+     * @type {E}
+     */
+    public value: E;
+
+    /**
+     * An array that represents upgrades and their levels.
+     * @type {Array}
+     */
+    public upgrades: any[];
+
     /**
      * Constructs a new currency object with an initial value of 0 and a boost.
      *
      * @constructor
      */
     constructor () {
-        /**
-         * The current value of the currency.
-         * @type {E}
-         */
         this.value = E(0);
-
-        /**
-         * An array that represents upgrades and their levels.
-         * @type {Array}
-         */
         this.upgrades = [];
     }
-};
+}
 
 /**
  * Represents the backend for a currency in the game.
  *
  * @class
  */
-const currencyStatic = class {
+class currencyStatic {
+    /**
+     * An array that represents upgrades, their costs, and their effects.
+     * @type {Array}
+     */
+    public upgrades: any[];
+
+    /**
+     * A function that returns the pointer of the data
+     * @type {function}
+     */
+    public pointer: Function;
+
+    /**
+     * A boost object that affects the currency gain.
+     * @type {boost}
+     */
+    public boost: boost;
+
     /**
      * @constructor
      * @param {function} pointer - returns Game.classes.currency
      */
-    constructor (pointer) {
-        /**
-         * An array that represents upgrades, their costs, and their effects.
-         * @type {Array}
-         */
+    constructor (pointer: Function) {
         this.upgrades = [];
-
-        /**
-         * A function that returns the pointer of the data
-         * @type {function}
-         */
         this.pointer = pointer;
-
-        /**
-         * A boost object that affects the currency gain.
-         * @type {boost}
-         */
         this.boost = new boost(1);
     }
 
@@ -64,15 +71,17 @@ const currencyStatic = class {
      * @param {number|E} [dt=1000] Deltatime
      * @returns {E}
      */
-    gain (dt = 1000) {
-        this.pointer().value = this.pointer().value.add(this.boost.calculate().mul(E(dt).div(1000)));
+    public gain (dt: number | E = 1000): E {
+        this.pointer().value = this.pointer().value.add(
+            this.boost.calculate().mul(E(dt).div(1000)),
+        );
         return this.value;
     }
 
     /**
      * Create new upgrades
      *
-     * @typedef {Object} CurrencyUpgrade
+     * @typedef {Object} currencyUpgrade
      * @property {string} [id] - id
      * @property {string} [name] - name
      * @property {E} cost - The cost of the first upgrade
@@ -80,19 +89,24 @@ const currencyStatic = class {
      * @property {E} maxLevel - Max level
      * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
      *
-     * @param {Array<CurrencyUpgrade>} upgrades - An array of upgrade objects.
+     * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
-    addUpgrade (upgrades, runEffectInstantly = true) {
-        function pointerAddUpgrade (upgrades1) {
-            upgrades1 = upgrades1.level ? { level: upgrades1.level } : { level: E(1) };
+    public addUpgrade (upgrades: any[], runEffectInstantly: boolean = true): void {
+        function pointerAddUpgrade (upgrades1: any) {
+            upgrades1 = upgrades1.level
+                ? { level: upgrades1.level }
+                : { level: E(1) };
             this.pointer().upgrades.push(upgrades1);
             return upgrades1;
         }
         for (let i = 0; i < upgrades.length; i++) {
             pointerAddUpgrade(upgrades[i]);
             upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
-            upgrades[i].setLevel = (n) => (this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n));
+            upgrades[i].setLevel = (n: E) =>
+                (this.pointer().upgrades[i].level = this.pointer().upgrades[
+                    i
+                ].level.add(n));
             if (runEffectInstantly) upgrades[i].effect(upgrades.level);
         }
         this.upgrades = this.upgrades.concat(upgrades);
@@ -105,7 +119,11 @@ const currencyStatic = class {
      * @param {boolean} [el=false] - ie Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns {array} - [amount, cost]
      */
-    calculateUpgrade (id, target, el = false) {
+    public calculateUpgrade (
+        id: any,
+        target: any,
+        el: boolean = false,
+    ): [E, E] | E | Boolean {
         /**
          * Calculates the sum of 'f(n)' from 0 to 'b'.
          *
@@ -113,8 +131,8 @@ const currencyStatic = class {
          * @param {number} b - The upper limit for the sum.
          * @returns {number} - The calculated sum of 'f(n)'.
          */
-        function calculateSum (f, b) {
-            let sum = E();
+        function calculateSum (f: Function, b: E): E {
+            let sum: E = E();
             for (let n = E(0); n.lte(b); n = n.add(1)) {
                 sum = sum.add(f(n));
             }
@@ -128,11 +146,11 @@ const currencyStatic = class {
          * @param {number} a - The target sum value to compare against.
          * @returns {number} - The highest 'b' value for which the sum is less than or equal to 'a'.
          */
-        function findHighestB (f, a, el1 = el) {
+        function findHighestB (f: Function, a: E, el1: boolean = el): [E, E] | E {
             if (!el1) {
-                let left = E(0);
-                let right = E(1);
-                let highestB = E(0);
+                let left: E = E(0);
+                let right: E = E(1);
+                let highestB: E = E(0);
 
                 // Find an upper bound for 'b' by exponentially increasing it
                 while (calculateSum(f, right).lt(a)) {
@@ -143,8 +161,8 @@ const currencyStatic = class {
 
                 // Perform binary search within the estimated range
                 while (left.lt(right)) {
-                    const mid = E.floor(left.add(right).div(2));
-                    const sum = calculateSum(f, mid);
+                    const mid: E = E.floor(left.add(right).div(2));
+                    const sum: E = calculateSum(f, mid);
 
                     if (sum.lt(a)) {
                         left = mid.add(1);
@@ -162,13 +180,13 @@ const currencyStatic = class {
                  * @param {E} a - The target value to compare against.
                  * @returns {E} - The highest 'b' value for which the sum is less than or equal to 'a'.
                  */
-                let left = new E(0);
-                let right = target;
-                let result = new E(-1);
+                let left: E = E(0);
+                let right: E = target;
+                let result: E = E(-1);
 
                 while (left.lessThanOrEqualTo(right)) {
-                    const mid = left.plus(right).dividedBy(2).floor();
-                    const value = f(mid);
+                    const mid: E = left.plus(right).dividedBy(2).floor();
+                    const value: E = f(mid);
 
                     if (value.lte(a)) {
                         result = mid;
@@ -180,7 +198,6 @@ const currencyStatic = class {
                 return result;
             }
         }
-
 
         // Example
         // console.log(findHighestB((n) => n.mul(n), 100))
@@ -203,7 +220,7 @@ const currencyStatic = class {
         }
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
-        return findHighestB (
+        return findHighestB(
             (level) => upgrade.costScaling(upgrade.getLevel().add(level)),
             this.pointer().value,
         );
@@ -221,7 +238,7 @@ const currencyStatic = class {
      * @returns {boolean} Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      *
      */
-    buyUpgrade (id, target) {
+    public buyUpgrade (id: string | number, target: E): boolean {
         // Implementation logic to find the upgrade based on ID or position
         let upgrade;
         if (typeof id == "number") {
@@ -243,7 +260,10 @@ const currencyStatic = class {
         }
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
-        const maxAffordableQuantity = this.calculateUpgrade(id, target);
+        const maxAffordableQuantity: [E, E] | E | boolean = this.calculateUpgrade(
+            id,
+            target,
+        );
 
         // Check if maxAffordableQuantity is a valid array
         if (
@@ -256,9 +276,10 @@ const currencyStatic = class {
         // Check if there's enough currency to afford any upgrades
         if (!maxAffordableQuantity[0].lte(0)) {
             // Determine the actual quantity to purchase based on 'target' and 'maxLevel'
-            target = upgrade.getLevel().add(target).lte(upgrade.maxLevel)
-                ? target
-                : upgrade.maxLevel.sub(upgrade.getLevel());
+            target =
+                upgrade.getLevel().add(target).lte(upgrade.maxLevel)
+                    ? target
+                    : upgrade.maxLevel.sub(upgrade.getLevel());
 
             // Check if the calculated quantity exceeds the affordable quantity
             const condition = maxAffordableQuantity[0].lte(target);
@@ -289,6 +310,6 @@ const currencyStatic = class {
             return false;
         }
     }
-};
+}
 
 export { currency, currencyStatic };

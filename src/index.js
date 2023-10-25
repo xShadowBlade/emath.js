@@ -1,10 +1,11 @@
 "use strict";
 /* global window */
-import { eMath, E, formats } from "../src/eMath.js";
-import { boost } from "../src/classes/boost.js";
-import { currency, currencyStatic } from "../src/classes/currency.js";
-import { attribute } from "../src/classes/attribute.js";
-const eMathClone = { ...eMath, ...{
+import { eMath as eMathE, E, formats } from "./eMath";
+import { boost } from "./classes/boost";
+import { currency, currencyStatic } from "./classes/currency";
+import { attribute } from "./classes/attribute";
+import { grid } from "./classes/grid";
+const eMath = { ...eMathE, ...{
     E,
     classes: {
         boost,
@@ -13,10 +14,12 @@ const eMathClone = { ...eMath, ...{
         currencyStatic,
 
         attribute,
+        grid,
     },
     formats,
-}};
+},
+};
 if (typeof window != "undefined") {
-    window["eMath"] = eMathClone;
+    window["eMath"] = eMath;
 }
-export default eMathClone;
+export default eMath;

@@ -3043,7 +3043,7 @@
       }
     }, {
       key: "critical_section",
-      value: function critical_section(base, height, grid) {
+      value: function critical_section(base, height, grid2) {
         height *= 10;
         if (height < 0) {
           height = 0;
@@ -3061,13 +3061,13 @@
         var upper = 0;
         for (var i = 0; i < critical_headers.length; ++i) {
           if (critical_headers[i] == base) {
-            lower = grid[i][Math.floor(height)];
-            upper = grid[i][Math.ceil(height)];
+            lower = grid2[i][Math.floor(height)];
+            upper = grid2[i][Math.ceil(height)];
             break;
           } else if (critical_headers[i] < base && critical_headers[i + 1] > base) {
             var basefrac = (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
-            lower = grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
-            upper = grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
+            lower = grid2[i][Math.floor(height)] * (1 - basefrac) + grid2[i + 1][Math.floor(height)] * basefrac;
+            upper = grid2[i][Math.ceil(height)] * (1 - basefrac) + grid2[i + 1][Math.ceil(height)] * basefrac;
             break;
           }
         }
@@ -3095,391 +3095,7 @@
   Decimal.fromMantissaExponent;
   Decimal.fromMantissaExponent_noNormalize;
 
-  // src/eMath.js
-  var DecimalClone = Decimal;
-  var eMath = {
-    decimalFunctions: [
-      {
-        name: "random",
-        value: (min, max, qty, round) => {
-          min = E(min);
-          max = E(max);
-          if (qty) {
-            const out = [];
-            for (let i = 0; i < qty; i++) {
-              let output = E();
-              output = output.plus(max > min ? min : max).plus(max > min ? max.minus(min).times(Math.random()) : min.minus(max).times(Math.random()));
-              output = !(round != void 0 && !round) ? output.round() : output;
-              out.push(output);
-            }
-            return out;
-          } else {
-            let output = E();
-            output = output.plus(max > min ? min : max).plus(max > min ? max.minus(min).times(Math.random()) : min.minus(max).times(Math.random()));
-            output = !(round != void 0 && !round) ? output.round() : output;
-            return output;
-          }
-        }
-      },
-      {
-        name: "mean",
-        value: (array) => {
-          let sum = new DecimalClone();
-          let total = 0;
-          for (const x of array) {
-            total++;
-            sum = sum.plus(x);
-          }
-          return sum.divide(total);
-        }
-      },
-      {
-        name: "median",
-        // bugs
-        value: (array, sort = DecimalClone.sort, mean = DecimalClone.mean) => !array.length % 2 ? sort(array)[Math.floor(array.length / 2)] : mean([sort(array)[array.length], sort(array)[array.length - 1]])
-      },
-      {
-        name: "mode",
-        // also bugs
-        value: (array) => {
-          const stor = [{ value: E(Infinity), frequency: 0 }];
-          let stor2 = [];
-          const output = [];
-          for (let x of array) {
-            x = E(x);
-            for (const y of stor) {
-              console.log(y.value, x);
-              if (y.value.neq(x)) {
-                stor.push({
-                  value: x,
-                  frequency: 1
-                });
-                break;
-              } else {
-                y.frequency++;
-                break;
-              }
-            }
-          }
-          console.log(stor);
-          for (const x of stor) {
-            stor2.push(x.frequency);
-          }
-          console.log(stor2);
-          stor2 = eMath.decimal.sort(stor2)[stor2.length - 1];
-          console.log(stor);
-          for (const x of stor) {
-            console.log(x);
-            if (x.frequency == stor2) {
-              output.push(x.value);
-            }
-          }
-          return output;
-        }
-      },
-      {
-        name: "sort",
-        // default sort
-        value: (array) => eMath.decimal.qtSort(array)
-      },
-      {
-        name: "bbSort",
-        // bubble sort
-        value: (array) => {
-          for (let i = 0; i < array.length; i++) {
-            for (let j = 0; j < array.length - i - 1; j++) {
-              if (E(array[j]).gt(E(array[j + 1]))) {
-                const temp = array[j];
-                array[j] = array[j + 1];
-                array[j + 1] = temp;
-              }
-            }
-          }
-          return array;
-        }
-      },
-      {
-        name: "qtSort",
-        // quick sort lr ptr
-        value: (array) => {
-          if (array.length < 2) {
-            return array;
-          }
-          const pivot = E(array[Math.floor(Math.random() * array.length)]);
-          const left = [];
-          const right = [];
-          const equal = [];
-          for (let val of array) {
-            val = E(val);
-            if (val.lt(pivot)) {
-              left.push(val);
-            } else if (val.gt(pivot)) {
-              right.push(val);
-            } else {
-              equal.push(val);
-            }
-          }
-          return [
-            ...eMath.decimal.qtSort(left),
-            ...equal,
-            ...eMath.decimal.qtSort(right)
-          ];
-        }
-      },
-      {
-        name: "smoothDamp",
-        /**
-        * Smoothly interpolates between the current value and the target value over time
-        * using a smoothing factor and deltaTime.
-        *
-        * @param {E} current - The current value to interpolate from.
-        * @param {E} target - The target value to interpolate towards.
-        * @param {E} smoothing - The smoothing factor controlling the interpolation speed.
-        *                           A higher value results in slower interpolation.
-        * @param {E} deltaTime - The time elapsed since the last frame in seconds.
-        * @returns {E} - The interpolated value between `current` and `target`.
-        */
-        value: (current, target, smoothing, deltaTime) => current.add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)))
-      }
-    ]
-  };
-  {
-    String.prototype.forEach = function(callbackfn) {
-      for (let i = 0; i < this.length; i++) {
-        callbackfn(this[i]);
-      }
-    };
-    String.prototype.forEachAdvanced = function(callbackfn, start, end) {
-      for (let i = start < 0 ? 0 : start; i < (end > this.length ? this.length : end < start ? this.length : end); i++) {
-        callbackfn({
-          value: this[i],
-          index: i
-        });
-      }
-    };
-    String.prototype.toNumber = function() {
-      let output = "";
-      for (let i = 0; i < this.length; i++) {
-        output += this.charCodeAt(i).toString();
-      }
-      return output;
-    };
-    String.prototype.toArray = function() {
-      const output = [];
-      this.forEach(function(char) {
-        output.push(char);
-      });
-      return output;
-    };
-    String.prototype.before = function(index) {
-      let output = "";
-      this.forEachAdvanced(function(char) {
-        output += char.value;
-      }, 0, index);
-      return output;
-    };
-    String.prototype.after = function(index) {
-      let output = "";
-      this.forEachAdvanced(function(char) {
-        output += char.value;
-      }, index, -1);
-      return output;
-    };
-    String.prototype.customSplit = function(index) {
-      const output = [];
-      output.push(this.before(index));
-      output.push(this.after(index));
-      return output;
-    };
-    String.prototype.random = function(qty) {
-      const random = (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max);
-      let output = "";
-      if (qty > 0) {
-        for (let i = 0; i < qty; i++) {
-          output += this.charAt(random(0, this.length));
-        }
-      } else {
-        output = this.charAt(random(0, this.length));
-      }
-      return output;
-    };
-  }
-  Array.prototype.random = function(qty) {
-    const random = (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max);
-    let output = "";
-    if (qty > 0) {
-      for (let i = 0; i < qty; i++) {
-        output += this[random(0, this.length)];
-      }
-    } else {
-      output = this[random(0, this.length)];
-    }
-    return output;
-  };
-  eMath.getFast = function(object, id) {
-    object = JSON.stringify(object);
-    const length = id.toString().replace(/\\/g, "").length;
-    const searchIndex = object.search(id);
-    let output = "";
-    let offset = length + 2;
-    let unclosedQdb = 0;
-    let unclosedQsb = 0;
-    let unclosedQib = 0;
-    let unclosedB = 0;
-    let unclosedCB = 0;
-    function check() {
-      const read = object[searchIndex + offset];
-      if (object[searchIndex + offset - 1] != "\\") {
-        switch (read) {
-          case '"':
-            if (unclosedQdb == 0) {
-              unclosedQdb = 1;
-            } else {
-              unclosedQdb = 0;
-            }
-            break;
-          case "'":
-            if (unclosedQsb == 0) {
-              unclosedQsb = 1;
-            } else {
-              unclosedQsb = 0;
-            }
-            break;
-          case "`":
-            if (unclosedQib == 0) {
-              unclosedQib = 1;
-            } else {
-              unclosedQib = 0;
-            }
-            break;
-          case "[":
-            unclosedB++;
-            break;
-          case "]":
-            unclosedB--;
-            break;
-          case "{":
-            unclosedCB++;
-            break;
-          case "}":
-            unclosedCB--;
-            break;
-        }
-      }
-      output += read;
-      offset++;
-    }
-    check();
-    while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
-      check();
-    }
-    return JSON.parse(output);
-  };
-  eMath.get = function(object, id) {
-    try {
-      for (let i = 0; i < Object.keys(object).length; i++) {
-        if (Object.keys(object)[i] == "sign")
-          break;
-        if (Object.keys(object)[i] == id) {
-          return object[Object.keys(object)[i]];
-        } else if (typeof object[Object.keys(object)[i]] == "object") {
-          const output = Object.get(object[Object.keys(object)[i]], id);
-          if (output != null)
-            return output;
-        } else {
-          continue;
-        }
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-  for (const x of eMath.decimalFunctions) {
-    DecimalClone[x["name"]] = x["value"];
-  }
-  delete eMath.decimalFunctions;
-  function E(x) {
-    return new DecimalClone(x);
-  }
-  DecimalClone.prototype.clone = function() {
-    return this;
-  };
-  DecimalClone.prototype.modular = DecimalClone.prototype.mod = function(other) {
-    other = E(other);
-    if (other.eq(0))
-      return E(0);
-    if (this.sign * other.sign == -1)
-      return this.abs().mod(other.abs()).neg();
-    if (this.sign == -1)
-      return this.abs().mod(other.abs());
-    return this.sub(this.div(other).floor().mul(other));
-  };
-  DecimalClone.prototype.softcap = function(start, power, mode) {
-    let x = this.clone();
-    if (x.gte(start)) {
-      if ([0, "pow"].includes(mode))
-        x = x.div(start).pow(power).mul(start);
-      if ([1, "mul"].includes(mode))
-        x = x.sub(start).div(power).add(start);
-    }
-    return x;
-  };
-  DecimalClone.prototype.toRoman = function(max = 5e3) {
-    let num = this.clone();
-    if (num.gte(max))
-      return num;
-    num = num.toNumber();
-    const digits = String(+num).split(""), key = [
-      "",
-      "C",
-      "CC",
-      "CCC",
-      "CD",
-      "D",
-      "DC",
-      "DCC",
-      "DCCC",
-      "CM",
-      "",
-      "X",
-      "XX",
-      "XXX",
-      "XL",
-      "L",
-      "LX",
-      "LXX",
-      "LXXX",
-      "XC",
-      "",
-      "I",
-      "II",
-      "III",
-      "IV",
-      "V",
-      "VI",
-      "VII",
-      "VIII",
-      "IX"
-    ];
-    let roman = "", i = 3;
-    while (i--) {
-      roman = (key[+digits.pop() + i * 10] || "") + roman;
-    }
-    return Array(+digits.join("") + 1).join("M") + roman;
-  };
-  DecimalClone.prototype.scale = function(s, p, mode, rev = false) {
-    s = E(s);
-    p = E(p);
-    let x = this.clone();
-    if (x.gte(s)) {
-      if ([0, "pow"].includes(mode))
-        x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)));
-      if ([1, "exp"].includes(mode))
-        x = rev ? x.div(s).max(1).log(p).add(s) : DecimalClone.pow(p, x.sub(s)).mul(s);
-    }
-    return x;
-  };
+  // src/format.js
   var formats = (() => {
     const ST_NAMES = [
       null,
@@ -3715,7 +3331,7 @@
           const abbreviationProgress = abbreviationListUnfloored - abbreviationListIndex + 1;
           const abbreviationIndex = Math.floor(abbreviationProgress * abbreviationLength);
           const abbreviation = this.getAbbreviation(abbreviationListIndex, abbreviationProgress);
-          const value = E(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
+          const value = new Decimal(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
           return [abbreviation, value];
         },
         formatElementalPart(abbreviation, n) {
@@ -3725,7 +3341,7 @@
           return `${n} ${abbreviation}`;
         },
         format(value, acc) {
-          if (value.gt(E(118).pow(E(118).pow(E(118).pow(4)))))
+          if (value.gt(new Decimal(118).pow(new Decimal(118).pow(new Decimal(118).pow(4)))))
             return "e" + this.format(value.log10(), acc);
           let log = value.log(118);
           const slog = log.log(118);
@@ -3741,7 +3357,7 @@
           if (parts.length >= max) {
             return parts.map((x) => this.formatElementalPart(x[0], x[1])).join(" + ");
           }
-          const formattedMantissa = E(118).pow(log).toFixed(parts.length === 1 ? 3 : acc);
+          const formattedMantissa = new Decimal(118).pow(log).toFixed(parts.length === 1 ? 3 : acc);
           if (parts.length === 0) {
             return formattedMantissa;
           }
@@ -3753,7 +3369,7 @@
       },
       old_sc: {
         format(ex, acc) {
-          ex = E(ex);
+          ex = new Decimal(ex);
           const e = ex.log10().floor();
           if (e.lt(9)) {
             if (e.lt(3)) {
@@ -3763,16 +3379,16 @@
           } else {
             if (ex.gte("eeee10")) {
               const slog = ex.slog();
-              return (slog.gte(1e9) ? "" : E(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + this.format(slog.floor(), 0);
+              return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + this.format(slog.floor(), 0);
             }
-            const m = ex.div(E(10).pow(e));
+            const m = ex.div(new Decimal(10).pow(e));
             return (e.log10().gte(9) ? "" : m.toFixed(4)) + "e" + this.format(e, 0);
           }
         }
       },
       eng: {
         format(ex, acc) {
-          ex = E(ex);
+          ex = new Decimal(ex);
           const e = ex.log10().floor();
           if (e.lt(9)) {
             if (e.lt(3)) {
@@ -3782,16 +3398,16 @@
           } else {
             if (ex.gte("eeee10")) {
               const slog = ex.slog();
-              return (slog.gte(1e9) ? "" : E(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + this.format(slog.floor(), 0);
+              return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + this.format(slog.floor(), 0);
             }
-            const m = ex.div(E(1e3).pow(e.div(3).floor()));
-            return (e.log10().gte(9) ? "" : m.toFixed(E(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + this.format(e.div(3).floor().mul(3), 0);
+            const m = ex.div(new Decimal(1e3).pow(e.div(3).floor()));
+            return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + this.format(e.div(3).floor().mul(3), 0);
           }
         }
       },
       mixed_sc: {
         format(ex, acc, max) {
-          ex = E(ex);
+          ex = new Decimal(ex);
           const e = ex.log10().floor();
           if (e.lt(303) && e.gte(max))
             return format2(ex, acc, max, "st");
@@ -3802,11 +3418,11 @@
       layer: {
         layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
         format(ex, acc, max) {
-          ex = E(ex);
+          ex = new Decimal(ex);
           const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
           if (layer.lte(0))
             return format2(ex, acc, max, "sc");
-          ex = E(10).pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
+          ex = new Decimal(10).pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
           const meta = layer.div(10).floor();
           const layer_id = layer.toNumber() % 10 - 1;
           return format2(ex, Math.max(4, acc), max, "sc") + " " + (meta.gte(1) ? "meta" + (meta.gte(2) ? "^" + format2(meta, 0, max, "sc") : "") + "-" : "") + (isNaN(layer_id) ? "nanity" : this.layers[layer_id]);
@@ -3834,7 +3450,7 @@
       inf: {
         format(ex, acc, max) {
           let meta = 0;
-          const inf = E(Number.MAX_VALUE);
+          const inf = new Decimal(Number.MAX_VALUE);
           const symbols = ["", "\u221E", "\u03A9", "\u03A8", "\u028A"];
           const symbols2 = ["", "", "m", "mm", "mmm"];
           while (ex.gte(inf)) {
@@ -3851,7 +3467,7 @@
         }
       }
     };
-    const INFINITY_NUM = E(2).pow(1024);
+    const INFINITY_NUM = new Decimal(2).pow(1024);
     const SUBSCRIPT_NUMBERS = "\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089";
     const SUPERSCRIPT_NUMBERS = "\u2070\xB9\xB2\xB3\u2074\u2075\u2076\u2077\u2078\u2079";
     function toSubscript(value) {
@@ -3864,7 +3480,7 @@
       return format2(ex, acc, max, type);
     }
     function format2(ex, acc = 2, max = 9, type = "mixed_sc") {
-      ex = E(ex);
+      ex = new Decimal(ex);
       const neg = ex.lt(0) ? "-" : "";
       if (ex.mag == Infinity)
         return neg + "Infinity";
@@ -3879,7 +3495,7 @@
         case "sc":
           if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
             const e2 = ex.log10().ceil();
-            const m = ex.div(e2.eq(-1) ? E(0.1) : E(10).pow(e2));
+            const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e2));
             const be = e2.mul(-1).max(1).log10().gte(9);
             return neg + (be ? "" : m.toFixed(2)) + "e" + format2(e2, 0, max, "mixed_sc");
           } else if (e.lt(max)) {
@@ -3888,9 +3504,9 @@
           } else {
             if (ex.gte("eeee10")) {
               const slog = ex.slog();
-              return (slog.gte(1e9) ? "" : E(10).pow(slog.sub(slog.floor())).toFixed(2)) + "F" + format2(slog.floor(), 0);
+              return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(2)) + "F" + format2(slog.floor(), 0);
             }
-            const m = ex.div(E(10).pow(e));
+            const m = ex.div(new Decimal(10).pow(e));
             const be = e.log10().gte(9);
             return neg + (be ? "" : m.toFixed(2)) + "e" + format2(e, 0, max, "mixed_sc");
           }
@@ -3910,7 +3526,7 @@
               let ee3 = Math.floor(e3.log(1e3).toNumber());
               if (ee3 < 100)
                 ee3 = Math.max(ee3 - 1, 0);
-              e3 = e3.sub(1).div(E(10).pow(ee3 * 3));
+              e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
               while (e3.gt(0)) {
                 const div1000 = e3.div(1e3).floor();
                 const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
@@ -3926,8 +3542,8 @@
                 ee3++;
               }
             }
-            const m = ex.div(E(10).pow(e3_mul));
-            return neg + (ee.gte(10) ? "" : m.toFixed(E(2).sub(e.sub(e3_mul)).add(1).toNumber()) + " ") + final;
+            const m = ex.div(new Decimal(10).pow(e3_mul));
+            return neg + (ee.gte(10) ? "" : m.toFixed(new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber()) + " ") + final;
           }
         }
         default:
@@ -3946,7 +3562,7 @@
       return rate;
     }
     function formatTime(ex, acc = 2, type = "s") {
-      ex = E(ex);
+      ex = new Decimal(ex);
       if (ex.gte(86400))
         return format2(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
       if (ex.gte(3600) || type == "d")
@@ -3956,72 +3572,72 @@
       return (ex.gte(10) || type != "m" ? "" : "0") + format2(ex, acc, 12, "sc");
     }
     function formatReduction(ex) {
-      ex = E(ex);
-      return format2(E(1).sub(ex).mul(100)) + "%";
+      ex = new Decimal(ex);
+      return format2(new Decimal(1).sub(ex).mul(100)) + "%";
     }
     function formatPercent(ex) {
-      ex = E(ex);
+      ex = new Decimal(ex);
       return format2(ex.mul(100)) + "%";
     }
     function formatMult(ex, acc = 2) {
-      ex = E(ex);
+      ex = new Decimal(ex);
       return ex.gte(1) ? "\xD7" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
     }
     function expMult(a, b, base = 10) {
-      return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : E(a);
+      return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : new Decimal(a);
     }
     function metric(num, type) {
-      num = E(num);
+      num = new Decimal(num);
       const abb = [
         {
           name: "K",
           altName: "Kilo",
-          value: E("1000")
+          value: new Decimal("1000")
         },
         {
           name: "M",
           altName: "Mega",
-          value: E("1e6")
+          value: new Decimal("1e6")
         },
         {
           name: "G",
           altName: "Giga",
-          value: E("1e9")
+          value: new Decimal("1e9")
         },
         {
           name: "T",
           altName: "Tera",
-          value: E("1e12")
+          value: new Decimal("1e12")
         },
         {
           name: "P",
           altName: "Peta",
-          value: E("1e15")
+          value: new Decimal("1e15")
         },
         {
           name: "E",
           altName: "Exa",
-          value: E("1e18")
+          value: new Decimal("1e18")
         },
         {
           name: "Z",
           altName: "Zetta",
-          value: E("1e21")
+          value: new Decimal("1e21")
         },
         {
           name: "Y",
           altName: "Yotta",
-          value: E("1e24")
+          value: new Decimal("1e24")
         },
         {
           name: "R",
           altName: "Ronna",
-          value: E("1e27")
+          value: new Decimal("1e27")
         },
         {
           name: "Q",
           altName: "Quetta",
-          value: E("1e30")
+          value: new Decimal("1e30")
         }
       ];
       for (let i = 0; i < abb.length; i++) {
@@ -4092,19 +3708,253 @@
       ev
     } };
   })();
-  var { format, formatGain } = formats;
-  DecimalClone.prototype.format = function(acc = 2, max = 9) {
-    return format(this.clone(), acc, max);
-  };
-  DecimalClone.format = function(e, acc = 2, max = 9) {
-    return format(e.clone(), acc, max);
-  };
-  DecimalClone.prototype.formatST = function(acc = 2, max = 9, type = "st") {
-    return format(this.clone(), acc, max, type);
-  };
-  DecimalClone.prototype.formatGain = function(gain, mass = false) {
-    return formatGain(this.clone(), gain, mass);
-  };
+  var format_default = formats;
+
+  // src/eMath.ts
+  var { format, formatGain } = format_default;
+  var DecimalClone = Decimal;
+  function E(x) {
+    return new DecimalClone(x);
+  }
+  var eMath = {};
+  var decimalFunctions = [
+    {
+      name: "smoothDamp",
+      /**
+       * Smoothly interpolates between the current value and the target value over time
+       * using a smoothing factor and deltaTime.
+       *
+       * @param {E} current - The current value to interpolate from.
+       * @param {E} target - The target value to interpolate towards.
+       * @param {E} smoothing - The smoothing factor controlling the interpolation speed.
+       *                           A higher value results in slower interpolation.
+       * @param {E} deltaTime - The time elapsed since the last frame in seconds.
+       * @returns {E} - The interpolated value between `current` and `target`.
+       */
+      value: (current, target, smoothing, deltaTime) => current.add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)))
+    },
+    {
+      name: "format",
+      /**
+       * Formats the E instance with a specified accuracy and maximum decimal places.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name format
+       * @param {number} [acc=2] - The desired accuracy (number of significant figures).
+       * @param {number} [max=9] - The maximum number of decimal places to display.
+       * @returns {string} A string representing the formatted E value.
+       */
+      value: function(e, acc = 2, max = 9) {
+        return format(E(e), acc, max);
+      }
+    }
+  ];
+  for (const x of decimalFunctions) {
+    DecimalClone[x["name"]] = x["value"];
+  }
+  var decimalPrototypeFunctions = [
+    {
+      name: "clone",
+      /**
+       * Creates a clone of the E instance.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name clone
+       * @returns {E} A new DecimalClone instance that is a clone of the original.
+       */
+      value: function() {
+        return this;
+      }
+    },
+    {
+      name: "mod",
+      /**
+       * Performs modular arithmetic on the DecimalClone instance.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name modular
+       * @alias mod
+       * @param {E|number|string} other - The number or DecimalClone instance to use for modular arithmetic.
+       * @returns {E} A new DecimalClone instance representing the result of the modular operation.
+       */
+      value: function(other) {
+        other = E(other);
+        if (other.eq(0))
+          return E(0);
+        if (this.sign * other.sign == -1)
+          return this.abs().mod(other.abs()).neg();
+        if (this.sign == -1)
+          return this.abs().mod(other.abs());
+        return this.sub(this.div(other).floor().mul(other));
+      }
+    },
+    {
+      name: "softcap",
+      /**
+       * Applies a soft cap to a DecimalClone value using a specified soft cap function.
+       *
+       * @param {Decimal} start - The value at which the soft cap starts.
+       * @param {number} power - The power or factor used in the soft cap calculation.
+       * @param {string} mode - The soft cap mode. Use "pow" for power soft cap, "mul" for multiplication soft cap,
+       *                       or "exp" for exponential soft cap.
+       * @returns {Decimal} - The DecimalClone value after applying the soft cap.
+       */
+      value: function(start, power, mode) {
+        let x = this.clone();
+        if (x.gte(start)) {
+          if ([0, "pow"].includes(mode))
+            x = x.div(start).pow(power).mul(start);
+          if ([1, "mul"].includes(mode))
+            x = x.sub(start).div(power).add(start);
+        }
+        return x;
+      }
+    },
+    {
+      name: "scale",
+      /**
+      * Scales a currency value using a specified scaling function.
+      *
+      * @param {Decimal} x - The value of the currency to be scaled.
+      * @param {Decimal} s - The value at which scaling starts.
+      * @param {Decimal} p - The scaling factor.
+      * @param {string} mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
+      * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
+      * @returns {Decimal} - The scaled currency value.
+      */
+      value: function(s, p, mode, rev = false) {
+        s = E(s);
+        p = E(p);
+        let x = this.clone();
+        if (x.gte(s)) {
+          if ([0, "pow"].includes(mode))
+            x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)));
+          if ([1, "exp"].includes(mode))
+            x = rev ? x.div(s).max(1).log(p).add(s) : DecimalClone.pow(p, x.sub(s)).mul(s);
+        }
+        return x;
+      }
+    },
+    // Formats
+    {
+      name: "format",
+      /**
+       * Formats the E instance with a specified accuracy and maximum decimal places.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name format
+       * @param {number} [acc=2] - The desired accuracy (number of significant figures).
+       * @param {number} [max=9] - The maximum number of decimal places to display.
+       * @returns {string} A string representing the formatted E value.
+       */
+      value: function(acc = 2, max = 9) {
+        return format(this.clone(), acc, max);
+      }
+    },
+    {
+      name: "formatST",
+      /**
+       * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name formatST
+       * @param {number} [acc=2] - The desired accuracy (number of significant figures).
+       * @param {number} [max=9] - The maximum number of decimal places to display.
+       * @param {string} [type="st"] - The type of format (default standard)
+       * @returns {string} A string representing the formatted E value.
+       */
+      value: function(acc = 2, max = 9, type = "st") {
+        return format(this.clone(), acc, max, type);
+      }
+    },
+    {
+      name: "formatGain",
+      /**
+       * Formats the gain rate using the E instance.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name formatGain
+       * @param {E|number|string} gain - The gain value to compare
+       * @param {boolean} [mass=false] - Indicates whether the gain represents a mass value.
+       * @returns {string} A string representing the formatted gain
+       *
+       * @example
+       * const currency = E(100);
+       * const currencyGain = E(12);
+       * const formatted = currency.formatGain(currencyGain);
+       * console.log(formatted); // should return "(+12/sec)"
+       */
+      value: function(gain, mass = false) {
+        return formatGain(this.clone(), gain, mass);
+      }
+    },
+    {
+      name: "toRoman",
+      /**
+       * Converts the E instance to a Roman numeral representation.
+       *
+       * @function
+       * @memberof E.prototype
+       * @name toRoman
+       * @param {number|E} [max=5000] - Max before it returns the original
+       * @returns {string|E} A string representing the Roman numeral equivalent of the E value,
+       * or the original E instance if it is greater than or equal to 5000.
+       */
+      value: function(max) {
+        max = max ? max : 5e3;
+        let num = this.clone();
+        if (num.gte(max))
+          return num;
+        num = num.toNumber();
+        const digits = String(+num).split(""), key = [
+          "",
+          "C",
+          "CC",
+          "CCC",
+          "CD",
+          "D",
+          "DC",
+          "DCC",
+          "DCCC",
+          "CM",
+          "",
+          "X",
+          "XX",
+          "XXX",
+          "XL",
+          "L",
+          "LX",
+          "LXX",
+          "LXXX",
+          "XC",
+          "",
+          "I",
+          "II",
+          "III",
+          "IV",
+          "V",
+          "VI",
+          "VII",
+          "VIII",
+          "IX"
+        ];
+        let roman = "", i = 3;
+        while (i--) {
+          roman = (key[+digits.pop() + i * 10] || "") + roman;
+        }
+        return Array(+digits.join("") + 1).join("M") + roman;
+      }
+    }
+  ];
+  for (const x of decimalPrototypeFunctions) {
+    DecimalClone.prototype[x["name"]] = x["value"];
+  }
   Object.getOwnPropertyNames(DecimalClone).forEach((value) => {
     if (value.match(/^(length|constructor|prototype|name)$/)) {
       return;
@@ -4113,34 +3963,32 @@
     E[value] = DecimalClone[value];
   });
 
-  // src/classes/boost.js
+  // src/classes/boost.ts
   var boost = class {
     /**
      * Constructs a new boost manager.
      *
      * @constructor
      * @param {number} [baseEffect] - The base effect value to which boosts are applied.
-     * @param {function} pointer - returns Game.classes.boost
-     * @param {...Object} boosts - An array of boost objects to initialize with.
+     * @param {...boostsObject} boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect = 1, pointer, ...boosts) {
-      this.boost = boosts;
-      this.pointer = pointer;
+    constructor(baseEffect = 1, boosts) {
+      this.boostArray = boosts;
       this.baseEffect = E(baseEffect);
     }
     /**
      * Gets a boost object by its ID.
      *
      * @param {string} id - The ID of the boost to retrieve.
-     * @returns {Object|null} The boost object if found, or null if not found.
+     * @returns {boostsObject|null} The boost object if found, or null if not found.
      */
     bGet(id) {
-      let output = null;
-      for (let i = 0; i < this.boost.length; i++) {
-        if (i == this.boost.length)
+      let output;
+      for (let i = 0; i < this.boostArray.length; i++) {
+        if (i === this.boostArray.length)
           break;
-        if (id == this.boost[i].id) {
-          output = this.boost[i];
+        if (id === this.boostArray[i].id) {
+          output = this.boostArray[i];
           output["index"] = i;
         }
       }
@@ -4152,7 +4000,7 @@
      * @param {string} id - The ID of the boost to remove.
      */
     bRemove(id) {
-      delete this.bGet(id);
+      delete this.boostArray[this.bGet(id).index];
     }
     /**
      * Sets or updates a boost with the given parameters.
@@ -4163,26 +4011,26 @@
      * @param {function} value - The value of the boost (function).
      * @param {number} order - The order of the boost (higher order are go first)
      */
-    bSet(id, name, desc, value, order) {
+    bSet(id, name, desc, type, value, order) {
       const bCheck = this.bGet(id);
       if (!bCheck) {
-        this.boost.push({ id, name, desc, value, order });
+        this.boostArray.push({ id, name, desc, type, value, order });
       } else {
-        this.boost[bCheck.index] = { id, name, desc, value, order };
+        this.boostArray[bCheck.index] = { id, name, desc, type, value, order };
       }
     }
     /**
      * Sets or updates multiple boosts with advanced parameters.
      *
-     * @param {...Object} x - Boost objects to set or update.
+     * @param {...boostsObject} x - boost objects to set or update.
      */
     bSetAdvanced(...x) {
       for (let i = 0; i < x.length; i++) {
         if (!this.bGet(x[i].id)) {
-          this.boost = this.boost.concat(x[i]);
+          this.boostArray = this.boostArray.concat(x[i]);
         } else {
           console.log(i);
-          this.boost[this.bGet(x[i].id).index] = x[i];
+          this.boostArray[this.bGet(x[i].id).index] = x[i];
         }
       }
     }
@@ -4194,7 +4042,7 @@
      */
     calculate(base = this.baseEffect) {
       let output = E(base);
-      const boosts = this.boost;
+      const boosts = this.boostArray;
       boosts.sort((a, b) => a.order - b.order);
       for (let i = 0; i < boosts.length; i++) {
         output = boosts[i].value(output);
@@ -4386,7 +4234,7 @@
     }
   };
 
-  // src/classes/attribute.js
+  // src/classes/attribute.ts
   var attribute = class {
     /**
      * Constructs a static attribute with an initial effect.
@@ -4412,19 +4260,158 @@
     }
   };
 
+  // src/classes/grid.ts
+  var gridCell = class {
+    /**
+     * Initializes a new instance of the grid cell.
+     * @constructor
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     */
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+    /**
+     * Sets the value of a property on the cell.
+     * @param {string} name - The name of the property.
+     * @param {any} value - The value to set.
+     * @returns {any} - The set value.
+     */
+    setValue(name, value) {
+      this[name] = value;
+      return value;
+    }
+    /**
+     * Calculates the distance from the cell to a specified point.
+     * @param {number} x - The x-coordinate of the target point.
+     * @param {number} y - The y-coordinate of the target point.
+     * @returns {number} - The distance between the cell and the target point.
+     */
+    getDistance(x, y) {
+      return Math.abs(Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)));
+    }
+  };
+  var grid = class {
+    // Add this index signature
+    /**
+     * Initializes a new instance of the grid.
+     * @constructor
+     * @param {number} x_size - The size of the grid along the x-axis.
+     * @param {number} y_size - The size of the grid along the y-axis.
+     */
+    constructor(x_size, y_size) {
+      this.x_size = x_size;
+      this.y_size = y_size;
+      for (let a = 0; a < y_size; a++) {
+        this[a] = [];
+        for (let b = 0; b < x_size; b++) {
+          this[a][b] = new gridCell(b, a);
+        }
+      }
+    }
+    /**
+     * Gets an array containing all cells in the grid.
+     * @returns {gridCell[]} - An array of all cells.
+     */
+    all() {
+      const output = [];
+      for (let a = 0; a < this.y_size; a++) {
+        for (let b = 0; b < this.x_size; b++) {
+          output.push(this[a][b]);
+        }
+      }
+      return output;
+    }
+    /**
+     * Gets an array containing all cells that have the same x coordinate.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} x - The x coordinate to check.
+     */
+    allX(x) {
+      const output = [];
+      for (let i = 0; i < this.y_size; i++) {
+        output.push(this[i][x]);
+      }
+      return output;
+    }
+    /**
+     * Gets an array containing all cells that have the same y coordinate.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} y - The y coordinate to check.
+     */
+    allY(y) {
+      const output = [];
+      for (let i = 0; this.x_size; i++) {
+        output.push(this[y][i]);
+      }
+      return output;
+    }
+    /**
+     * Gets a cell.
+     * @returns {gridCell} - The cell.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    getCell(x, y) {
+      return this[y][x];
+    }
+    /**
+     * Gets an array containing all cells adjacent to a specific cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    getAdjacent(x, y) {
+      const output = [];
+      output[0] = this.getCell(x, y + 1);
+      output[1] = this.getCell(x + 1, y);
+      output[2] = this.getCell(x, y - 1);
+      output[3] = this.getCell(x - 1, y + 1);
+      return output;
+    }
+    /**
+     * Gets an array containing all cells diagonal from a specific cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    getDiagonal(x, y) {
+      const output = [];
+      output[0] = this.getCell(x - 1, y + 1);
+      output[1] = this.getCell(x + 1, y + 1);
+      output[2] = this.getCell(x + 1, y - 1);
+      output[3] = this.getCell(x - 1, y - 1);
+      return output;
+    }
+    /**
+     * Gets an array containing all cells that surround a cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    getEncircling(x, y) {
+      return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
+    }
+  };
+
   // src/index.js
-  var eMathClone = { ...eMath, ...{
-    E,
-    classes: {
-      boost,
-      currency,
-      currencyStatic,
-      attribute
-    },
-    formats
-  } };
+  var eMath2 = {
+    ...eMath,
+    ...{
+      E,
+      classes: {
+        boost,
+        currency,
+        currencyStatic,
+        attribute,
+        grid
+      },
+      formats: format_default
+    }
+  };
   if (typeof window != "undefined") {
-    window["eMath"] = eMathClone;
+    window["eMath"] = eMath2;
   }
-  var src_default = eMathClone;
+  var src_default = eMath2;
 })();

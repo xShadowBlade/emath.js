@@ -8,6 +8,8 @@
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
+	"plugins": ["@typescript-eslint"],
+	"parser": "@typescript-eslint/parser",
 	"rules": {
 		"arrow-spacing": ["warn", { "before": true, "after": true }],
 		"comma-dangle": ["warn", "always-multiline"],
