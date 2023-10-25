@@ -18,7 +18,7 @@ interface upgrade {
     cost?: E, // Deprecated
     costScaling: (input: E) => E,
     maxLevel?: E
-    effect: (level?: E) => any,
+    effect: (level?: E, context?: any) => any,
 
     // Below are types that are automatically added
     getLevel?: () => E,
@@ -65,7 +65,7 @@ class currencyStatic {
      * An array that represents upgrades, their costs, and their effects.
      * @type {Array}
      */
-    public upgrades: any[];
+    public upgrades: upgrade[];
 
     /**
      * A function that returns the pointer of the data
@@ -117,7 +117,8 @@ class currencyStatic {
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
     public addUpgrade (upgrades: upgrade[], runEffectInstantly: boolean = true): void {
-        function pointerAddUpgrade (upgrades1: any) {
+        function pointerAddUpgrade (upgrades1: upgrade) {
+            // @ts-ignore
             upgrades1 = upgrades1.level
                 ? { level: upgrades1.level }
                 : { level: E(1) };
@@ -144,10 +145,12 @@ class currencyStatic {
      * @returns {array} - [amount, cost]
      */
     public calculateUpgrade (
-        id: any,
-        target: any,
+        id: string | number,
+        target: E,
         el: boolean = false,
     ): [E, E] | E | Boolean {
+        target = E(target);
+
         /**
          * Calculates the sum of 'f(n)' from 0 to 'b'.
          *
@@ -265,7 +268,7 @@ class currencyStatic {
      */
     public buyUpgrade (id: string | number, target: E): boolean {
         // Implementation logic to find the upgrade based on ID or position
-        let upgrade;
+        let upgrade: upgrade;
         if (typeof id == "number") {
             upgrade = this.upgrades[id];
         } else if (typeof id == "string") {
