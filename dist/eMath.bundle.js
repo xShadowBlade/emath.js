@@ -3972,7 +3972,8 @@
      * @param {number} [baseEffect] - The base effect value to which boosts are applied.
      * @param {...boostsObject} boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect = 1, boosts) {
+    constructor(baseEffect, boosts) {
+      baseEffect = baseEffect ? baseEffect : 1;
       this.boostArray = boosts;
       this.baseEffect = E(baseEffect);
     }
@@ -4051,7 +4052,7 @@
     }
   };
 
-  // src/classes/currency.js
+  // src/classes/currency.ts
   var currency = class {
     /**
      * Constructs a new currency object with an initial value of 0 and a boost.
@@ -4080,13 +4081,15 @@
      * @returns {E}
      */
     gain(dt = 1e3) {
-      this.pointer().value = this.pointer().value.add(this.boost.calculate().mul(E(dt).div(1e3)));
-      return this.value;
+      this.pointer().value = this.pointer().value.add(
+        this.boost.calculate().mul(E(dt).div(1e3))
+      );
+      return this.pointer().value;
     }
     /**
      * Create new upgrades
      *
-     * @typedef {Object} CurrencyUpgrade
+     * @typedef {Object} currencyUpgrade
      * @property {string} [id] - id
      * @property {string} [name] - name
      * @property {E} cost - The cost of the first upgrade
@@ -4094,7 +4097,7 @@
      * @property {E} maxLevel - Max level
      * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
      *
-     * @param {Array<CurrencyUpgrade>} upgrades - An array of upgrade objects.
+     * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
     addUpgrade(upgrades, runEffectInstantly = true) {
@@ -4108,7 +4111,7 @@
         upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
         upgrades[i].setLevel = (n) => this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n);
         if (runEffectInstantly)
-          upgrades[i].effect(upgrades.level);
+          upgrades[i].effect(upgrades[i].level);
       }
       this.upgrades = this.upgrades.concat(upgrades);
     }
@@ -4148,9 +4151,9 @@
           }
           return [left, calculateSum(f, left.sub(1))];
         } else {
-          let left = new E(0);
+          let left = E(0);
           let right = target;
-          let result = new E(-1);
+          let result = E(-1);
           while (left.lessThanOrEqualTo(right)) {
             const mid = left.plus(right).dividedBy(2).floor();
             const value = f(mid);
@@ -4213,7 +4216,10 @@
       if (!upgrade) {
         return false;
       }
-      const maxAffordableQuantity = this.calculateUpgrade(id, target);
+      const maxAffordableQuantity = this.calculateUpgrade(
+        id,
+        target
+      );
       if (!Array.isArray(maxAffordableQuantity) || maxAffordableQuantity.length !== 2) {
         return false;
       }

@@ -3,6 +3,30 @@ import { E } from "../eMath";
 import { boost } from "./boost";
 
 /**
+ * Upgrades
+ *
+ * @property {string} [id] - id
+ * @property {string} [name] - name
+ * @property {E} cost - The cost of the first upgrade
+ * @property {function} costScaling - Scalar function for cost with param level
+ * @property {E} [maxLevel] - Max level
+ * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
+ */
+interface upgrade {
+    id?: string | number,
+    name?: string,
+    cost?: E, // Deprecated
+    costScaling: (input: E) => E,
+    maxLevel?: E
+    effect: (level?: E) => any,
+
+    // Below are types that are automatically added
+    getLevel?: () => E,
+    setLevel?: (n: E) => void,
+    level?: E,
+}
+
+/**
  * Represents the frontend READONLY for a currency. (unless you want to hack in currency or smth)
  *
  * @class
@@ -18,7 +42,7 @@ class currency {
      * An array that represents upgrades and their levels.
      * @type {Array}
      */
-    public upgrades: any[];
+    public upgrades: upgrade[];
 
     /**
      * Constructs a new currency object with an initial value of 0 and a boost.
@@ -47,7 +71,7 @@ class currencyStatic {
      * A function that returns the pointer of the data
      * @type {function}
      */
-    public pointer: Function;
+    public pointer: () => currency;
 
     /**
      * A boost object that affects the currency gain.
@@ -59,7 +83,7 @@ class currencyStatic {
      * @constructor
      * @param {function} pointer - returns Game.classes.currency
      */
-    constructor (pointer: Function) {
+    constructor (pointer: () => currency) {
         this.upgrades = [];
         this.pointer = pointer;
         this.boost = new boost(1);
@@ -75,7 +99,7 @@ class currencyStatic {
         this.pointer().value = this.pointer().value.add(
             this.boost.calculate().mul(E(dt).div(1000)),
         );
-        return this.value;
+        return this.pointer().value;
     }
 
     /**
@@ -92,7 +116,7 @@ class currencyStatic {
      * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
-    public addUpgrade (upgrades: any[], runEffectInstantly: boolean = true): void {
+    public addUpgrade (upgrades: upgrade[], runEffectInstantly: boolean = true): void {
         function pointerAddUpgrade (upgrades1: any) {
             upgrades1 = upgrades1.level
                 ? { level: upgrades1.level }
@@ -107,7 +131,7 @@ class currencyStatic {
                 (this.pointer().upgrades[i].level = this.pointer().upgrades[
                     i
                 ].level.add(n));
-            if (runEffectInstantly) upgrades[i].effect(upgrades.level);
+            if (runEffectInstantly) upgrades[i].effect(upgrades[i].level);
         }
         this.upgrades = this.upgrades.concat(upgrades);
     }
@@ -161,6 +185,7 @@ class currencyStatic {
 
                 // Perform binary search within the estimated range
                 while (left.lt(right)) {
+                    // @ts-ignore
                     const mid: E = E.floor(left.add(right).div(2));
                     const sum: E = calculateSum(f, mid);
 
@@ -260,6 +285,7 @@ class currencyStatic {
         }
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
+        // @ts-ignore
         const maxAffordableQuantity: [E, E] | E | boolean = this.calculateUpgrade(
             id,
             target,

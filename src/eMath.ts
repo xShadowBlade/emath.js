@@ -228,5 +228,15 @@ Object.getOwnPropertyNames(DecimalClone).forEach((value) => {
 });
 
 // eslint-disable-next-line no-redeclare
-type E = Decimal
+type E = Decimal;
+// & {
+//     clone (): Decimal;
+//     mod (other: Decimal | number | string): Decimal;
+//     softcap (start: Decimal, power: number, mode: string): Decimal;
+//     scale (s: Decimal, p: Decimal, mode: string, rev?: boolean): Decimal;
+//     format (acc?: number, max?: number): string;
+//     formatST (acc?: number, max?: number, type?: string): string;
+//     formatGain (gain: Decimal | number | string, mass?: boolean): string;
+//     toRoman (max?: number | Decimal): string | Decimal;
+// };
 export { eMath, E, formats };
