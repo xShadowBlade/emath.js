@@ -118,8 +118,8 @@ class currencyStatic {
      * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
-    public addUpgrade (upgrades: upgrade[], runEffectInstantly: boolean = true): void {
-        function pointerAddUpgrade (upgrades1: upgrade) {
+    public addUpgrade (this: currencyStatic, upgrades: upgrade[], runEffectInstantly: boolean = true): void {
+        function pointerAddUpgrade (this: currencyStatic, upgrades1: upgrade) {
             // @ts-ignore
             upgrades1 = upgrades1.level
                 ? { level: upgrades1.level }
@@ -131,9 +131,7 @@ class currencyStatic {
             pointerAddUpgrade(upgrades[i]);
             upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
             upgrades[i].setLevel = (n: E) =>
-                (this.pointer().upgrades[i].level = this.pointer().upgrades[
-                    i
-                ].level.add(n));
+                (this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n));
             if (runEffectInstantly) upgrades[i].effect(upgrades[i].level);
         }
         this.upgrades = this.upgrades.concat(upgrades);
@@ -233,7 +231,7 @@ class currencyStatic {
         // console.log(findHighestB((n) => n.mul(n), 100))
 
         // Implementation logic to find the upgrade based on ID or position
-        let upgrade;
+        let upgrade: upgrade;
         if (typeof id == "number") {
             upgrade = this.upgrades[id];
         } else if (typeof id == "string") {
@@ -251,7 +249,7 @@ class currencyStatic {
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
         return findHighestB(
-            (level) => upgrade.costScaling(upgrade.getLevel().add(level)),
+            (level: number | E) => upgrade.costScaling(upgrade.getLevel().add(level)),
             this.pointer().value,
         );
     }
@@ -270,24 +268,25 @@ class currencyStatic {
      */
     public buyUpgrade (id: string | number, target: E): boolean {
         // Implementation logic to find the upgrade based on ID or position
-        let upgrade: upgrade;
-        if (typeof id == "number") {
-            upgrade = this.upgrades[id];
-        } else if (typeof id == "string") {
-            for (let i = 0; i < this.upgrades.length; i++) {
-                if (this.upgrades[i].id === id) {
-                    upgrade = this.upgrades[i];
-                    break;
+        let upgrade: upgrade | boolean = (() => {
+            let output1: upgrade | boolean;
+            if (typeof id == "number") {
+                output1 = this.upgrades[id];
+            } else if (typeof id == "string") {
+                for (let i = 0; i < this.upgrades.length; i++) {
+                    if (this.upgrades[i].id === id) {
+                        output1 = this.upgrades[i];
+                        break;
+                    }
                 }
+            } else {
+                output1 = false;
             }
-        } else {
-            return false;
-        }
+            // @ts-ignore
+            return output1;
+        })();
 
-        // Check if an upgrade object was found
-        if (!upgrade) {
-            return false;
-        }
+        if (typeof upgrade === "boolean") return false;
 
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
         // @ts-ignore

@@ -4235,22 +4235,24 @@ var currencyStatic = class {
    *
    */
   buyUpgrade(id, target) {
-    let upgrade;
-    if (typeof id == "number") {
-      upgrade = this.upgrades[id];
-    } else if (typeof id == "string") {
-      for (let i = 0; i < this.upgrades.length; i++) {
-        if (this.upgrades[i].id === id) {
-          upgrade = this.upgrades[i];
-          break;
+    let upgrade = (() => {
+      let output1;
+      if (typeof id == "number") {
+        output1 = this.upgrades[id];
+      } else if (typeof id == "string") {
+        for (let i = 0; i < this.upgrades.length; i++) {
+          if (this.upgrades[i].id === id) {
+            output1 = this.upgrades[i];
+            break;
+          }
         }
+      } else {
+        output1 = false;
       }
-    } else {
+      return output1;
+    })();
+    if (typeof upgrade === "boolean")
       return false;
-    }
-    if (!upgrade) {
-      return false;
-    }
     const maxAffordableQuantity = this.calculateUpgrade(
       id,
       target
