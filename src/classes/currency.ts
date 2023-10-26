@@ -12,19 +12,26 @@ import { boost } from "./boost.ts";
  * @property {E} [maxLevel] - Max level
  * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
  */
-interface upgrade {
+interface upgradeInit {
     /* eslint-disable no-unused-vars */
     id?: string | number,
     name?: string,
     cost?: E, // Deprecated
     costScaling: (input: E) => E,
-    maxLevel?: E
+    maxLevel: E
     effect: (level?: E, context?: any) => any,
 
     // Below are types that are automatically added
-    getLevel?: () => E,
-    setLevel?: (n: E) => void,
-    level?: E,
+    level?: E;
+
+    /* eslint-enable */
+}
+interface upgrade extends upgradeInit {
+    /* eslint-disable no-unused-vars */
+    // Below are types that are automatically added
+    getLevel: () => E;
+    setLevel: (n: E) => void;
+    level: E;
     /* eslint-enable */
 }
 
@@ -118,23 +125,32 @@ class currencyStatic {
      * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
-    public addUpgrade (this: currencyStatic, upgrades: upgrade[], runEffectInstantly: boolean = true): void {
-        function pointerAddUpgrade (this: currencyStatic, upgrades1: upgrade) {
+    public addUpgrade (upgrades: upgradeInit[], runEffectInstantly: boolean = true): void {
+        const pointerAddUpgrade = (upgrades1: upgradeInit) => {
             // @ts-ignore
-            upgrades1 = upgrades1.level
+
+            // If level exists, add it else default to 1
+            const upgrades2: upgrade = upgrades1.level
                 ? { level: upgrades1.level }
                 : { level: E(1) };
-            this.pointer().upgrades.push(upgrades1);
+            this.pointer().upgrades.push(upgrades2);
             return upgrades1;
-        }
+        };
+
+        // Adds standard
+        const upgradesDefault: upgrade[] = [];
         for (let i = 0; i < upgrades.length; i++) {
-            pointerAddUpgrade(upgrades[i]);
-            upgrades[i].getLevel = () => this.pointer().upgrades[i].level;
-            upgrades[i].setLevel = (n: E) =>
-                (this.pointer().upgrades[i].level = this.pointer().upgrades[i].level.add(n));
-            if (runEffectInstantly) upgrades[i].effect(upgrades[i].level);
+            const upgrade = pointerAddUpgrade(upgrades[i]);
+            // @ts-ignore
+            upgrade.getLevel = () => this.pointer().upgrades[i].level ?? E(0);
+            // @ts-ignore
+            upgrade.setLevel = (n: E) => this.pointer().upgrades[i].level = this.pointer().upgrades[i].level?.add(n) ?? n;
+            if (runEffectInstantly) upgrade.effect(upgrade.level);
+            // @ts-ignore
+            upgradesDefault.push(upgrade);
         }
-        this.upgrades = this.upgrades.concat(upgrades);
+
+        this.upgrades = this.upgrades.concat(upgradesDefault);
     }
     /**
      * Calculates the cost and how many upgrades you can buy
@@ -268,7 +284,7 @@ class currencyStatic {
      */
     public buyUpgrade (id: string | number, target: E): boolean {
         // Implementation logic to find the upgrade based on ID or position
-        let upgrade: upgrade | boolean = (() => {
+        const upgrade: upgrade | boolean = (() => {
             let output1: upgrade | boolean;
             if (typeof id == "number") {
                 output1 = this.upgrades[id];
