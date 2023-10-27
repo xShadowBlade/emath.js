@@ -1,6 +1,6 @@
 /* global it describe */
 import { ok } from "assert";
-import eMath from "../src/index.js";
+import eMath from "../dist/eMath.mjs";
 const { E } = eMath;
 describe("currency", function () {
     describe("#new()", function () {
