@@ -1,82 +1,101 @@
 declare module "format" {
-    export default formats;
-    namespace formats {
-        export { toSubscript };
-        export { toSuperscript };
-        export { formatST };
-        export { format };
-        export { formatGain };
-        export { formatTime };
-        export { formatReduction };
-        export { formatPercent };
-        export { formatMult };
-        export { expMult };
-        export { metric };
-        export { ev };
-        export namespace omega {
-            namespace config {
-                let greek: string;
-                let infinity: string;
-            }
-            function format(value: any): any;
-        }
-        export namespace omega_short {
-            export namespace config_1 {
-                let greek_1: string;
-                export { greek_1 as greek };
-                let infinity_1: string;
-                export { infinity_1 as infinity };
-            }
-            export { config_1 as config };
-            export function format(value: any): any;
-        }
-        export namespace elemental {
-            export namespace config_2 {
-                let element_lists: string[][];
-            }
-            export { config_2 as config };
-            export function getOffset(group: any): number;
-            export function getAbbreviation(group: any, progress: any): string;
-            export function beyondOg(x: any): string;
-            export function abbreviationLength(group: any): number;
-            export function getAbbreviationAndValue(x: any): (string | Decimal)[];
-            export function formatElementalPart(abbreviation: any, n: any): any;
-            export function format(value: any, acc: any): any;
-        }
-        export namespace old_sc {
-            function format(ex: any, acc: any): any;
-        }
-        export namespace eng {
-            function format(ex: any, acc: any): any;
-        }
-        export namespace mixed_sc {
-            function format(ex: any, acc: any, max: any): any;
-        }
-        export namespace layer {
-            let layers: string[];
-            function format(ex: any, acc: any, max: any): any;
-        }
-        export namespace standard {
-            function tier1(x: any): string;
-            function tier2(x: any): string;
-        }
-        export namespace inf {
-            function format(ex: any, acc: any, max: any): any;
-        }
-    }
-    function toSubscript(value: any): any;
-    function toSuperscript(value: any): any;
-    function formatST(ex: any, acc?: number, max?: number, type?: string): any;
-    function format(ex: any, acc?: number, max?: number, type?: string): any;
-    function formatGain(amt: any, gain: any): string;
-    function formatTime(ex: any, acc?: number, type?: string): any;
-    function formatReduction(ex: any): string;
-    function formatPercent(ex: any): string;
-    function formatMult(ex: any, acc?: number): string;
-    function expMult(a: any, b: any, base?: number): Decimal;
-    function metric(num: any, type: any): any;
-    function ev(num: any, c2?: boolean): string;
+    /**
+     * MIT License
+     *
+     * Copyright (c) 2023 MrRedShark77
+     *
+     * Permission is hereby granted, free of charge, to any person obtaining a copy
+     * of this software and associated documentation files (the "Software"), to deal
+     * in the Software without restriction, including without limitation the rights
+     * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+     * copies of the Software, and to permit persons to whom the Software is
+     * furnished to do so, subject to the following conditions:
+     *
+     * The above copyright notice and this permission notice shall be included in all
+     * copies or substantial portions of the Software.
+     *
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+     * SOFTWARE.
+     */
     import Decimal from "break_eternity.js";
+    function toSubscript(value: number): string;
+    function toSuperscript(value: number): string;
+    function formatST(ex: number | Decimal | string, acc?: number, max?: number, type?: string): string;
+    function format(ex: number | Decimal | string, acc?: number, max?: number, type?: string): string;
+    function formatGain(amt: Decimal, gain: Decimal): string;
+    function formatTime(ex: number | Decimal | string, acc?: number, type?: string): string;
+    function formatReduction(ex: number | Decimal | string): string;
+    function formatPercent(ex: number | Decimal | string): string;
+    function formatMult(ex: number | Decimal | string, acc?: number): string;
+    function expMult(a: number | Decimal | string, b: number | Decimal | string, base?: number): Decimal;
+    function metric(num: number | Decimal | string, type: number): string;
+    function ev(num: number | Decimal | string, c2?: boolean): string;
+    const _default: {
+        toSubscript: typeof toSubscript;
+        toSuperscript: typeof toSuperscript;
+        formatST: typeof formatST;
+        format: typeof format;
+        formatGain: typeof formatGain;
+        formatTime: typeof formatTime;
+        formatReduction: typeof formatReduction;
+        formatPercent: typeof formatPercent;
+        formatMult: typeof formatMult;
+        expMult: typeof expMult;
+        metric: typeof metric;
+        ev: typeof ev;
+        omega: {
+            config: {
+                greek: string;
+                infinity: string;
+            };
+            format(value: Decimal): string;
+        };
+        omega_short: {
+            config: {
+                greek: string;
+                infinity: string;
+            };
+            format(value: Decimal): string;
+        };
+        elemental: {
+            config: {
+                element_lists: string[][];
+            };
+            getOffset(group: number): number;
+            getAbbreviation(group: number, progress: number): string;
+            beyondOg(x: number): string;
+            abbreviationLength(group: number): number;
+            getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
+            formatElementalPart(abbreviation: string, n: Decimal): string;
+            format(value: Decimal, acc: number): string;
+        };
+        old_sc: {
+            format(ex: string | number | Decimal, acc: number): string;
+        };
+        eng: {
+            format(ex: string | number | Decimal, acc: number): string;
+        };
+        mixed_sc: {
+            format(ex: string | number | Decimal, acc: number, max: number): string;
+        };
+        layer: {
+            layers: string[];
+            format(ex: string | number | Decimal, acc: number, max: number): string;
+        };
+        standard: {
+            tier1(x: number): string;
+            tier2(x: number): string;
+        };
+        inf: {
+            format(ex: string | number | Decimal, acc: number, max: number): string;
+        };
+    };
+    export default _default;
 }
 declare module "eMath" {
     import Decimal from "break_eternity.js";
@@ -130,7 +149,7 @@ declare module "classes/boost" {
          * @param {number} [baseEffect] - The base effect value to which boosts are applied.
          * @param {...boostsObject} boosts - An array of boost objects to initialize with.
          */
-        constructor(baseEffect?: number, boosts?: boostsObject[]);
+        constructor(baseEffect?: number | E, boosts?: boostsObject[]);
         /**
          * Gets a boost object by its ID.
          *
@@ -451,63 +470,63 @@ declare module "index" {
             grid: typeof grid;
         };
         formats: {
-            toSubscript: (value: any) => any;
-            toSuperscript: (value: any) => any;
-            formatST: (ex: any, acc?: number, max?: number, type?: string) => any;
-            format: (ex: any, acc?: number, max?: number, type?: string) => any;
-            formatGain: (amt: any, gain: any) => string;
-            formatTime: (ex: any, acc?: number, type?: string) => any;
-            formatReduction: (ex: any) => string;
-            formatPercent: (ex: any) => string;
-            formatMult: (ex: any, acc?: number) => string;
-            expMult: (a: any, b: any, base?: number) => import("break_eternity.js").default;
-            metric: (num: any, type: any) => any;
-            ev: (num: any, c2?: boolean) => string;
+            toSubscript: (value: number) => string;
+            toSuperscript: (value: number) => string;
+            formatST: (ex: string | number | import("break_eternity.js").default, acc?: number, max?: number, type?: string) => string;
+            format: (ex: string | number | import("break_eternity.js").default, acc?: number, max?: number, type?: string) => string;
+            formatGain: (amt: import("break_eternity.js").default, gain: import("break_eternity.js").default) => string;
+            formatTime: (ex: string | number | import("break_eternity.js").default, acc?: number, type?: string) => string;
+            formatReduction: (ex: string | number | import("break_eternity.js").default) => string;
+            formatPercent: (ex: string | number | import("break_eternity.js").default) => string;
+            formatMult: (ex: string | number | import("break_eternity.js").default, acc?: number) => string;
+            expMult: (a: string | number | import("break_eternity.js").default, b: string | number | import("break_eternity.js").default, base?: number) => import("break_eternity.js").default;
+            metric: (num: string | number | import("break_eternity.js").default, type: number) => string;
+            ev: (num: string | number | import("break_eternity.js").default, c2?: boolean) => string;
             omega: {
                 config: {
                     greek: string;
                     infinity: string;
                 };
-                format(value: any): any;
+                format(value: import("break_eternity.js").default): string;
             };
             omega_short: {
                 config: {
                     greek: string;
                     infinity: string;
                 };
-                format(value: any): any;
+                format(value: import("break_eternity.js").default): string;
             };
             elemental: {
                 config: {
                     element_lists: string[][];
                 };
-                getOffset(group: any): number;
-                getAbbreviation(group: any, progress: any): string;
-                beyondOg(x: any): string;
-                abbreviationLength(group: any): number;
-                getAbbreviationAndValue(x: any): (string | import("break_eternity.js").default)[];
-                formatElementalPart(abbreviation: any, n: any): any;
-                format(value: any, acc: any): any;
+                getOffset(group: number): number;
+                getAbbreviation(group: number, progress: number): string;
+                beyondOg(x: number): string;
+                abbreviationLength(group: number): number;
+                getAbbreviationAndValue(x: import("break_eternity.js").default): (string | import("break_eternity.js").default)[];
+                formatElementalPart(abbreviation: string, n: import("break_eternity.js").default): string;
+                format(value: import("break_eternity.js").default, acc: number): string;
             };
             old_sc: {
-                format(ex: any, acc: any): any;
+                format(ex: string | number | import("break_eternity.js").default, acc: number): string;
             };
             eng: {
-                format(ex: any, acc: any): any;
+                format(ex: string | number | import("break_eternity.js").default, acc: number): string;
             };
             mixed_sc: {
-                format(ex: any, acc: any, max: any): any;
+                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
             };
             layer: {
                 layers: string[];
-                format(ex: any, acc: any, max: any): any;
+                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
             };
             standard: {
-                tier1(x: any): string;
-                tier2(x: any): string;
+                tier1(x: number): string;
+                tier2(x: number): string;
             };
             inf: {
-                format(ex: any, acc: any, max: any): any;
+                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
             };
         };
     };

@@ -16,7 +16,7 @@
         "./dist/eMath.min.js": "./dist/eMath.min.js"
     },
     "scripts": {
-        "build": "run-p build:bundle build:minify build:esm build:cjs",
+        "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
         "build:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/eMath.bundle.js",
         "build:minify": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/eMath.min.js",
         "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/eMath.mjs",

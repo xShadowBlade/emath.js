@@ -185,7 +185,7 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * const formatted = currency.formatGain(currencyGain);
          * console.log(formatted); // should return "(+12/sec)"
          */
-        value: function (gain: Decimal | number | string): string { return formatGain(this.clone(), gain); },
+        value: function (gain: Decimal): string { return formatGain(this.clone(), gain); },
     },
     {
         name: "toRoman",

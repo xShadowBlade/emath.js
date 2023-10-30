@@ -1,3 +1,15 @@
+/**
+ * The main eMath module.
+ * @module eMath
+ */
+
+/**
+ * The eMath namespace, which contains all the classes and functions.
+ * @namespace eMath
+ * @property {Object} classes - The classes namespace.
+ * @property {Object} formats - The formats namespace.
+ */
+
 "use strict";
 /* global window */
 import { eMath as eMathE, E, formats } from "./eMath.js";

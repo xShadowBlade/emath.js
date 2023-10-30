@@ -46,7 +46,7 @@ class boost {
      * @param {number} [baseEffect] - The base effect value to which boosts are applied.
      * @param {...boostsObject} boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect?: number, boosts?: boostsObject[]) {
+    constructor (baseEffect?: number | E, boosts?: boostsObject[]) {
         baseEffect = baseEffect ? baseEffect : 1;
         this.boostArray = boosts ? boosts : [];
         this.baseEffect = E(baseEffect);
