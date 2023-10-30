@@ -13,7 +13,10 @@
             "require": "./dist/eMath.cjs",
             "default": "./dist/eMath.bundle.js"
         },
-        "./dist/eMath.min.js": "./dist/eMath.min.js"
+        "./dist/eMath.min.js": "./dist/eMath.min.js",
+        "./dist/eMath.d.ts": {
+            "types": "./dist/eMath.d.ts"
+        }
     },
     "scripts": {
         "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
