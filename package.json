@@ -2,28 +2,17 @@
     "name": "emath.js",
     "version": "2.0.1",
     "description": "A math library for incremental games based on break_eternity.js",
-    "types": "./dist/eMath.d.ts",
-    "main": "./dist/eMath.cjs",
-    "module": "./dist/eMath.mjs",
-    "unpkg": "./dist/eMath.min.js",
-    "browser": "./dist/eMath.bundle.js",
-    "exports": {
-        ".": {
-            "import": "./dist/eMath.mjs",
-            "require": "./dist/eMath.cjs",
-            "default": "./dist/eMath.bundle.js"
-        },
-        "./dist/eMath.min.js": "./dist/eMath.min.js",
-        "./dist/eMath.d.ts": {
-            "types": "./dist/eMath.d.ts"
-        }
-    },
+    "types": "dist/eMath.d.ts",
+    "main": "dist/eMath.js",
+    "module": "dist/eMath.esm.js",
+    "unpkg": "dist/eMath.min.js",
+    "browser": "dist/eMath.bundle.js",
     "scripts": {
         "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
         "build:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/eMath.bundle.js",
         "build:minify": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/eMath.min.js",
-        "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/eMath.mjs",
-        "build:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/eMath.cjs",
+        "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/eMath.esm.js",
+        "build:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/eMath.js",
         "build:types": "tsc --emitDeclarationOnly -outfile dist/eMath.d.ts",
         "test": "mocha"
     },
