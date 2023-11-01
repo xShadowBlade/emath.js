@@ -3980,6 +3980,7 @@
     ;
     E[value] = DecimalClone[value];
   });
+  E.formats = format_default;
 
   // src/classes/boost.ts
   var boost = class {
@@ -4439,8 +4440,7 @@
         currencyStatic,
         attribute,
         grid
-      },
-      formats: format_default
+      }
     }
   };
   if (typeof process !== "object" && typeof window !== "undefined") {

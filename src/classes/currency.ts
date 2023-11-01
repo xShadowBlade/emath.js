@@ -1,6 +1,6 @@
 "use strict";
-import { E } from "../eMath.ts";
-import { boost } from "./boost.ts";
+import { E } from "../eMath";
+import { boost } from "./boost";
 
 /**
  * Upgrades

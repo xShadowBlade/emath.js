@@ -99,11 +99,10 @@ declare module "format" {
 }
 declare module "eMath" {
     import Decimal from "break_eternity.js";
-    import formats from "format";
     const E: any;
     const eMath: {};
     type E = Decimal;
-    export { eMath, E, formats };
+    export { eMath, E };
 }
 declare module "classes/boost" {
     import { E } from "eMath";
@@ -468,66 +467,6 @@ declare module "index" {
             currencyStatic: typeof currencyStatic;
             attribute: typeof attribute;
             grid: typeof grid;
-        };
-        formats: {
-            toSubscript: (value: number) => string;
-            toSuperscript: (value: number) => string;
-            formatST: (ex: string | number | import("break_eternity.js").default, acc?: number, max?: number, type?: string) => string;
-            format: (ex: string | number | import("break_eternity.js").default, acc?: number, max?: number, type?: string) => string;
-            formatGain: (amt: import("break_eternity.js").default, gain: import("break_eternity.js").default) => string;
-            formatTime: (ex: string | number | import("break_eternity.js").default, acc?: number, type?: string) => string;
-            formatReduction: (ex: string | number | import("break_eternity.js").default) => string;
-            formatPercent: (ex: string | number | import("break_eternity.js").default) => string;
-            formatMult: (ex: string | number | import("break_eternity.js").default, acc?: number) => string;
-            expMult: (a: string | number | import("break_eternity.js").default, b: string | number | import("break_eternity.js").default, base?: number) => import("break_eternity.js").default;
-            metric: (num: string | number | import("break_eternity.js").default, type: number) => string;
-            ev: (num: string | number | import("break_eternity.js").default, c2?: boolean) => string;
-            omega: {
-                config: {
-                    greek: string;
-                    infinity: string;
-                };
-                format(value: import("break_eternity.js").default): string;
-            };
-            omega_short: {
-                config: {
-                    greek: string;
-                    infinity: string;
-                };
-                format(value: import("break_eternity.js").default): string;
-            };
-            elemental: {
-                config: {
-                    element_lists: string[][];
-                };
-                getOffset(group: number): number;
-                getAbbreviation(group: number, progress: number): string;
-                beyondOg(x: number): string;
-                abbreviationLength(group: number): number;
-                getAbbreviationAndValue(x: import("break_eternity.js").default): (string | import("break_eternity.js").default)[];
-                formatElementalPart(abbreviation: string, n: import("break_eternity.js").default): string;
-                format(value: import("break_eternity.js").default, acc: number): string;
-            };
-            old_sc: {
-                format(ex: string | number | import("break_eternity.js").default, acc: number): string;
-            };
-            eng: {
-                format(ex: string | number | import("break_eternity.js").default, acc: number): string;
-            };
-            mixed_sc: {
-                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
-            };
-            layer: {
-                layers: string[];
-                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
-            };
-            standard: {
-                tier1(x: number): string;
-                tier2(x: number): string;
-            };
-            inf: {
-                format(ex: string | number | import("break_eternity.js").default, acc: number, max: number): string;
-            };
         };
     };
     export default eMath;

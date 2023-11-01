@@ -1,6 +1,6 @@
 "use strict";
-import { E } from "../../src/eMath.ts";
-import { boost } from "../../src/classes/boost.ts";
+import { E } from "../../src/eMath";
+import { boost } from "../../src/classes/boost";
 
 /**
  * Represents a static attribute in the game.

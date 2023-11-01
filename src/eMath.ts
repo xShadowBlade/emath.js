@@ -1,7 +1,7 @@
 "use strict";
 
 import Decimal from "break_eternity.js";
-import formats from "./format.js";
+import formats from "./format";
 
 const { format, formatGain } = formats;
 
@@ -236,6 +236,8 @@ Object.getOwnPropertyNames(DecimalClone).forEach((value) => {
     E[value] = DecimalClone[value];
 });
 
+E.formats = formats;
+
 // eslint-disable-next-line no-redeclare
 type E = Decimal;
 // & {
@@ -248,4 +250,4 @@ type E = Decimal;
 //     formatGain (gain: Decimal | number | string, mass?: boolean): string;
 //     toRoman (max?: number | Decimal): string | Decimal;
 // };
-export { eMath, E, formats };
+export { eMath, E };

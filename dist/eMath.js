@@ -4004,6 +4004,7 @@ Object.getOwnPropertyNames(DecimalClone).forEach((value) => {
   ;
   E[value] = DecimalClone[value];
 });
+E.formats = format_default;
 
 // src/classes/boost.ts
 var boost = class {
@@ -4463,8 +4464,7 @@ var eMath2 = {
       currencyStatic,
       attribute,
       grid
-    },
-    formats: format_default
+    }
   }
 };
 if (typeof process !== "object" && typeof window !== "undefined") {
