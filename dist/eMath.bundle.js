@@ -418,22 +418,6 @@
       0
     ]
   ];
-  var D = function D2(value) {
-    return Decimal.fromValue_noAlloc(value);
-  };
-  var FC = function(sign, layer, mag) {
-    return Decimal.fromComponents(sign, layer, mag);
-  };
-  var FC_NN = function FC_NN2(sign, layer, mag) {
-    console.log(Decimal);
-    return Decimal.fromComponents_noNormalize(sign, layer, mag);
-  };
-  var ME = function ME2(mantissa, exponent) {
-    return Decimal.fromMantissaExponent(mantissa, exponent);
-  };
-  var ME_NN = function ME_NN2(mantissa, exponent) {
-    return Decimal.fromMantissaExponent_noNormalize(mantissa, exponent);
-  };
   var decimalPlaces = function decimalPlaces2(value, places) {
     const len = places + 1;
     const numDigits = Math.ceil(Math.log10(Math.abs(value)));
@@ -548,34 +532,34 @@
       }
     }
     static {
-      this.dZero = FC_NN(0, 0, 0);
+      this.dZero = _Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     static {
-      this.dOne = FC_NN(1, 0, 1);
+      this.dOne = _Decimal.fromComponents_noNormalize(1, 0, 1);
     }
     static {
-      this.dNegOne = FC_NN(-1, 0, 1);
+      this.dNegOne = _Decimal.fromComponents_noNormalize(-1, 0, 1);
     }
     static {
-      this.dTwo = FC_NN(1, 0, 2);
+      this.dTwo = _Decimal.fromComponents_noNormalize(1, 0, 2);
     }
     static {
-      this.dTen = FC_NN(1, 0, 10);
+      this.dTen = _Decimal.fromComponents_noNormalize(1, 0, 10);
     }
     static {
-      this.dNaN = FC_NN(Number.NaN, Number.NaN, Number.NaN);
+      this.dNaN = _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
     static {
-      this.dInf = FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+      this.dInf = _Decimal.fromComponents_noNormalize(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
     }
     static {
-      this.dNegInf = FC_NN(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+      this.dNegInf = _Decimal.fromComponents_noNormalize(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
     }
     static {
-      this.dNumberMax = FC(1, 0, Number.MAX_VALUE);
+      this.dNumberMax = _Decimal.fromComponents(1, 0, Number.MAX_VALUE);
     }
     static {
-      this.dNumberMin = FC(1, 0, Number.MIN_VALUE);
+      this.dNumberMin = _Decimal.fromComponents(1, 0, Number.MIN_VALUE);
     }
     static {
       this.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
@@ -700,246 +684,246 @@
       }
     }
     static abs(value) {
-      return D(value).abs();
+      return _Decimal.fromValue_noAlloc(value).abs();
     }
     static neg(value) {
-      return D(value).neg();
+      return _Decimal.fromValue_noAlloc(value).neg();
     }
     static negate(value) {
-      return D(value).neg();
+      return _Decimal.fromValue_noAlloc(value).neg();
     }
     static negated(value) {
-      return D(value).neg();
+      return _Decimal.fromValue_noAlloc(value).neg();
     }
     static sign(value) {
-      return D(value).sign;
+      return _Decimal.fromValue_noAlloc(value).sign;
     }
     static sgn(value) {
-      return D(value).sign;
+      return _Decimal.fromValue_noAlloc(value).sign;
     }
     static round(value) {
-      return D(value).round();
+      return _Decimal.fromValue_noAlloc(value).round();
     }
     static floor(value) {
-      return D(value).floor();
+      return _Decimal.fromValue_noAlloc(value).floor();
     }
     static ceil(value) {
-      return D(value).ceil();
+      return _Decimal.fromValue_noAlloc(value).ceil();
     }
     static trunc(value) {
-      return D(value).trunc();
+      return _Decimal.fromValue_noAlloc(value).trunc();
     }
     static add(value, other) {
-      return D(value).add(other);
+      return _Decimal.fromValue_noAlloc(value).add(other);
     }
     static plus(value, other) {
-      return D(value).add(other);
+      return _Decimal.fromValue_noAlloc(value).add(other);
     }
     static sub(value, other) {
-      return D(value).sub(other);
+      return _Decimal.fromValue_noAlloc(value).sub(other);
     }
     static subtract(value, other) {
-      return D(value).sub(other);
+      return _Decimal.fromValue_noAlloc(value).sub(other);
     }
     static minus(value, other) {
-      return D(value).sub(other);
+      return _Decimal.fromValue_noAlloc(value).sub(other);
     }
     static mul(value, other) {
-      return D(value).mul(other);
+      return _Decimal.fromValue_noAlloc(value).mul(other);
     }
     static multiply(value, other) {
-      return D(value).mul(other);
+      return _Decimal.fromValue_noAlloc(value).mul(other);
     }
     static times(value, other) {
-      return D(value).mul(other);
+      return _Decimal.fromValue_noAlloc(value).mul(other);
     }
     static div(value, other) {
-      return D(value).div(other);
+      return _Decimal.fromValue_noAlloc(value).div(other);
     }
     static divide(value, other) {
-      return D(value).div(other);
+      return _Decimal.fromValue_noAlloc(value).div(other);
     }
     static recip(value) {
-      return D(value).recip();
+      return _Decimal.fromValue_noAlloc(value).recip();
     }
     static reciprocal(value) {
-      return D(value).recip();
+      return _Decimal.fromValue_noAlloc(value).recip();
     }
     static reciprocate(value) {
-      return D(value).reciprocate();
+      return _Decimal.fromValue_noAlloc(value).reciprocate();
     }
     static cmp(value, other) {
-      return D(value).cmp(other);
+      return _Decimal.fromValue_noAlloc(value).cmp(other);
     }
     static cmpabs(value, other) {
-      return D(value).cmpabs(other);
+      return _Decimal.fromValue_noAlloc(value).cmpabs(other);
     }
     static compare(value, other) {
-      return D(value).cmp(other);
+      return _Decimal.fromValue_noAlloc(value).cmp(other);
     }
     static isNaN(value) {
-      value = D(value);
+      value = _Decimal.fromValue_noAlloc(value);
       return isNaN(value.sign) || isNaN(value.layer) || isNaN(value.mag);
     }
     static isFinite(value) {
-      value = D(value);
+      value = _Decimal.fromValue_noAlloc(value);
       return isFinite(value.sign) && isFinite(value.layer) && isFinite(value.mag);
     }
     static eq(value, other) {
-      return D(value).eq(other);
+      return _Decimal.fromValue_noAlloc(value).eq(other);
     }
     static equals(value, other) {
-      return D(value).eq(other);
+      return _Decimal.fromValue_noAlloc(value).eq(other);
     }
     static neq(value, other) {
-      return D(value).neq(other);
+      return _Decimal.fromValue_noAlloc(value).neq(other);
     }
     static notEquals(value, other) {
-      return D(value).notEquals(other);
+      return _Decimal.fromValue_noAlloc(value).notEquals(other);
     }
     static lt(value, other) {
-      return D(value).lt(other);
+      return _Decimal.fromValue_noAlloc(value).lt(other);
     }
     static lte(value, other) {
-      return D(value).lte(other);
+      return _Decimal.fromValue_noAlloc(value).lte(other);
     }
     static gt(value, other) {
-      return D(value).gt(other);
+      return _Decimal.fromValue_noAlloc(value).gt(other);
     }
     static gte(value, other) {
-      return D(value).gte(other);
+      return _Decimal.fromValue_noAlloc(value).gte(other);
     }
     static max(value, other) {
-      return D(value).max(other);
+      return _Decimal.fromValue_noAlloc(value).max(other);
     }
     static min(value, other) {
-      return D(value).min(other);
+      return _Decimal.fromValue_noAlloc(value).min(other);
     }
     static minabs(value, other) {
-      return D(value).minabs(other);
+      return _Decimal.fromValue_noAlloc(value).minabs(other);
     }
     static maxabs(value, other) {
-      return D(value).maxabs(other);
+      return _Decimal.fromValue_noAlloc(value).maxabs(other);
     }
     static clamp(value, min, max) {
-      return D(value).clamp(min, max);
+      return _Decimal.fromValue_noAlloc(value).clamp(min, max);
     }
     static clampMin(value, min) {
-      return D(value).clampMin(min);
+      return _Decimal.fromValue_noAlloc(value).clampMin(min);
     }
     static clampMax(value, max) {
-      return D(value).clampMax(max);
+      return _Decimal.fromValue_noAlloc(value).clampMax(max);
     }
     static cmp_tolerance(value, other, tolerance) {
-      return D(value).cmp_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
     }
     static compare_tolerance(value, other, tolerance) {
-      return D(value).cmp_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
     }
     static eq_tolerance(value, other, tolerance) {
-      return D(value).eq_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
     }
     static equals_tolerance(value, other, tolerance) {
-      return D(value).eq_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
     }
     static neq_tolerance(value, other, tolerance) {
-      return D(value).neq_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).neq_tolerance(other, tolerance);
     }
     static notEquals_tolerance(value, other, tolerance) {
-      return D(value).notEquals_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).notEquals_tolerance(other, tolerance);
     }
     static lt_tolerance(value, other, tolerance) {
-      return D(value).lt_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).lt_tolerance(other, tolerance);
     }
     static lte_tolerance(value, other, tolerance) {
-      return D(value).lte_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).lte_tolerance(other, tolerance);
     }
     static gt_tolerance(value, other, tolerance) {
-      return D(value).gt_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).gt_tolerance(other, tolerance);
     }
     static gte_tolerance(value, other, tolerance) {
-      return D(value).gte_tolerance(other, tolerance);
+      return _Decimal.fromValue_noAlloc(value).gte_tolerance(other, tolerance);
     }
     static pLog10(value) {
-      return D(value).pLog10();
+      return _Decimal.fromValue_noAlloc(value).pLog10();
     }
     static absLog10(value) {
-      return D(value).absLog10();
+      return _Decimal.fromValue_noAlloc(value).absLog10();
     }
     static log10(value) {
-      return D(value).log10();
+      return _Decimal.fromValue_noAlloc(value).log10();
     }
     static log(value, base) {
-      return D(value).log(base);
+      return _Decimal.fromValue_noAlloc(value).log(base);
     }
     static log2(value) {
-      return D(value).log2();
+      return _Decimal.fromValue_noAlloc(value).log2();
     }
     static ln(value) {
-      return D(value).ln();
+      return _Decimal.fromValue_noAlloc(value).ln();
     }
     static logarithm(value, base) {
-      return D(value).logarithm(base);
+      return _Decimal.fromValue_noAlloc(value).logarithm(base);
     }
     static pow(value, other) {
-      return D(value).pow(other);
+      return _Decimal.fromValue_noAlloc(value).pow(other);
     }
     static pow10(value) {
-      return D(value).pow10();
+      return _Decimal.fromValue_noAlloc(value).pow10();
     }
     static root(value, other) {
-      return D(value).root(other);
+      return _Decimal.fromValue_noAlloc(value).root(other);
     }
     static factorial(value, _other) {
-      return D(value).factorial();
+      return _Decimal.fromValue_noAlloc(value).factorial();
     }
     static gamma(value, _other) {
-      return D(value).gamma();
+      return _Decimal.fromValue_noAlloc(value).gamma();
     }
     static lngamma(value, _other) {
-      return D(value).lngamma();
+      return _Decimal.fromValue_noAlloc(value).lngamma();
     }
     static exp(value) {
-      return D(value).exp();
+      return _Decimal.fromValue_noAlloc(value).exp();
     }
     static sqr(value) {
-      return D(value).sqr();
+      return _Decimal.fromValue_noAlloc(value).sqr();
     }
     static sqrt(value) {
-      return D(value).sqrt();
+      return _Decimal.fromValue_noAlloc(value).sqrt();
     }
     static cube(value) {
-      return D(value).cube();
+      return _Decimal.fromValue_noAlloc(value).cube();
     }
     static cbrt(value) {
-      return D(value).cbrt();
+      return _Decimal.fromValue_noAlloc(value).cbrt();
     }
-    static tetrate(value, height = 2, payload = FC_NN(1, 0, 1)) {
-      return D(value).tetrate(height, payload);
+    static tetrate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+      return _Decimal.fromValue_noAlloc(value).tetrate(height, payload);
     }
-    static iteratedexp(value, height = 2, payload = FC_NN(1, 0, 1)) {
-      return D(value).iteratedexp(height, payload);
+    static iteratedexp(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+      return _Decimal.fromValue_noAlloc(value).iteratedexp(height, payload);
     }
     static iteratedlog(value, base = 10, times = 1) {
-      return D(value).iteratedlog(base, times);
+      return _Decimal.fromValue_noAlloc(value).iteratedlog(base, times);
     }
     static layeradd10(value, diff) {
-      return D(value).layeradd10(diff);
+      return _Decimal.fromValue_noAlloc(value).layeradd10(diff);
     }
     static layeradd(value, diff, base = 10) {
-      return D(value).layeradd(diff, base);
+      return _Decimal.fromValue_noAlloc(value).layeradd(diff, base);
     }
     static slog(value, base = 10) {
-      return D(value).slog(base);
+      return _Decimal.fromValue_noAlloc(value).slog(base);
     }
     static lambertw(value) {
-      return D(value).lambertw();
+      return _Decimal.fromValue_noAlloc(value).lambertw();
     }
     static ssqrt(value) {
-      return D(value).ssqrt();
+      return _Decimal.fromValue_noAlloc(value).ssqrt();
     }
-    static pentate(value, height = 2, payload = FC_NN(1, 0, 1)) {
-      return D(value).pentate(height, payload);
+    static pentate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+      return _Decimal.fromValue_noAlloc(value).pentate(height, payload);
     }
     /**
     * If you're willing to spend 'resourcesAvailable' and want to buy something
@@ -949,9 +933,9 @@
     */
     static affordGeometricSeries(resourcesAvailable, priceStart, priceRatio, currentOwned) {
       return this.affordGeometricSeries_core(
-        D(resourcesAvailable),
-        D(priceStart),
-        D(priceRatio),
+        _Decimal.fromValue_noAlloc(resourcesAvailable),
+        _Decimal.fromValue_noAlloc(priceStart),
+        _Decimal.fromValue_noAlloc(priceRatio),
         currentOwned
       );
     }
@@ -960,7 +944,7 @@
     * the initial price is priceStart and it multiplies by priceRatio each purchase?
     */
     static sumGeometricSeries(numItems, priceStart, priceRatio, currentOwned) {
-      return this.sumGeometricSeries_core(numItems, D(priceStart), D(priceRatio), currentOwned);
+      return this.sumGeometricSeries_core(numItems, _Decimal.fromValue_noAlloc(priceStart), _Decimal.fromValue_noAlloc(priceRatio), currentOwned);
     }
     /**
     * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
@@ -969,10 +953,10 @@
     */
     static affordArithmeticSeries(resourcesAvailable, priceStart, priceAdd, currentOwned) {
       return this.affordArithmeticSeries_core(
-        D(resourcesAvailable),
-        D(priceStart),
-        D(priceAdd),
-        D(currentOwned)
+        _Decimal.fromValue_noAlloc(resourcesAvailable),
+        _Decimal.fromValue_noAlloc(priceStart),
+        _Decimal.fromValue_noAlloc(priceAdd),
+        _Decimal.fromValue_noAlloc(currentOwned)
       );
     }
     /**
@@ -981,7 +965,7 @@
     * Adapted from http://www.mathwords.com/a/arithmetic_series.htm
     */
     static sumArithmeticSeries(numItems, priceStart, priceAdd, currentOwned) {
-      return this.sumArithmeticSeries_core(D(numItems), D(priceStart), D(priceAdd), D(currentOwned));
+      return this.sumArithmeticSeries_core(_Decimal.fromValue_noAlloc(numItems), _Decimal.fromValue_noAlloc(priceStart), _Decimal.fromValue_noAlloc(priceAdd), _Decimal.fromValue_noAlloc(currentOwned));
     }
     /**
     * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
@@ -990,15 +974,15 @@
     * http://cookieclicker.wikia.com/wiki/Frozen_Cookies_(JavaScript_Add-on)#Efficiency.3F_What.27s_that.3F
     */
     static efficiencyOfPurchase(cost, currentRpS, deltaRpS) {
-      return this.efficiencyOfPurchase_core(D(cost), D(currentRpS), D(deltaRpS));
+      return this.efficiencyOfPurchase_core(_Decimal.fromValue_noAlloc(cost), _Decimal.fromValue_noAlloc(currentRpS), _Decimal.fromValue_noAlloc(deltaRpS));
     }
     static randomDecimalForTesting(maxLayers) {
       if (Math.random() * 20 < 1) {
-        return FC_NN(0, 0, 0);
+        return _Decimal.fromComponents_noNormalize(0, 0, 0);
       }
       const randomsign = Math.random() > 0.5 ? 1 : -1;
       if (Math.random() * 20 < 1) {
-        return FC_NN(randomsign, 0, 1);
+        return _Decimal.fromComponents_noNormalize(randomsign, 0, 1);
       }
       const layer = Math.floor(Math.random() * (maxLayers + 1));
       let randomexp = layer === 0 ? Math.random() * 616 - 308 : Math.random() * 16;
@@ -1009,7 +993,7 @@
       if (Math.random() > 0.9) {
         randommag = Math.trunc(randommag);
       }
-      return FC(randomsign, layer, randommag);
+      return _Decimal.fromComponents(randomsign, layer, randommag);
     }
     static affordGeometricSeries_core(resourcesAvailable, priceStart, priceRatio, currentOwned) {
       const actualStart = priceStart.mul(priceRatio.pow(currentOwned));
@@ -1314,7 +1298,7 @@
         this.sign = Math.sign(mantissa);
         this.layer = ecount;
         if (ecount === 2) {
-          const result = _Decimal.mul(FC(1, 2, exponent), D(mantissa));
+          const result = _Decimal.mul(_Decimal.fromComponents(1, 2, exponent), _Decimal.fromValue_noAlloc(mantissa));
           this.sign = result.sign;
           this.layer = result.layer;
           this.mag = result.mag;
@@ -1443,10 +1427,10 @@
       }
     }
     abs() {
-      return FC_NN(this.sign === 0 ? 0 : 1, this.layer, this.mag);
+      return _Decimal.fromComponents_noNormalize(this.sign === 0 ? 0 : 1, this.layer, this.mag);
     }
     neg() {
-      return FC_NN(-this.sign, this.layer, this.mag);
+      return _Decimal.fromComponents_noNormalize(-this.sign, this.layer, this.mag);
     }
     negate() {
       return this.neg();
@@ -1465,7 +1449,7 @@
         return _Decimal.dZero;
       }
       if (this.layer === 0) {
-        return FC(this.sign, 0, Math.round(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.round(this.mag));
       }
       return this;
     }
@@ -1474,7 +1458,7 @@
         return _Decimal.dZero;
       }
       if (this.layer === 0) {
-        return FC(this.sign, 0, Math.floor(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.floor(this.mag));
       }
       return this;
     }
@@ -1483,7 +1467,7 @@
         return _Decimal.dZero;
       }
       if (this.layer === 0) {
-        return FC(this.sign, 0, Math.ceil(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.ceil(this.mag));
       }
       return this;
     }
@@ -1492,12 +1476,12 @@
         return _Decimal.dZero;
       }
       if (this.layer === 0) {
-        return FC(this.sign, 0, Math.trunc(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.trunc(this.mag));
       }
       return this;
     }
     add(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       if (!Number.isFinite(this.layer)) {
         return this;
       }
@@ -1511,7 +1495,7 @@
         return this;
       }
       if (this.sign === -decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag) {
-        return FC_NN(0, 0, 0);
+        return _Decimal.fromComponents_noNormalize(0, 0, 0);
       }
       let a;
       let b;
@@ -1539,7 +1523,7 @@
         } else {
           const magdiff = Math.pow(10, Math.log10(a.mag) - b.mag);
           const mantissa = b.sign + a.sign * magdiff;
-          return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+          return _Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
         }
       }
       if (layera === 1 && layerb === 0) {
@@ -1548,7 +1532,7 @@
         } else {
           const magdiff = Math.pow(10, a.mag - Math.log10(b.mag));
           const mantissa = b.sign + a.sign * magdiff;
-          return FC(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
+          return _Decimal.fromComponents(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
         }
       }
       if (Math.abs(a.mag - b.mag) > MAX_SIGNIFICANT_DIGITS) {
@@ -1556,7 +1540,7 @@
       } else {
         const magdiff = Math.pow(10, a.mag - b.mag);
         const mantissa = b.sign + a.sign * magdiff;
-        return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+        return _Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
       }
       throw Error("Bad arguments to add: " + this + ", " + value);
     }
@@ -1564,7 +1548,7 @@
       return this.add(value);
     }
     sub(value) {
-      return this.add(D(value).neg());
+      return this.add(_Decimal.fromValue_noAlloc(value).neg());
     }
     subtract(value) {
       return this.sub(value);
@@ -1573,7 +1557,7 @@
       return this.sub(value);
     }
     mul(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       if (!Number.isFinite(this.layer)) {
         return this;
       }
@@ -1581,10 +1565,10 @@
         return decimal;
       }
       if (this.sign === 0 || decimal.sign === 0) {
-        return FC_NN(0, 0, 0);
+        return _Decimal.fromComponents_noNormalize(0, 0, 0);
       }
       if (this.layer === decimal.layer && this.mag === -decimal.mag) {
-        return FC_NN(this.sign * decimal.sign, 0, 1);
+        return _Decimal.fromComponents_noNormalize(this.sign * decimal.sign, 0, 1);
       }
       let a;
       let b;
@@ -1599,25 +1583,25 @@
         return _Decimal.fromNumber(a.sign * b.sign * a.mag * b.mag);
       }
       if (a.layer >= 3 || a.layer - b.layer >= 2) {
-        return FC(a.sign * b.sign, a.layer, a.mag);
+        return _Decimal.fromComponents(a.sign * b.sign, a.layer, a.mag);
       }
       if (a.layer === 1 && b.layer === 0) {
-        return FC(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
+        return _Decimal.fromComponents(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
       }
       if (a.layer === 1 && b.layer === 1) {
-        return FC(a.sign * b.sign, 1, a.mag + b.mag);
+        return _Decimal.fromComponents(a.sign * b.sign, 1, a.mag + b.mag);
       }
       if (a.layer === 2 && b.layer === 1) {
-        const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-          FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
+        const newmag = _Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+          _Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
         );
-        return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+        return _Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
       }
       if (a.layer === 2 && b.layer === 2) {
-        const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-          FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
+        const newmag = _Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+          _Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
         );
-        return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+        return _Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
       }
       throw Error("Bad arguments to mul: " + this + ", " + value);
     }
@@ -1628,7 +1612,7 @@
       return this.mul(value);
     }
     div(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.mul(decimal.recip());
     }
     divide(value) {
@@ -1644,9 +1628,9 @@
       if (this.mag === 0) {
         return _Decimal.dNaN;
       } else if (this.layer === 0) {
-        return FC(this.sign, 0, 1 / this.mag);
+        return _Decimal.fromComponents(this.sign, 0, 1 / this.mag);
       } else {
-        return FC(this.sign, this.layer, -this.mag);
+        return _Decimal.fromComponents(this.sign, this.layer, -this.mag);
       }
     }
     reciprocal() {
@@ -1659,7 +1643,7 @@
     * -1 for less than value, 0 for equals value, 1 for greater than value
     */
     cmp(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       if (this.sign > decimal.sign) {
         return 1;
       }
@@ -1669,7 +1653,7 @@
       return this.sign * this.cmpabs(value);
     }
     cmpabs(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       const layera = this.mag > 0 ? this.layer : -this.layer;
       const layerb = decimal.mag > 0 ? decimal.layer : -decimal.layer;
       if (layera > layerb) {
@@ -1696,7 +1680,7 @@
       return isFinite(this.sign) && isFinite(this.layer) && isFinite(this.mag);
     }
     eq(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.sign === decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag;
     }
     equals(value) {
@@ -1721,19 +1705,19 @@
       return !this.lt(value);
     }
     max(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.lt(decimal) ? decimal : this;
     }
     min(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.gt(decimal) ? decimal : this;
     }
     maxabs(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.cmpabs(decimal) < 0 ? decimal : this;
     }
     minabs(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.cmpabs(decimal) > 0 ? decimal : this;
     }
     clamp(min, max) {
@@ -1746,7 +1730,7 @@
       return this.min(max);
     }
     cmp_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.eq_tolerance(decimal, tolerance) ? 0 : this.cmp(decimal);
     }
     compare_tolerance(value, tolerance) {
@@ -1758,7 +1742,7 @@
     * larger number than (larger number)*1e-9 will be considered equal.
     */
     eq_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       if (tolerance == null) {
         tolerance = 1e-7;
       }
@@ -1788,19 +1772,19 @@
       return this.neq_tolerance(value, tolerance);
     }
     lt_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return !this.eq_tolerance(decimal, tolerance) && this.lt(decimal);
     }
     lte_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.eq_tolerance(decimal, tolerance) || this.lt(decimal);
     }
     gt_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return !this.eq_tolerance(decimal, tolerance) && this.gt(decimal);
     }
     gte_tolerance(value, tolerance) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.eq_tolerance(decimal, tolerance) || this.gt(decimal);
     }
     pLog10() {
@@ -1813,22 +1797,22 @@
       if (this.sign === 0) {
         return _Decimal.dNaN;
       } else if (this.layer > 0) {
-        return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+        return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
       } else {
-        return FC(1, 0, Math.log10(this.mag));
+        return _Decimal.fromComponents(1, 0, Math.log10(this.mag));
       }
     }
     log10() {
       if (this.sign <= 0) {
         return _Decimal.dNaN;
       } else if (this.layer > 0) {
-        return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+        return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
       } else {
-        return FC(this.sign, 0, Math.log10(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.log10(this.mag));
       }
     }
     log(base) {
-      base = D(base);
+      base = _Decimal.fromValue_noAlloc(base);
       if (this.sign <= 0) {
         return _Decimal.dNaN;
       }
@@ -1838,7 +1822,7 @@
       if (base.sign === 1 && base.layer === 0 && base.mag === 1) {
         return _Decimal.dNaN;
       } else if (this.layer === 0 && base.layer === 0) {
-        return FC(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
       }
       return _Decimal.div(this.log10(), base.log10());
     }
@@ -1846,43 +1830,43 @@
       if (this.sign <= 0) {
         return _Decimal.dNaN;
       } else if (this.layer === 0) {
-        return FC(this.sign, 0, Math.log2(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.log2(this.mag));
       } else if (this.layer === 1) {
-        return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362);
+        return _Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362);
       } else if (this.layer === 2) {
-        return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247);
+        return _Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247);
       } else {
-        return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+        return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
       }
     }
     ln() {
       if (this.sign <= 0) {
         return _Decimal.dNaN;
       } else if (this.layer === 0) {
-        return FC(this.sign, 0, Math.log(this.mag));
+        return _Decimal.fromComponents(this.sign, 0, Math.log(this.mag));
       } else if (this.layer === 1) {
-        return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046);
+        return _Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046);
       } else if (this.layer === 2) {
-        return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325);
+        return _Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325);
       } else {
-        return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+        return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
       }
     }
     logarithm(base) {
       return this.log(base);
     }
     pow(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       const a = this;
       const b = decimal;
       if (a.sign === 0) {
-        return b.eq(0) ? FC_NN(1, 0, 1) : a;
+        return b.eq(0) ? _Decimal.fromComponents_noNormalize(1, 0, 1) : a;
       }
       if (a.sign === 1 && a.layer === 0 && a.mag === 1) {
         return a;
       }
       if (b.sign === 0) {
-        return FC_NN(1, 0, 1);
+        return _Decimal.fromComponents_noNormalize(1, 0, 1);
       }
       if (b.sign === 1 && b.layer === 0 && b.mag === 1) {
         return a;
@@ -1906,26 +1890,26 @@
       if (a.layer === 0) {
         const newmag = Math.pow(10, a.sign * a.mag);
         if (Number.isFinite(newmag) && Math.abs(newmag) >= 0.1) {
-          return FC(1, 0, newmag);
+          return _Decimal.fromComponents(1, 0, newmag);
         } else if (a.sign === 0) {
           return _Decimal.dOne;
         } else {
-          a = FC_NN(a.sign, a.layer + 1, Math.log10(a.mag));
+          a = _Decimal.fromComponents_noNormalize(a.sign, a.layer + 1, Math.log10(a.mag));
         }
       }
       if (a.sign > 0 && a.mag >= 0) {
-        return FC(a.sign, a.layer + 1, a.mag);
+        return _Decimal.fromComponents(a.sign, a.layer + 1, a.mag);
       }
       if (a.sign < 0 && a.mag >= 0) {
-        return FC(-a.sign, a.layer + 1, -a.mag);
+        return _Decimal.fromComponents(-a.sign, a.layer + 1, -a.mag);
       }
       return _Decimal.dOne;
     }
     pow_base(value) {
-      return D(value).pow(this);
+      return _Decimal.fromValue_noAlloc(value).pow(this);
     }
     root(value) {
-      const decimal = D(value);
+      const decimal = _Decimal.fromValue_noAlloc(value);
       return this.pow(decimal.recip());
     }
     factorial() {
@@ -1944,7 +1928,7 @@
       if (this.mag < 0) {
         return this.recip();
       } else if (this.layer === 0) {
-        if (this.lt(FC_NN(1, 0, 24))) {
+        if (this.lt(_Decimal.fromComponents_noNormalize(1, 0, 24))) {
           return _Decimal.fromNumber(f_gamma(this.sign * this.mag));
         }
         const t = this.mag - 1;
@@ -1993,11 +1977,11 @@
       if (this.layer === 0 && this.mag <= 709.7) {
         return _Decimal.fromNumber(Math.exp(this.sign * this.mag));
       } else if (this.layer === 0) {
-        return FC(1, 1, this.sign * Math.log10(Math.E) * this.mag);
+        return _Decimal.fromComponents(1, 1, this.sign * Math.log10(Math.E) * this.mag);
       } else if (this.layer === 1) {
-        return FC(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
+        return _Decimal.fromComponents(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
       } else {
-        return FC(1, this.layer + 1, this.sign * this.mag);
+        return _Decimal.fromComponents(1, this.layer + 1, this.sign * this.mag);
       }
     }
     sqr() {
@@ -2007,9 +1991,9 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.sqrt(this.sign * this.mag));
       } else if (this.layer === 1) {
-        return FC(1, 2, Math.log10(this.mag) - 0.3010299956639812);
+        return _Decimal.fromComponents(1, 2, Math.log10(this.mag) - 0.3010299956639812);
       } else {
-        const result = _Decimal.div(FC_NN(this.sign, this.layer - 1, this.mag), FC_NN(1, 0, 2));
+        const result = _Decimal.div(_Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag), _Decimal.fromComponents_noNormalize(1, 0, 2));
         result.layer += 1;
         result.normalize();
         return result;
@@ -2024,7 +2008,7 @@
     // Tetration/tetrate: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
     // If payload != 1, then this is 'iterated exponentiation', the result of exping (payload) to base (this) (height) times. https://andydude.github.io/tetration/archives/tetration2/ident.html
     // Works with negative and positive real heights.
-    tetrate(height = 2, payload = FC_NN(1, 0, 1)) {
+    tetrate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
       if (height === 1) {
         return _Decimal.pow(this, payload);
       }
@@ -2061,7 +2045,7 @@
       if (height < 0) {
         return _Decimal.iteratedlog(payload, this, -height);
       }
-      payload = D(payload);
+      payload = _Decimal.fromValue_noAlloc(payload);
       const oldheight = height;
       height = Math.trunc(height);
       const fracheight = oldheight - height;
@@ -2102,7 +2086,7 @@
           return payload.normalize();
         }
         if (payload.layer - this.layer > 3) {
-          return FC_NN(payload.sign, payload.layer + (height - i - 1), payload.mag);
+          return _Decimal.fromComponents_noNormalize(payload.sign, payload.layer + (height - i - 1), payload.mag);
         }
         if (i > 1e4) {
           return payload;
@@ -2111,7 +2095,7 @@
       return payload;
     }
     // iteratedexp/iterated exponentiation: - all cases handled in tetrate, so just call it
-    iteratedexp(height = 2, payload = FC_NN(1, 0, 1)) {
+    iteratedexp(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
       return this.tetrate(height, payload);
     }
     // iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting (times) from the number's slog representation. Equivalent to tetrating to a negative height.
@@ -2120,7 +2104,7 @@
       if (times < 0) {
         return _Decimal.tetrate(base, -times, this);
       }
-      base = D(base);
+      base = _Decimal.fromValue_noAlloc(base);
       let result = _Decimal.fromDecimal(this);
       const fulltimes = times;
       times = Math.trunc(times);
@@ -2179,7 +2163,7 @@
       return _Decimal.fromNumber(result);
     }
     slog_internal(base = 10) {
-      base = D(base);
+      base = _Decimal.fromValue_noAlloc(base);
       if (base.lte(_Decimal.dZero)) {
         return _Decimal.dNaN;
       }
@@ -2351,7 +2335,7 @@
         return d_lambertw(this);
       }
       if (this.layer >= 3) {
-        return FC_NN(this.sign, this.layer - 1, this.mag);
+        return _Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
       }
       throw "Unhandled behavior in lambertw()";
     }
@@ -2360,15 +2344,15 @@
     // https://en.wikipedia.org/wiki/Tetration#Super-root
     ssqrt() {
       if (this.sign == 1 && this.layer >= 3) {
-        return FC_NN(this.sign, this.layer - 1, this.mag);
+        return _Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
       }
       const lnx = this.ln();
       return lnx.div(lnx.lambertw());
     }
     // Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
     // https://en.wikipedia.org/wiki/Pentation
-    pentate(height = 2, payload = FC_NN(1, 0, 1)) {
-      payload = D(payload);
+    pentate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+      payload = _Decimal.fromValue_noAlloc(payload);
       const oldheight = height;
       height = Math.trunc(height);
       const fracheight = oldheight - height;
@@ -2401,7 +2385,7 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.sin(this.sign * this.mag));
       }
-      return FC_NN(0, 0, 0);
+      return _Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     cos() {
       if (this.mag < 0) {
@@ -2410,7 +2394,7 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.cos(this.sign * this.mag));
       }
-      return FC_NN(0, 0, 0);
+      return _Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     tan() {
       if (this.mag < 0) {
@@ -2419,7 +2403,7 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.tan(this.sign * this.mag));
       }
-      return FC_NN(0, 0, 0);
+      return _Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     asin() {
       if (this.mag < 0) {
@@ -2428,7 +2412,7 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.asin(this.sign * this.mag));
       }
-      return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+      return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
     acos() {
       if (this.mag < 0) {
@@ -2437,7 +2421,7 @@
       if (this.layer === 0) {
         return _Decimal.fromNumber(Math.acos(this.sign * this.mag));
       }
-      return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+      return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
     atan() {
       if (this.mag < 0) {
@@ -2465,7 +2449,7 @@
     }
     atanh() {
       if (this.abs().gte(1)) {
-        return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
       }
       return _Decimal.ln(this.add(1).div(_Decimal.fromNumber(1).sub(this))).div(2);
     }
@@ -3311,11 +3295,6 @@
     ev
   } };
   Decimal.formats = formats;
-  D = Decimal.fromValue_noAlloc;
-  FC = Decimal.fromComponents;
-  FC_NN = Decimal.fromComponents_noNormalize;
-  ME = Decimal.fromMantissaExponent;
-  ME_NN = Decimal.fromMantissaExponent_noNormalize;
 
   // src/eMath.ts
   var E = (x) => new Decimal(x);

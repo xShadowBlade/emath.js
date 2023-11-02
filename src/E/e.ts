@@ -188,27 +188,6 @@ const critical_slog_values = [
     ],
 ];
 
-let D = function D (value: DecimalSource): Readonly<Decimal> {
-    return Decimal.fromValue_noAlloc(value);
-};
-
-let FC = function (sign: number, layer: number, mag: number) {
-    return Decimal.fromComponents(sign, layer, mag);
-};
-let FC_NN = function FC_NN (sign: number, layer: number, mag: number) {
-    return Decimal.fromComponents_noNormalize(sign, layer, mag);
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let ME = function ME (mantissa: number, exponent: number) {
-    return Decimal.fromMantissaExponent(mantissa, exponent);
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let ME_NN = function ME_NN (mantissa: number, exponent: number) {
-    return Decimal.fromMantissaExponent_noNormalize(mantissa, exponent);
-};
-
 const decimalPlaces = function decimalPlaces (value: number, places: number): number {
     const len = places + 1;
     const numDigits = Math.ceil(Math.log10(Math.abs(value)));
@@ -346,16 +325,16 @@ export type DecimalSource = Decimal | number | string;
  * The Decimal's value is simply mantissa * 10^exponent.
  */
 export class Decimal {
-    public static readonly dZero = FC_NN(0, 0, 0);
-    public static readonly dOne = FC_NN(1, 0, 1);
-    public static readonly dNegOne = FC_NN(-1, 0, 1);
-    public static readonly dTwo = FC_NN(1, 0, 2);
-    public static readonly dTen = FC_NN(1, 0, 10);
-    public static readonly dNaN = FC_NN(Number.NaN, Number.NaN, Number.NaN);
-    public static readonly dInf = FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-    public static readonly dNegInf = FC_NN(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-    public static readonly dNumberMax = FC(1, 0, Number.MAX_VALUE);
-    public static readonly dNumberMin = FC(1, 0, Number.MIN_VALUE);
+    public static readonly dZero = Decimal.fromComponents_noNormalize(0, 0, 0);
+    public static readonly dOne = Decimal.fromComponents_noNormalize(1, 0, 1);
+    public static readonly dNegOne = Decimal.fromComponents_noNormalize(-1, 0, 1);
+    public static readonly dTwo = Decimal.fromComponents_noNormalize(1, 0, 2);
+    public static readonly dTen = Decimal.fromComponents_noNormalize(1, 0, 10);
+    public static readonly dNaN = Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+    public static readonly dInf = Decimal.fromComponents_noNormalize(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    public static readonly dNegInf = Decimal.fromComponents_noNormalize(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+    public static readonly dNumberMax = Decimal.fromComponents(1, 0, Number.MAX_VALUE);
+    public static readonly dNumberMin = Decimal.fromComponents(1, 0, Number.MIN_VALUE);
 
     private static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
 
@@ -554,177 +533,177 @@ export class Decimal {
     }
 
     public static abs (value: DecimalSource): Decimal {
-        return D(value).abs();
+        return Decimal.fromValue_noAlloc(value).abs();
     }
 
     public static neg (value: DecimalSource): Decimal {
-        return D(value).neg();
+        return Decimal.fromValue_noAlloc(value).neg();
     }
 
     public static negate (value: DecimalSource): Decimal {
-        return D(value).neg();
+        return Decimal.fromValue_noAlloc(value).neg();
     }
 
     public static negated (value: DecimalSource): Decimal {
-        return D(value).neg();
+        return Decimal.fromValue_noAlloc(value).neg();
     }
 
     public static sign (value: DecimalSource): number {
-        return D(value).sign;
+        return Decimal.fromValue_noAlloc(value).sign;
     }
 
     public static sgn (value: DecimalSource): number {
-        return D(value).sign;
+        return Decimal.fromValue_noAlloc(value).sign;
     }
 
     public static round (value: DecimalSource): Decimal {
-        return D(value).round();
+        return Decimal.fromValue_noAlloc(value).round();
     }
 
     public static floor (value: DecimalSource): Decimal {
-        return D(value).floor();
+        return Decimal.fromValue_noAlloc(value).floor();
     }
 
     public static ceil (value: DecimalSource): Decimal {
-        return D(value).ceil();
+        return Decimal.fromValue_noAlloc(value).ceil();
     }
 
     public static trunc (value: DecimalSource): Decimal {
-        return D(value).trunc();
+        return Decimal.fromValue_noAlloc(value).trunc();
     }
 
     public static add (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).add(other);
+        return Decimal.fromValue_noAlloc(value).add(other);
     }
 
     public static plus (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).add(other);
+        return Decimal.fromValue_noAlloc(value).add(other);
     }
 
     public static sub (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).sub(other);
+        return Decimal.fromValue_noAlloc(value).sub(other);
     }
 
     public static subtract (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).sub(other);
+        return Decimal.fromValue_noAlloc(value).sub(other);
     }
 
     public static minus (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).sub(other);
+        return Decimal.fromValue_noAlloc(value).sub(other);
     }
 
     public static mul (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).mul(other);
+        return Decimal.fromValue_noAlloc(value).mul(other);
     }
 
     public static multiply (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).mul(other);
+        return Decimal.fromValue_noAlloc(value).mul(other);
     }
 
     public static times (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).mul(other);
+        return Decimal.fromValue_noAlloc(value).mul(other);
     }
 
     public static div (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).div(other);
+        return Decimal.fromValue_noAlloc(value).div(other);
     }
 
     public static divide (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).div(other);
+        return Decimal.fromValue_noAlloc(value).div(other);
     }
 
     public static recip (value: DecimalSource): Decimal {
-        return D(value).recip();
+        return Decimal.fromValue_noAlloc(value).recip();
     }
 
     public static reciprocal (value: DecimalSource): Decimal {
-        return D(value).recip();
+        return Decimal.fromValue_noAlloc(value).recip();
     }
 
     public static reciprocate (value: DecimalSource): Decimal {
-        return D(value).reciprocate();
+        return Decimal.fromValue_noAlloc(value).reciprocate();
     }
 
     public static cmp (value: DecimalSource, other: DecimalSource): CompareResult {
-        return D(value).cmp(other);
+        return Decimal.fromValue_noAlloc(value).cmp(other);
     }
 
     public static cmpabs (value: DecimalSource, other: DecimalSource): CompareResult {
-        return D(value).cmpabs(other);
+        return Decimal.fromValue_noAlloc(value).cmpabs(other);
     }
 
     public static compare (value: DecimalSource, other: DecimalSource): CompareResult {
-        return D(value).cmp(other);
+        return Decimal.fromValue_noAlloc(value).cmp(other);
     }
 
     public static isNaN (value: DecimalSource): boolean {
-        value = D(value);
+        value = Decimal.fromValue_noAlloc(value);
         return isNaN(value.sign) || isNaN(value.layer) || isNaN(value.mag);
     }
 
     public static isFinite (value: DecimalSource): boolean {
-        value = D(value);
+        value = Decimal.fromValue_noAlloc(value);
         return isFinite(value.sign) && isFinite(value.layer) && isFinite(value.mag);
     }
 
     public static eq (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).eq(other);
+        return Decimal.fromValue_noAlloc(value).eq(other);
     }
 
     public static equals (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).eq(other);
+        return Decimal.fromValue_noAlloc(value).eq(other);
     }
 
     public static neq (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).neq(other);
+        return Decimal.fromValue_noAlloc(value).neq(other);
     }
 
     public static notEquals (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).notEquals(other);
+        return Decimal.fromValue_noAlloc(value).notEquals(other);
     }
 
     public static lt (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).lt(other);
+        return Decimal.fromValue_noAlloc(value).lt(other);
     }
 
     public static lte (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).lte(other);
+        return Decimal.fromValue_noAlloc(value).lte(other);
     }
 
     public static gt (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).gt(other);
+        return Decimal.fromValue_noAlloc(value).gt(other);
     }
 
     public static gte (value: DecimalSource, other: DecimalSource): boolean {
-        return D(value).gte(other);
+        return Decimal.fromValue_noAlloc(value).gte(other);
     }
 
     public static max (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).max(other);
+        return Decimal.fromValue_noAlloc(value).max(other);
     }
 
     public static min (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).min(other);
+        return Decimal.fromValue_noAlloc(value).min(other);
     }
 
     public static minabs (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).minabs(other);
+        return Decimal.fromValue_noAlloc(value).minabs(other);
     }
 
     public static maxabs (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).maxabs(other);
+        return Decimal.fromValue_noAlloc(value).maxabs(other);
     }
 
     public static clamp (value: DecimalSource, min: DecimalSource, max: DecimalSource): Decimal {
-        return D(value).clamp(min, max);
+        return Decimal.fromValue_noAlloc(value).clamp(min, max);
     }
 
     public static clampMin (value: DecimalSource, min: DecimalSource): Decimal {
-        return D(value).clampMin(min);
+        return Decimal.fromValue_noAlloc(value).clampMin(min);
     }
 
     public static clampMax (value: DecimalSource, max: DecimalSource): Decimal {
-        return D(value).clampMax(max);
+        return Decimal.fromValue_noAlloc(value).clampMax(max);
     }
 
     public static cmp_tolerance (
@@ -732,7 +711,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): CompareResult {
-        return D(value).cmp_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
     }
 
     public static compare_tolerance (
@@ -740,7 +719,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): CompareResult {
-        return D(value).cmp_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
     }
 
     public static eq_tolerance (
@@ -748,7 +727,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).eq_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
     }
 
     public static equals_tolerance (
@@ -756,7 +735,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).eq_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
     }
 
     public static neq_tolerance (
@@ -764,7 +743,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).neq_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).neq_tolerance(other, tolerance);
     }
 
     public static notEquals_tolerance (
@@ -772,7 +751,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).notEquals_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).notEquals_tolerance(other, tolerance);
     }
 
     public static lt_tolerance (
@@ -780,7 +759,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).lt_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).lt_tolerance(other, tolerance);
     }
 
     public static lte_tolerance (
@@ -788,7 +767,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).lte_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).lte_tolerance(other, tolerance);
     }
 
     public static gt_tolerance (
@@ -796,7 +775,7 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).gt_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).gt_tolerance(other, tolerance);
     }
 
     public static gte_tolerance (
@@ -804,123 +783,123 @@ export class Decimal {
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return D(value).gte_tolerance(other, tolerance);
+        return Decimal.fromValue_noAlloc(value).gte_tolerance(other, tolerance);
     }
 
     public static pLog10 (value: DecimalSource): Decimal {
-        return D(value).pLog10();
+        return Decimal.fromValue_noAlloc(value).pLog10();
     }
 
     public static absLog10 (value: DecimalSource): Decimal {
-        return D(value).absLog10();
+        return Decimal.fromValue_noAlloc(value).absLog10();
     }
 
     public static log10 (value: DecimalSource): Decimal {
-        return D(value).log10();
+        return Decimal.fromValue_noAlloc(value).log10();
     }
 
     public static log (value: DecimalSource, base: DecimalSource): Decimal {
-        return D(value).log(base);
+        return Decimal.fromValue_noAlloc(value).log(base);
     }
 
     public static log2 (value: DecimalSource): Decimal {
-        return D(value).log2();
+        return Decimal.fromValue_noAlloc(value).log2();
     }
 
     public static ln (value: DecimalSource): Decimal {
-        return D(value).ln();
+        return Decimal.fromValue_noAlloc(value).ln();
     }
 
     public static logarithm (value: DecimalSource, base: DecimalSource): Decimal {
-        return D(value).logarithm(base);
+        return Decimal.fromValue_noAlloc(value).logarithm(base);
     }
 
     public static pow (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).pow(other);
+        return Decimal.fromValue_noAlloc(value).pow(other);
     }
 
     public static pow10 (value: DecimalSource): Decimal {
-        return D(value).pow10();
+        return Decimal.fromValue_noAlloc(value).pow10();
     }
 
     public static root (value: DecimalSource, other: DecimalSource): Decimal {
-        return D(value).root(other);
+        return Decimal.fromValue_noAlloc(value).root(other);
     }
 
     public static factorial (value: DecimalSource, _other?: never): Decimal {
-        return D(value).factorial();
+        return Decimal.fromValue_noAlloc(value).factorial();
     }
 
     public static gamma (value: DecimalSource, _other?: never): Decimal {
-        return D(value).gamma();
+        return Decimal.fromValue_noAlloc(value).gamma();
     }
 
     public static lngamma (value: DecimalSource, _other?: never): Decimal {
-        return D(value).lngamma();
+        return Decimal.fromValue_noAlloc(value).lngamma();
     }
 
     public static exp (value: DecimalSource): Decimal {
-        return D(value).exp();
+        return Decimal.fromValue_noAlloc(value).exp();
     }
 
     public static sqr (value: DecimalSource): Decimal {
-        return D(value).sqr();
+        return Decimal.fromValue_noAlloc(value).sqr();
     }
 
     public static sqrt (value: DecimalSource): Decimal {
-        return D(value).sqrt();
+        return Decimal.fromValue_noAlloc(value).sqrt();
     }
 
     public static cube (value: DecimalSource): Decimal {
-        return D(value).cube();
+        return Decimal.fromValue_noAlloc(value).cube();
     }
 
     public static cbrt (value: DecimalSource): Decimal {
-        return D(value).cbrt();
+        return Decimal.fromValue_noAlloc(value).cbrt();
     }
 
     public static tetrate (
         value: DecimalSource,
         height = 2,
-        payload: DecimalSource = FC_NN(1, 0, 1),
+        payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1),
     ): Decimal {
-        return D(value).tetrate(height, payload);
+        return Decimal.fromValue_noAlloc(value).tetrate(height, payload);
     }
 
-    public static iteratedexp (value: DecimalSource, height = 2, payload = FC_NN(1, 0, 1)): Decimal {
-        return D(value).iteratedexp(height, payload);
+    public static iteratedexp (value: DecimalSource, height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1)): Decimal {
+        return Decimal.fromValue_noAlloc(value).iteratedexp(height, payload);
     }
 
     public static iteratedlog (value: DecimalSource, base: DecimalSource = 10, times = 1): Decimal {
-        return D(value).iteratedlog(base, times);
+        return Decimal.fromValue_noAlloc(value).iteratedlog(base, times);
     }
 
     public static layeradd10 (value: DecimalSource, diff: DecimalSource): Decimal {
-        return D(value).layeradd10(diff);
+        return Decimal.fromValue_noAlloc(value).layeradd10(diff);
     }
 
     public static layeradd (value: DecimalSource, diff: number, base = 10): Decimal {
-        return D(value).layeradd(diff, base);
+        return Decimal.fromValue_noAlloc(value).layeradd(diff, base);
     }
 
     public static slog (value: DecimalSource, base = 10): Decimal {
-        return D(value).slog(base);
+        return Decimal.fromValue_noAlloc(value).slog(base);
     }
 
     public static lambertw (value: DecimalSource): Decimal {
-        return D(value).lambertw();
+        return Decimal.fromValue_noAlloc(value).lambertw();
     }
 
     public static ssqrt (value: DecimalSource): Decimal {
-        return D(value).ssqrt();
+        return Decimal.fromValue_noAlloc(value).ssqrt();
     }
 
     public static pentate (
         value: DecimalSource,
         height = 2,
-        payload: DecimalSource = FC_NN(1, 0, 1),
+        payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1),
     ): Decimal {
-        return D(value).pentate(height, payload);
+        return Decimal.fromValue_noAlloc(value).pentate(height, payload);
     }
 
     /**
@@ -937,9 +916,9 @@ export class Decimal {
         currentOwned: DecimalSource,
     ): Decimal {
         return this.affordGeometricSeries_core(
-            D(resourcesAvailable),
-            D(priceStart),
-            D(priceRatio),
+            Decimal.fromValue_noAlloc(resourcesAvailable),
+            Decimal.fromValue_noAlloc(priceStart),
+            Decimal.fromValue_noAlloc(priceRatio),
             currentOwned,
         );
     }
@@ -954,7 +933,7 @@ export class Decimal {
         priceRatio: DecimalSource,
         currentOwned: DecimalSource,
     ): Decimal {
-        return this.sumGeometricSeries_core(numItems, D(priceStart), D(priceRatio), currentOwned);
+        return this.sumGeometricSeries_core(numItems, Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceRatio), currentOwned);
     }
     /**
    * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
@@ -969,10 +948,10 @@ export class Decimal {
         currentOwned: DecimalSource,
     ): Decimal {
         return this.affordArithmeticSeries_core(
-            D(resourcesAvailable),
-            D(priceStart),
-            D(priceAdd),
-            D(currentOwned),
+            Decimal.fromValue_noAlloc(resourcesAvailable),
+            Decimal.fromValue_noAlloc(priceStart),
+            Decimal.fromValue_noAlloc(priceAdd),
+            Decimal.fromValue_noAlloc(currentOwned),
         );
     }
     /**
@@ -987,7 +966,7 @@ export class Decimal {
         priceAdd: DecimalSource,
         currentOwned: DecimalSource,
     ): Decimal {
-        return this.sumArithmeticSeries_core(D(numItems), D(priceStart), D(priceAdd), D(currentOwned));
+        return this.sumArithmeticSeries_core(Decimal.fromValue_noAlloc(numItems), Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceAdd), Decimal.fromValue_noAlloc(currentOwned));
     }
     /**
    * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
@@ -1001,21 +980,21 @@ export class Decimal {
         currentRpS: DecimalSource,
         deltaRpS: DecimalSource,
     ): Decimal {
-        return this.efficiencyOfPurchase_core(D(cost), D(currentRpS), D(deltaRpS));
+        return this.efficiencyOfPurchase_core(Decimal.fromValue_noAlloc(cost), Decimal.fromValue_noAlloc(currentRpS), Decimal.fromValue_noAlloc(deltaRpS));
     }
 
     public static randomDecimalForTesting (maxLayers: number): Decimal {
     // NOTE: This doesn't follow any kind of sane random distribution, so use this for testing purposes only.
     // 5% of the time, return 0
         if (Math.random() * 20 < 1) {
-            return FC_NN(0, 0, 0);
+            return Decimal.fromComponents_noNormalize(0, 0, 0);
         }
 
         const randomsign = Math.random() > 0.5 ? 1 : -1;
 
         // 5% of the time, return 1 or -1
         if (Math.random() * 20 < 1) {
-            return FC_NN(randomsign, 0, 1);
+            return Decimal.fromComponents_noNormalize(randomsign, 0, 1);
         }
 
         // pick a random layer
@@ -1031,7 +1010,7 @@ export class Decimal {
         if (Math.random() > 0.9) {
             randommag = Math.trunc(randommag);
         }
-        return FC(randomsign, layer, randommag);
+        return Decimal.fromComponents(randomsign, layer, randommag);
     }
 
     public static affordGeometricSeries_core (
@@ -1444,7 +1423,7 @@ export class Decimal {
             this.sign = Math.sign(mantissa);
             this.layer = ecount;
             if (ecount === 2) {
-                const result = Decimal.mul(FC(1, 2, exponent), D(mantissa));
+                const result = Decimal.mul(Decimal.fromComponents(1, 2, exponent), Decimal.fromValue_noAlloc(mantissa));
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1610,11 +1589,11 @@ export class Decimal {
     }
 
     public abs (): Decimal {
-        return FC_NN(this.sign === 0 ? 0 : 1, this.layer, this.mag);
+        return Decimal.fromComponents_noNormalize(this.sign === 0 ? 0 : 1, this.layer, this.mag);
     }
 
     public neg (): Decimal {
-        return FC_NN(-this.sign, this.layer, this.mag);
+        return Decimal.fromComponents_noNormalize(-this.sign, this.layer, this.mag);
     }
 
     public negate (): Decimal {
@@ -1638,7 +1617,7 @@ export class Decimal {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return FC(this.sign, 0, Math.round(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.round(this.mag));
         }
         return this;
     }
@@ -1648,7 +1627,7 @@ export class Decimal {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return FC(this.sign, 0, Math.floor(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.floor(this.mag));
         }
         return this;
     }
@@ -1658,7 +1637,7 @@ export class Decimal {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return FC(this.sign, 0, Math.ceil(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.ceil(this.mag));
         }
         return this;
     }
@@ -1668,13 +1647,13 @@ export class Decimal {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return FC(this.sign, 0, Math.trunc(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.trunc(this.mag));
         }
         return this;
     }
 
     public add (value: DecimalSource): this | Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
 
         // inf/nan check
         if (!Number.isFinite(this.layer)) {
@@ -1694,7 +1673,7 @@ export class Decimal {
 
         // Special case - Adding a number to its negation produces 0, no matter how large.
         if (this.sign === -decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag) {
-            return FC_NN(0, 0, 0);
+            return Decimal.fromComponents_noNormalize(0, 0, 0);
         }
 
         let a;
@@ -1731,7 +1710,7 @@ export class Decimal {
             } else {
                 const magdiff = Math.pow(10, Math.log10(a.mag) - b.mag);
                 const mantissa = b.sign + a.sign * magdiff;
-                return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+                return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
             }
         }
 
@@ -1741,7 +1720,7 @@ export class Decimal {
             } else {
                 const magdiff = Math.pow(10, a.mag - Math.log10(b.mag));
                 const mantissa = b.sign + a.sign * magdiff;
-                return FC(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
+                return Decimal.fromComponents(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
             }
         }
 
@@ -1750,7 +1729,7 @@ export class Decimal {
         } else {
             const magdiff = Math.pow(10, a.mag - b.mag);
             const mantissa = b.sign + a.sign * magdiff;
-            return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+            return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
         }
 
         // eslint-disable-next-line no-unreachable
@@ -1762,7 +1741,7 @@ export class Decimal {
     }
 
     public sub (value: DecimalSource): Decimal {
-        return this.add(D(value).neg());
+        return this.add(Decimal.fromValue_noAlloc(value).neg());
     }
 
     public subtract (value: DecimalSource): Decimal {
@@ -1774,7 +1753,7 @@ export class Decimal {
     }
 
     public mul (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
 
         // inf/nan check
         if (!Number.isFinite(this.layer)) {
@@ -1786,12 +1765,12 @@ export class Decimal {
 
         // Special case - if one of the numbers is 0, return 0.
         if (this.sign === 0 || decimal.sign === 0) {
-            return FC_NN(0, 0, 0);
+            return Decimal.fromComponents_noNormalize(0, 0, 0);
         }
 
         // Special case - Multiplying a number by its own reciprocal yields +/- 1, no matter how large.
         if (this.layer === decimal.layer && this.mag === -decimal.mag) {
-            return FC_NN(this.sign * decimal.sign, 0, 1);
+            return Decimal.fromComponents_noNormalize(this.sign * decimal.sign, 0, 1);
         }
 
         let a;
@@ -1815,29 +1794,29 @@ export class Decimal {
 
         // Special case: If one of the numbers is layer 3 or higher or one of the numbers is 2+ layers bigger than the other, just take the bigger number.
         if (a.layer >= 3 || a.layer - b.layer >= 2) {
-            return FC(a.sign * b.sign, a.layer, a.mag);
+            return Decimal.fromComponents(a.sign * b.sign, a.layer, a.mag);
         }
 
         if (a.layer === 1 && b.layer === 0) {
-            return FC(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
+            return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
         }
 
         if (a.layer === 1 && b.layer === 1) {
-            return FC(a.sign * b.sign, 1, a.mag + b.mag);
+            return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + b.mag);
         }
 
         if (a.layer === 2 && b.layer === 1) {
-            const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-                FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
+            const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+                Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
             );
-            return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+            return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
         }
 
         if (a.layer === 2 && b.layer === 2) {
-            const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-                FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
+            const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+                Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
             );
-            return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+            return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
         }
 
         throw Error("Bad arguments to mul: " + this + ", " + value);
@@ -1852,7 +1831,7 @@ export class Decimal {
     }
 
     public div (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.mul(decimal.recip());
     }
 
@@ -1872,9 +1851,9 @@ export class Decimal {
         if (this.mag === 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return FC(this.sign, 0, 1 / this.mag);
+            return Decimal.fromComponents(this.sign, 0, 1 / this.mag);
         } else {
-            return FC(this.sign, this.layer, -this.mag);
+            return Decimal.fromComponents(this.sign, this.layer, -this.mag);
         }
     }
 
@@ -1890,7 +1869,7 @@ export class Decimal {
    * -1 for less than value, 0 for equals value, 1 for greater than value
    */
     public cmp (value: DecimalSource): CompareResult {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         if (this.sign > decimal.sign) {
             return 1;
         }
@@ -1901,7 +1880,7 @@ export class Decimal {
     }
 
     public cmpabs (value: DecimalSource): CompareResult {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         const layera = this.mag > 0 ? this.layer : -this.layer;
         const layerb = decimal.mag > 0 ? decimal.layer : -decimal.layer;
         if (layera > layerb) {
@@ -1932,7 +1911,7 @@ export class Decimal {
     }
 
     public eq (value: DecimalSource): boolean {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.sign === decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag;
     }
 
@@ -1965,22 +1944,22 @@ export class Decimal {
     }
 
     public max (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.lt(decimal) ? decimal : this;
     }
 
     public min (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.gt(decimal) ? decimal : this;
     }
 
     public maxabs (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.cmpabs(decimal) < 0 ? decimal : this;
     }
 
     public minabs (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.cmpabs(decimal) > 0 ? decimal : this;
     }
 
@@ -1997,7 +1976,7 @@ export class Decimal {
     }
 
     public cmp_tolerance (value: DecimalSource, tolerance: number): CompareResult {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.eq_tolerance(decimal, tolerance) ? 0 : this.cmp(decimal);
     }
 
@@ -2011,7 +1990,7 @@ export class Decimal {
    * larger number than (larger number)*1e-9 will be considered equal.
    */
     public eq_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = D(value); // https://stackoverflow.com/a/33024979
+        const decimal = Decimal.fromValue_noAlloc(value); // https://stackoverflow.com/a/33024979
         if (tolerance == null) {
             tolerance = 1e-7;
         }
@@ -2047,22 +2026,22 @@ export class Decimal {
     }
 
     public lt_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return !this.eq_tolerance(decimal, tolerance) && this.lt(decimal);
     }
 
     public lte_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.eq_tolerance(decimal, tolerance) || this.lt(decimal);
     }
 
     public gt_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return !this.eq_tolerance(decimal, tolerance) && this.gt(decimal);
     }
 
     public gte_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.eq_tolerance(decimal, tolerance) || this.gt(decimal);
     }
 
@@ -2077,9 +2056,9 @@ export class Decimal {
         if (this.sign === 0) {
             return Decimal.dNaN;
         } else if (this.layer > 0) {
-            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         } else {
-            return FC(1, 0, Math.log10(this.mag));
+            return Decimal.fromComponents(1, 0, Math.log10(this.mag));
         }
     }
 
@@ -2087,14 +2066,14 @@ export class Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer > 0) {
-            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         } else {
-            return FC(this.sign, 0, Math.log10(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.log10(this.mag));
         }
     }
 
     public log (base: DecimalSource): Decimal {
-        base = D(base);
+        base = Decimal.fromValue_noAlloc(base);
         if (this.sign <= 0) {
             return Decimal.dNaN;
         }
@@ -2104,7 +2083,7 @@ export class Decimal {
         if (base.sign === 1 && base.layer === 0 && base.mag === 1) {
             return Decimal.dNaN;
         } else if (this.layer === 0 && base.layer === 0) {
-            return FC(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
         }
 
         return Decimal.div(this.log10(), base.log10());
@@ -2114,13 +2093,13 @@ export class Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return FC(this.sign, 0, Math.log2(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.log2(this.mag));
         } else if (this.layer === 1) {
-            return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362); // log2(10)
+            return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362); // log2(10)
         } else if (this.layer === 2) {
-            return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247); // -log10(log10(2))
+            return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247); // -log10(log10(2))
         } else {
-            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         }
     }
 
@@ -2128,13 +2107,13 @@ export class Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return FC(this.sign, 0, Math.log(this.mag));
+            return Decimal.fromComponents(this.sign, 0, Math.log(this.mag));
         } else if (this.layer === 1) {
-            return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046); // ln(10)
+            return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046); // ln(10)
         } else if (this.layer === 2) {
-            return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325); // log10(log10(e))
+            return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325); // log10(log10(e))
         } else {
-            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         }
     }
 
@@ -2143,13 +2122,13 @@ export class Decimal {
     }
 
     public pow (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         const a = this;
         const b = decimal;
 
         // special case: if a is 0, then return 0 (UNLESS b is 0, then return 1)
         if (a.sign === 0) {
-            return b.eq(0) ? FC_NN(1, 0, 1) : a;
+            return b.eq(0) ? Decimal.fromComponents_noNormalize(1, 0, 1) : a;
         }
         // special case: if a is 1, then return 1
         if (a.sign === 1 && a.layer === 0 && a.mag === 1) {
@@ -2157,7 +2136,7 @@ export class Decimal {
         }
         // special case: if b is 0, then return 1
         if (b.sign === 0) {
-            return FC_NN(1, 0, 1);
+            return Decimal.fromComponents_noNormalize(1, 0, 1);
         }
         // special case: if b is 1, then return a
         if (b.sign === 1 && b.layer === 0 && b.mag === 1) {
@@ -2197,31 +2176,31 @@ export class Decimal {
         if (a.layer === 0) {
             const newmag = Math.pow(10, a.sign * a.mag);
             if (Number.isFinite(newmag) && Math.abs(newmag) >= 0.1) {
-                return FC(1, 0, newmag);
+                return Decimal.fromComponents(1, 0, newmag);
             } else if (a.sign === 0) {
                 return Decimal.dOne;
             } else {
-                a = FC_NN(a.sign, a.layer + 1, Math.log10(a.mag));
+                a = Decimal.fromComponents_noNormalize(a.sign, a.layer + 1, Math.log10(a.mag));
             }
         }
 
         // handle all 4 layer 1+ cases individually
         if (a.sign > 0 && a.mag >= 0) {
-            return FC(a.sign, a.layer + 1, a.mag);
+            return Decimal.fromComponents(a.sign, a.layer + 1, a.mag);
         }
         if (a.sign < 0 && a.mag >= 0) {
-            return FC(-a.sign, a.layer + 1, -a.mag);
+            return Decimal.fromComponents(-a.sign, a.layer + 1, -a.mag);
         }
         // both the negative mag cases are identical: one +/- rounding error
         return Decimal.dOne;
     }
 
     public pow_base (value: DecimalSource): Decimal {
-        return D(value).pow(this);
+        return Decimal.fromValue_noAlloc(value).pow(this);
     }
 
     public root (value: DecimalSource): Decimal {
-        const decimal = D(value);
+        const decimal = Decimal.fromValue_noAlloc(value);
         return this.pow(decimal.recip());
     }
 
@@ -2242,7 +2221,7 @@ export class Decimal {
         if (this.mag < 0) {
             return this.recip();
         } else if (this.layer === 0) {
-            if (this.lt(FC_NN(1, 0, 24))) {
+            if (this.lt(Decimal.fromComponents_noNormalize(1, 0, 24))) {
                 return Decimal.fromNumber(f_gamma(this.sign * this.mag));
             }
 
@@ -2296,11 +2275,11 @@ export class Decimal {
         if (this.layer === 0 && this.mag <= 709.7) {
             return Decimal.fromNumber(Math.exp(this.sign * this.mag));
         } else if (this.layer === 0) {
-            return FC(1, 1, this.sign * Math.log10(Math.E) * this.mag);
+            return Decimal.fromComponents(1, 1, this.sign * Math.log10(Math.E) * this.mag);
         } else if (this.layer === 1) {
-            return FC(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
+            return Decimal.fromComponents(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
         } else {
-            return FC(1, this.layer + 1, this.sign * this.mag);
+            return Decimal.fromComponents(1, this.layer + 1, this.sign * this.mag);
         }
     }
 
@@ -2312,9 +2291,9 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.sqrt(this.sign * this.mag));
         } else if (this.layer === 1) {
-            return FC(1, 2, Math.log10(this.mag) - 0.3010299956639812);
+            return Decimal.fromComponents(1, 2, Math.log10(this.mag) - 0.3010299956639812);
         } else {
-            const result = Decimal.div(FC_NN(this.sign, this.layer - 1, this.mag), FC_NN(1, 0, 2));
+            const result = Decimal.div(Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag), Decimal.fromComponents_noNormalize(1, 0, 2));
             result.layer += 1;
             result.normalize();
             return result;
@@ -2332,7 +2311,7 @@ export class Decimal {
     // Tetration/tetrate: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
     // If payload != 1, then this is 'iterated exponentiation', the result of exping (payload) to base (this) (height) times. https://andydude.github.io/tetration/archives/tetration2/ident.html
     // Works with negative and positive real heights.
-    public tetrate (height = 2, payload: DecimalSource = FC_NN(1, 0, 1)): Decimal {
+    public tetrate (height = 2, payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1)): Decimal {
     // x^^1 == x
         if (height === 1) {
             return Decimal.pow(this, payload);
@@ -2386,7 +2365,7 @@ export class Decimal {
             return Decimal.iteratedlog(payload, this, -height);
         }
 
-        payload = D(payload);
+        payload = Decimal.fromValue_noAlloc(payload);
         const oldheight = height;
         height = Math.trunc(height);
         const fracheight = oldheight - height;
@@ -2438,7 +2417,7 @@ export class Decimal {
             }
             // shortcut
             if (payload.layer - this.layer > 3) {
-                return FC_NN(payload.sign, payload.layer + (height - i - 1), payload.mag);
+                return Decimal.fromComponents_noNormalize(payload.sign, payload.layer + (height - i - 1), payload.mag);
             }
             // give up after 10000 iterations if nothing is happening
             if (i > 10000) {
@@ -2449,7 +2428,7 @@ export class Decimal {
     }
 
     // iteratedexp/iterated exponentiation: - all cases handled in tetrate, so just call it
-    public iteratedexp (height = 2, payload = FC_NN(1, 0, 1)): Decimal {
+    public iteratedexp (height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1)): Decimal {
         return this.tetrate(height, payload);
     }
 
@@ -2460,7 +2439,7 @@ export class Decimal {
             return Decimal.tetrate(base, -times, this);
         }
 
-        base = D(base);
+        base = Decimal.fromValue_noAlloc(base);
         let result = Decimal.fromDecimal(this);
         const fulltimes = times;
         times = Math.trunc(times);
@@ -2531,7 +2510,7 @@ export class Decimal {
     }
 
     public slog_internal (base: DecimalSource = 10): Decimal {
-        base = D(base);
+        base = Decimal.fromValue_noAlloc(base);
 
         // special cases:
         // slog base 0 or lower is NaN
@@ -2747,7 +2726,7 @@ export class Decimal {
             return d_lambertw(this);
         }
         if (this.layer >= 3) {
-            return FC_NN(this.sign, this.layer - 1, this.mag);
+            return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
         }
 
         throw "Unhandled behavior in lambertw()";
@@ -2758,7 +2737,7 @@ export class Decimal {
     // https://en.wikipedia.org/wiki/Tetration#Super-root
     public ssqrt (): Decimal {
         if (this.sign == 1 && this.layer >= 3) {
-            return FC_NN(this.sign, this.layer - 1, this.mag);
+            return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
         }
         const lnx = this.ln();
         return lnx.div(lnx.lambertw());
@@ -2766,8 +2745,8 @@ export class Decimal {
 
     // Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
     // https://en.wikipedia.org/wiki/Pentation
-    public pentate (height = 2, payload: DecimalSource = FC_NN(1, 0, 1)): Decimal {
-        payload = D(payload);
+    public pentate (height = 2, payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1)): Decimal {
+        payload = Decimal.fromValue_noAlloc(payload);
         const oldheight = height;
         height = Math.trunc(height);
         const fracheight = oldheight - height;
@@ -2807,7 +2786,7 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.sin(this.sign * this.mag));
         }
-        return FC_NN(0, 0, 0);
+        return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
 
     public cos (): Decimal {
@@ -2817,7 +2796,7 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.cos(this.sign * this.mag));
         }
-        return FC_NN(0, 0, 0);
+        return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
 
     public tan (): this | Decimal {
@@ -2827,7 +2806,7 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.tan(this.sign * this.mag));
         }
-        return FC_NN(0, 0, 0);
+        return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
 
     public asin (): this | Decimal {
@@ -2837,7 +2816,7 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.asin(this.sign * this.mag));
         }
-        return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
 
     public acos (): Decimal {
@@ -2847,7 +2826,7 @@ export class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.acos(this.sign * this.mag));
         }
-        return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
 
     public atan (): this | Decimal {
@@ -2882,7 +2861,7 @@ export class Decimal {
 
     public atanh (): Decimal {
         if (this.abs().gte(1)) {
-            return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+            return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
         }
 
         return Decimal.ln(this.add(1).div(Decimal.fromNumber(1).sub(this))).div(2);
@@ -3625,13 +3604,3 @@ const formats = {...FORMATS, ...{
 Decimal.formats = formats;
 
 // return Decimal;
-
-// Optimise Decimal aliases.
-// We can't do this optimisation before Decimal is assigned.
-D = Decimal.fromValue_noAlloc;
-FC = Decimal.fromComponents;
-FC_NN = Decimal.fromComponents_noNormalize;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-ME = Decimal.fromMantissaExponent;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-ME_NN = Decimal.fromMantissaExponent_noNormalize;
