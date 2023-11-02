@@ -3750,7 +3750,7 @@ var format_default = { ...FORMATS, ...{
 var { format: format2, formatGain: formatGain2 } = format_default;
 var DecimalClone = Decimal;
 var E = (x) => {
-  return new DecimalClone(x);
+  return DecimalClone(x);
 };
 var eMath = {};
 var decimalFunctions = [
@@ -3767,7 +3767,8 @@ var decimalFunctions = [
      * @param {E} deltaTime - The time elapsed since the last frame in seconds.
      * @returns {E} - The interpolated value between `current` and `target`.
      */
-    value: (current, target, smoothing, deltaTime) => current.add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)))
+    // @ts-ignore
+    value: (current, target, smoothing, deltaTime) => current.add(E(target).minus(E(current)).times(E(smoothing)).times(E(deltaTime)))
   },
   {
     name: "format",
@@ -3798,7 +3799,7 @@ var decimalPrototypeFunctions = [
      * @function
      * @memberof E.prototype
      * @name clone
-     * @returns {E} A new DecimalClone instance that is a clone of the original.
+     * @returns {E} A EClone instance that is a clone of the original.
      */
     // eslint-disable-next-line no-unused-vars
     value: function() {
@@ -3815,7 +3816,7 @@ var decimalPrototypeFunctions = [
      * @name modular
      * @alias mod
      * @param {E|number|string} other - The number or DecimalClone instance to use for modular arithmetic.
-     * @returns {E} A new DecimalClone instance representing the result of the modular operation.
+     * @returns {E} A EClone instance representing the result of the modular operation.
      */
     value: function(other) {
       const other1 = E(other);

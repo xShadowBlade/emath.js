@@ -7,7 +7,15 @@ const { format, formatGain } = formats;
 
 const DecimalClone: any = Decimal;
 
-const E:any = (x?: number|string|Decimal): Decimal => { return new DecimalClone(x); };
+// @ts-expect-error
+const E: {
+    /* eslint-disable no-unused-vars */
+    (x?: number|string|Decimal): E;
+    formats: any;
+    smoothDamp: (current: E, target: E, smoothing: E, deltaTime: E) => Decimal;
+    format: (e: E, acc?: number, max?: number) => string;
+    /* eslint-enable */
+} = (x?: number|string|Decimal): E => { return DecimalClone(x); };
 
 const eMath = {};
 
@@ -29,7 +37,8 @@ const decimalFunctions: DecimalFunctions[] = [
          * @param {E} deltaTime - The time elapsed since the last frame in seconds.
          * @returns {E} - The interpolated value between `current` and `target`.
          */
-        value: (current: Decimal, target: Decimal, smoothing: Decimal, deltaTime: Decimal): Decimal => current.add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime))),
+        // @ts-ignore
+        value: (current: E, target: E, smoothing: E, deltaTime: E): E => current.add(E(target).minus(E(current)).times(E(smoothing)).times(E(deltaTime))),
     },
     {
         name: "format",
@@ -43,7 +52,7 @@ const decimalFunctions: DecimalFunctions[] = [
          * @param {number} [max=9] - The maximum number of decimal places to display.
          * @returns {string} A string representing the formatted E value.
          */
-        value: function (e: Decimal, acc: number = 2, max: number = 9): string { return format(E(e), acc, max); },
+        value: function (e: E, acc: number = 2, max: number = 9): string { return format(E(e), acc, max); },
     },
 ];
 for (const x of decimalFunctions) {
@@ -59,10 +68,10 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * @function
          * @memberof E.prototype
          * @name clone
-         * @returns {E} A new DecimalClone instance that is a clone of the original.
+         * @returns {E} A EClone instance that is a clone of the original.
          */
         // eslint-disable-next-line no-unused-vars
-        value: function (this: Decimal): Decimal {
+        value: function (this: E): E {
             return this;
         },
     },
@@ -78,10 +87,10 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * @name modular
          * @alias mod
          * @param {E|number|string} other - The number or DecimalClone instance to use for modular arithmetic.
-         * @returns {E} A new DecimalClone instance representing the result of the modular operation.
+         * @returns {E} A EClone instance representing the result of the modular operation.
          */
-        value: function (other: Decimal | number | string): Decimal {
-            const other1: E = E(other);
+        value: function (other: E | number | string): E {
+            const other1 = E(other);
             if (other1.eq(0)) return E(0);
             if (this.sign * other1.sign == -1) return this.abs().mod(other1.abs()).neg();
             if (this.sign == -1) return this.abs().mod(other1.abs());
@@ -100,7 +109,7 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          *                       or "exp" for exponential soft cap.
          * @returns {Decimal} - The DecimalClone value after applying the soft cap.
          */
-        value: function (start: Decimal, power: number, mode: string): Decimal {
+        value: function (start: E, power: number, mode: string): E {
             let x = this.clone();
             if (x.gte(start)) {
                 if ([0, "pow"].includes(mode)) x = x.div(start).pow(power).mul(start);
@@ -122,7 +131,7 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
         * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
         * @returns {Decimal} - The scaled currency value.
         */
-        value: function (s: Decimal, p: Decimal, mode: string, rev: boolean = false): Decimal {
+        value: function (s: E, p: E, mode: string, rev: boolean = false): E {
             s = E(s);
             p = E(p);
             let x = this.clone();
@@ -185,7 +194,7 @@ const decimalPrototypeFunctions: DecimalFunctions[] = [
          * const formatted = currency.formatGain(currencyGain);
          * console.log(formatted); // should return "(+12/sec)"
          */
-        value: function (gain: Decimal): string { return formatGain(this.clone(), gain); },
+        value: function (gain: E): string { return formatGain(this.clone(), gain); },
     },
     {
         name: "toRoman",
@@ -233,21 +242,22 @@ Object.getOwnPropertyNames(DecimalClone).forEach((value) => {
     if (value.match(/^(length|constructor|prototype|name)$/)) {
         return;
     };
+    // @ts-expect-error
     E[value] = DecimalClone[value];
 });
 
 E.formats = formats;
 
 // eslint-disable-next-line no-redeclare
-type E = Decimal;
-// & {
-//     clone (): Decimal;
-//     mod (other: Decimal | number | string): Decimal;
-//     softcap (start: Decimal, power: number, mode: string): Decimal;
-//     scale (s: Decimal, p: Decimal, mode: string, rev?: boolean): Decimal;
-//     format (acc?: number, max?: number): string;
-//     formatST (acc?: number, max?: number, type?: string): string;
-//     formatGain (gain: Decimal | number | string, mass?: boolean): string;
-//     toRoman (max?: number | Decimal): string | Decimal;
-// };
+type E = Decimal & {
+    /* eslint-disable no-unused-vars */
+    clone: (this: E) => Decimal;
+    mod: (other: E | number | string) => Decimal;
+    softcap: (start: E, power: number, mode: string) => Decimal;
+    scale: (s: E, p: E, mode: string, rev?: boolean) => Decimal;
+    formatST: (acc?: number, max?: number, type?: string) => string;
+    formatGain: (gain: E) => string;
+    toRoman: (max: number | Decimal) => string | Decimal;
+    /* eslint-enable */
+}
 export { eMath, E };

@@ -99,9 +99,22 @@ declare module "format" {
 }
 declare module "eMath" {
     import Decimal from "break_eternity.js";
-    const E: any;
+    const E: {
+        (x?: number | string | Decimal): E;
+        formats: any;
+        smoothDamp: (current: E, target: E, smoothing: E, deltaTime: E) => Decimal;
+        format: (e: E, acc?: number, max?: number) => string;
+    };
     const eMath: {};
-    type E = Decimal;
+    type E = Decimal & {
+        clone: (this: E) => Decimal;
+        mod: (other: E | number | string) => Decimal;
+        softcap: (start: E, power: number, mode: string) => Decimal;
+        scale: (s: E, p: E, mode: string, rev?: boolean) => Decimal;
+        formatST: (acc?: number, max?: number, type?: string) => string;
+        formatGain: (gain: E) => string;
+        toRoman: (max: number | Decimal) => string | Decimal;
+    };
     export { eMath, E };
 }
 declare module "classes/boost" {
@@ -455,12 +468,18 @@ declare module "classes/grid" {
     export { gridCell, grid };
 }
 declare module "index" {
+    import { E } from "eMath";
     import { boost } from "classes/boost";
     import { currency, currencyStatic } from "classes/currency";
     import { attribute } from "classes/attribute";
     import { grid } from "classes/grid";
     const eMath: {
-        E: any;
+        E: {
+            (x?: string | number | import("break_eternity.js").default | undefined): E;
+            formats: any;
+            smoothDamp: (current: E, target: E, smoothing: E, deltaTime: E) => import("break_eternity.js").default;
+            format: (e: E, acc?: number | undefined, max?: number | undefined) => string;
+        };
         classes: {
             boost: typeof boost;
             currency: typeof currency;
