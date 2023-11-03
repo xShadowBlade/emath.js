@@ -33,14 +33,16 @@ interface boostsObject {
      */
     desc?: string,
     /**
+     * @deprecated
      * The type of the boost.
      */
-    type: "add"|"mul"|"pow"|"tetr"|"pent",
+    type?: "add"|"mul"|"pow"|"tetr"|"pent",
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
      * @returns The calculated value.
      */
+    // eslint-disable-next-line no-unused-vars
     value: (input: E) => E,
     /**
      * The order at which the boost is applied. Lower orders are applied first.

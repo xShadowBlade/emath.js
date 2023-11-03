@@ -50,11 +50,6 @@ class gridCell {
         return Math.abs(Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)));
     }
 }
-interface gridCellType {
-    x: number;
-    y: number;
-    [key: string]: any;
-}
 
 /**
  * Represents a grid with cells.
@@ -195,11 +190,6 @@ class grid {
     public static getDistance (x1: number, y1: number, x2: number, y2: number): number {
         return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
     }
-}
-interface gridType {
-    [key: number]: gridCell[];
-    x_size: number;
-    y_size: number;
 }
 /**
  * Exports the gridCell and grid classes.

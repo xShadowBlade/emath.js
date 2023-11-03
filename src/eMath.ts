@@ -2,8 +2,13 @@
 "use strict";
 
 import Decimal, { DecimalSource, CompareResult } from "./E/e";
+import { EString } from "classes/utility/eString";
 
-type DecimalStatc = {
+// @ts-ignore
+const E: {
+	/* eslint-disable no-unused-vars */
+	(x?: DecimalSource): Decimal;
+
     readonly dZero: Decimal;
     readonly dOne: Decimal;
     readonly dNegOne: Decimal;
@@ -120,12 +125,6 @@ type DecimalStatc = {
 
     smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
     format(e: DecimalSource, acc?: number, max?: number): string;
-}
-
-// @ts-ignore
-const E: DecimalStatc & {
-	/* eslint-disable no-unused-vars */
-	(x?: DecimalSource): Decimal;
 	/* eslint-enable */
 } = (x?: DecimalSource) => new Decimal(x);
 
@@ -220,6 +219,19 @@ const eMath = {
             return null;
         }
     },
+    randomNumber: (min: number, max: number, round?: boolean): number => !(round != undefined && !round) ? Math.round((Math.random() * (max > min ? max - min : min - max)) + (max > min ? min : max)) : (Math.random() * (max > min ? max - min : min - max)) + (max > min ? min : max), // rounds by default, can disable
+
+    /**
+     * @deprecated dont ever use this
+     */
+    randomString64: (times: number, type: boolean) => {
+        let output = (Math.random() * 1232311).toString();
+        for (let i = 0; i < times; i++) {
+            output = btoa(output) + btoa(btoa(Math.random().toString()));
+        }
+        return type ? output.length : output;
+    },
+    randomString: (length: number) => new EString("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").random(length).toString(),
 };
 
 export { eMath, E, DecimalSource as ESource };

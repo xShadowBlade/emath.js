@@ -513,9 +513,27 @@ declare module "E/e" {
     }
     export default Decimal;
 }
+declare module "classes/utility/eString" {
+    class EString extends String {
+        constructor(value?: string);
+        forEach: (this: String, callbackfn: (value: string) => void) => void;
+        forEachAdvanced: (this: EString, callbackfn: (char: {
+            value: string;
+            index: number;
+        }) => void, start: number, end: number) => void;
+        toNumber: (this: EString) => number;
+        toArray: (this: EString) => string[];
+        before: (this: EString, index: number) => string;
+        after: (this: EString, index: number) => string;
+        customSplit: (this: EString, index: number) => string[];
+        random: (this: EString, qty: number) => string;
+    }
+    export { EString };
+}
 declare module "eMath" {
     import Decimal, { DecimalSource, CompareResult } from "E/e";
-    type DecimalStatc = {
+    const E: {
+        (x?: DecimalSource): Decimal;
         readonly dZero: Decimal;
         readonly dOne: Decimal;
         readonly dNegOne: Decimal;
@@ -632,9 +650,6 @@ declare module "eMath" {
         smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
         format(e: DecimalSource, acc?: number, max?: number): string;
     };
-    const E: DecimalStatc & {
-        (x?: DecimalSource): Decimal;
-    };
     type E = Decimal;
     /**
      * A collection of math-related utility functions and classes.
@@ -642,6 +657,12 @@ declare module "eMath" {
     const eMath: {
         getFast: (object: any, id: string) => object | null;
         get: (object: any, id: string) => object | null;
+        randomNumber: (min: number, max: number, round?: boolean) => number;
+        /**
+         * @deprecated dont ever use this
+         */
+        randomString64: (times: number, type: boolean) => string | number;
+        randomString: (length: number) => string;
     };
     export { eMath, E, DecimalSource as ESource };
 }
@@ -679,9 +700,10 @@ declare module "classes/boost" {
          */
         desc?: string;
         /**
+         * @deprecated
          * The type of the boost.
          */
-        type: "add" | "mul" | "pow" | "tetr" | "pent";
+        type?: "add" | "mul" | "pow" | "tetr" | "pent";
         /**
          * The function that calculates the value of the boost.
          * @param input The input value.
@@ -1038,22 +1060,36 @@ declare module "classes/grid" {
      */
     export { gridCell, grid };
 }
-declare module "classes/utility/eString" {
-    class EString extends String {
-        constructor(value?: string);
-        forEach: (this: String, callbackfn: (value: string) => void) => void;
-        forEachAdvanced: (this: EString, callbackfn: (char: {
-            value: string;
-            index: number;
-        }) => void, start: number, end: number) => void;
-        toNumber: (this: EString) => number;
-        toArray: (this: EString) => string[];
-        before: (this: EString, index: number) => string;
-        after: (this: EString, index: number) => string;
-        customSplit: (this: EString, index: number) => string[];
-        random: (this: EString, qty: number) => string;
+declare module "classes/utility/obb" {
+    interface obbInit {
+        name: string;
+        value: any;
     }
-    export { EString };
+    /**
+     * @deprecated dont ever use this
+     */
+    class obb {
+        [key: string]: any;
+        constructor(array: obbInit[], methods: obbInit[]);
+    }
+    export { obb };
+}
+declare module "classes/utility/eArray" {
+    class EArray extends Array {
+        constructor(value?: any);
+        random(qty: number): string;
+    }
+    export { EArray };
+}
+declare module "classes/utility/eObject" {
+    class EObject extends Object {
+        constructor(value?: object);
+        static getFast(object: any, id: string): any;
+        getFast(this: any, id: string): any;
+        static get(object: any, id: string): any;
+        get(this: any, id: string): any;
+    }
+    export { EObject };
 }
 declare module "index" {
     import { E } from "eMath";
@@ -1062,14 +1098,15 @@ declare module "index" {
     import { attribute } from "classes/attribute";
     import { grid, gridCell } from "classes/grid";
     import { EString } from "classes/utility/eString";
-    /**
-     * @deprecated Use `import { ${className} } from "emath.js"` instead.
-     */
+    import { obb } from "classes/utility/obb";
+    import { EArray } from "classes/utility/eArray";
+    import { EObject } from "classes/utility/eObject";
     const eMath: {
         /**
-         * @deprecated Use `import { ${className} } from "emath.js"` instead.
+         * @deprecated Use `import { E } from "emath.js"` instead.
          */
         E: {
+            (x?: import("eMath").ESource | undefined): import("E/e").default;
             readonly dZero: import("E/e").default;
             readonly dOne: import("E/e").default;
             readonly dNegOne: import("E/e").default;
@@ -1080,22 +1117,35 @@ declare module "index" {
             readonly dNegInf: import("E/e").default;
             readonly dNumberMax: import("E/e").default;
             readonly dNumberMin: import("E/e").default;
+            /**
+             * @deprecated Use `import { E } from "emath.js"` instead.
+             */
             fromComponents(sign: number, layer: number, mag: number): import("E/e").default;
             fromComponents_noNormalize(sign: number, layer: number, mag: number): import("E/e").default;
-            fromMantissaExponent(mantissa: number, exponent: number): import("E/e").default;
+            fromMantissaExponent(mantissa: number, exponent: number): import("E/e").default; /**
+             * @deprecated Use `import { currency } from "emath.js"` instead.
+             */
             fromMantissaExponent_noNormalize(mantissa: number, exponent: number): import("E/e").default;
-            fromDecimal(value: import("E/e").default): import("E/e").default;
+            fromDecimal(value: import("E/e").default): import("E/e").default; /**
+             * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
+             */
             fromNumber(value: number): import("E/e").default;
             fromString(value: string): import("E/e").default;
-            fromValue(value: import("eMath").ESource): import("E/e").default;
+            fromValue(value: import("eMath").ESource): import("E/e").default; /**
+             * @deprecated Use `import { attribute } from "emath.js"` instead.
+             */
             fromValue_noAlloc(value: import("eMath").ESource): Readonly<import("E/e").default>;
             abs(value: import("eMath").ESource): import("E/e").default;
             neg(value: import("eMath").ESource): import("E/e").default;
             negate(value: import("eMath").ESource): import("E/e").default;
-            negated(value: import("eMath").ESource): import("E/e").default;
+            negated(value: import("eMath").ESource): import("E/e").default; /**
+             * @deprecated Use `import { gridCell } from "emath.js"` instead.
+             */
             sign(value: import("eMath").ESource): number;
             sgn(value: import("eMath").ESource): number;
-            round(value: import("eMath").ESource): import("E/e").default;
+            round(value: import("eMath").ESource): import("E/e").default; /**
+             * @deprecated Use `import { EString } from "emath.js"` instead.
+             */
             floor(value: import("eMath").ESource): import("E/e").default;
             ceil(value: import("eMath").ESource): import("E/e").default;
             trunc(value: import("eMath").ESource): import("E/e").default;
@@ -1185,19 +1235,55 @@ declare module "index" {
             critical_section(base: number, height: number, grid: number[][]): number;
             smoothDamp(current: import("eMath").ESource, target: import("eMath").ESource, smoothing: import("eMath").ESource, deltaTime: import("eMath").ESource): import("E/e").default;
             format(e: import("eMath").ESource, acc?: number | undefined, max?: number | undefined): string;
-        } & ((x?: import("eMath").ESource | undefined) => import("E/e").default);
+        };
         classes: {
+            /**
+             * @deprecated Use `import { boost } from "emath.js"` instead.
+             */
             boost: typeof boost;
+            /**
+             * @deprecated Use `import { currency } from "emath.js"` instead.
+             */
             currency: typeof currency;
+            /**
+             * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
+             */
             currencyStatic: typeof currencyStatic;
+            /**
+             * @deprecated Use `import { attribute } from "emath.js"` instead.
+             */
             attribute: typeof attribute;
+            /**
+             * @deprecated Use `import { grid } from "emath.js"` instead.
+             */
             grid: typeof grid;
+            /**
+             * @deprecated Use `import { gridCell } from "emath.js"` instead.
+             */
             gridCell: typeof gridCell;
+            /**
+             * @deprecated Use `import { EString } from "emath.js"` instead.
+             */
             EString: typeof EString;
+            /**
+             * @deprecated Use `import { EArray } from "emath.js"` instead.
+             */
+            EArray: typeof EArray;
+            /**
+             * @deprecated Use `import { EObject } from "emath.js"` instead.
+             */
+            EObject: typeof EObject;
+            /**
+             * @deprecated Use `import { obb } from "emath.js"` instead.
+             */
+            obb: typeof obb;
         };
         getFast: (object: any, id: string) => object | null;
         get: (object: any, id: string) => object | null;
+        randomNumber: (min: number, max: number, round?: boolean | undefined) => number;
+        randomString64: (times: number, type: boolean) => string | number;
+        randomString: (length: number) => string;
     };
     export default eMath;
-    export { E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, };
+    export { E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, };
 }
