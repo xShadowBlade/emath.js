@@ -1,5 +1,5 @@
 "use strict";
-import { E } from "../eMath";
+import { E, ESource } from "../eMath";
 import { boost } from "./boost";
 
 /**
@@ -104,7 +104,7 @@ class currencyStatic {
      * @param {number|E} [dt=1000] Deltatime
      * @returns {E}
      */
-    public gain (dt: number | E = 1000): E {
+    public gain (dt: ESource = 1000): E {
         this.pointer().value = this.pointer().value.add(
             this.boost.calculate().mul(E(dt).div(1000)),
         );

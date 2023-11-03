@@ -1,5 +1,5 @@
 "use strict";
-import { E } from "../../src/eMath";
+import { E, ESource } from "../../src/eMath";
 
 /**
  * Represents a boost manager that applies various effects to a base value.
@@ -16,14 +16,39 @@ import { E } from "../../src/eMath";
  *   value: E(124),
  * });
  */
+/**
+ * An object representing a boost.
+ */
 interface boostsObject {
+    /**
+     * The ID of the boost.
+     */
     id: string,
+    /**
+     * The name of the boost.
+     */
     name: string,
+    /**
+     * An optional description of the boost.
+     */
     desc?: string,
+    /**
+     * The type of the boost.
+     */
     type: "add"|"mul"|"pow"|"tetr"|"pent",
-    // eslint-disable-next-line no-unused-vars
+    /**
+     * The function that calculates the value of the boost.
+     * @param input The input value.
+     * @returns The calculated value.
+     */
     value: (input: E) => E,
+    /**
+     * The order at which the boost is applied. Lower orders are applied first.
+     */
     order?: number,
+    /**
+     * The index of the boost.
+     */
     index: number,
 }
 class boost {
@@ -46,8 +71,8 @@ class boost {
      * @param {number} [baseEffect] - The base effect value to which boosts are applied.
      * @param {...boostsObject} boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect?: number | E, boosts?: boostsObject[]) {
-        baseEffect = baseEffect ? baseEffect : 1;
+    constructor (baseEffect?: ESource, boosts?: boostsObject[]) {
+        baseEffect = baseEffect ? E(baseEffect) : 1;
         this.boostArray = boosts ? boosts : [];
         this.baseEffect = E(baseEffect);
     }
@@ -91,7 +116,7 @@ class boost {
      * @param {function} value - The value of the boost (function).
      * @param {number} order - The order of the boost (higher order are go first)
      */
-    public bSet (id: string, name: string, desc: string, type: "add"|"mul"|"pow"|"tetr"|"pent", value: () => E, order: number): void {
+    public bSet (id: string, name: string, desc: string, type: "add"|"mul"|"pow"|"tetr"|"pent", value: () => E, order?: number): void {
         const bCheck: boostsObject | null = this.bGet(id);
 
         if (!bCheck) {
@@ -124,7 +149,7 @@ class boost {
      * @param {number|E} [base=this.baseEffect] - The base effect value to calculate with.
      * @returns {E} The calculated effect after applying boosts.
      */
-    public calculate (base: number | E = this.baseEffect): E {
+    public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);
         const boosts: boostsObject[] = this.boostArray;
         boosts.sort((a: any, b: any) => a.order - b.order);

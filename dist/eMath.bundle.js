@@ -3305,7 +3305,87 @@
   }).includes(b)).forEach((prop) => {
     E[prop] = e_default[prop];
   });
-  var eMath = {};
+  var eMath = {
+    getFast: function(object, id) {
+      object = JSON.stringify(object);
+      const length = id.toString().replace(/\\/g, "").length;
+      const searchIndex = object.search(id);
+      let output = "";
+      let offset = length + 2;
+      let unclosedQdb = 0;
+      let unclosedQsb = 0;
+      let unclosedQib = 0;
+      let unclosedB = 0;
+      let unclosedCB = 0;
+      function check() {
+        const read = object[searchIndex + offset];
+        if (object[searchIndex + offset - 1] != "\\") {
+          switch (read) {
+            case '"':
+              if (unclosedQdb == 0) {
+                unclosedQdb = 1;
+              } else {
+                unclosedQdb = 0;
+              }
+              break;
+            case "'":
+              if (unclosedQsb == 0) {
+                unclosedQsb = 1;
+              } else {
+                unclosedQsb = 0;
+              }
+              break;
+            case "`":
+              if (unclosedQib == 0) {
+                unclosedQib = 1;
+              } else {
+                unclosedQib = 0;
+              }
+              break;
+            case "[":
+              unclosedB++;
+              break;
+            case "]":
+              unclosedB--;
+              break;
+            case "{":
+              unclosedCB++;
+              break;
+            case "}":
+              unclosedCB--;
+              break;
+          }
+        }
+        output += read;
+        offset++;
+      }
+      check();
+      while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
+        check();
+      }
+      return JSON.parse(output);
+    },
+    get: function(object, id) {
+      try {
+        for (let i = 0; i < Object.keys(object).length; i++) {
+          if (Object.keys(object)[i] == "sign")
+            break;
+          if (Object.keys(object)[i] == id) {
+            return object[Object.keys(object)[i]];
+          } else if (typeof object[Object.keys(object)[i]] == "object") {
+            const output = this.get(object[Object.keys(object)[i]], id);
+            if (output != null)
+              return output;
+          } else {
+            continue;
+          }
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    }
+  };
 
   // src/classes/boost.ts
   var boost = class {
@@ -3317,7 +3397,7 @@
      * @param {...boostsObject} boosts - An array of boost objects to initialize with.
      */
     constructor(baseEffect, boosts) {
-      baseEffect = baseEffect ? baseEffect : 1;
+      baseEffect = baseEffect ? E(baseEffect) : 1;
       this.boostArray = boosts ? boosts : [];
       this.baseEffect = E(baseEffect);
     }
@@ -3599,10 +3679,10 @@
      * Constructs a static attribute with an initial effect.
      *
      * @constructor
-     * @param {E|Number} initial - The inital value of the attribute.
+     * @param {ESource} initial - The inital value of the attribute.
      */
     constructor(initial) {
-      this.initial = initial;
+      this.initial = E(initial);
       this.value = E(initial);
       this.boost = new boost(1);
     }
@@ -3626,10 +3706,12 @@
      * @constructor
      * @param {number} x - The x-coordinate.
      * @param {number} y - The y-coordinate.
+     * @param {any} [props] - The properties to initialize with.
      */
-    constructor(x, y) {
+    constructor(x, y, props) {
       this.x = x;
       this.y = y;
+      this.properties = props ? props : {};
     }
     /**
      * Sets the value of a property on the cell.
@@ -3638,8 +3720,16 @@
      * @returns {any} - The set value.
      */
     setValue(name, value) {
-      this[name] = value;
+      this.properties[name] = value;
       return value;
+    }
+    /**
+     * Gets the value of a property on the cell.
+     * @param {string} name - The name of the property.
+     * @returns {any} - The value of the property.
+     */
+    getValue(name) {
+      return this.properties[name];
     }
     /**
      * Calculates the distance from the cell to a specified point.
@@ -3658,14 +3748,15 @@
      * @constructor
      * @param {number} x_size - The size of the grid along the x-axis.
      * @param {number} y_size - The size of the grid along the y-axis.
+     * @param {any} [starterProps] - The properties to initialize with.
      */
-    constructor(x_size, y_size) {
+    constructor(x_size, y_size, starterProps) {
       this.x_size = x_size;
       this.y_size = y_size;
       for (let a = 0; a < y_size; a++) {
         this[a] = [];
         for (let b = 0; b < x_size; b++) {
-          this[a][b] = new gridCell(b, a);
+          this[a][b] = new gridCell(b, a, starterProps);
         }
       }
     }
@@ -3752,20 +3843,91 @@
     getEncircling(x, y) {
       return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
     }
+    /**
+     * Calculates the distance between two points on the grid.
+     * @param {number} x1 - The x-coordinate of the first point.
+     * @param {number} y1 - The y-coordinate of the first point.
+     * @param {number} x2 - The x-coordinate of the second point.
+     * @param {number} y2 - The y-coordinate of the second point.
+     * @returns {number} The distance between the two points.
+     */
+    static getDistance(x1, y1, x2, y2) {
+      return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+    }
   };
+
+  // src/classes/utility/eString.ts
+  var EString = class extends String {
+    constructor(value) {
+      super(value);
+      this.forEach = function(callbackfn) {
+        for (let i = 0; i < this.length; i++) {
+          callbackfn(this[i]);
+        }
+      };
+      this.forEachAdvanced = function(callbackfn, start, end) {
+        for (let i = start < 0 ? 0 : start; i < (end > this.length ? this.length : end < start ? this.length : end); i++) {
+          callbackfn({
+            value: this[i],
+            index: i
+          });
+        }
+      };
+      this.toNumber = function() {
+        let output = "";
+        for (let i = 0; i < this.length; i++) {
+          output += this.charCodeAt(i).toString();
+        }
+        return parseInt(output);
+      };
+      this.toArray = function() {
+        const output = [];
+        for (let i = 0; i < this.length; i++) {
+          output.push(this[i]);
+        }
+        return output;
+      };
+      this.before = function(index) {
+        let output = "";
+        this.forEachAdvanced(function(char) {
+          output += char.value;
+        }, 0, index);
+        return output;
+      };
+      this.after = function(index) {
+        let output = "";
+        this.forEachAdvanced(function(char) {
+          output += char.value;
+        }, index, -1);
+        return output;
+      };
+      this.customSplit = function(index) {
+        const output = [];
+        output.push(this.before(index));
+        output.push(this.after(index));
+        return output;
+      };
+      this.random = function(qty) {
+        const random = (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max);
+        let output = "";
+        if (qty > 0) {
+          for (let i = 0; i < qty; i++) {
+            output += this.charAt(random(0, this.length));
+          }
+        } else {
+          output = this.charAt(random(0, this.length));
+        }
+        return output;
+      };
+    }
+  };
+  ;
 
   // src/index.ts
   var eMath2 = {
     ...eMath,
     ...{
-      E,
-      classes: {
-        boost,
-        currency,
-        currencyStatic,
-        attribute,
-        grid
-      }
+      E
     }
   };
   if (typeof process !== "object" && typeof window !== "undefined") {

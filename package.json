@@ -14,7 +14,7 @@
         "build:esm": "esbuild src/index.ts --bundle --tree-shaking=false --format=esm --outfile=dist/eMath.esm.js",
         "build:cjs": "esbuild src/index.ts --bundle --tree-shaking=false --format=cjs --outfile=dist/eMath.js",
         "build:types": "tsc --emitDeclarationOnly -outfile dist/eMath.d.ts",
-        "test": "mocha"
+        "test": "ts-mocha test/**/*.test.ts"
     },
     "repository": {
         "type": "git",
@@ -27,7 +27,7 @@
     },
     "homepage": "https://github.com/xShadowBlade/emath.js#readme",
     "devDependencies": {
-        "@types/node": "^20.8.9",
+        "@types/mocha": "^10.0.3",
         "@typescript-eslint/eslint-plugin": "^6.9.0",
         "@typescript-eslint/parser": "^6.9.0",
         "esbuild": "0.19.5",
@@ -37,6 +37,7 @@
         "npm-run-all": "^4.1.5",
         "prettier": "3.0.3",
         "prettier-eslint": "^16.1.1",
+        "ts-mocha": "^10.0.0",
         "typescript": "^5.2.2"
     }
 }

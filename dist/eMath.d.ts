@@ -522,11 +522,17 @@ declare module "eMath" {
         (x?: DecimalSource): Decimal;
     };
     type E = Decimal;
-    const eMath: {};
-    export { eMath, E };
+    /**
+     * A collection of math-related utility functions and classes.
+     */
+    const eMath: {
+        getFast: (object: any, id: string) => object | null;
+        get: (object: any, id: string) => object | null;
+    };
+    export { eMath, E, DecimalSource as ESource };
 }
 declare module "classes/boost" {
-    import { E } from "eMath";
+    import { E, ESource } from "eMath";
     /**
      * Represents a boost manager that applies various effects to a base value.
      *
@@ -542,13 +548,39 @@ declare module "classes/boost" {
      *   value: E(124),
      * });
      */
+    /**
+     * An object representing a boost.
+     */
     interface boostsObject {
+        /**
+         * The ID of the boost.
+         */
         id: string;
+        /**
+         * The name of the boost.
+         */
         name: string;
+        /**
+         * An optional description of the boost.
+         */
         desc?: string;
+        /**
+         * The type of the boost.
+         */
         type: "add" | "mul" | "pow" | "tetr" | "pent";
+        /**
+         * The function that calculates the value of the boost.
+         * @param input The input value.
+         * @returns The calculated value.
+         */
         value: (input: E) => E;
+        /**
+         * The order at which the boost is applied. Lower orders are applied first.
+         */
         order?: number;
+        /**
+         * The index of the boost.
+         */
         index: number;
     }
     class boost {
@@ -569,7 +601,7 @@ declare module "classes/boost" {
          * @param {number} [baseEffect] - The base effect value to which boosts are applied.
          * @param {...boostsObject} boosts - An array of boost objects to initialize with.
          */
-        constructor(baseEffect?: number | E, boosts?: boostsObject[]);
+        constructor(baseEffect?: ESource, boosts?: boostsObject[]);
         /**
          * Gets a boost object by its ID.
          *
@@ -592,7 +624,7 @@ declare module "classes/boost" {
          * @param {function} value - The value of the boost (function).
          * @param {number} order - The order of the boost (higher order are go first)
          */
-        bSet(id: string, name: string, desc: string, type: "add" | "mul" | "pow" | "tetr" | "pent", value: () => E, order: number): void;
+        bSet(id: string, name: string, desc: string, type: "add" | "mul" | "pow" | "tetr" | "pent", value: () => E, order?: number): void;
         /**
          * Sets or updates multiple boosts with advanced parameters.
          *
@@ -605,12 +637,12 @@ declare module "classes/boost" {
          * @param {number|E} [base=this.baseEffect] - The base effect value to calculate with.
          * @returns {E} The calculated effect after applying boosts.
          */
-        calculate(base?: number | E): E;
+        calculate(base?: ESource): E;
     }
     export { boost };
 }
 declare module "classes/currency" {
-    import { E } from "eMath";
+    import { E, ESource } from "eMath";
     import { boost } from "classes/boost";
     /**
      * Upgrades
@@ -691,7 +723,7 @@ declare module "classes/currency" {
          * @param {number|E} [dt=1000] Deltatime
          * @returns {E}
          */
-        gain(dt?: number | E): E;
+        gain(dt?: ESource): E;
         /**
          * Create new upgrades
          *
@@ -733,7 +765,7 @@ declare module "classes/currency" {
     export { currency, currencyStatic };
 }
 declare module "classes/attribute" {
-    import { E } from "eMath";
+    import { E, ESource } from "eMath";
     import { boost } from "classes/boost";
     /**
      * Represents a static attribute in the game.
@@ -745,7 +777,7 @@ declare module "classes/attribute" {
          * The inital value of the attribute.
          * @type {E}
          */
-        initial: E | number;
+        initial: E;
         /**
          * The current value of the attribute.
          * @type {E}
@@ -760,9 +792,9 @@ declare module "classes/attribute" {
          * Constructs a static attribute with an initial effect.
          *
          * @constructor
-         * @param {E|Number} initial - The inital value of the attribute.
+         * @param {ESource} initial - The inital value of the attribute.
          */
-        constructor(initial: E | number);
+        constructor(initial: ESource);
         /**
          * Updates the value of the attribute based on the provided effect function and initial value.
          *
@@ -775,20 +807,21 @@ declare module "classes/attribute" {
 }
 declare module "classes/grid" {
     /**
-     * Represents a grid cell with coordinates.
+     * Represents a grid cell with coordinates and properties.
      * @class
      */
     class gridCell {
         x: number;
         y: number;
-        [key: string]: any;
+        properties: any;
         /**
          * Initializes a new instance of the grid cell.
          * @constructor
          * @param {number} x - The x-coordinate.
          * @param {number} y - The y-coordinate.
+         * @param {any} [props] - The properties to initialize with.
          */
-        constructor(x: number, y: number);
+        constructor(x: number, y: number, props?: object);
         /**
          * Sets the value of a property on the cell.
          * @param {string} name - The name of the property.
@@ -796,6 +829,12 @@ declare module "classes/grid" {
          * @returns {any} - The set value.
          */
         setValue(name: string, value: any): any;
+        /**
+         * Gets the value of a property on the cell.
+         * @param {string} name - The name of the property.
+         * @returns {any} - The value of the property.
+         */
+        getValue(name: string): any;
         /**
          * Calculates the distance from the cell to a specified point.
          * @param {number} x - The x-coordinate of the target point.
@@ -821,8 +860,9 @@ declare module "classes/grid" {
          * @constructor
          * @param {number} x_size - The size of the grid along the x-axis.
          * @param {number} y_size - The size of the grid along the y-axis.
+         * @param {any} [starterProps] - The properties to initialize with.
          */
-        constructor(x_size: number, y_size: number);
+        constructor(x_size: number, y_size: number, starterProps?: object);
         /**
          * Gets an array containing all cells in the grid.
          * @returns {gridCell[]} - An array of all cells.
@@ -868,6 +908,15 @@ declare module "classes/grid" {
          * @param {number} y - The y coordinate to check.
          */
         getEncircling(x: number, y: number): gridCell[];
+        /**
+         * Calculates the distance between two points on the grid.
+         * @param {number} x1 - The x-coordinate of the first point.
+         * @param {number} y1 - The y-coordinate of the first point.
+         * @param {number} x2 - The x-coordinate of the second point.
+         * @param {number} y2 - The y-coordinate of the second point.
+         * @returns {number} The distance between the two points.
+         */
+        static getDistance(x1: number, y1: number, x2: number, y2: number): number;
     }
     /**
      * Exports the gridCell and grid classes.
@@ -875,11 +924,29 @@ declare module "classes/grid" {
      */
     export { gridCell, grid };
 }
+declare module "classes/utility/eString" {
+    class EString extends String {
+        constructor(value?: string);
+        forEach: (this: String, callbackfn: (value: string) => void) => void;
+        forEachAdvanced: (this: EString, callbackfn: (char: {
+            value: string;
+            index: number;
+        }) => void, start: number, end: number) => void;
+        toNumber: (this: EString) => number;
+        toArray: (this: EString) => string[];
+        before: (this: EString, index: number) => string;
+        after: (this: EString, index: number) => string;
+        customSplit: (this: EString, index: number) => string[];
+        random: (this: EString, qty: number) => string;
+    }
+    export { EString };
+}
 declare module "index" {
     import { boost } from "classes/boost";
     import { currency, currencyStatic } from "classes/currency";
     import { attribute } from "classes/attribute";
-    import { grid } from "classes/grid";
+    import { grid, gridCell } from "classes/grid";
+    import { EString } from "classes/utility/eString";
     const eMath: {
         E: {
             normalize: () => import("E/e").default;
@@ -890,7 +957,7 @@ declare module "index" {
             fromDecimal: (value: import("E/e").default) => import("E/e").default;
             fromNumber: (value: number) => import("E/e").default;
             fromString: (value: string) => import("E/e").default;
-            fromValue: (value: import("E/e").DecimalSource) => import("E/e").default;
+            fromValue: (value: import("eMath").ESource) => import("E/e").default;
             toNumber: () => number;
             mantissaWithDecimalPlaces: (places: number) => number;
             magnitudeWithDecimalPlaces: (places: number) => number;
@@ -910,62 +977,62 @@ declare module "index" {
             floor: () => import("E/e").default;
             ceil: () => import("E/e").default;
             trunc: () => import("E/e").default;
-            add: (value: import("E/e").DecimalSource) => import("E/e").default;
-            plus: (value: import("E/e").DecimalSource) => import("E/e").default;
-            sub: (value: import("E/e").DecimalSource) => import("E/e").default;
-            subtract: (value: import("E/e").DecimalSource) => import("E/e").default;
-            minus: (value: import("E/e").DecimalSource) => import("E/e").default;
-            mul: (value: import("E/e").DecimalSource) => import("E/e").default;
-            multiply: (value: import("E/e").DecimalSource) => import("E/e").default;
-            times: (value: import("E/e").DecimalSource) => import("E/e").default;
-            div: (value: import("E/e").DecimalSource) => import("E/e").default;
-            divide: (value: import("E/e").DecimalSource) => import("E/e").default;
-            divideBy: (value: import("E/e").DecimalSource) => import("E/e").default;
-            dividedBy: (value: import("E/e").DecimalSource) => import("E/e").default;
+            add: (value: import("eMath").ESource) => import("E/e").default;
+            plus: (value: import("eMath").ESource) => import("E/e").default;
+            sub: (value: import("eMath").ESource) => import("E/e").default;
+            subtract: (value: import("eMath").ESource) => import("E/e").default;
+            minus: (value: import("eMath").ESource) => import("E/e").default;
+            mul: (value: import("eMath").ESource) => import("E/e").default;
+            multiply: (value: import("eMath").ESource) => import("E/e").default;
+            times: (value: import("eMath").ESource) => import("E/e").default;
+            div: (value: import("eMath").ESource) => import("E/e").default;
+            divide: (value: import("eMath").ESource) => import("E/e").default;
+            divideBy: (value: import("eMath").ESource) => import("E/e").default;
+            dividedBy: (value: import("eMath").ESource) => import("E/e").default;
             recip: () => import("E/e").default;
             reciprocal: () => import("E/e").default;
             reciprocate: () => import("E/e").default;
-            cmp: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
-            cmpabs: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
-            compare: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
+            cmp: (value: import("eMath").ESource) => import("E/e").CompareResult;
+            cmpabs: (value: import("eMath").ESource) => import("E/e").CompareResult;
+            compare: (value: import("eMath").ESource) => import("E/e").CompareResult;
             isNan: () => boolean;
             isFinite: () => boolean;
-            eq: (value: import("E/e").DecimalSource) => boolean;
-            equals: (value: import("E/e").DecimalSource) => boolean;
-            neq: (value: import("E/e").DecimalSource) => boolean;
-            notEquals: (value: import("E/e").DecimalSource) => boolean;
-            lt: (value: import("E/e").DecimalSource) => boolean;
-            lte: (value: import("E/e").DecimalSource) => boolean;
-            gt: (value: import("E/e").DecimalSource) => boolean;
-            gte: (value: import("E/e").DecimalSource) => boolean;
-            max: (value: import("E/e").DecimalSource) => import("E/e").default;
-            min: (value: import("E/e").DecimalSource) => import("E/e").default;
-            maxabs: (value: import("E/e").DecimalSource) => import("E/e").default;
-            minabs: (value: import("E/e").DecimalSource) => import("E/e").default;
-            clamp: (min: import("E/e").DecimalSource, max: import("E/e").DecimalSource) => import("E/e").default;
-            clampMin: (min: import("E/e").DecimalSource) => import("E/e").default;
-            clampMax: (max: import("E/e").DecimalSource) => import("E/e").default;
-            cmp_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => import("E/e").CompareResult;
-            compare_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => import("E/e").CompareResult;
-            eq_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            equals_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            neq_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            notEquals_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            lt_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            lte_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            gt_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
-            gte_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            eq: (value: import("eMath").ESource) => boolean;
+            equals: (value: import("eMath").ESource) => boolean;
+            neq: (value: import("eMath").ESource) => boolean;
+            notEquals: (value: import("eMath").ESource) => boolean;
+            lt: (value: import("eMath").ESource) => boolean;
+            lte: (value: import("eMath").ESource) => boolean;
+            gt: (value: import("eMath").ESource) => boolean;
+            gte: (value: import("eMath").ESource) => boolean;
+            max: (value: import("eMath").ESource) => import("E/e").default;
+            min: (value: import("eMath").ESource) => import("E/e").default;
+            maxabs: (value: import("eMath").ESource) => import("E/e").default;
+            minabs: (value: import("eMath").ESource) => import("E/e").default;
+            clamp: (min: import("eMath").ESource, max: import("eMath").ESource) => import("E/e").default;
+            clampMin: (min: import("eMath").ESource) => import("E/e").default;
+            clampMax: (max: import("eMath").ESource) => import("E/e").default;
+            cmp_tolerance: (value: import("eMath").ESource, tolerance: number) => import("E/e").CompareResult;
+            compare_tolerance: (value: import("eMath").ESource, tolerance: number) => import("E/e").CompareResult;
+            eq_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            equals_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            neq_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            notEquals_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            lt_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            lte_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            gt_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
+            gte_tolerance: (value: import("eMath").ESource, tolerance: number) => boolean;
             pLog10: () => import("E/e").default;
             absLog10: () => import("E/e").default;
             log10: () => import("E/e").default;
-            log: (base: import("E/e").DecimalSource) => import("E/e").default;
+            log: (base: import("eMath").ESource) => import("E/e").default;
             log2: () => import("E/e").default;
             ln: () => import("E/e").default;
-            logarithm: (base: import("E/e").DecimalSource) => import("E/e").default;
-            pow: (value: import("E/e").DecimalSource) => import("E/e").default;
+            logarithm: (base: import("eMath").ESource) => import("E/e").default;
+            pow: (value: import("eMath").ESource) => import("E/e").default;
             pow10: () => import("E/e").default;
-            pow_base: (value: import("E/e").DecimalSource) => import("E/e").default;
-            root: (value: import("E/e").DecimalSource) => import("E/e").default;
+            pow_base: (value: import("eMath").ESource) => import("E/e").default;
+            root: (value: import("eMath").ESource) => import("E/e").default;
             factorial: () => import("E/e").default;
             gamma: () => import("E/e").default;
             lngamma: () => import("E/e").default;
@@ -974,16 +1041,16 @@ declare module "index" {
             sqrt: () => import("E/e").default;
             cube: () => import("E/e").default;
             cbrt: () => import("E/e").default;
-            tetrate: (height?: number, payload?: import("E/e").DecimalSource) => import("E/e").default;
+            tetrate: (height?: number, payload?: import("eMath").ESource) => import("E/e").default;
             iteratedexp: (height?: number, payload?: import("E/e").default) => import("E/e").default;
-            iteratedlog: (base?: import("E/e").DecimalSource, times?: number) => import("E/e").default;
-            slog: (base?: import("E/e").DecimalSource, iterations?: number) => import("E/e").default;
-            slog_internal: (base?: import("E/e").DecimalSource) => import("E/e").default;
-            layeradd10: (diff: import("E/e").DecimalSource) => import("E/e").default;
-            layeradd: (diff: number, base: import("E/e").DecimalSource) => import("E/e").default;
+            iteratedlog: (base?: import("eMath").ESource, times?: number) => import("E/e").default;
+            slog: (base?: import("eMath").ESource, iterations?: number) => import("E/e").default;
+            slog_internal: (base?: import("eMath").ESource) => import("E/e").default;
+            layeradd10: (diff: import("eMath").ESource) => import("E/e").default;
+            layeradd: (diff: number, base: import("eMath").ESource) => import("E/e").default;
             lambertw: () => import("E/e").default;
             ssqrt: () => import("E/e").default;
-            pentate: (height?: number, payload?: import("E/e").DecimalSource) => import("E/e").default;
+            pentate: (height?: number, payload?: import("eMath").ESource) => import("E/e").default;
             sin: () => import("E/e").default;
             cos: () => import("E/e").default;
             tan: () => import("E/e").default;
@@ -996,28 +1063,24 @@ declare module "index" {
             asinh: () => import("E/e").default;
             acosh: () => import("E/e").default;
             atanh: () => import("E/e").default;
-            ascensionPenalty: (ascensions: import("E/e").DecimalSource) => import("E/e").default;
+            ascensionPenalty: (ascensions: import("eMath").ESource) => import("E/e").default;
             egg: () => import("E/e").default;
-            lessThanOrEqualTo: (other: import("E/e").DecimalSource) => boolean;
-            lessThan: (other: import("E/e").DecimalSource) => boolean;
-            greaterThanOrEqualTo: (other: import("E/e").DecimalSource) => boolean;
-            greaterThan: (other: import("E/e").DecimalSource) => boolean;
+            lessThanOrEqualTo: (other: import("eMath").ESource) => boolean;
+            lessThan: (other: import("eMath").ESource) => boolean;
+            greaterThanOrEqualTo: (other: import("eMath").ESource) => boolean;
+            greaterThan: (other: import("eMath").ESource) => boolean;
             clone: () => import("E/e").default;
-            mod: (other: import("E/e").DecimalSource) => import("E/e").default;
-            softcap: (start: import("E/e").DecimalSource, power: number, mode: string) => import("E/e").default;
-            scale: (s: import("E/e").DecimalSource, p: import("E/e").DecimalSource, mode: string, rev?: boolean) => import("E/e").default;
+            mod: (other: import("eMath").ESource) => import("E/e").default;
+            softcap: (start: import("eMath").ESource, power: number, mode: string) => import("E/e").default;
+            scale: (s: import("eMath").ESource, p: import("eMath").ESource, mode: string, rev?: boolean) => import("E/e").default;
             format: (acc?: number, max?: number) => string;
             formatST: (acc?: number, max?: number, type?: string) => string;
-            formatGain: (gain: import("E/e").DecimalSource) => string;
-            toRoman: (max: import("E/e").DecimalSource) => string | import("E/e").default;
-        } & ((x?: import("E/e").DecimalSource | undefined) => import("E/e").default);
-        classes: {
-            boost: typeof boost;
-            currency: typeof currency;
-            currencyStatic: typeof currencyStatic;
-            attribute: typeof attribute;
-            grid: typeof grid;
-        };
+            formatGain: (gain: import("eMath").ESource) => string;
+            toRoman: (max: import("eMath").ESource) => string | import("E/e").default;
+        } & ((x?: import("eMath").ESource | undefined) => import("E/e").default);
+        getFast: (object: any, id: string) => object | null;
+        get: (object: any, id: string) => object | null;
     };
     export default eMath;
+    export { boost, currency, currencyStatic, attribute, grid, gridCell, EString, };
 }

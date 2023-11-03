@@ -1,21 +1,23 @@
 /**
- * Represents a grid cell with coordinates.
+ * Represents a grid cell with coordinates and properties.
  * @class
  */
 class gridCell {
     public x: number;
     public y: number;
     // eslint-disable-next-line no-undef
-    [key: string]: any;
+    public properties: any;
     /**
      * Initializes a new instance of the grid cell.
      * @constructor
      * @param {number} x - The x-coordinate.
      * @param {number} y - The y-coordinate.
+     * @param {any} [props] - The properties to initialize with.
      */
-    constructor (x: number, y: number) {
+    constructor (x: number, y: number, props?: object) {
         this.x = x;
         this.y = y;
+        this.properties = props ? props : {};
     }
 
     /**
@@ -25,8 +27,17 @@ class gridCell {
      * @returns {any} - The set value.
      */
     public setValue (name: string, value: any): any {
-        this[name] = value;
+        this.properties[name] = value;
         return value;
+    }
+
+    /**
+     * Gets the value of a property on the cell.
+     * @param {string} name - The name of the property.
+     * @returns {any} - The value of the property.
+     */
+    public getValue (name: string): any {
+        return this.properties[name];
     }
 
     /**
@@ -38,6 +49,11 @@ class gridCell {
     public getDistance (x: number, y: number): number {
         return Math.abs(Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)));
     }
+}
+interface gridCellType {
+    x: number;
+    y: number;
+    [key: string]: any;
 }
 
 /**
@@ -58,8 +74,9 @@ class grid {
      * @constructor
      * @param {number} x_size - The size of the grid along the x-axis.
      * @param {number} y_size - The size of the grid along the y-axis.
+     * @param {any} [starterProps] - The properties to initialize with.
      */
-    constructor (x_size: number, y_size: number) {
+    constructor (x_size: number, y_size: number, starterProps?: object) {
         this.x_size = x_size;
         this.y_size = y_size;
 
@@ -71,7 +88,7 @@ class grid {
             this[a] = [];
             for (let b = 0; b < x_size; b++) {
                 // iterates through every cell
-                this[a][b] = new gridCell(b, a);
+                this[a][b] = new gridCell(b, a, starterProps);
             }
         }
     }
@@ -166,8 +183,24 @@ class grid {
     public getEncircling (x: number, y: number): gridCell[] {
         return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
     }
-}
 
+    /**
+     * Calculates the distance between two points on the grid.
+     * @param {number} x1 - The x-coordinate of the first point.
+     * @param {number} y1 - The y-coordinate of the first point.
+     * @param {number} x2 - The x-coordinate of the second point.
+     * @param {number} y2 - The y-coordinate of the second point.
+     * @returns {number} The distance between the two points.
+     */
+    public static getDistance (x1: number, y1: number, x2: number, y2: number): number {
+        return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+    }
+}
+interface gridType {
+    [key: number]: gridCell[];
+    x_size: number;
+    y_size: number;
+}
 /**
  * Exports the gridCell and grid classes.
  * @module

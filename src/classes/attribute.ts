@@ -1,5 +1,5 @@
 "use strict";
-import { E } from "../../src/eMath";
+import { E, ESource } from "../../src/eMath";
 import { boost } from "../../src/classes/boost";
 
 /**
@@ -12,7 +12,7 @@ class attribute {
      * The inital value of the attribute.
      * @type {E}
      */
-    public initial: E | number;
+    public initial: E;
 
     /**
      * The current value of the attribute.
@@ -30,10 +30,10 @@ class attribute {
      * Constructs a static attribute with an initial effect.
      *
      * @constructor
-     * @param {E|Number} initial - The inital value of the attribute.
+     * @param {ESource} initial - The inital value of the attribute.
      */
-    constructor (initial: E | number) {
-        this.initial = initial;
+    constructor (initial: ESource) {
+        this.initial = E(initial);
         this.value = E(initial);
         this.boost = new boost(1);
     }
