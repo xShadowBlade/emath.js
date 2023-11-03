@@ -465,6 +465,8 @@
     l = l + 3617 / (122400 * np);
     return Math.exp(l) / scal1;
   };
+  var _twopi = 6.283185307179586;
+  var _EXPN1 = 0.36787944117144233;
   var OMEGA = 0.5671432904097838;
   var f_lambertw = function(z, tol = 1e-10) {
     let w;
@@ -3295,9 +3297,14 @@
     ev
   } };
   Decimal.formats = formats;
+  var e_default = Decimal;
 
   // src/eMath.ts
-  var E = (x) => new Decimal(x);
+  var E = (x) => new e_default(x);
+  Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(class {
+  }).includes(b)).forEach((prop) => {
+    E[prop] = e_default[prop];
+  });
   var eMath = {};
 
   // src/classes/boost.ts

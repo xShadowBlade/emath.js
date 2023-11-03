@@ -35,12 +35,13 @@ declare module "E/lru-cache" {
     }
 }
 declare module "E/e" {
+    import { LRUCache } from "E/lru-cache";
     export type CompareResult = -1 | 0 | 1;
     export type DecimalSource = Decimal | number | string;
     /**
      * The Decimal's value is simply mantissa * 10^exponent.
      */
-    export class Decimal {
+    class Decimal {
         static readonly dZero: Decimal;
         static readonly dOne: Decimal;
         static readonly dNegOne: Decimal;
@@ -51,7 +52,7 @@ declare module "E/e" {
         static readonly dNegInf: Decimal;
         static readonly dNumberMax: Decimal;
         static readonly dNumberMin: Decimal;
-        private static fromStringCache;
+        static fromStringCache: LRUCache<string, Decimal>;
         sign: number;
         mag: number;
         layer: number;
@@ -510,10 +511,16 @@ declare module "E/e" {
          */
         toRoman(max: DecimalSource): string | Decimal;
     }
+    export default Decimal;
 }
 declare module "eMath" {
-    import { Decimal, DecimalSource } from "E/e";
-    const E: (x?: DecimalSource) => Decimal;
+    import Decimal, { DecimalSource } from "E/e";
+    type StaticMethods<T> = {
+        [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K];
+    };
+    const E: StaticMethods<Decimal> & {
+        (x?: DecimalSource): Decimal;
+    };
     type E = Decimal;
     const eMath: {};
     export { eMath, E };
@@ -874,7 +881,136 @@ declare module "index" {
     import { attribute } from "classes/attribute";
     import { grid } from "classes/grid";
     const eMath: {
-        E: (x?: import("E/e").DecimalSource | undefined) => import("E/e").Decimal;
+        E: {
+            normalize: () => import("E/e").default;
+            fromComponents: (sign: number, layer: number, mag: number) => import("E/e").default;
+            fromComponents_noNormalize: (sign: number, layer: number, mag: number) => import("E/e").default;
+            fromMantissaExponent: (mantissa: number, exponent: number) => import("E/e").default;
+            fromMantissaExponent_noNormalize: (mantissa: number, exponent: number) => import("E/e").default;
+            fromDecimal: (value: import("E/e").default) => import("E/e").default;
+            fromNumber: (value: number) => import("E/e").default;
+            fromString: (value: string) => import("E/e").default;
+            fromValue: (value: import("E/e").DecimalSource) => import("E/e").default;
+            toNumber: () => number;
+            mantissaWithDecimalPlaces: (places: number) => number;
+            magnitudeWithDecimalPlaces: (places: number) => number;
+            toString: () => string;
+            toExponential: (places: number) => string;
+            toFixed: (places: number) => string;
+            toPrecision: (places: number) => string;
+            valueOf: () => string;
+            toJSON: () => string;
+            toStringWithDecimalPlaces: (places: number) => string;
+            abs: () => import("E/e").default;
+            neg: () => import("E/e").default;
+            negate: () => import("E/e").default;
+            negated: () => import("E/e").default;
+            sgn: () => number;
+            round: () => import("E/e").default;
+            floor: () => import("E/e").default;
+            ceil: () => import("E/e").default;
+            trunc: () => import("E/e").default;
+            add: (value: import("E/e").DecimalSource) => import("E/e").default;
+            plus: (value: import("E/e").DecimalSource) => import("E/e").default;
+            sub: (value: import("E/e").DecimalSource) => import("E/e").default;
+            subtract: (value: import("E/e").DecimalSource) => import("E/e").default;
+            minus: (value: import("E/e").DecimalSource) => import("E/e").default;
+            mul: (value: import("E/e").DecimalSource) => import("E/e").default;
+            multiply: (value: import("E/e").DecimalSource) => import("E/e").default;
+            times: (value: import("E/e").DecimalSource) => import("E/e").default;
+            div: (value: import("E/e").DecimalSource) => import("E/e").default;
+            divide: (value: import("E/e").DecimalSource) => import("E/e").default;
+            divideBy: (value: import("E/e").DecimalSource) => import("E/e").default;
+            dividedBy: (value: import("E/e").DecimalSource) => import("E/e").default;
+            recip: () => import("E/e").default;
+            reciprocal: () => import("E/e").default;
+            reciprocate: () => import("E/e").default;
+            cmp: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
+            cmpabs: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
+            compare: (value: import("E/e").DecimalSource) => import("E/e").CompareResult;
+            isNan: () => boolean;
+            isFinite: () => boolean;
+            eq: (value: import("E/e").DecimalSource) => boolean;
+            equals: (value: import("E/e").DecimalSource) => boolean;
+            neq: (value: import("E/e").DecimalSource) => boolean;
+            notEquals: (value: import("E/e").DecimalSource) => boolean;
+            lt: (value: import("E/e").DecimalSource) => boolean;
+            lte: (value: import("E/e").DecimalSource) => boolean;
+            gt: (value: import("E/e").DecimalSource) => boolean;
+            gte: (value: import("E/e").DecimalSource) => boolean;
+            max: (value: import("E/e").DecimalSource) => import("E/e").default;
+            min: (value: import("E/e").DecimalSource) => import("E/e").default;
+            maxabs: (value: import("E/e").DecimalSource) => import("E/e").default;
+            minabs: (value: import("E/e").DecimalSource) => import("E/e").default;
+            clamp: (min: import("E/e").DecimalSource, max: import("E/e").DecimalSource) => import("E/e").default;
+            clampMin: (min: import("E/e").DecimalSource) => import("E/e").default;
+            clampMax: (max: import("E/e").DecimalSource) => import("E/e").default;
+            cmp_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => import("E/e").CompareResult;
+            compare_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => import("E/e").CompareResult;
+            eq_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            equals_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            neq_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            notEquals_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            lt_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            lte_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            gt_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            gte_tolerance: (value: import("E/e").DecimalSource, tolerance: number) => boolean;
+            pLog10: () => import("E/e").default;
+            absLog10: () => import("E/e").default;
+            log10: () => import("E/e").default;
+            log: (base: import("E/e").DecimalSource) => import("E/e").default;
+            log2: () => import("E/e").default;
+            ln: () => import("E/e").default;
+            logarithm: (base: import("E/e").DecimalSource) => import("E/e").default;
+            pow: (value: import("E/e").DecimalSource) => import("E/e").default;
+            pow10: () => import("E/e").default;
+            pow_base: (value: import("E/e").DecimalSource) => import("E/e").default;
+            root: (value: import("E/e").DecimalSource) => import("E/e").default;
+            factorial: () => import("E/e").default;
+            gamma: () => import("E/e").default;
+            lngamma: () => import("E/e").default;
+            exp: () => import("E/e").default;
+            sqr: () => import("E/e").default;
+            sqrt: () => import("E/e").default;
+            cube: () => import("E/e").default;
+            cbrt: () => import("E/e").default;
+            tetrate: (height?: number, payload?: import("E/e").DecimalSource) => import("E/e").default;
+            iteratedexp: (height?: number, payload?: import("E/e").default) => import("E/e").default;
+            iteratedlog: (base?: import("E/e").DecimalSource, times?: number) => import("E/e").default;
+            slog: (base?: import("E/e").DecimalSource, iterations?: number) => import("E/e").default;
+            slog_internal: (base?: import("E/e").DecimalSource) => import("E/e").default;
+            layeradd10: (diff: import("E/e").DecimalSource) => import("E/e").default;
+            layeradd: (diff: number, base: import("E/e").DecimalSource) => import("E/e").default;
+            lambertw: () => import("E/e").default;
+            ssqrt: () => import("E/e").default;
+            pentate: (height?: number, payload?: import("E/e").DecimalSource) => import("E/e").default;
+            sin: () => import("E/e").default;
+            cos: () => import("E/e").default;
+            tan: () => import("E/e").default;
+            asin: () => import("E/e").default;
+            acos: () => import("E/e").default;
+            atan: () => import("E/e").default;
+            sinh: () => import("E/e").default;
+            cosh: () => import("E/e").default;
+            tanh: () => import("E/e").default;
+            asinh: () => import("E/e").default;
+            acosh: () => import("E/e").default;
+            atanh: () => import("E/e").default;
+            ascensionPenalty: (ascensions: import("E/e").DecimalSource) => import("E/e").default;
+            egg: () => import("E/e").default;
+            lessThanOrEqualTo: (other: import("E/e").DecimalSource) => boolean;
+            lessThan: (other: import("E/e").DecimalSource) => boolean;
+            greaterThanOrEqualTo: (other: import("E/e").DecimalSource) => boolean;
+            greaterThan: (other: import("E/e").DecimalSource) => boolean;
+            clone: () => import("E/e").default;
+            mod: (other: import("E/e").DecimalSource) => import("E/e").default;
+            softcap: (start: import("E/e").DecimalSource, power: number, mode: string) => import("E/e").default;
+            scale: (s: import("E/e").DecimalSource, p: import("E/e").DecimalSource, mode: string, rev?: boolean) => import("E/e").default;
+            format: (acc?: number, max?: number) => string;
+            formatST: (acc?: number, max?: number, type?: string) => string;
+            formatGain: (gain: import("E/e").DecimalSource) => string;
+            toRoman: (max: import("E/e").DecimalSource) => string | import("E/e").default;
+        } & ((x?: import("E/e").DecimalSource | undefined) => import("E/e").default);
         classes: {
             boost: typeof boost;
             currency: typeof currency;

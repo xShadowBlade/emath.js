@@ -324,7 +324,7 @@ export type DecimalSource = Decimal | number | string;
 /**
  * The Decimal's value is simply mantissa * 10^exponent.
  */
-export class Decimal {
+class Decimal {
     public static readonly dZero = Decimal.fromComponents_noNormalize(0, 0, 0);
     public static readonly dOne = Decimal.fromComponents_noNormalize(1, 0, 1);
     public static readonly dNegOne = Decimal.fromComponents_noNormalize(-1, 0, 1);
@@ -336,7 +336,7 @@ export class Decimal {
     public static readonly dNumberMax = Decimal.fromComponents(1, 0, Number.MAX_VALUE);
     public static readonly dNumberMin = Decimal.fromComponents(1, 0, Number.MIN_VALUE);
 
-    private static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
+    static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
 
     public sign = 0;
     public mag = 0;
@@ -3602,5 +3602,7 @@ const formats = {...FORMATS, ...{
 }};
 
 Decimal.formats = formats;
+
+export default Decimal;
 
 // return Decimal;

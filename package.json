@@ -9,10 +9,10 @@
     "browser": "dist/eMath.bundle.js",
     "scripts": {
         "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
-        "build:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/eMath.bundle.js",
-        "build:minify": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/eMath.min.js",
-        "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/eMath.esm.js",
-        "build:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/eMath.js",
+        "build:bundle": "esbuild src/index.ts --bundle --tree-shaking=false --format=iife --outfile=dist/eMath.bundle.js",
+        "build:minify": "esbuild src/index.ts --bundle --tree-shaking=false --minify --format=iife --outfile=dist/eMath.min.js",
+        "build:esm": "esbuild src/index.ts --bundle --tree-shaking=false --format=esm --outfile=dist/eMath.esm.js",
+        "build:cjs": "esbuild src/index.ts --bundle --tree-shaking=false --format=cjs --outfile=dist/eMath.js",
         "build:types": "tsc --emitDeclarationOnly -outfile dist/eMath.d.ts",
         "test": "mocha"
     },
