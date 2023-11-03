@@ -3927,7 +3927,19 @@
   var eMath2 = {
     ...eMath,
     ...{
-      E
+      /**
+       * @deprecated Use `import { ${className} } from "emath.js"` instead.
+       */
+      E,
+      classes: {
+        boost,
+        currency,
+        currencyStatic,
+        attribute,
+        grid,
+        gridCell,
+        EString
+      }
     }
   };
   if (typeof process !== "object" && typeof window !== "undefined") {
