@@ -11,9 +11,9 @@ import { attribute } from "./classes/attribute";
 import { grid, gridCell } from "./classes/grid";
 
 import { EString } from "./classes/utility/eString";
-import { obb } from "classes/utility/obb";
-import { EArray } from "classes/utility/eArray";
-import { EObject } from "classes/utility/eObject";
+import { obb } from "./classes/utility/obb";
+import { EArray } from "./classes/utility/eArray";
+import { EObject } from "./classes/utility/eObject";
 const eMath = { ...eMathE, ...{
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
@@ -78,16 +78,27 @@ if (typeof process !== "object" && typeof window !== "undefined") {
 }
 export default eMath;
 
-export {
-    E,
-    boost,
-    currency,
-    currencyStatic,
-    attribute,
-    grid,
-    gridCell,
-    EString,
-    EArray,
-    EObject,
-    obb,
-};
+// export {
+//     E,
+//     boost,
+//     currency,
+//     currencyStatic,
+//     attribute,
+//     grid,
+//     gridCell,
+//     EString,
+//     EArray,
+//     EObject,
+//     obb,
+// };
+
+export { E } from "./eMath";
+export { boost } from "./classes/boost";
+export { currency, currencyStatic } from "./classes/currency";
+export { attribute } from "./classes/attribute";
+export { grid, gridCell } from "./classes/grid";
+
+export { EString } from "./classes/utility/eString";
+export { obb } from "./classes/utility/obb";
+export { EArray } from "./classes/utility/eArray";
+export { EObject } from "./classes/utility/eObject";

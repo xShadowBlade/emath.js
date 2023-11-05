@@ -51,20 +51,46 @@ interface boostsObject {
     /**
      * The index of the boost.
      */
-    index: number,
+    index?: number,
 }
+type boostArrayObject = ({index: number, order: number} & boostsObject);
 class boost {
     /**
      * An array of boost objects.
-     * @type {boostsObject[]}
+     * @type {boostArrayObject[]}
      */
-    public boostArray: boostsObject[];
+    public boostArray: boostArrayObject[];
 
     /**
      * The base effect value.
      * @type {E}
      */
     public baseEffect: E;
+
+    /**
+     * Normalizes the given boosts object to a boost array object.
+     * @param boosts - The boosts object to normalize.
+     * @param index - The index to use for the boost array object.
+     * @returns The normalized boost array object.
+     */
+    private static normalizeBoost (boosts: boostsObject, index?: number): boostArrayObject {
+        if (!boosts.order) boosts.order = 99;
+        if (!boosts.index) boosts.index = index ? index : 0;
+        return boosts as boostArrayObject;
+    }
+
+    /**
+     * Normalizes an array of boosts to a standardized format.
+     * @param boosts - The array of boosts to normalize.
+     * @returns An array of normalized boosts.
+     */
+    private static normalizeBoostArray (boosts: boostsObject[]): boostArrayObject[] {
+        const output: boostArrayObject[] = [];
+        boosts.forEach((boostItem, i) => {
+            output.push(this.normalizeBoost(boostItem, i));
+        });
+        return output;
+    }
 
     /**
      * Constructs a new boost manager.
@@ -75,8 +101,12 @@ class boost {
      */
     constructor (baseEffect?: ESource, boosts?: boostsObject[]) {
         baseEffect = baseEffect ? E(baseEffect) : 1;
-        this.boostArray = boosts ? boosts : [];
         this.baseEffect = E(baseEffect);
+        if (boosts) {
+            this.boostArray = boost.normalizeBoostArray(boosts);
+        } else {
+            this.boostArray = [];
+        }
     }
 
     /**
@@ -85,8 +115,8 @@ class boost {
      * @param {string} id - The ID of the boost to retrieve.
      * @returns {boostsObject|null} The boost object if found, or null if not found.
      */
-    public bGet (id: string): boostsObject | null {
-        let output: boostsObject | null = null;
+    public bGet (id: string): boostArrayObject | null {
+        let output: boostArrayObject | null = null;
         for (let i = 0; i < this.boostArray.length; i++) {
             if (i === this.boostArray.length) break;
             if (id === this.boostArray[i].id) {
@@ -103,7 +133,7 @@ class boost {
      * @param {string} id - The ID of the boost to remove.
      */
     public bRemove (id: string): void {
-        const bCheck: boostsObject | null = this.bGet(id);
+        const bCheck: boostArrayObject | null = this.bGet(id);
         if (bCheck) {
             delete this.boostArray[bCheck.index];
         }
@@ -118,13 +148,13 @@ class boost {
      * @param {function} value - The value of the boost (function).
      * @param {number} order - The order of the boost (higher order are go first)
      */
-    public bSet (id: string, name: string, desc: string, type: "add"|"mul"|"pow"|"tetr"|"pent", value: () => E, order?: number): void {
-        const bCheck: boostsObject | null = this.bGet(id);
+    public bSet (id: string, name: string, desc: string, value: () => E, order?: number): void {
+        const bCheck = this.bGet(id);
 
         if (!bCheck) {
-            this.boostArray.push({ id, name, desc, type, value, order, index: this.boostArray.length });
+            this.boostArray.push(boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
         } else {
-            this.boostArray[bCheck.index] = { id, name, desc, type, value, order, index: this.boostArray.length };
+            this.boostArray[bCheck.index] = boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
         }
     }
 
@@ -135,12 +165,12 @@ class boost {
      */
     public bSetAdvanced (...x: boostsObject[]): void {
         for (let i = 0; i < x.length; i++) {
-            const bCheck: boostsObject | null = this.bGet(x[i].id);
+            const bCheck = this.bGet(x[i].id);
             if (!bCheck) {
-                this.boostArray = this.boostArray.concat(x[i]);
+                this.boostArray = this.boostArray.concat(boost.normalizeBoost(x[i]));
             } else {
                 console.log(i);
-                this.boostArray[bCheck.index] = x[i];
+                this.boostArray[bCheck.index] = boost.normalizeBoost(x[i]);
             }
         }
     }
@@ -153,8 +183,8 @@ class boost {
      */
     public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);
-        const boosts: boostsObject[] = this.boostArray;
-        boosts.sort((a: any, b: any) => a.order - b.order);
+        const boosts = this.boostArray;
+        boosts.sort((a: boostArrayObject, b: boostArrayObject) => a.order - b.order);
         for (let i = 0; i < boosts.length; i++) {
             output = boosts[i].value(output);
         }

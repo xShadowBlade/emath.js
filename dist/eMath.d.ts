@@ -717,19 +717,36 @@ declare module "classes/boost" {
         /**
          * The index of the boost.
          */
-        index: number;
+        index?: number;
     }
+    type boostArrayObject = ({
+        index: number;
+        order: number;
+    } & boostsObject);
     class boost {
         /**
          * An array of boost objects.
-         * @type {boostsObject[]}
+         * @type {boostArrayObject[]}
          */
-        boostArray: boostsObject[];
+        boostArray: boostArrayObject[];
         /**
          * The base effect value.
          * @type {E}
          */
         baseEffect: E;
+        /**
+         * Normalizes the given boosts object to a boost array object.
+         * @param boosts - The boosts object to normalize.
+         * @param index - The index to use for the boost array object.
+         * @returns The normalized boost array object.
+         */
+        private static normalizeBoost;
+        /**
+         * Normalizes an array of boosts to a standardized format.
+         * @param boosts - The array of boosts to normalize.
+         * @returns An array of normalized boosts.
+         */
+        private static normalizeBoostArray;
         /**
          * Constructs a new boost manager.
          *
@@ -744,7 +761,7 @@ declare module "classes/boost" {
          * @param {string} id - The ID of the boost to retrieve.
          * @returns {boostsObject|null} The boost object if found, or null if not found.
          */
-        bGet(id: string): boostsObject | null;
+        bGet(id: string): boostArrayObject | null;
         /**
          * Removes a boost by its ID.
          *
@@ -760,7 +777,7 @@ declare module "classes/boost" {
          * @param {function} value - The value of the boost (function).
          * @param {number} order - The order of the boost (higher order are go first)
          */
-        bSet(id: string, name: string, desc: string, type: "add" | "mul" | "pow" | "tetr" | "pent", value: () => E, order?: number): void;
+        bSet(id: string, name: string, desc: string, value: () => E, order?: number): void;
         /**
          * Sets or updates multiple boosts with advanced parameters.
          *
@@ -937,7 +954,7 @@ declare module "classes/attribute" {
          * @param {function} effect - The effect function to apply to the attribute.
          * @returns {E} The updated value of the attribute after applying the effect.
          */
-        update(effect: Function): E;
+        update(effect?: Function): E;
     }
     export { attribute };
 }
@@ -1092,7 +1109,6 @@ declare module "classes/utility/eObject" {
     export { EObject };
 }
 declare module "index" {
-    import { E } from "eMath";
     import { boost } from "classes/boost";
     import { currency, currencyStatic } from "classes/currency";
     import { attribute } from "classes/attribute";
@@ -1117,12 +1133,10 @@ declare module "index" {
             readonly dNegInf: import("E/e").default;
             readonly dNumberMax: import("E/e").default;
             readonly dNumberMin: import("E/e").default;
-            /**
-             * @deprecated Use `import { E } from "emath.js"` instead.
-             */
             fromComponents(sign: number, layer: number, mag: number): import("E/e").default;
             fromComponents_noNormalize(sign: number, layer: number, mag: number): import("E/e").default;
-            fromMantissaExponent(mantissa: number, exponent: number): import("E/e").default; /**
+            fromMantissaExponent(mantissa: number, exponent: number): import("E/e").default;
+            /**
              * @deprecated Use `import { currency } from "emath.js"` instead.
              */
             fromMantissaExponent_noNormalize(mantissa: number, exponent: number): import("E/e").default;
@@ -1131,24 +1145,29 @@ declare module "index" {
              */
             fromNumber(value: number): import("E/e").default;
             fromString(value: string): import("E/e").default;
-            fromValue(value: import("eMath").ESource): import("E/e").default; /**
+            fromValue(value: import("eMath").ESource): import("E/e").default;
+            /**
              * @deprecated Use `import { attribute } from "emath.js"` instead.
              */
             fromValue_noAlloc(value: import("eMath").ESource): Readonly<import("E/e").default>;
             abs(value: import("eMath").ESource): import("E/e").default;
             neg(value: import("eMath").ESource): import("E/e").default;
             negate(value: import("eMath").ESource): import("E/e").default;
-            negated(value: import("eMath").ESource): import("E/e").default; /**
+            negated(value: import("eMath").ESource): import("E/e").default;
+            /**
              * @deprecated Use `import { gridCell } from "emath.js"` instead.
              */
             sign(value: import("eMath").ESource): number;
             sgn(value: import("eMath").ESource): number;
-            round(value: import("eMath").ESource): import("E/e").default; /**
+            round(value: import("eMath").ESource): import("E/e").default;
+            /**
              * @deprecated Use `import { EString } from "emath.js"` instead.
              */
             floor(value: import("eMath").ESource): import("E/e").default;
             ceil(value: import("eMath").ESource): import("E/e").default;
-            trunc(value: import("eMath").ESource): import("E/e").default;
+            trunc(value: import("eMath").ESource): import("E/e").default; /**
+             * @deprecated Use `import { EArray } from "emath.js"` instead.
+             */
             add(value: import("eMath").ESource, other: import("eMath").ESource): import("E/e").default;
             plus(value: import("eMath").ESource, other: import("eMath").ESource): import("E/e").default;
             sub(value: import("eMath").ESource, other: import("eMath").ESource): import("E/e").default;
@@ -1285,5 +1304,13 @@ declare module "index" {
         randomString: (length: number) => string;
     };
     export default eMath;
-    export { E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, };
+    export { E } from "eMath";
+    export { boost } from "classes/boost";
+    export { currency, currencyStatic } from "classes/currency";
+    export { attribute } from "classes/attribute";
+    export { grid, gridCell } from "classes/grid";
+    export { EString } from "classes/utility/eString";
+    export { obb } from "classes/utility/obb";
+    export { EArray } from "classes/utility/eArray";
+    export { EObject } from "classes/utility/eObject";
 }

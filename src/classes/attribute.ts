@@ -44,9 +44,9 @@ class attribute {
      * @param {function} effect - The effect function to apply to the attribute.
      * @returns {E} The updated value of the attribute after applying the effect.
      */
-    public update (effect: Function): E {
+    public update (effect?: Function): E {
         // Execute the provided effect function
-        effect();
+        if (effect) effect();
 
         // Calculate and set the new value using the initial value and boost factor
         this.value = this.boost.calculate(this.initial);

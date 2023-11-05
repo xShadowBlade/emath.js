@@ -3466,7 +3466,32 @@ var eMath = {
 };
 
 // src/classes/boost.ts
-var boost = class {
+var boost = class _boost {
+  /**
+   * Normalizes the given boosts object to a boost array object.
+   * @param boosts - The boosts object to normalize.
+   * @param index - The index to use for the boost array object.
+   * @returns The normalized boost array object.
+   */
+  static normalizeBoost(boosts, index) {
+    if (!boosts.order)
+      boosts.order = 99;
+    if (!boosts.index)
+      boosts.index = index ? index : 0;
+    return boosts;
+  }
+  /**
+   * Normalizes an array of boosts to a standardized format.
+   * @param boosts - The array of boosts to normalize.
+   * @returns An array of normalized boosts.
+   */
+  static normalizeBoostArray(boosts) {
+    const output = [];
+    boosts.forEach((boostItem, i) => {
+      output.push(this.normalizeBoost(boostItem, i));
+    });
+    return output;
+  }
   /**
    * Constructs a new boost manager.
    *
@@ -3476,8 +3501,12 @@ var boost = class {
    */
   constructor(baseEffect, boosts) {
     baseEffect = baseEffect ? E(baseEffect) : 1;
-    this.boostArray = boosts ? boosts : [];
     this.baseEffect = E(baseEffect);
+    if (boosts) {
+      this.boostArray = _boost.normalizeBoostArray(boosts);
+    } else {
+      this.boostArray = [];
+    }
   }
   /**
    * Gets a boost object by its ID.
@@ -3517,12 +3546,12 @@ var boost = class {
    * @param {function} value - The value of the boost (function).
    * @param {number} order - The order of the boost (higher order are go first)
    */
-  bSet(id, name, desc, type, value, order) {
+  bSet(id, name, desc, value, order) {
     const bCheck = this.bGet(id);
     if (!bCheck) {
-      this.boostArray.push({ id, name, desc, type, value, order, index: this.boostArray.length });
+      this.boostArray.push(_boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
     } else {
-      this.boostArray[bCheck.index] = { id, name, desc, type, value, order, index: this.boostArray.length };
+      this.boostArray[bCheck.index] = _boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
     }
   }
   /**
@@ -3534,10 +3563,10 @@ var boost = class {
     for (let i = 0; i < x.length; i++) {
       const bCheck = this.bGet(x[i].id);
       if (!bCheck) {
-        this.boostArray = this.boostArray.concat(x[i]);
+        this.boostArray = this.boostArray.concat(_boost.normalizeBoost(x[i]));
       } else {
         console.log(i);
-        this.boostArray[bCheck.index] = x[i];
+        this.boostArray[bCheck.index] = _boost.normalizeBoost(x[i]);
       }
     }
   }
@@ -3771,7 +3800,8 @@ var attribute = class {
    * @returns {E} The updated value of the attribute after applying the effect.
    */
   update(effect) {
-    effect();
+    if (effect)
+      effect();
     this.value = this.boost.calculate(this.initial);
     return this.value;
   }

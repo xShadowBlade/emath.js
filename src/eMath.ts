@@ -2,7 +2,7 @@
 "use strict";
 
 import Decimal, { DecimalSource, CompareResult } from "./E/e";
-import { EString } from "classes/utility/eString";
+import { EString } from "./classes/utility/eString";
 
 // @ts-ignore
 const E: {
