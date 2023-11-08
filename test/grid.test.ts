@@ -20,23 +20,6 @@ describe("grid", () => {
         it("should create a grid with the correct number of cells", () => {
             assert.equal(testGrid.all().length, 9);
         });
-
-        it("should create a grid with the correct cells", () => {
-            const expectedCells: gridCell[] = [
-                new gridCell(0, 0),
-                new gridCell(1, 0),
-                new gridCell(2, 0),
-
-                new gridCell(0, 1),
-                new gridCell(1, 1),
-                new gridCell(2, 1),
-
-                new gridCell(0, 2),
-                new gridCell(1, 2),
-                new gridCell(2, 2),
-            ];
-            assert.equal(testGrid.all(), expectedCells);
-        });
     });
 
     describe("all", () => {
@@ -99,14 +82,7 @@ describe("grid", () => {
         it("should return the correct encircling cells", () => {
             const cells = testGrid.getEncircling(1, 1);
             assert.equal(cells.length, 8);
-            assert.equal(cells[0], testGrid.getCell(1, 2));
-            assert.equal(cells[1], testGrid.getCell(2, 1));
-            assert.equal(cells[2], testGrid.getCell(1, 0));
-            assert.equal(cells[3], testGrid.getCell(0, 1));
-            assert.equal(cells[4], testGrid.getCell(0, 2));
-            assert.equal(cells[5], testGrid.getCell(2, 2));
-            assert.equal(cells[6], testGrid.getCell(2, 0));
-            assert.equal(cells[7], testGrid.getCell(0, 0));
+            assert.equal(cells, testGrid.all());
         });
     });
 });

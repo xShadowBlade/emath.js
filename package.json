@@ -2,11 +2,10 @@
     "name": "emath.js",
     "version": "3.0.0",
     "description": "A math library for incremental games based on break_eternity.js",
-    "typings": "src/index.ts",
+    "typings": "dist/types/index.d.ts",
     "main": "dist/eMath.cjs",
     "module": "dist/eMath.esm.js",
     "unpkg": "dist/eMath.mjs",
-    "browser": "dist/eMath.bundle.js",
     "scripts": {
         "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
         "build:bundle": "esbuild src/index.ts --bundle --tree-shaking=false --format=iife --outfile=dist/eMath.bundle.js",
@@ -14,7 +13,7 @@
         "build:esm": "esbuild src/index.ts --bundle --tree-shaking=false --format=esm --outfile=dist/eMath.mjs",
         "build:cjs": "esbuild src/index.ts --bundle --tree-shaking=false --format=cjs --outfile=dist/eMath.cjs",
         "build:umd": "node ./bin/build/umd.js",
-        "build:types": "tsc --emitDeclarationOnly -outfile dist/eMath.d.ts",
+        "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "test": "ts-mocha test/**/*.test.ts"
     },
     "repository": {

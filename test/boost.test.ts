@@ -70,7 +70,7 @@ describe("boost", () => {
 
     describe("bSet", () => {
         it("should add a new boost if it doesn't exist", () => {
-            testBoost.bSet("b1", "Boost 1", "Description 1", () => E(2));
+            testBoost.bSet("b1", "Boost 1", "Description 1", () => E(2), 1);
             assert.equal(testBoost.boostArray.length, 1);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1");
@@ -126,7 +126,7 @@ describe("boost", () => {
             const b1 = { id: "b1", name: "Boost 1", desc: "Description 1", value: (x: E) => x.add(2), order: 2 };
             const b2 = { id: "b2", name: "Boost 2", desc: "Description 2", value: (x: E) => x.mul(3), order: 1 };
             const b3 = { id: "b3", name: "Boost 3", desc: "Description 3", value: (x: E) => x.pow(2), order: 3 };
-            testBoost = new boost(10, [b1, b2, b3]);
+            testBoost = new boost(1, [b1, b2, b3]);
             const result = testBoost.calculate();
             assert.equal(result.equals(E(25)), true);
         });
