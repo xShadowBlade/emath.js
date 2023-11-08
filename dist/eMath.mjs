@@ -4152,7 +4152,6 @@ var eMath2 = {
 if (typeof process !== "object" && typeof window !== "undefined") {
   window["eMath"] = eMath2;
 }
-var src_default = eMath2;
 export {
   E,
   EArray,
@@ -4162,7 +4161,7 @@ export {
   boost,
   currency,
   currencyStatic,
-  src_default as default,
+  eMath2 as eMath,
   grid,
   gridCell,
   obb

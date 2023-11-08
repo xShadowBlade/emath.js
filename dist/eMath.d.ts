@@ -1109,6 +1109,7 @@ declare module "classes/utility/eObject" {
     export { EObject };
 }
 declare module "index" {
+    import { E } from "eMath";
     import { boost } from "classes/boost";
     import { currency, currencyStatic } from "classes/currency";
     import { attribute } from "classes/attribute";
@@ -1303,14 +1304,5 @@ declare module "index" {
         randomString64: (times: number, type: boolean) => string | number;
         randomString: (length: number) => string;
     };
-    export default eMath;
-    export { E } from "eMath";
-    export { boost } from "classes/boost";
-    export { currency, currencyStatic } from "classes/currency";
-    export { attribute } from "classes/attribute";
-    export { grid, gridCell } from "classes/grid";
-    export { EString } from "classes/utility/eString";
-    export { obb } from "classes/utility/obb";
-    export { EArray } from "classes/utility/eArray";
-    export { EObject } from "classes/utility/eObject";
+    export { eMath, E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, };
 }

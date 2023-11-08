@@ -28,7 +28,7 @@ __export(src_exports, {
   boost: () => boost,
   currency: () => currency,
   currencyStatic: () => currencyStatic,
-  default: () => src_default,
+  eMath: () => eMath2,
   grid: () => grid,
   gridCell: () => gridCell,
   obb: () => obb
@@ -4189,4 +4189,3 @@ var eMath2 = {
 if (typeof process !== "object" && typeof window !== "undefined") {
   window["eMath"] = eMath2;
 }
-var src_default = eMath2;

@@ -76,29 +76,31 @@ const eMath = { ...eMathE, ...{
 if (typeof process !== "object" && typeof window !== "undefined") {
     (window as any)["eMath"] = eMath;
 }
-export default eMath;
 
-// export {
-//     E,
-//     boost,
-//     currency,
-//     currencyStatic,
-//     attribute,
-//     grid,
-//     gridCell,
-//     EString,
-//     EArray,
-//     EObject,
-//     obb,
-// };
 
-export { E } from "./eMath";
-export { boost } from "./classes/boost";
-export { currency, currencyStatic } from "./classes/currency";
-export { attribute } from "./classes/attribute";
-export { grid, gridCell } from "./classes/grid";
+export {
+    eMath,
 
-export { EString } from "./classes/utility/eString";
-export { obb } from "./classes/utility/obb";
-export { EArray } from "./classes/utility/eArray";
-export { EObject } from "./classes/utility/eObject";
+    E,
+    boost,
+    currency,
+    currencyStatic,
+    attribute,
+    grid,
+    gridCell,
+    EString,
+    EArray,
+    EObject,
+    obb,
+};
+
+// export { E } from "./eMath";
+// export { boost } from "./classes/boost";
+// export { currency, currencyStatic } from "./classes/currency";
+// export { attribute } from "./classes/attribute";
+// export { grid, gridCell } from "./classes/grid";
+
+// export { EString } from "./classes/utility/eString";
+// export { obb } from "./classes/utility/obb";
+// export { EArray } from "./classes/utility/eArray";
+// export { EObject } from "./classes/utility/eObject";

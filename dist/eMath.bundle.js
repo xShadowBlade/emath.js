@@ -4154,5 +4154,4 @@
   if (typeof process !== "object" && typeof window !== "undefined") {
     window["eMath"] = eMath2;
   }
-  var src_default = eMath2;
 })();
