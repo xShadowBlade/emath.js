@@ -3841,15 +3841,6 @@
     getValue(name) {
       return this.properties[name];
     }
-    /**
-     * Calculates the distance from the cell to a specified point.
-     * @param {number} x - The x-coordinate of the target point.
-     * @param {number} y - The y-coordinate of the target point.
-     * @returns {number} - The distance between the cell and the target point.
-     */
-    getDistance(x, y) {
-      return Math.abs(Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2)));
-    }
   };
   var grid = class {
     // Add this index signature
@@ -3863,10 +3854,11 @@
     constructor(x_size, y_size, starterProps) {
       this.x_size = x_size;
       this.y_size = y_size;
+      this.cells = [];
       for (let a = 0; a < y_size; a++) {
-        this[a] = [];
+        this.cells[a] = [];
         for (let b = 0; b < x_size; b++) {
-          this[a][b] = new gridCell(b, a, starterProps);
+          this.cells[a][b] = new gridCell(b, a, starterProps);
         }
       }
     }
@@ -3874,38 +3866,88 @@
      * Gets an array containing all cells in the grid.
      * @returns {gridCell[]} - An array of all cells.
      */
-    all() {
+    getAll() {
       const output = [];
       for (let a = 0; a < this.y_size; a++) {
         for (let b = 0; b < this.x_size; b++) {
-          output.push(this[a][b]);
+          output.push(this.cells[a][b]);
         }
       }
       return output;
+    }
+    /**
+     * Returns an array of all grid cells.
+     * @returns {gridCell[]} An array of all grid cells.
+     * @deprecated Use getAll() instead.
+     */
+    all() {
+      return this.getAll();
+    }
+    /**
+     * Gets an array containing all cells in the grid.
+     * @param {grid} grid - The grid to get the cells from.
+     * @returns {gridCell[]} - An array of all cells.
+     */
+    static getAll(grid2) {
+      return grid2.getAll();
     }
     /**
      * Gets an array containing all cells that have the same x coordinate.
      * @returns {gridCell[]} - An array of all cells.
      * @param {number} x - The x coordinate to check.
      */
-    allX(x) {
+    getAllX(x) {
       const output = [];
       for (let i = 0; i < this.y_size; i++) {
-        output.push(this[i][x]);
+        output.push(this.cells[i][x]);
       }
       return output;
+    }
+    /**
+     * Returns an array of all grid cells with the same x coordinate.
+     * @returns {gridCell[]} An array of all grid cells with the same x coordinate.
+     * @deprecated Use getAllX() instead.
+     */
+    allX(x) {
+      return this.getAllX(x);
+    }
+    /**
+     * Gets an array containing all cells that have the same x coordinate.
+     * @param {grid} grid - The grid to get the cells from.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {number} x - The x coordinate to check.
+     */
+    static getAllX(grid2, x) {
+      return grid2.getAllX(x);
     }
     /**
      * Gets an array containing all cells that have the same y coordinate.
      * @returns {gridCell[]} - An array of all cells.
      * @param {number} y - The y coordinate to check.
      */
-    allY(y) {
+    getAllY(y) {
       const output = [];
       for (let i = 0; this.x_size; i++) {
-        output.push(this[y][i]);
+        output.push(this.cells[y][i]);
       }
       return output;
+    }
+    /**
+     * Returns an array of all grid cells with the same y coordinate.
+     * @returns {gridCell[]} An array of all grid cells with the same y coordinate.
+     * @deprecated Use allY() instead.
+     */
+    allY(y) {
+      return this.getAllY(y);
+    }
+    /**
+     * Gets an array containing all cells that have the same y coordinate.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {grid} grid - The grid to get the cells from.
+     * @param {number} y - The y coordinate to check.
+     */
+    static getAllY(grid2, y) {
+      return grid2.getAllY(y);
     }
     /**
      * Gets a cell.
@@ -3914,7 +3956,37 @@
      * @param {number} y - The y coordinate to check.
      */
     getCell(x, y) {
-      return this[y][x];
+      return this.cells[y][x];
+    }
+    /**
+     * Gets a cell.
+     * @returns {gridCell} - The cell.
+     * @param {grid} grid - The grid to get the cell from.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    static getCell(grid2, x, y) {
+      return grid2.getCell(x, y);
+    }
+    /**
+    * Sets the value of a cell in the grid.
+    * @param {number} x The x-coordinate of the cell.
+    * @param {number} y The y-coordinate of the cell.
+    * @param {gridCell} value The value to set for the cell.
+    */
+    setCell(x, y, value) {
+      this.cells[y][x] = value;
+    }
+    /**
+     * Gets a cell.
+     * @returns {gridCell} - The cell.
+     * @param {grid} grid - The grid to get the cell from.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     * @param {gridCell} value The value to set for the cell.
+     */
+    static setCell(grid2, x, y, value) {
+      return grid2.setCell(x, y, value);
     }
     /**
      * Gets an array containing all cells adjacent to a specific cell.
@@ -3931,6 +4003,16 @@
       return output;
     }
     /**
+     * Gets an array containing all cells adjacent to a specific cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {grid} grid - The grid to get the cells from.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    static getAdjacent(grid2, x, y) {
+      return grid2.getAdjacent(x, y);
+    }
+    /**
      * Gets an array containing all cells diagonal from a specific cell.
      * @returns {gridCell[]} - An array of all cells.
      * @param {number} x - The x coordinate to check.
@@ -3945,6 +4027,16 @@
       return output;
     }
     /**
+     * Gets an array containing all cells diagonal from a specific cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {grid} grid - The grid to get the cells from.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    static getDiagonal(grid2, x, y) {
+      return grid2.getDiagonal(x, y);
+    }
+    /**
      * Gets an array containing all cells that surround a cell.
      * @returns {gridCell[]} - An array of all cells.
      * @param {number} x - The x coordinate to check.
@@ -3952,6 +4044,16 @@
      */
     getEncircling(x, y) {
       return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
+    }
+    /**
+     * Gets an array containing all cells that surround a cell.
+     * @returns {gridCell[]} - An array of all cells.
+     * @param {grid} grid - The grid to get the cells from.
+     * @param {number} x - The x coordinate to check.
+     * @param {number} y - The y coordinate to check.
+     */
+    static getEncircling(grid2, x, y) {
+      return grid2.getEncircling(x, y);
     }
     /**
      * Calculates the distance between two points on the grid.
