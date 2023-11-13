@@ -3,7 +3,6 @@
  * @module eMath
  */
 "use strict";
-/* global window */
 import { eMath as eMathE, E } from "./eMath";
 import { boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
@@ -14,6 +13,9 @@ import { EString } from "./classes/utility/eString";
 import { obb } from "./classes/utility/obb";
 import { EArray } from "./classes/utility/eArray";
 import { EObject } from "./classes/utility/eObject";
+
+import { Game } from "./game/game";
+import { keyManager } from "./game/keybinds";
 const eMath = { ...eMathE, ...{
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
@@ -70,13 +72,22 @@ const eMath = { ...eMathE, ...{
          */
         obb,
     },
+
+    /**
+     * @deprecated Use `import { Game } from "emath.js"` instead.
+     */
+    Game,
+
+    /**
+     * @deprecated Use `import { keyManager } from "emath.js"` instead.
+     */
+    keyManager,
 },
 };
 // @ts-ignore
 if (typeof process !== "object" && typeof window !== "undefined") {
     (window as any)["eMath"] = eMath;
 }
-
 
 export {
     eMath,
@@ -92,6 +103,9 @@ export {
     EArray,
     EObject,
     obb,
+
+    Game,
+    keyManager,
 };
 
 // export { E } from "./eMath";

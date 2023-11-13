@@ -7,6 +7,8 @@ import { EString } from "./classes/utility/eString";
 import { obb } from "./classes/utility/obb";
 import { EArray } from "./classes/utility/eArray";
 import { EObject } from "./classes/utility/eObject";
+import { Game } from "./game/game";
+import { keyManager } from "./game/keybinds";
 declare const eMath: {
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
@@ -23,49 +25,44 @@ declare const eMath: {
         readonly dNegInf: import("./E/e").default;
         readonly dNumberMax: import("./E/e").default;
         readonly dNumberMin: import("./E/e").default;
-        fromComponents(sign: number, layer: number, mag: number): import("./E/e").default;
+        fromComponents(sign: number, layer: number, mag: number): import("./E/e").default; /**
+         * @deprecated Use `import { E } from "emath.js"` instead.
+         */
         fromComponents_noNormalize(sign: number, layer: number, mag: number): import("./E/e").default;
         fromMantissaExponent(mantissa: number, exponent: number): import("./E/e").default;
-        /**
-         * @deprecated Use `import { currency } from "emath.js"` instead.
-         */
         fromMantissaExponent_noNormalize(mantissa: number, exponent: number): import("./E/e").default;
-        fromDecimal(value: import("./E/e").default): import("./E/e").default; /**
-         * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-         */
+        fromDecimal(value: import("./E/e").default): import("./E/e").default;
         fromNumber(value: number): import("./E/e").default;
         fromString(value: string): import("./E/e").default;
         fromValue(value: import("./eMath").ESource): import("./E/e").default;
+        fromValue_noAlloc(value: import("./eMath").ESource): Readonly<import("./E/e").default>;
         /**
          * @deprecated Use `import { attribute } from "emath.js"` instead.
          */
-        fromValue_noAlloc(value: import("./eMath").ESource): Readonly<import("./E/e").default>;
         abs(value: import("./eMath").ESource): import("./E/e").default;
         neg(value: import("./eMath").ESource): import("./E/e").default;
-        negate(value: import("./eMath").ESource): import("./E/e").default;
-        negated(value: import("./eMath").ESource): import("./E/e").default;
-        /**
-         * @deprecated Use `import { gridCell } from "emath.js"` instead.
+        negate(value: import("./eMath").ESource): import("./E/e").default; /**
+         * @deprecated Use `import { grid } from "emath.js"` instead.
          */
+        negated(value: import("./eMath").ESource): import("./E/e").default;
         sign(value: import("./eMath").ESource): number;
         sgn(value: import("./eMath").ESource): number;
         round(value: import("./eMath").ESource): import("./E/e").default;
-        /**
-         * @deprecated Use `import { EString } from "emath.js"` instead.
-         */
         floor(value: import("./eMath").ESource): import("./E/e").default;
         ceil(value: import("./eMath").ESource): import("./E/e").default;
-        trunc(value: import("./eMath").ESource): import("./E/e").default; /**
+        trunc(value: import("./eMath").ESource): import("./E/e").default;
+        add(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
          * @deprecated Use `import { EArray } from "emath.js"` instead.
          */
-        add(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         plus(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         sub(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         subtract(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         minus(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         mul(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         multiply(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
-        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
+        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
+         * @deprecated Use `import { keyManager } from "emath.js"` instead.
+         */
         div(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         divide(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         recip(value: import("./eMath").ESource): import("./E/e").default;
@@ -187,10 +184,18 @@ declare const eMath: {
          */
         obb: typeof obb;
     };
+    /**
+     * @deprecated Use `import { Game } from "emath.js"` instead.
+     */
+    Game: typeof Game;
+    /**
+     * @deprecated Use `import { keyManager } from "emath.js"` instead.
+     */
+    keyManager: typeof keyManager;
     getFast: (object: any, id: string) => object | null;
     get: (object: any, id: string) => object | null;
     randomNumber: (min: number, max: number, round?: boolean | undefined) => number;
     randomString64: (times: number, type: boolean) => string | number;
     randomString: (length: number) => string;
 };
-export { eMath, E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, };
+export { eMath, E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, Game, keyManager, };
