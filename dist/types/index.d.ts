@@ -35,15 +35,12 @@ declare const eMath: {
         fromNumber(value: number): import("./E/e").default;
         fromString(value: string): import("./E/e").default;
         fromValue(value: import("./eMath").ESource): import("./E/e").default;
-        fromValue_noAlloc(value: import("./eMath").ESource): Readonly<import("./E/e").default>;
-        /**
+        fromValue_noAlloc(value: import("./eMath").ESource): Readonly<import("./E/e").default>; /**
          * @deprecated Use `import { attribute } from "emath.js"` instead.
          */
         abs(value: import("./eMath").ESource): import("./E/e").default;
         neg(value: import("./eMath").ESource): import("./E/e").default;
-        negate(value: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { grid } from "emath.js"` instead.
-         */
+        negate(value: import("./eMath").ESource): import("./E/e").default;
         negated(value: import("./eMath").ESource): import("./E/e").default;
         sign(value: import("./eMath").ESource): number;
         sgn(value: import("./eMath").ESource): number;
@@ -51,18 +48,17 @@ declare const eMath: {
         floor(value: import("./eMath").ESource): import("./E/e").default;
         ceil(value: import("./eMath").ESource): import("./E/e").default;
         trunc(value: import("./eMath").ESource): import("./E/e").default;
-        add(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { EArray } from "emath.js"` instead.
-         */
+        add(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         plus(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         sub(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         subtract(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         minus(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         mul(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
-        multiply(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
-        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { keyManager } from "emath.js"` instead.
+        /**
+         * @deprecated Use `import { Game } from "emath.js"` instead.
          */
+        multiply(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
+        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         div(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         divide(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         recip(value: import("./eMath").ESource): import("./E/e").default;

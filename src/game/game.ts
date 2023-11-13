@@ -8,6 +8,7 @@ import { currency, currencyStatic } from "../classes/currency";
 import { attribute } from "../classes/attribute";
 import LZString from "lz-string";
 import { keyManager } from "./keybinds";
+import { eventManager } from "./main";
 
 // type GameType = {
 //     data: {
@@ -235,6 +236,9 @@ class Game {
 
     public dataManager: dataManager;
     public keyManager: keyManager;
+    public eventManager: eventManager
+
+    private tickers: ((dt: number) => void)[];
 
     /**
      * Creates a new instance of the Game class.
@@ -248,6 +252,11 @@ class Game {
             autoAddInterval: true,
             fps: config.settings.framerate,
         });
+        this.eventManager = new eventManager({
+            autoAddInterval: true,
+            fps: config.settings.framerate,
+        });
+        this.tickers = [];
         this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
     }
 

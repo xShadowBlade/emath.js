@@ -1,6 +1,7 @@
 import { E } from "../eMath";
 import { attribute } from "../classes/attribute";
 import { keyManager } from "./keybinds";
+import { eventManager } from "./main";
 /**
  * Configuration object for the game.
  */
@@ -77,6 +78,8 @@ declare class Game {
     meta: GameConfig;
     dataManager: dataManager;
     keyManager: keyManager;
+    eventManager: eventManager;
+    private tickers;
     /**
      * Creates a new instance of the Game class.
      * @constructor

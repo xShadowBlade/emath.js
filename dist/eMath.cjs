@@ -4809,6 +4809,88 @@ var keyManager = class _keyManager {
 };
 ;
 
+// src/game/main.ts
+var eventManager = class _eventManager {
+  static {
+    this.defaultConfig = {
+      autoAddInterval: true,
+      fps: 30
+    };
+  }
+  constructor(config) {
+    this.config = config;
+    this.events = [];
+    this.config = config ? config : _eventManager.defaultConfig;
+    this.tickers = [this.tickerFunction];
+    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
+      const fps = this.config.fps ? this.config.fps : 30;
+      setInterval(() => {
+        for (const ticker of this.tickers) {
+          ticker(1e3 / fps);
+        }
+      }, 1e3 / fps);
+    }
+  }
+  tickerFunction() {
+    const currentTime = E(Date.now());
+    for (let i = 0; i < this.events.length; i++) {
+      const event = this.events[i];
+      if (event.type === "interval") {
+        if (currentTime.sub(event.intervalLast).gte(event.delay)) {
+          event.callbackFn();
+          event.intervalLast = currentTime;
+        }
+      } else if (event.type === "timeout") {
+        if (currentTime.sub(event.timeCreated).gte(event.delay)) {
+          event.callbackFn();
+          this.events.splice(i, 1);
+          i--;
+        }
+      }
+    }
+  }
+  /**
+   * Adds a new event to the event system.
+   *
+   * @param {string} name - The name of the event.
+   * @param {string} type - The type of the event, either "interval" or "timeout".
+   * @param {number|E} delay - The delay in milliseconds before the event triggers.
+   * @param {function} callbackFn - The callback function to execute when the event triggers.
+   */
+  addEvent(name, type, delay, callbackFn) {
+    this.events.push((() => {
+      switch (type) {
+        case "interval":
+          {
+            const event = {
+              name,
+              type,
+              delay: E(delay),
+              callbackFn,
+              timeCreated: E(Date.now()),
+              intervalLast: E(Date.now())
+            };
+            return event;
+          }
+          ;
+          break;
+        case "timeout":
+        default: {
+          const event = {
+            name,
+            type,
+            delay: E(delay),
+            callbackFn,
+            timeCreated: E(Date.now())
+          };
+          return event;
+        }
+      }
+    })());
+  }
+};
+;
+
 // src/game/game.ts
 var import_lz_string = __toESM(require_lz_string());
 var GameCurrency = class {
@@ -4939,6 +5021,11 @@ var Game = class {
       autoAddInterval: true,
       fps: config.settings.framerate
     });
+    this.eventManager = new eventManager({
+      autoAddInterval: true,
+      fps: config.settings.framerate
+    });
+    this.tickers = [];
     this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
   }
   /**
