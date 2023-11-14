@@ -4692,19 +4692,50 @@ var EObject = class _EObject extends Object {
   }
 };
 
-// src/game/keybinds.ts
+// src/game/configManager.ts
+var configManager = class {
+  constructor(configOptionTemplate) {
+    this.configOptionTemplate = configOptionTemplate;
+  }
+  /**
+   * Parses the given configuration object and returns a new object with default values for any missing options.
+   * @param config - The configuration object to parse.
+   * @returns A new object with default values for any missing options.
+   */
+  parse(config) {
+    if (typeof config === "undefined") {
+      return this.configOptionTemplate;
+    }
+    const parseObject = (obj, template) => {
+      for (const key in template) {
+        if (typeof obj[key] === "undefined") {
+          obj[key] = template[key];
+        } else if (typeof obj[key] === "object" && typeof template[key] === "object") {
+          obj[key] = parseObject(obj[key], template[key]);
+        }
+      }
+      return obj;
+    };
+    return parseObject(config, this.configOptionTemplate);
+  }
+  get options() {
+    return this.configOptionTemplate;
+  }
+};
+
+// src/game/keyManager.ts
 var keyManager = class _keyManager {
   static {
-    this.defaultConfig = {
+    this.configManager = new configManager({
       autoAddInterval: true,
       fps: 30
-    };
+    });
   }
   constructor(config) {
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
-    this.config = config ? config : _keyManager.defaultConfig;
+    this.config = _keyManager.configManager.parse(config);
     if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
       const fps = this.config.fps ? this.config.fps : 30;
       setInterval(() => {
@@ -4784,17 +4815,17 @@ var keyManager = class _keyManager {
 ;
 
 // src/game/main.ts
+var eventManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30
+};
 var eventManager = class _eventManager {
   static {
-    this.defaultConfig = {
-      autoAddInterval: true,
-      fps: 30
-    };
+    this.configManager = new configManager(eventManagerDefaultConfig);
   }
   constructor(config) {
-    this.config = config;
+    this.config = _eventManager.configManager.parse(config);
     this.events = [];
-    this.config = config ? config : _eventManager.defaultConfig;
     this.tickers = [this.tickerFunction];
     if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
       const fps = this.config.fps ? this.config.fps : 30;
@@ -4826,10 +4857,22 @@ var eventManager = class _eventManager {
   /**
    * Adds a new event to the event system.
    *
-   * @param {string} name - The name of the event.
-   * @param {string} type - The type of the event, either "interval" or "timeout".
-   * @param {number|E} delay - The delay in milliseconds before the event triggers.
-   * @param {function} callbackFn - The callback function to execute when the event triggers.
+   * @param name - The name of the event.
+   * @param type - The type of the event, either "interval" or "timeout".
+   * @param delay - The delay in milliseconds before the event triggers.
+   * @param callbackFn - The callback function to execute when the event triggers.
+   *
+   * @example
+   * const myEventManger = new eventManager();
+   * // Add an interval event that executes every 2 seconds.
+   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
+   *    console.log("Interval event executed.");
+   * });
+   *
+   * // Add a timeout event that executes after 5 seconds.
+   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
+   *   console.log("Timeout event executed.");
+   * });
    */
   addEvent(name, type, delay, callbackFn) {
     this.events.push((() => {
@@ -4865,28 +4908,8 @@ var eventManager = class _eventManager {
 };
 ;
 
-// src/game/game.ts
+// src/game/dataManager.ts
 var import_lz_string = __toESM(require_lz_string());
-var GameCurrency = class {
-  /**
-   * Creates a new instance of the Game class.
-   * @param currencyPointer A function that returns the current currency value.
-   * @param staticPointer A function that returns the static data for the game.
-   */
-  constructor(currencyPointer, staticPointer) {
-    this.currencyPointer = currencyPointer;
-    this.staticPointer = staticPointer;
-  }
-  /**
-   * Adds an attribute with the given name and value to the game's static pointer.
-   * @param name - The name of the attribute to add.
-   * @param value - The value of the attribute to add.
-   * @returns The newly created attribute.
-   */
-  addAttribute(name, value) {
-    return this.staticPointer().attributes[name] = new attribute(value);
-  }
-};
 var dataManager = class {
   /**
    * Creates a new instance of the Game class.
@@ -4898,12 +4921,12 @@ var dataManager = class {
       throw new Error("dataManager cannot be run on serverside");
     }
     this.gameRef = gameRef;
-    this.normalData = gameRef().data;
+    this.normalData = gameRef.data;
   }
   compileData(data = this.gameData) {
     return import_lz_string.default.compressToBase64(JSON.stringify(data));
   }
-  decompileData(data = localStorage.getItem(`${this.gameRef().meta.name.id}-data`)) {
+  decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     return data ? JSON.parse(import_lz_string.default.decompressFromBase64(data)) : null;
   }
   /**
@@ -4911,7 +4934,7 @@ var dataManager = class {
    * @param reload - Whether to reload the page after resetting the data. Defaults to false.
    */
   resetData(reload = false) {
-    this.gameRef().data = this.normalData;
+    this.gameRef.data = this.normalData;
     this.saveData();
     if (reload)
       window.location.reload();
@@ -4924,7 +4947,7 @@ var dataManager = class {
       return;
     }
     this.gameData.playtime.timeLastPlayed = E(Date.now());
-    localStorage.setItem(`${this.gameRef().meta.name.id}-data`, this.compileData());
+    localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
   }
   /**
    * Compiles the game data and prompts the user to download it as a text file.
@@ -4936,8 +4959,8 @@ var dataManager = class {
       const blob = new Blob([content], { type: "text/plain" });
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = `${this.gameRef().meta.name.id}-data.txt`;
-      downloadLink.textContent = `Download ${this.gameRef().meta.name.id}-data.txt file`;
+      downloadLink.download = `${this.gameRef.config.name.id}-data.txt`;
+      downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
@@ -4982,22 +5005,57 @@ var dataManager = class {
     console.log(deepMerge(this.normalData, loadedData));
   }
 };
-var Game = class {
+
+// src/game/game.ts
+var GameCurrency = class {
+  /**
+   * Creates a new instance of the Game class.
+   * @param currencyPointer A function that returns the current currency value.
+   * @param staticPointer A function that returns the static data for the game.
+   */
+  constructor(currencyPointer, staticPointer) {
+    this.currencyPointer = currencyPointer;
+    this.staticPointer = staticPointer;
+  }
+  /**
+   * Adds an attribute with the given name and value to the game's static pointer.
+   * @param name - The name of the attribute to add.
+   * @param value - The value of the attribute to add.
+   * @returns The newly created attribute.
+   */
+  addAttribute(name, value) {
+    return this.staticPointer.attributes[name] = new attribute(value);
+  }
+};
+var GameDefaultConfig = {
+  mode: "production",
+  name: {
+    title: "",
+    id: ""
+  },
+  settings: {
+    framerate: 30
+  }
+};
+var Game = class _Game {
+  static {
+    this.configManager = new configManager(GameDefaultConfig);
+  }
   /**
    * Creates a new instance of the Game class.
    * @constructor
    * @param config - The configuration object for the game.
    */
   constructor(config) {
-    this.meta = config;
-    this.dataManager = new dataManager(() => this);
+    this.config = _Game.configManager.parse(config);
+    this.dataManager = new dataManager(this);
     this.keyManager = new keyManager({
       autoAddInterval: true,
-      fps: config.settings.framerate
+      fps: this.config.settings.framerate
     });
     this.eventManager = new eventManager({
       autoAddInterval: true,
-      fps: config.settings.framerate
+      fps: this.config.settings.framerate
     });
     this.tickers = [];
     this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
@@ -5015,7 +5073,7 @@ var Game = class {
       currency: new currencyStatic(() => this.data[name]),
       attributes: {}
     };
-    const classInstance = new GameCurrency(() => this.data[name], () => this.static[name]);
+    const classInstance = new GameCurrency(this.data[name], this.static[name]);
     return classInstance;
   }
   /**
@@ -5089,10 +5147,20 @@ var eMath2 = {
      * @deprecated Use `import { Game } from "emath.js"` instead.
      */
     Game,
-    /**
-     * @deprecated Use `import { keyManager } from "emath.js"` instead.
-     */
-    keyManager
+    managers: {
+      /**
+       * @deprecated Use `import { keyManager } from "emath.js"` instead.
+       */
+      keyManager,
+      /**
+       * @deprecated Use `import { eventManager } from "emath.js"` instead.
+       */
+      eventManager,
+      /**
+       * @deprecated Use `import { dataManager } from "emath.js"` instead.
+       */
+      dataManager
+    }
   }
 };
 if (typeof process !== "object" && typeof window !== "undefined") {
@@ -5108,7 +5176,9 @@ export {
   boost,
   currency,
   currencyStatic,
+  dataManager,
   eMath2 as eMath,
+  eventManager,
   grid,
   gridCell,
   keyManager,

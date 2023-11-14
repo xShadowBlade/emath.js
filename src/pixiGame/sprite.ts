@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 /**
  * @file js/PIXI/sprite.js
  * @description
@@ -11,25 +10,28 @@
 // import { Sprite as PixiSprite } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import Intersects from "./pixi-intersects.js";
-import { PixiGame } from "./pixiGame";
-class _sprite {
+import type { PixiGame } from "./pixiGame";
+class sprite {
     public sprite: PIXI.Sprite | PIXI.Graphics;
     public x: number;
     public y: number;
     public collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
     public intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
 
+    private gameRef: PixiGame;
+
     /**
      * Constructs a new game sprite.
      *
      * @constructor
-     * @param {PIXI.Sprite} spr - The PIXI sprite to create the game sprite from.
-     * @param {string} [collisionShape] - The type of collision shape to use for the sprite.
+     * @param spr - The PIXI sprite to create the game sprite from.
+     * @param collisionShape - The type of collision shape to use for the sprite.
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor (spr: PIXI.Sprite | PIXI.Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
-        this.sprite = Game.PIXI.app.stage.addChild(spr);
+    constructor (gameRef: PixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
+        this.gameRef = gameRef;
+        this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
         this.x = this.sprite.x; // absolute position
         this.y = this.sprite.y;
         this.collisionShape = collisionShape;
@@ -37,28 +39,29 @@ class _sprite {
         this.intersects = new Intersects[this.collisionShape](this.sprite);
 
         // Offset by camera
-        Game.PIXI.app.ticker.add(this.tickerFn, this);
+        this.gameRef.PIXI.app.ticker.add(this.tickerFn, this);
     }
-    tickerFn () {
-        this.sprite.x = this.x - Game.camera.x;
-        this.sprite.y = this.y - Game.camera.y;
+    private tickerFn () {
+        this.sprite.x = this.x - this.gameRef.PIXI.camera.x;
+        this.sprite.y = this.y - this.gameRef.PIXI.camera.y;
     }
 
     /**
      * Checks if this sprite collides with another sprite.
      *
-     * @param {Game.classes.sprite} other - The other sprite to check for collision with.
-     * @returns {boolean} True if a collision occurs, otherwise false.
+     * @param other - The other sprite to check for collision with.
+     * @returns True if a collision occurs, otherwise false.
      */
-    collides (other: this) {
+    public collides (other: this): boolean {
         // @ts-expect-error
         return this.intersects[`collides${other.collisionShape}`](other.intersects);
     }
 
     /**
-     * yeet
+     * Removes the sprite from its parent and optionally from an array.
+     * @param parent - The parent object or array.
      */
-    remove (parent: Array<any> | object) {
+    public remove (parent: Array<any> | object): void {
         this.x = this.y = Infinity; // buggy collision detection
         this.sprite.parent.removeChild(this.sprite);
         if (Array.isArray(parent)) {
@@ -69,5 +72,14 @@ class _sprite {
             // @ts-expect-error
         } else if (typeof parent == "object") delete this;
     }
+
+    /**
+     * Removes a sprite from its parent container.
+     * @param sprite - The sprite to remove.
+     * @param parent - The parent container from which to remove the sprite.
+     */
+    public static remove (sprite: sprite, parent: Array<any> | object): void {
+        sprite.remove(parent);
+    }
 };
-export { _sprite };
+export { sprite };

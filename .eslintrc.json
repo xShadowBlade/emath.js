@@ -32,7 +32,7 @@
 		"no-shadow": ["warn", { "allow": ["err", "resolve", "reject"] }],
 		"no-trailing-spaces": ["warn"],
 		"no-var": "warn",
-		"no-unused-vars": "warn",
+		"no-unused-vars": "off",
 		"prefer-const": "warn",
 		"quotes": ["warn", "double", { "allowTemplateLiterals": true }],
 		"semi": ["warn", "always"],

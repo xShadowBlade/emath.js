@@ -6,6 +6,9 @@
  *
  * @module keybinds
  */
+
+import { configManager, RequiredDeep } from "./configManager";
+
 interface KeyBinding {
     name: string;
     key: string;
@@ -37,10 +40,11 @@ interface keyManagerConfig {
 class keyManager {
     private keysPressed: string[];
     private config: keyManagerConfig;
-    private static defaultConfig: keyManagerConfig = {
+    private static configManager = new configManager({
         autoAddInterval: true,
         fps: 30,
-    };
+    } as RequiredDeep<keyManagerConfig>);
+
     private tickers: ((dt: number) => void)[];
 
     public binds: KeyBinding[];
@@ -50,7 +54,7 @@ class keyManager {
         this.binds = [];
         this.tickers = [];
 
-        this.config = config ? config : keyManager.defaultConfig;
+        this.config = keyManager.configManager.parse(config);
 
         if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
             const fps = this.config.fps ? this.config.fps : 30;

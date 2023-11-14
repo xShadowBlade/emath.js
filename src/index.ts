@@ -15,7 +15,9 @@ import { EArray } from "./classes/utility/eArray";
 import { EObject } from "./classes/utility/eObject";
 
 import { Game } from "./game/game";
-import { keyManager } from "./game/keybinds";
+import { keyManager } from "./game/keyManager";
+import { eventManager } from "./game/main";
+import { dataManager } from "./game/dataManager";
 const eMath = { ...eMathE, ...{
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
@@ -78,10 +80,22 @@ const eMath = { ...eMathE, ...{
      */
     Game,
 
-    /**
-     * @deprecated Use `import { keyManager } from "emath.js"` instead.
-     */
-    keyManager,
+    managers: {
+        /**
+         * @deprecated Use `import { keyManager } from "emath.js"` instead.
+         */
+        keyManager,
+
+        /**
+         * @deprecated Use `import { eventManager } from "emath.js"` instead.
+         */
+        eventManager,
+
+        /**
+         * @deprecated Use `import { dataManager } from "emath.js"` instead.
+         */
+        dataManager,
+    },
 },
 };
 // @ts-ignore
@@ -106,6 +120,8 @@ export {
 
     Game,
     keyManager,
+    eventManager,
+    dataManager,
 };
 
 // export { E } from "./eMath";

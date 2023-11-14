@@ -9,6 +9,7 @@ Saving/loading
  */
 
 import { E } from "../eMath";
+import { configManager, RequiredDeep } from "./configManager";
 
 interface Event {
     name: string;
@@ -40,24 +41,21 @@ interface eventManagerConfig {
     fps?: number;
 }
 
+const eventManagerDefaultConfig: RequiredDeep<eventManagerConfig> = {
+    autoAddInterval: true,
+    fps: 30,
+};
+
 class eventManager {
-    /**
-     * An array to store events.
-     * @type {Array<object>}
-     */
     private events: (intervalEvent | timeoutEvent)[];
     private tickers: ((dt: number) => void)[];
-    private config: eventManagerConfig;
-    private static defaultConfig: eventManagerConfig = {
-        autoAddInterval: true,
-        fps: 30,
-    };
 
-    constructor (config: eventManagerConfig) {
-        this.config = config;
+    private static configManager = new configManager(eventManagerDefaultConfig);
+    public config: RequiredDeep<eventManagerConfig>;
+
+    constructor (config?: eventManagerConfig) {
+        this.config = eventManager.configManager.parse(config);
         this.events = [];
-
-        this.config = config ? config : eventManager.defaultConfig;
 
         this.tickers = [this.tickerFunction];
         if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
@@ -74,7 +72,7 @@ class eventManager {
         const currentTime = E(Date.now());
         for (let i = 0; i < this.events.length; i++) {
             const event = this.events[i];
-    
+
             if (event.type === "interval") {
                 // If interval
                 if (((currentTime.sub(((event as intervalEvent)).intervalLast)).gte(event.delay))) {
@@ -95,10 +93,22 @@ class eventManager {
     /**
      * Adds a new event to the event system.
      *
-     * @param {string} name - The name of the event.
-     * @param {string} type - The type of the event, either "interval" or "timeout".
-     * @param {number|E} delay - The delay in milliseconds before the event triggers.
-     * @param {function} callbackFn - The callback function to execute when the event triggers.
+     * @param name - The name of the event.
+     * @param type - The type of the event, either "interval" or "timeout".
+     * @param delay - The delay in milliseconds before the event triggers.
+     * @param callbackFn - The callback function to execute when the event triggers.
+     *
+     * @example
+     * const myEventManger = new eventManager();
+     * // Add an interval event that executes every 2 seconds.
+     * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
+     *    console.log("Interval event executed.");
+     * });
+     *
+     * // Add a timeout event that executes after 5 seconds.
+     * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
+     *   console.log("Timeout event executed.");
+     * });
      */
     public addEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: () => void) {
         this.events.push((() => {switch (type) {
@@ -129,15 +139,6 @@ class eventManager {
         }})());
     };
 };
-
-// Example usage:
-// eventSystem.addEvent("IntervalEvent", "interval", 2000, () => {
-//     console.log("Interval event executed.");
-// });
-
-// eventSystem.addEvent("TimeoutEvent", "timeout", 5000, () => {
-//     console.log("Timeout event executed.");
-// });
 
 // Game.PIXI.app.ticker.add(function (dt: number) {
 //     Game["data"].playtime.timewarp = E(); // reset timewarp
