@@ -1,9 +1,9 @@
-import { Game, GameConfigOptions } from "../game/game";
+import { game, gameConfigOptions } from "../game/game";
 import { Application } from "pixi.js";
 import type { Graphics, Sprite } from "pixi.js";
 import { configManager, RequiredDeep } from "game/configManager";
 import { sprite } from "./sprite";
-interface PixiGameConfig extends GameConfigOptions {
+interface pixiGameConfig extends gameConfigOptions {
     /**
      * Whether or not to setup a 2d camera system.
      * Defaults to `false`
@@ -16,9 +16,9 @@ interface PixiGameConfig extends GameConfigOptions {
         smoothDamp?: number;
     };
 }
-declare class PixiGame extends Game {
-    protected static configManager: configManager<RequiredDeep<PixiGameConfig>>;
-    config: RequiredDeep<PixiGameConfig>;
+declare class pixiGame extends game {
+    protected static configManager: configManager<RequiredDeep<pixiGameConfig>>;
+    config: RequiredDeep<pixiGameConfig>;
     PIXI: {
         app: Application;
         camera: {
@@ -27,7 +27,7 @@ declare class PixiGame extends Game {
             smoothDamp: number;
         };
     };
-    constructor(config?: PixiGameConfig);
+    constructor(config?: pixiGameConfig);
     addSprite(spriteToAdd: Graphics | Sprite, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line"): sprite;
 }
-export { PixiGame };
+export { pixiGame };

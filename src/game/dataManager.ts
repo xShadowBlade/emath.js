@@ -1,34 +1,40 @@
-import type { Game } from "./game";
+import { game, gameData } from "./game";
 import LZString from "lz-string";
 import { E } from "../eMath";
+
+// Saver
+import "reflect-metadata";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+
 
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  */
 class dataManager {
     private normalData: any;
-    private gameData: any;
-    private gameRef: Game;
+    private gameData: gameData;
+    private gameRef: game;
 
     /**
-     * Creates a new instance of the Game class.
+     * Creates a new instance of the game class.
      * @constructor
-     * @param gameRef - A function that returns the Game instance.
+     * @param gameRef - A function that returns the game instance.
      */
-    constructor (gameRef: Game) {
+    constructor (gameRef: game) {
         if (typeof window === "undefined") { // Don't run on serverside
             throw new Error("dataManager cannot be run on serverside");
         }
         this.gameRef = gameRef;
         this.normalData = gameRef.data;
+        this.gameData = gameRef.data;
     }
 
-    private compileData (data: object = this.gameData): string {
-        return LZString.compressToBase64(JSON.stringify(data));
+    private compileData (data: gameData = this.gameData): string {
+        return LZString.compressToBase64(JSON.stringify(instanceToPlain(data)));
     }
 
     private decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): object | null {
-        return data ? JSON.parse(LZString.decompressFromBase64(data)) : null;
+        return data ? plainToInstance(gameData, JSON.parse(LZString.decompressFromBase64(data))) : null;
     }
 
     /**
@@ -45,10 +51,13 @@ class dataManager {
      * Saves the game data to local storage.
      */
     public saveData (): void {
-        if (!this.gameData) {
-            return;
-        } // check if data exists
-        this.gameData.playtime.timeLastPlayed = E(Date.now());
+        // if (!this.gameData) {
+        //     return;
+        // } // check if data exists
+        /**
+         * IMPORTANT: FIX LATER
+        */
+        // this.gameData.playtime.timeLastPlayed = E(Date.now());
         localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
     };
 
@@ -59,7 +68,7 @@ class dataManager {
         // Step 1: Create the content
         const content = this.compileData();
 
-        console.log(content);
+        // console.log(content);
 
         // Ask if user wants to download
 
@@ -97,7 +106,7 @@ class dataManager {
 
         // let loadedData = this.decompileData();
 
-        // if (localStorage.getItem(`${Game.meta.name.id}-data`)) console.log(decompileData(localStorage.getItem(`${Game.meta.name.id}-data`)));
+        // if (localStorage.getItem(`${game.meta.name.id}-data`)) console.log(decompileData(localStorage.getItem(`${game.meta.name.id}-data`)));
 
         // Sample function E()
         // function E(value) {
@@ -150,5 +159,64 @@ class dataManager {
         console.log(deepMerge(this.normalData, loadedData));
     };
 }
+/**
+ * Function to convert a class or and object to a string that can be used to recreate the class when loaded.
+ * @param class - The class to convert to a string.
+ * Classes are converted to strings using the following format:
+ * ```<EMATHJSONCLASS>${class.name}/${// All nonstatic properties of the class in an object}```
+ * @deprecated I should stop trying to reinvent the wheel.
+ * @example
+class myClass {
+    static af: number = 23;
+    static ab () { return 232 };
+
+    asd: number;
+    constructor (asd) {
+        this.asd = asd;
+    }
+}
+
+const a = new myClass(232);
+
+classToJsonString(a); // `a/{"asd": 232}`
+ */
+// function classToJsonString (obj: any): string {
+//     const properties = Object.getOwnPropertyNames(obj);
+//     const serializedProperties = properties.map((property) => {
+//         const value = obj[property];
+//         if (Object.getOwnPropertyNames(class {}).includes(property)) return ""; // Ignore default properties (they are already defined in the class)
+//         if (typeof value === "object" && value !== null) {
+//             if (value instanceof Date) {
+//                 return `"${property}": "${value.toISOString()}"`;
+//             } else if (Array.isArray(value)) {
+//                 const serializedArray = value.map((item) =>
+//                     typeof item === "object" ? classToJsonString(item) : JSON.stringify(item),
+//                 );
+//                 return `"${property}": [${serializedArray.join(",")}]`;
+//             } else {
+//                 return `"${property}": ${classToJsonString(value)}`;
+//             }
+//         } else {
+//             return `"${property}": ${JSON.stringify(value)}`;
+//         }
+//     });
+//     serializedProperties.filter((property) => property !== "");
+//     return `<EMATHJSONCLASS>${obj.constructor.toString()}</EMATHJSONCLASS>{${serializedProperties.join(",")}}`;
+// }
+
+/**
+ * Function to convert a string created by classToJsonString() back into a class.
+ * @param string - The string to convert to a class.
+ * @deprecated I should stop trying to reinvent the wheel.
+ */
+// function jsonStringToClass (string: string): any {
+//     const classToCall = Function(`return ${string.match(/(?=<EMATHJSONCLASS>)(.*)(?=<\/EMATHJSONCLASS>)/)?.toString().replace("<EMATHJSONCLASS>", "")}`)();
+//     console.log("class", classToCall);
+//     const objectToReturn = new (classToCall)();
+//     const properties = JSON.parse(string.replace(/(?<=<EMATHJSONCLASS>)(.*)(?=<\/EMATHJSONCLASS>)/, ""));
+//     console.log(objectToReturn, properties);
+
+//     return Object.assign(objectToReturn, properties);
+// }
 
 export { dataManager };

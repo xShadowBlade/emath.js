@@ -10,7 +10,7 @@
 // import { Sprite as PixiSprite } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import Intersects from "./pixi-intersects.js";
-import type { PixiGame } from "./pixiGame";
+import type { pixiGame } from "./pixiGame";
 class sprite {
     public sprite: PIXI.Sprite | PIXI.Graphics;
     public x: number;
@@ -18,7 +18,7 @@ class sprite {
     public collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
     public intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
 
-    private gameRef: PixiGame;
+    private gameRef: pixiGame;
 
     /**
      * Constructs a new game sprite.
@@ -29,7 +29,7 @@ class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor (gameRef: PixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
+    constructor (gameRef: pixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
         this.gameRef = gameRef;
         this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
         this.x = this.sprite.x; // absolute position

@@ -1,30 +1,10 @@
-import { E } from "../eMath";
-import { attribute } from "../classes/attribute";
 import { keyManager } from "./keyManager";
 import { eventManager } from "./main";
 import { dataManager } from "./dataManager";
+import { gameCurrency } from "./gameCurrency";
+import { gameReset } from "./resetLayer";
 import { configManager, RequiredDeep } from "./configManager";
-/**
- * Represents a game currency.
- */
-declare class GameCurrency {
-    currencyPointer: any;
-    staticPointer: any;
-    /**
-     * Creates a new instance of the Game class.
-     * @param currencyPointer A function that returns the current currency value.
-     * @param staticPointer A function that returns the static data for the game.
-     */
-    constructor(currencyPointer: any, staticPointer: any);
-    /**
-     * Adds an attribute with the given name and value to the game's static pointer.
-     * @param name - The name of the attribute to add.
-     * @param value - The value of the attribute to add.
-     * @returns The newly created attribute.
-     */
-    addAttribute(name: string, value: E): attribute;
-}
-interface GameConfigOptions {
+interface gameConfigOptions {
     mode?: "development" | "production";
     name: {
         title?: string;
@@ -34,37 +14,63 @@ interface GameConfigOptions {
         framerate?: number;
     };
 }
-declare const GameDefaultConfig: RequiredDeep<GameConfigOptions>;
+declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
+declare class gameStatic {
+    staticData: any;
+    constructor(staticData?: any);
+    set(name: string, value: any): void;
+    get(name: string): any;
+}
+declare class gameData {
+    data: any;
+    constructor(data?: any);
+    set(name: string, value: any): void;
+    get(name: string): any;
+}
 /**
  * Represents a game instance.
  */
-declare class Game {
-    protected static configManager: configManager<RequiredDeep<GameConfigOptions>>;
-    functions: any;
-    data: any;
-    static: any;
-    config: typeof Game.configManager.options;
-    dataManager: dataManager;
-    keyManager: keyManager;
-    eventManager: eventManager;
-    private tickers;
+declare class game {
+    protected static configManager: configManager<RequiredDeep<gameConfigOptions>>;
+    config: typeof game.configManager.options;
+    data: gameData;
+    static: gameStatic;
     /**
-     * Creates a new instance of the Game class.
+     * The data manager for the game.
+     */
+    dataManager: dataManager;
+    /**
+     * The key manager for the game.
+     */
+    keyManager: keyManager;
+    /**
+     * The event manager for the game.
+     */
+    eventManager: eventManager;
+    protected tickers: ((dt: number) => void)[];
+    /**
+     * Creates a new instance of the game class.
      * @constructor
      * @param config - The configuration object for the game.
      */
-    constructor(config?: GameConfigOptions);
+    constructor(config?: gameConfigOptions);
     /**
      * Adds a new currency section to the game.
      * @param name - The name of the currency section.
-     * @returns A new instance of the GameCurrency class.
+     * @returns A new instance of the gameCurrency class.
      */
-    addCurrency(name: string): GameCurrency;
+    addCurrency(name: string): gameCurrency;
     /**
      * Adds a new currency group to the game.
      * @param name - The name of the currency group.
      * @param currencies - An array of currency names to add to the group.
      */
     addCurrencyGroup(name: string, currencies: string[]): void;
+    /**
+     * Creates a new game reset object with the specified currencies to reset.
+     * @param currenciesToReset - The currencies to reset.
+     * @returns The newly created game reset object.
+     */
+    addReset(currenciesToReset: gameCurrency[], extender?: gameReset): gameReset;
 }
-export { Game, GameCurrency, GameConfigOptions, GameDefaultConfig };
+export { game, gameCurrency, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };

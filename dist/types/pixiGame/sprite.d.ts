@@ -7,7 +7,7 @@
  */
 import * as PIXI from "pixi.js";
 import Intersects from "./pixi-intersects.js";
-import type { PixiGame } from "./pixiGame";
+import type { pixiGame } from "./pixiGame";
 declare class sprite {
     sprite: PIXI.Sprite | PIXI.Graphics;
     x: number;
@@ -24,7 +24,7 @@ declare class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor(gameRef: PixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line");
+    constructor(gameRef: pixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line");
     private tickerFn;
     /**
      * Checks if this sprite collides with another sprite.

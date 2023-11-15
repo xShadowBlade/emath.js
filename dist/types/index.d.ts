@@ -7,7 +7,7 @@ import { EString } from "./classes/utility/eString";
 import { obb } from "./classes/utility/obb";
 import { EArray } from "./classes/utility/eArray";
 import { EObject } from "./classes/utility/eObject";
-import { Game } from "./game/game";
+import { game } from "./game/game";
 import { keyManager } from "./game/keyManager";
 import { eventManager } from "./game/main";
 import { dataManager } from "./game/dataManager";
@@ -58,7 +58,7 @@ declare const eMath: {
         mul(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         multiply(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { Game } from "emath.js"` instead.
+         * @deprecated Use `import { game } from "emath.js"` instead.
          */
         div(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         divide(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
@@ -182,9 +182,9 @@ declare const eMath: {
         obb: typeof obb;
     };
     /**
-     * @deprecated Use `import { Game } from "emath.js"` instead.
+     * @deprecated Use `import { game } from "emath.js"` instead.
      */
-    Game: typeof Game;
+    game: typeof game;
     managers: {
         /**
          * @deprecated Use `import { keyManager } from "emath.js"` instead.
@@ -205,4 +205,4 @@ declare const eMath: {
     randomString64: (times: number, type: boolean) => string | number;
     randomString: (length: number) => string;
 };
-export { eMath, E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, Game, keyManager, eventManager, dataManager, };
+export { eMath, E, boost, currency, currencyStatic, attribute, grid, gridCell, EString, EArray, EObject, obb, game, keyManager, eventManager, dataManager, };

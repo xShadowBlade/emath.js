@@ -1,5 +1,5 @@
 // import keys from "./keybinds";
-// import pixiGame from "./PIXI/pixiSetup";
+// import pixigame from "./PIXI/pixiSetup";
 // import dataManagement from "./save";
 
 import { E } from "../eMath";
@@ -9,10 +9,12 @@ import { attribute } from "../classes/attribute";
 import { keyManager } from "./keyManager";
 import { eventManager } from "./main";
 import { dataManager } from "./dataManager";
+import { gameCurrency } from "./gameCurrency";
+import { gameReset } from "./resetLayer";
 
 import { configManager, RequiredDeep } from "./configManager";
 
-// type GameType = {
+// type gameType = {
 //     data: {
 //         playtime: { // in milliseconds
 //             tActive: currency,
@@ -35,35 +37,7 @@ import { configManager, RequiredDeep } from "./configManager";
 //     };
 // };
 
-/**
- * Represents a game currency.
- */
-class GameCurrency {
-    public currencyPointer: any;
-    public staticPointer: any;
-
-    /**
-     * Creates a new instance of the Game class.
-     * @param currencyPointer A function that returns the current currency value.
-     * @param staticPointer A function that returns the static data for the game.
-     */
-    constructor (currencyPointer: any, staticPointer: any) {
-        this.currencyPointer = currencyPointer;
-        this.staticPointer = staticPointer;
-    }
-
-    /**
-     * Adds an attribute with the given name and value to the game's static pointer.
-     * @param name - The name of the attribute to add.
-     * @param value - The value of the attribute to add.
-     * @returns The newly created attribute.
-     */
-    addAttribute (name: string, value: E): attribute {
-        return this.staticPointer.attributes[name] = new attribute(value);
-    }
-}
-
-interface GameConfigOptions {
+interface gameConfigOptions {
 	mode?: "development" | "production";
 	name: {
 		title?: string;
@@ -74,7 +48,7 @@ interface GameConfigOptions {
     }
 }
 
-const GameDefaultConfig: RequiredDeep<GameConfigOptions> = {
+const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
     mode: "production",
     name: {
         title: "",
@@ -85,30 +59,75 @@ const GameDefaultConfig: RequiredDeep<GameConfigOptions> = {
     },
 };
 
+class gameStatic {
+    public staticData: any;
+
+    constructor (staticData?: any) {
+        this.staticData = staticData ? staticData : {};
+    }
+
+    public set (name: string, value: any): void {
+        this.staticData[name] = value;
+    }
+
+    public get (name: string): any {
+        return this.staticData[name];
+    }
+}
+
+class gameData {
+    public data: any;
+
+    constructor (data?: any) {
+        this.data = data ? data : {};
+    }
+
+    public set (name: string, value: any): void {
+        this.data[name] = value;
+    }
+
+    public get (name: string): any {
+        return this.data[name];
+    }
+
+}
+
 /**
  * Represents a game instance.
  */
-class Game {
-    protected static configManager = new configManager(GameDefaultConfig);
+class game {
+    protected static configManager = new configManager(gameDefaultConfig);
+    public config: typeof game.configManager.options;
 
-    public functions: any;
-    public data: any;
-    public static: any;
-    public config: typeof Game.configManager.options;
-
-    public dataManager: dataManager;
-    public keyManager: keyManager;
-    public eventManager: eventManager;
-
-    private tickers: ((dt: number) => void)[];
+    public data: gameData;
+    public static: gameStatic;
 
     /**
-     * Creates a new instance of the Game class.
+     * The data manager for the game.
+     */
+    public dataManager: dataManager;
+
+    /**
+     * The key manager for the game.
+     */
+    public keyManager: keyManager;
+
+    /**
+     * The event manager for the game.
+     */
+    public eventManager: eventManager;
+
+    protected tickers: ((dt: number) => void)[];
+
+    /**
+     * Creates a new instance of the game class.
      * @constructor
      * @param config - The configuration object for the game.
      */
-    constructor (config?: GameConfigOptions) {
-        this.config = Game.configManager.parse(config);
+    constructor (config?: gameConfigOptions) {
+        this.config = game.configManager.parse(config);
+        this.data = new gameData();
+        this.static = new gameStatic();
         this.dataManager = new dataManager(this);
         this.keyManager = new keyManager({
             autoAddInterval: true,
@@ -125,18 +144,18 @@ class Game {
     /**
      * Adds a new currency section to the game.
      * @param name - The name of the currency section.
-     * @returns A new instance of the GameCurrency class.
+     * @returns A new instance of the gameCurrency class.
      */
-    public addCurrency (name: string): GameCurrency {
-        this.data[name] = {
+    public addCurrency (name: string): gameCurrency {
+        this.data.set(name, {
             currency: new currency(),
-        };
-        this.static[name] = {
-            currency: new currencyStatic(() => this.data[name]),
+        });
+        this.static.set(name, {
+            currency: new currencyStatic(() => this.data.get(name)),
             attributes: {},
-        };
+        });
 
-        const classInstance = new GameCurrency(this.data[name], this.static[name]);
+        const classInstance = new gameCurrency(this.data.get(name), this.static.get(name));
         return classInstance;
     }
 
@@ -146,17 +165,27 @@ class Game {
      * @param currencies - An array of currency names to add to the group.
      */
     public addCurrencyGroup (name: string, currencies: string[]): void {
-        this.data[name] = {};
-        this.static[name] = {
+        this.data.set(name, {});
+        this.static.set(name, {
             attributes: {},
-        };
-
-        // const classInstance = new GameCurrency(() => this.data[name], () => this.static[name]);
-        currencies.forEach((currencyName) => {
-            this.data[name][currencyName] = new currency();
-            this.static[name][currencyName] = new currencyStatic(() => this.data[name][currencyName]);
         });
+
+        // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
+        currencies.forEach((currencyName) => {
+            this.data.get(name)[currencyName] = new currency();
+            this.static.get(name)[currencyName] = new currencyStatic(() => this.data.get(name)[currencyName]);
+        });
+    }
+
+    /**
+     * Creates a new game reset object with the specified currencies to reset.
+     * @param currenciesToReset - The currencies to reset.
+     * @returns The newly created game reset object.
+     */
+    public addReset (currenciesToReset: gameCurrency[], extender?: gameReset): gameReset {
+        const reset = new gameReset(currenciesToReset, extender);
+        return reset;
     }
 }
 
-export { Game, GameCurrency, GameConfigOptions, GameDefaultConfig };
+export { game, gameCurrency, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };

@@ -14,7 +14,7 @@ import { obb } from "./classes/utility/obb";
 import { EArray } from "./classes/utility/eArray";
 import { EObject } from "./classes/utility/eObject";
 
-import { Game } from "./game/game";
+import { game } from "./game/game";
 import { keyManager } from "./game/keyManager";
 import { eventManager } from "./game/main";
 import { dataManager } from "./game/dataManager";
@@ -76,9 +76,9 @@ const eMath = { ...eMathE, ...{
     },
 
     /**
-     * @deprecated Use `import { Game } from "emath.js"` instead.
+     * @deprecated Use `import { game } from "emath.js"` instead.
      */
-    Game,
+    game,
 
     managers: {
         /**
@@ -118,7 +118,7 @@ export {
     EObject,
     obb,
 
-    Game,
+    game,
     keyManager,
     eventManager,
     dataManager,

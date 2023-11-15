@@ -1,11 +1,11 @@
-import { Game, GameConfigOptions, GameDefaultConfig } from "../game/game";
+import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
 import { Application } from "pixi.js";
 import type { Graphics, Sprite } from "pixi.js";
 
 import { configManager, RequiredDeep } from "game/configManager";
 import { sprite } from "./sprite";
 
-interface PixiGameConfig extends GameConfigOptions {
+interface pixiGameConfig extends gameConfigOptions {
     /**
      * Whether or not to setup a 2d camera system.
      * Defaults to `false`
@@ -30,8 +30,8 @@ interface PixiGameConfig extends GameConfigOptions {
     }
 }
 
-const PixiGameDefaultConfig: RequiredDeep<PixiGameConfig> = {
-    ...GameDefaultConfig,
+const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
+    ...gameDefaultConfig,
     setupCamera: false,
     camera: {
         // x: 0,
@@ -40,10 +40,10 @@ const PixiGameDefaultConfig: RequiredDeep<PixiGameConfig> = {
     },
 };
 
-class PixiGame extends Game {
-    protected static configManager = new configManager(PixiGameDefaultConfig);
+class pixiGame extends game {
+    protected static configManager = new configManager(pixiGameDefaultConfig);
 
-    public config: RequiredDeep<PixiGameConfig>;
+    public config: RequiredDeep<pixiGameConfig>;
 
     public PIXI: {
         app: Application,
@@ -54,9 +54,9 @@ class PixiGame extends Game {
         },
     };
 
-    constructor (config?: PixiGameConfig) {
+    constructor (config?: pixiGameConfig) {
         super();
-        this.config = PixiGame.configManager.parse(config);
+        this.config = pixiGame.configManager.parse(config);
 
         // Setup PIXI
         const app = new Application({
@@ -98,4 +98,4 @@ class PixiGame extends Game {
     }
 }
 
-export { PixiGame };
+export { pixiGame };
