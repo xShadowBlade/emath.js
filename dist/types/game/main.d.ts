@@ -19,7 +19,6 @@ interface eventManagerConfig {
 }
 declare class eventManager {
     private events;
-    private tickers;
     private static configManager;
     config: RequiredDeep<eventManagerConfig>;
     constructor(config?: eventManagerConfig);

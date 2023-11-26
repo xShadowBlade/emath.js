@@ -48,7 +48,6 @@ const eventManagerDefaultConfig: RequiredDeep<eventManagerConfig> = {
 
 class eventManager {
     private events: (intervalEvent | timeoutEvent)[];
-    private tickers: ((dt: number) => void)[];
 
     private static configManager = new configManager(eventManagerDefaultConfig);
     public config: RequiredDeep<eventManagerConfig>;
@@ -56,14 +55,10 @@ class eventManager {
     constructor (config?: eventManagerConfig) {
         this.config = eventManager.configManager.parse(config);
         this.events = [];
-
-        this.tickers = [this.tickerFunction];
         if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
             const fps = this.config.fps ? this.config.fps : 30;
             setInterval(() => {
-                for (const ticker of this.tickers) {
-                    ticker(1000 / fps);
-                }
+                this.tickerFunction();
             }, 1000 / fps);
         }
     }

@@ -99,7 +99,7 @@ const eMath = { ...eMathE, ...{
 },
 };
 // @ts-ignore
-if (typeof process !== "object" && typeof window !== "undefined") {
+if (typeof process! !== "object" && typeof window! !== "undefined") {
     (window as any)["eMath"] = eMath;
 }
 

@@ -1273,6 +1273,15 @@ var Decimal = class _Decimal {
   static reciprocate(value) {
     return _Decimal.fromValue_noAlloc(value).reciprocate();
   }
+  static mod(value, other) {
+    return _Decimal.fromValue_noAlloc(value).mod(other);
+  }
+  static modulo(value, other) {
+    return _Decimal.fromValue_noAlloc(value).modulo(other);
+  }
+  static modular(value, other) {
+    return _Decimal.fromValue_noAlloc(value).modular(other);
+  }
   static cmp(value, other) {
     return _Decimal.fromValue_noAlloc(value).cmp(other);
   }
@@ -1419,23 +1428,23 @@ var Decimal = class _Decimal {
   static cbrt(value) {
     return _Decimal.fromValue_noAlloc(value).cbrt();
   }
-  static tetrate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
-    return _Decimal.fromValue_noAlloc(value).tetrate(height, payload);
+  static tetrate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return _Decimal.fromValue_noAlloc(value).tetrate(height, payload, linear);
   }
-  static iteratedexp(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
-    return _Decimal.fromValue_noAlloc(value).iteratedexp(height, payload);
+  static iteratedexp(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return _Decimal.fromValue_noAlloc(value).iteratedexp(height, payload, linear);
   }
-  static iteratedlog(value, base = 10, times = 1) {
-    return _Decimal.fromValue_noAlloc(value).iteratedlog(base, times);
+  static iteratedlog(value, base = 10, times = 1, linear = false) {
+    return _Decimal.fromValue_noAlloc(value).iteratedlog(base, times, linear);
   }
-  static layeradd10(value, diff) {
-    return _Decimal.fromValue_noAlloc(value).layeradd10(diff);
+  static layeradd10(value, diff, linear = false) {
+    return _Decimal.fromValue_noAlloc(value).layeradd10(diff, linear);
   }
-  static layeradd(value, diff, base = 10) {
-    return _Decimal.fromValue_noAlloc(value).layeradd(diff, base);
+  static layeradd(value, diff, base = 10, linear = false) {
+    return _Decimal.fromValue_noAlloc(value).layeradd(diff, base, linear);
   }
-  static slog(value, base = 10) {
-    return _Decimal.fromValue_noAlloc(value).slog(base);
+  static slog(value, base = 10, linear = false) {
+    return _Decimal.fromValue_noAlloc(value).slog(base, 100, linear);
   }
   static lambertw(value) {
     return _Decimal.fromValue_noAlloc(value).lambertw();
@@ -1443,8 +1452,11 @@ var Decimal = class _Decimal {
   static ssqrt(value) {
     return _Decimal.fromValue_noAlloc(value).ssqrt();
   }
-  static pentate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
-    return _Decimal.fromValue_noAlloc(value).pentate(height, payload);
+  static linear_sroot(value, height) {
+    return _Decimal.fromValue_noAlloc(value).linear_sroot(height);
+  }
+  static pentate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return _Decimal.fromValue_noAlloc(value).pentate(height, payload, linear);
   }
   /**
   * If you're willing to spend 'resourcesAvailable' and want to buy something
@@ -1723,6 +1735,29 @@ var Decimal = class _Decimal {
       ptparts[1] = ptparts[1].replace("(", "");
       ptparts[1] = ptparts[1].replace(")", "");
       let payload = parseFloat(ptparts[1]);
+      if (!isFinite(payload)) {
+        payload = 1;
+      }
+      if (isFinite(base) && isFinite(height)) {
+        const result = _Decimal.tetrate(base, height, payload);
+        this.sign = result.sign;
+        this.layer = result.layer;
+        this.mag = result.mag;
+        if (_Decimal.fromStringCache.maxSize >= 1) {
+          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        }
+        return this;
+      }
+    }
+    ptparts = value.split("f");
+    if (ptparts.length === 2) {
+      base = 10;
+      ptparts[0] = ptparts[0].replace("(", "");
+      ptparts[0] = ptparts[0].replace(")", "");
+      let payload = parseFloat(ptparts[0]);
+      ptparts[1] = ptparts[1].replace("(", "");
+      ptparts[1] = ptparts[1].replace(")", "");
+      height = parseFloat(ptparts[1]);
       if (!isFinite(payload)) {
         payload = 1;
       }
@@ -2529,7 +2564,7 @@ var Decimal = class _Decimal {
   // Tetration/tetrate: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
   // If payload != 1, then this is 'iterated exponentiation', the result of exping (payload) to base (this) (height) times. https://andydude.github.io/tetration/archives/tetration2/ident.html
   // Works with negative and positive real heights.
-  tetrate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+  tetrate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
     if (height === 1) {
       return _Decimal.pow(this, payload);
     }
@@ -2564,13 +2599,13 @@ var Decimal = class _Decimal {
       return _Decimal.fromNumber(result);
     }
     if (height < 0) {
-      return _Decimal.iteratedlog(payload, this, -height);
+      return _Decimal.iteratedlog(payload, this, -height, linear);
     }
     payload = _Decimal.fromValue_noAlloc(payload);
     const oldheight = height;
     height = Math.trunc(height);
     const fracheight = oldheight - height;
-    if (this.gt(_Decimal.dZero) && this.lte(1.444667861009766)) {
+    if (this.gt(_Decimal.dZero) && this.lte(1.444667861009766) && (oldheight > 1e4 || !linear)) {
       height = Math.min(1e4, height);
       for (let i = 0; i < height; ++i) {
         const old_payload = payload;
@@ -2579,15 +2614,19 @@ var Decimal = class _Decimal {
           return payload;
         }
       }
-      if (fracheight != 0) {
+      if (fracheight != 0 || oldheight > 1e4) {
         const next_payload = this.pow(payload);
-        return payload.mul(1 - fracheight).add(next_payload.mul(fracheight));
+        if (oldheight <= 1e4 || Math.ceil(oldheight) % 2 == 0) {
+          return payload.mul(1 - fracheight).add(next_payload.mul(fracheight));
+        } else {
+          return payload.mul(fracheight).add(next_payload.mul(1 - fracheight));
+        }
       }
       return payload;
     }
     if (fracheight !== 0) {
       if (payload.eq(_Decimal.dOne)) {
-        if (this.gt(10)) {
+        if (this.gt(10) || linear) {
           payload = this.pow(fracheight);
         } else {
           payload = _Decimal.fromNumber(_Decimal.tetrate_critical(this.toNumber(), fracheight));
@@ -2595,10 +2634,12 @@ var Decimal = class _Decimal {
             payload = payload.sub(1).mul(this.minus(1)).plus(1);
           }
         }
-      } else if (this.eq(10)) {
-        payload = payload.layeradd10(fracheight);
       } else {
-        payload = payload.layeradd(fracheight, this);
+        if (this.eq(10)) {
+          payload = payload.layeradd10(fracheight, linear);
+        } else {
+          payload = payload.layeradd(fracheight, this, linear);
+        }
       }
     }
     for (let i = 0; i < height; ++i) {
@@ -2616,14 +2657,14 @@ var Decimal = class _Decimal {
     return payload;
   }
   // iteratedexp/iterated exponentiation: - all cases handled in tetrate, so just call it
-  iteratedexp(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
-    return this.tetrate(height, payload);
+  iteratedexp(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return this.tetrate(height, payload, linear);
   }
   // iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting (times) from the number's slog representation. Equivalent to tetrating to a negative height.
   // Works with negative and positive real heights.
-  iteratedlog(base = 10, times = 1) {
+  iteratedlog(base = 10, times = 1, linear = false) {
     if (times < 0) {
-      return _Decimal.tetrate(base, -times, this);
+      return _Decimal.tetrate(base, -times, this, linear);
     }
     base = _Decimal.fromValue_noAlloc(base);
     let result = _Decimal.fromDecimal(this);
@@ -2646,9 +2687,9 @@ var Decimal = class _Decimal {
     }
     if (fraction > 0 && fraction < 1) {
       if (base.eq(10)) {
-        result = result.layeradd10(-fraction);
+        result = result.layeradd10(-fraction, linear);
       } else {
-        result = result.layeradd(-fraction, base);
+        result = result.layeradd(-fraction, base, linear);
       }
     }
     return result;
@@ -2656,13 +2697,13 @@ var Decimal = class _Decimal {
   // Super-logarithm, one of tetration's inverses, tells you what size power tower you'd have to tetrate base to to get number. By definition, will never be higher than 1.8e308 in break_eternity.js, since a power tower 1.8e308 numbers tall is the largest representable number.
   // https://en.wikipedia.org/wiki/Super-logarithm
   // NEW: Accept a number of iterations, and use binary search to, after making an initial guess, hone in on the true value, assuming tetration as the ground truth.
-  slog(base = 10, iterations = 100) {
+  slog(base = 10, iterations = 100, linear = false) {
     let step_size = 1e-3;
     let has_changed_directions_once = false;
     let previously_rose = false;
-    let result = this.slog_internal(base).toNumber();
+    let result = this.slog_internal(base, linear).toNumber();
     for (let i = 1; i < iterations; ++i) {
-      const new_decimal = new _Decimal(base).tetrate(result);
+      const new_decimal = new _Decimal(base).tetrate(result, _Decimal.dOne, linear);
       const currently_rose = new_decimal.gt(this);
       if (i > 1) {
         if (previously_rose != currently_rose) {
@@ -2683,7 +2724,7 @@ var Decimal = class _Decimal {
     }
     return _Decimal.fromNumber(result);
   }
-  slog_internal(base = 10) {
+  slog_internal(base = 10, linear = false) {
     base = _Decimal.fromValue_noAlloc(base);
     if (base.lte(_Decimal.dZero)) {
       return _Decimal.dNaN;
@@ -2715,7 +2756,10 @@ var Decimal = class _Decimal {
         copy = _Decimal.pow(base, copy);
         result -= 1;
       } else if (copy.lte(_Decimal.dOne)) {
-        return _Decimal.fromNumber(result + _Decimal.slog_critical(base.toNumber(), copy.toNumber()));
+        if (linear)
+          return _Decimal.fromNumber(result + copy.toNumber() - 1);
+        else
+          return _Decimal.fromNumber(result + _Decimal.slog_critical(base.toNumber(), copy.toNumber()));
       } else {
         result += 1;
         copy = _Decimal.log(copy, base);
@@ -2733,7 +2777,7 @@ var Decimal = class _Decimal {
   static tetrate_critical(base, height) {
     return _Decimal.critical_section(base, height, critical_tetr_values);
   }
-  static critical_section(base, height, grid2) {
+  static critical_section(base, height, grid2, linear = false) {
     height *= 10;
     if (height < 0) {
       height = 0;
@@ -2770,7 +2814,7 @@ var Decimal = class _Decimal {
   }
   // Function for adding/removing layers from a Decimal, even fractional layers (e.g. its slog10 representation).
   // Moved this over to use the same critical section as tetrate/slog.
-  layeradd10(diff) {
+  layeradd10(diff, linear = false) {
     diff = _Decimal.fromValue_noAlloc(diff).toNumber();
     const result = _Decimal.fromDecimal(this);
     if (diff >= 1) {
@@ -2822,22 +2866,22 @@ var Decimal = class _Decimal {
     }
     result.normalize();
     if (diff !== 0) {
-      return result.layeradd(diff, 10);
+      return result.layeradd(diff, 10, linear);
     }
     return result;
   }
   // layeradd: like adding 'diff' to the number's slog(base) representation. Very similar to tetrate base 'base' and iterated log base 'base'.
-  layeradd(diff, base) {
+  layeradd(diff, base, linear = false) {
     const slogthis = this.slog(base).toNumber();
     const slogdest = slogthis + diff;
     if (slogdest >= 0) {
-      return _Decimal.tetrate(base, slogdest);
+      return _Decimal.tetrate(base, slogdest, _Decimal.dOne, linear);
     } else if (!Number.isFinite(slogdest)) {
       return _Decimal.dNaN;
     } else if (slogdest >= -1) {
-      return _Decimal.log(_Decimal.tetrate(base, slogdest + 1), base);
+      return _Decimal.log(_Decimal.tetrate(base, slogdest + 1, _Decimal.dOne, linear), base);
     } else {
-      return _Decimal.log(_Decimal.log(_Decimal.tetrate(base, slogdest + 2), base), base);
+      return _Decimal.log(_Decimal.log(_Decimal.tetrate(base, slogdest + 2, _Decimal.dOne, linear), base), base);
     }
   }
   // The Lambert W function, also called the omega function or product logarithm, is the solution W(x) === x*e^x.
@@ -2870,9 +2914,275 @@ var Decimal = class _Decimal {
     const lnx = this.ln();
     return lnx.div(lnx.lambertw());
   }
+  // Super-root, one of tetration's inverses - what number, tetrated to height (height), equals this?
+  // Only works with the linear approximation, because I don't know the structure of non-linear tetrations for inputs < 1
+  // TODO: Optimize this like how slog is optimized
+  linear_sroot(degree) {
+    if (degree == 1) {
+      return this;
+    }
+    if (this.eq(_Decimal.dInf)) {
+      return _Decimal.dInf;
+    }
+    if (!this.isFinite()) {
+      return _Decimal.dNaN;
+    }
+    if (degree == 2) {
+      try {
+        return this.ssqrt();
+      } catch {
+        return _Decimal.dNaN;
+      }
+    }
+    if (degree > 0 && degree < 1) {
+      return this.root(degree);
+    }
+    if (degree > -2 && degree < -1) {
+      return _Decimal.fromNumber(degree).add(2).pow(this.recip());
+    }
+    if (degree <= 0) {
+      return _Decimal.dNaN;
+    }
+    if (degree == Number.POSITIVE_INFINITY) {
+      const this_num = this.toNumber();
+      if (this_num < Math.E && this_num > _EXPN1) {
+        return this.pow(this.recip());
+      } else {
+        return _Decimal.dNaN;
+      }
+    }
+    if (this.eq(1)) {
+      return _Decimal.dOne;
+    }
+    if (this.lt(0)) {
+      return _Decimal.dNaN;
+    }
+    if (this.lte("1ee-16")) {
+      if (degree % 2 == 1)
+        return this;
+      else
+        return _Decimal.dNaN;
+    }
+    if (this.gt(1)) {
+      let upperBound = _Decimal.dTen;
+      if (this.gte(_Decimal.tetrate(10, degree, 1, true))) {
+        upperBound = this.iteratedlog(10, degree - 1, true);
+      }
+      if (degree <= 1) {
+        upperBound = this.root(degree);
+      }
+      let lower = _Decimal.dZero;
+      const layer = upperBound.layer;
+      let upper = upperBound.iteratedlog(10, layer, true);
+      let previous = upper;
+      let guess = upper.div(2);
+      let loopGoing = true;
+      while (loopGoing) {
+        guess = lower.add(upper).div(2);
+        if (_Decimal.iteratedexp(10, layer, guess, true).tetrate(degree, 1, true).gt(this))
+          upper = guess;
+        else
+          lower = guess;
+        if (guess.eq(previous))
+          loopGoing = false;
+        else
+          previous = guess;
+      }
+      return _Decimal.iteratedexp(10, layer, guess, true);
+    } else {
+      let stage = 1;
+      let minimum = _Decimal.fromComponents(1, 10, 1);
+      let maximum = _Decimal.fromComponents(1, 10, 1);
+      let lower = _Decimal.fromComponents(1, 10, 1);
+      let upper = _Decimal.fromComponents(1, 1, -16);
+      let prevspan = _Decimal.dZero;
+      let difference = _Decimal.fromComponents(1, 10, 1);
+      let upperBound = upper.pow10().recip();
+      let distance = _Decimal.dZero;
+      let prevPoint = upperBound;
+      let nextPoint = upperBound;
+      const evenDegree = Math.ceil(degree) % 2 == 0;
+      let range = 0;
+      let lastValid = _Decimal.fromComponents(1, 10, 1);
+      let infLoopDetector = false;
+      let previousUpper = _Decimal.dZero;
+      let decreasingFound = false;
+      while (stage < 4) {
+        if (stage == 2) {
+          if (evenDegree)
+            break;
+          else {
+            lower = _Decimal.fromComponents(1, 10, 1);
+            upper = minimum;
+            stage = 3;
+            difference = _Decimal.fromComponents(1, 10, 1);
+            lastValid = _Decimal.fromComponents(1, 10, 1);
+          }
+        }
+        infLoopDetector = false;
+        while (upper.neq(lower)) {
+          previousUpper = upper;
+          if (upper.pow10().recip().tetrate(degree, 1, true).eq(1) && upper.pow10().recip().lt(0.4)) {
+            upperBound = upper.pow10().recip();
+            prevPoint = upper.pow10().recip();
+            nextPoint = upper.pow10().recip();
+            distance = _Decimal.dZero;
+            range = -1;
+            if (stage == 3)
+              lastValid = upper;
+          } else if (upper.pow10().recip().tetrate(degree, 1, true).eq(upper.pow10().recip()) && !evenDegree && upper.pow10().recip().lt(0.4)) {
+            upperBound = upper.pow10().recip();
+            prevPoint = upper.pow10().recip();
+            nextPoint = upper.pow10().recip();
+            distance = _Decimal.dZero;
+            range = 0;
+          } else if (upper.pow10().recip().tetrate(degree, 1, true).eq(upper.pow10().recip().mul(2).tetrate(degree, 1, true))) {
+            upperBound = upper.pow10().recip();
+            prevPoint = _Decimal.dZero;
+            nextPoint = upperBound.mul(2);
+            distance = upperBound;
+            if (evenDegree)
+              range = -1;
+            else
+              range = 0;
+          } else {
+            prevspan = upper.mul(12e-17);
+            upperBound = upper.pow10().recip();
+            prevPoint = upper.add(prevspan).pow10().recip();
+            distance = upperBound.sub(prevPoint);
+            nextPoint = upperBound.add(distance);
+            while (prevPoint.tetrate(degree, 1, true).eq(upperBound.tetrate(degree, 1, true)) || nextPoint.tetrate(degree, 1, true).eq(upperBound.tetrate(degree, 1, true)) || prevPoint.gte(upperBound) || nextPoint.lte(upperBound)) {
+              prevspan = prevspan.mul(2);
+              prevPoint = upper.add(prevspan).pow10().recip();
+              distance = upperBound.sub(prevPoint);
+              nextPoint = upperBound.add(distance);
+            }
+            if (stage == 1 && (nextPoint.tetrate(degree, 1, true).gt(upperBound.tetrate(degree, 1, true)) && prevPoint.tetrate(degree, 1, true).gt(upperBound.tetrate(degree, 1, true))) || stage == 3 && (nextPoint.tetrate(degree, 1, true).lt(upperBound.tetrate(degree, 1, true)) && prevPoint.tetrate(degree, 1, true).lt(upperBound.tetrate(degree, 1, true)))) {
+              lastValid = upper;
+            }
+            if (nextPoint.tetrate(degree, 1, true).lt(upperBound.tetrate(degree, 1, true))) {
+              range = -1;
+            } else if (evenDegree) {
+              range = 1;
+            } else if (stage == 3 && upper.gt_tolerance(minimum, 1e-8)) {
+              range = 0;
+            } else {
+              while (prevPoint.tetrate(degree, 1, true).eq_tolerance(upperBound.tetrate(degree, 1, true), 1e-8) || nextPoint.tetrate(degree, 1, true).eq_tolerance(upperBound.tetrate(degree, 1, true), 1e-8) || prevPoint.gte(upperBound) || nextPoint.lte(upperBound)) {
+                prevspan = prevspan.mul(2);
+                prevPoint = upper.add(prevspan).pow10().recip();
+                distance = upperBound.sub(prevPoint);
+                nextPoint = upperBound.add(distance);
+              }
+              if (nextPoint.tetrate(degree, 1, true).sub(upperBound.tetrate(degree, 1, true)).lt(upperBound.tetrate(degree, 1, true).sub(prevPoint.tetrate(degree, 1, true)))) {
+                range = 0;
+              } else {
+                range = 1;
+              }
+            }
+          }
+          if (range == -1)
+            decreasingFound = true;
+          if (stage == 1 && range == 1 || stage == 3 && range != 0) {
+            if (lower.eq(_Decimal.fromComponents(1, 10, 1))) {
+              upper = upper.mul(2);
+            } else {
+              let cutOff = false;
+              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3))
+                cutOff = true;
+              upper = upper.add(lower).div(2);
+              if (cutOff)
+                break;
+            }
+          } else {
+            if (lower.eq(_Decimal.fromComponents(1, 10, 1))) {
+              lower = upper;
+              upper = upper.div(2);
+            } else {
+              let cutOff = false;
+              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3))
+                cutOff = true;
+              lower = lower.sub(difference);
+              upper = upper.sub(difference);
+              if (cutOff)
+                break;
+            }
+          }
+          if (lower.sub(upper).div(2).abs().gt(difference.mul(1.5)))
+            infLoopDetector = true;
+          difference = lower.sub(upper).div(2).abs();
+          if (upper.gt("1e18"))
+            break;
+          if (upper.eq(previousUpper))
+            break;
+        }
+        if (upper.gt("1e18"))
+          break;
+        if (!decreasingFound)
+          break;
+        if (lastValid == _Decimal.fromComponents(1, 10, 1)) {
+          break;
+        }
+        if (stage == 1)
+          minimum = lastValid;
+        else if (stage == 3)
+          maximum = lastValid;
+        stage++;
+      }
+      lower = minimum;
+      upper = _Decimal.fromComponents(1, 1, -18);
+      let previous = upper;
+      let guess = _Decimal.dZero;
+      let loopGoing = true;
+      while (loopGoing) {
+        if (lower.eq(_Decimal.fromComponents(1, 10, 1)))
+          guess = upper.mul(2);
+        else
+          guess = lower.add(upper).div(2);
+        if (_Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
+          upper = guess;
+        else
+          lower = guess;
+        if (guess.eq(previous))
+          loopGoing = false;
+        else
+          previous = guess;
+        if (upper.gt("1e18"))
+          return _Decimal.dNaN;
+      }
+      if (!guess.eq_tolerance(minimum, 1e-15)) {
+        return guess.pow10().recip();
+      } else {
+        if (maximum.eq(_Decimal.fromComponents(1, 10, 1))) {
+          return _Decimal.dNaN;
+        }
+        lower = _Decimal.fromComponents(1, 10, 1);
+        upper = maximum;
+        previous = upper;
+        guess = _Decimal.dZero;
+        loopGoing = true;
+        while (loopGoing) {
+          if (lower.eq(_Decimal.fromComponents(1, 10, 1)))
+            guess = upper.mul(2);
+          else
+            guess = lower.add(upper).div(2);
+          if (_Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
+            upper = guess;
+          else
+            lower = guess;
+          if (guess.eq(previous))
+            loopGoing = false;
+          else
+            previous = guess;
+          if (upper.gt("1e18"))
+            return _Decimal.dNaN;
+        }
+        return guess.pow10().recip();
+      }
+    }
+  }
   // Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
   // https://en.wikipedia.org/wiki/Pentation
-  pentate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1)) {
+  pentate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
     payload = _Decimal.fromValue_noAlloc(payload);
     const oldheight = height;
     height = Math.trunc(height);
@@ -2881,14 +3191,16 @@ var Decimal = class _Decimal {
       if (payload.eq(_Decimal.dOne)) {
         ++height;
         payload = _Decimal.fromNumber(fracheight);
-      } else if (this.eq(10)) {
-        payload = payload.layeradd10(fracheight);
       } else {
-        payload = payload.layeradd(fracheight, this);
+        if (this.eq(10)) {
+          payload = payload.layeradd10(fracheight, linear);
+        } else {
+          payload = payload.layeradd(fracheight, this, linear);
+        }
       }
     }
     for (let i = 0; i < height; ++i) {
-      payload = this.tetrate(payload.toNumber());
+      payload = this.tetrate(payload.toNumber(), _Decimal.dOne, linear);
       if (!isFinite(payload.layer) || !isFinite(payload.mag)) {
         return payload.normalize();
       }
@@ -3044,20 +3356,38 @@ var Decimal = class _Decimal {
    * Performs modular arithmetic on the DecimalClone instance.
    *
    * @function
-   * @name modular
-   * @alias mod
+   * @name mod
+   * @alias modular
+   * @alias modulo
    * @param {DecimalSource} other - The number or DecimalClone instance to use for modular arithmetic.
    * @returns {Decimal} A EClone instance representing the result of the modular operation.
    */
-  mod(other) {
-    const other1 = new _Decimal(other);
-    if (other1.eq(0))
-      return new _Decimal(0);
-    if (this.sign * other1.sign == -1)
-      return this.abs().mod(other1.abs()).neg();
+  // Taken from OmegaNum.js, with a couple touch-ups
+  // "Truncated division" modulo, like JavaScript's %
+  mod(value) {
+    const decimal = _Decimal.fromValue_noAlloc(value).abs();
+    if (decimal.eq(_Decimal.dZero))
+      return _Decimal.dZero;
+    const num_this = this.toNumber();
+    const num_decimal = decimal.toNumber();
+    if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
+      return new _Decimal(num_this % num_decimal);
+    }
+    if (this.sub(decimal).eq(this)) {
+      return _Decimal.dZero;
+    }
+    if (decimal.sub(this).eq(decimal)) {
+      return this;
+    }
     if (this.sign == -1)
-      return this.abs().mod(other1.abs());
-    return this.sub(this.div(other1).floor().mul(other1));
+      return this.abs().mod(decimal).neg();
+    return this.sub(this.div(decimal).floor().mul(decimal));
+  }
+  modulo(value) {
+    return this.mod(value);
+  }
+  modular(value) {
+    return this.mod(value);
   }
   /**
   * Applies a soft cap to a DecimalClone value using a specified soft cap function.
@@ -4854,13 +5184,10 @@ var eventManager = class _eventManager {
   constructor(config) {
     this.config = _eventManager.configManager.parse(config);
     this.events = [];
-    this.tickers = [this.tickerFunction];
     if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
       const fps = this.config.fps ? this.config.fps : 30;
       setInterval(() => {
-        for (const ticker of this.tickers) {
-          ticker(1e3 / fps);
-        }
+        this.tickerFunction();
       }, 1e3 / fps);
     }
   }
@@ -6568,12 +6895,15 @@ var gameCurrency = class {
   /**
    * Creates a new instance of the game class.
    * @param currencyPointer A function that returns the current currency value.
-   * @param staticPointer A function that returns the static data for the game.
+   * @param static A function that returns the static data for the game.
    */
   constructor(currencyPointer, staticPointer) {
-    this.currencyPointer = currencyPointer;
-    this.staticPointer = staticPointer;
+    this.data = currencyPointer;
+    this.static = staticPointer;
   }
+  // get value (): E {
+  //     return this.data.value;
+  // }
   /**
    * Adds an attribute with the given name and value to the game's static pointer.
    * @param name - The name of the attribute to add.
@@ -6581,7 +6911,7 @@ var gameCurrency = class {
    * @returns The newly created attribute.
    */
   // public addAttribute (name: string, value: E): attribute {
-  //     return this.staticPointer.attributes[name] = new attribute(value);
+  //     return this.static.attributes[name] = new attribute(value);
   // }
 };
 var gameCurrencyGroup = class {

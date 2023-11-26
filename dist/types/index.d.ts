@@ -38,16 +38,16 @@ declare const eMath: {
         fromString(value: string): import("./E/e").default;
         fromValue(value: import("./eMath").ESource): import("./E/e").default;
         fromValue_noAlloc(value: import("./eMath").ESource): Readonly<import("./E/e").default>;
-        abs(value: import("./eMath").ESource): import("./E/e").default;
+        abs(value: import("./eMath").ESource): import("./E/e").default; /**
+         * @deprecated Use `import { EString } from "emath.js"` instead.
+         */
         neg(value: import("./eMath").ESource): import("./E/e").default;
         negate(value: import("./eMath").ESource): import("./E/e").default;
         negated(value: import("./eMath").ESource): import("./E/e").default;
         sign(value: import("./eMath").ESource): number;
         sgn(value: import("./eMath").ESource): number;
         round(value: import("./eMath").ESource): import("./E/e").default;
-        floor(value: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { gridCell } from "emath.js"` instead.
-         */
+        floor(value: import("./eMath").ESource): import("./E/e").default;
         ceil(value: import("./eMath").ESource): import("./E/e").default;
         trunc(value: import("./eMath").ESource): import("./E/e").default;
         add(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
@@ -57,14 +57,15 @@ declare const eMath: {
         minus(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         mul(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         multiply(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
-        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default; /**
-         * @deprecated Use `import { game } from "emath.js"` instead.
-         */
+        times(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         div(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         divide(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         recip(value: import("./eMath").ESource): import("./E/e").default;
         reciprocal(value: import("./eMath").ESource): import("./E/e").default;
         reciprocate(value: import("./eMath").ESource): import("./E/e").default;
+        mod(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
+        modulo(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
+        modular(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").default;
         cmp(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").CompareResult;
         cmpabs(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").CompareResult;
         compare(value: import("./eMath").ESource, other: import("./eMath").ESource): import("./E/e").CompareResult;
@@ -113,15 +114,16 @@ declare const eMath: {
         sqrt(value: import("./eMath").ESource): import("./E/e").default;
         cube(value: import("./eMath").ESource): import("./E/e").default;
         cbrt(value: import("./eMath").ESource): import("./E/e").default;
-        tetrate(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./eMath").ESource | undefined): import("./E/e").default;
-        iteratedexp(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./E/e").default | undefined): import("./E/e").default;
-        iteratedlog(value: import("./eMath").ESource, base?: import("./eMath").ESource | undefined, times?: number | undefined): import("./E/e").default;
-        layeradd10(value: import("./eMath").ESource, diff: import("./eMath").ESource): import("./E/e").default;
-        layeradd(value: import("./eMath").ESource, diff: number, base?: number | undefined): import("./E/e").default;
-        slog(value: import("./eMath").ESource, base?: number | undefined): import("./E/e").default;
+        tetrate(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./eMath").ESource | undefined, linear?: boolean | undefined): import("./E/e").default;
+        iteratedexp(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./E/e").default | undefined, linear?: boolean | undefined): import("./E/e").default;
+        iteratedlog(value: import("./eMath").ESource, base?: import("./eMath").ESource | undefined, times?: number | undefined, linear?: boolean | undefined): import("./E/e").default;
+        layeradd10(value: import("./eMath").ESource, diff: import("./eMath").ESource, linear?: boolean | undefined): import("./E/e").default;
+        layeradd(value: import("./eMath").ESource, diff: number, base?: number | undefined, linear?: boolean | undefined): import("./E/e").default;
+        slog(value: import("./eMath").ESource, base?: number | undefined, linear?: boolean | undefined): import("./E/e").default;
         lambertw(value: import("./eMath").ESource): import("./E/e").default;
         ssqrt(value: import("./eMath").ESource): import("./E/e").default;
-        pentate(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./eMath").ESource | undefined): import("./E/e").default;
+        linear_sroot(value: import("./eMath").ESource, height: number): import("./E/e").default;
+        pentate(value: import("./eMath").ESource, height?: number | undefined, payload?: import("./eMath").ESource | undefined, linear?: boolean | undefined): import("./E/e").default;
         affordGeometricSeries(resourcesAvailable: import("./eMath").ESource, priceStart: import("./eMath").ESource, priceRatio: import("./eMath").ESource, currentOwned: import("./eMath").ESource): import("./E/e").default;
         sumGeometricSeries(numItems: import("./eMath").ESource, priceStart: import("./eMath").ESource, priceRatio: import("./eMath").ESource, currentOwned: import("./eMath").ESource): import("./E/e").default;
         affordArithmeticSeries(resourcesAvailable: import("./eMath").ESource, priceStart: import("./eMath").ESource, priceAdd: import("./eMath").ESource, currentOwned: import("./eMath").ESource): import("./E/e").default;
@@ -135,7 +137,7 @@ declare const eMath: {
         efficiencyOfPurchase_core(cost: import("./E/e").default, currentRpS: import("./E/e").default, deltaRpS: import("./E/e").default): import("./E/e").default;
         slog_critical(base: number, height: number): number;
         tetrate_critical(base: number, height: number): number;
-        critical_section(base: number, height: number, grid: number[][]): number;
+        critical_section(base: number, height: number, grid: number[][], linear?: boolean | undefined): number;
         smoothDamp(current: import("./eMath").ESource, target: import("./eMath").ESource, smoothing: import("./eMath").ESource, deltaTime: import("./eMath").ESource): import("./E/e").default;
         format(e: import("./eMath").ESource, acc?: number | undefined, max?: number | undefined): string;
     };

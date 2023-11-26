@@ -27,6 +27,15 @@ const E: {
     fromNumber(value: number): Decimal;
     fromString(value: string): Decimal;
     fromValue(value: DecimalSource): Decimal;
+    /**
+     * Converts a DecimalSource to a Decimal, without constructing a new Decimal
+     * if the provided value is already a Decimal.
+     *
+     * As the return value could be the provided value itself, this function
+     * returns a read-only Decimal to prevent accidental mutations of the value.
+     * Use `new Decimal(value)` to explicitly create a writeable copy if mutation
+     * is required.
+     */
     fromValue_noAlloc(value: DecimalSource): Readonly<Decimal>;
     abs(value: DecimalSource): Decimal;
     neg(value: DecimalSource): Decimal;
@@ -51,6 +60,9 @@ const E: {
     recip(value: DecimalSource): Decimal;
     reciprocal(value: DecimalSource): Decimal;
     reciprocate(value: DecimalSource): Decimal;
+    mod(value: DecimalSource, other: DecimalSource): Decimal;
+    modulo(value: DecimalSource, other: DecimalSource): Decimal;
+    modular(value: DecimalSource, other: DecimalSource): Decimal;
     cmp(value: DecimalSource, other: DecimalSource): CompareResult;
     cmpabs(value: DecimalSource, other: DecimalSource): CompareResult;
     compare(value: DecimalSource, other: DecimalSource): CompareResult;
@@ -99,19 +111,46 @@ const E: {
     sqrt(value: DecimalSource): Decimal;
     cube(value: DecimalSource): Decimal;
     cbrt(value: DecimalSource): Decimal;
-    tetrate(value: DecimalSource, height?: number, payload?: DecimalSource): Decimal;
-    iteratedexp(value: DecimalSource, height?: number, payload?: Decimal): Decimal;
-    iteratedlog(value: DecimalSource, base?: DecimalSource, times?: number): Decimal;
-    layeradd10(value: DecimalSource, diff: DecimalSource): Decimal;
-    layeradd(value: DecimalSource, diff: number, base?: number): Decimal;
-    slog(value: DecimalSource, base?: number): Decimal;
+    tetrate(value: DecimalSource, height?: number, payload?: DecimalSource, linear?: boolean): Decimal;
+    iteratedexp(value: DecimalSource, height?: number, payload?: Decimal, linear?: boolean): Decimal;
+    iteratedlog(value: DecimalSource, base?: DecimalSource, times?: number, linear?: boolean): Decimal;
+    layeradd10(value: DecimalSource, diff: DecimalSource, linear?: boolean): Decimal;
+    layeradd(value: DecimalSource, diff: number, base?: number, linear?: boolean): Decimal;
+    slog(value: DecimalSource, base?: number, linear?: boolean): Decimal;
     lambertw(value: DecimalSource): Decimal;
     ssqrt(value: DecimalSource): Decimal;
-    pentate(value: DecimalSource, height?: number, payload?: DecimalSource): Decimal;
+    linear_sroot(value: DecimalSource, height: number): Decimal;
+    pentate(value: DecimalSource, height?: number, payload?: DecimalSource, linear?: boolean): Decimal;
+    /**
+     * If you're willing to spend 'resourcesAvailable' and want to buy something
+     * with exponentially increasing cost each purchase (start at priceStart,
+     * multiply by priceRatio, already own currentOwned), how much of it can you buy?
+     * Adapted from Trimps source code.
+     */
     affordGeometricSeries(resourcesAvailable: DecimalSource, priceStart: DecimalSource, priceRatio: DecimalSource, currentOwned: DecimalSource): Decimal;
+    /**
+     * How much resource would it cost to buy (numItems) items if you already have currentOwned,
+     * the initial price is priceStart and it multiplies by priceRatio each purchase?
+     */
     sumGeometricSeries(numItems: DecimalSource, priceStart: DecimalSource, priceRatio: DecimalSource, currentOwned: DecimalSource): Decimal;
+    /**
+     * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
+     * increasing cost each purchase (start at priceStart, add by priceAdd, already own currentOwned),
+     * how much of it can you buy?
+     */
     affordArithmeticSeries(resourcesAvailable: DecimalSource, priceStart: DecimalSource, priceAdd: DecimalSource, currentOwned: DecimalSource): Decimal;
+    /**
+     * How much resource would it cost to buy (numItems) items if you already have currentOwned,
+     * the initial price is priceStart and it adds priceAdd each purchase?
+     * Adapted from http://www.mathwords.com/a/arithmetic_series.htm
+     */
     sumArithmeticSeries(numItems: DecimalSource, priceStart: DecimalSource, priceAdd: DecimalSource, currentOwned: DecimalSource): Decimal;
+    /**
+     * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
+     * the lowest efficiency score is the better one to purchase.
+     * From Frozen Cookies:
+     * http://cookieclicker.wikia.com/wiki/Frozen_Cookies_(JavaScript_Add-on)#Efficiency.3F_What.27s_that.3F
+     */
     efficiencyOfPurchase(cost: DecimalSource, currentRpS: DecimalSource, deltaRpS: DecimalSource): Decimal;
     randomDecimalForTesting(maxLayers: number): Decimal;
     affordGeometricSeries_core(resourcesAvailable: Decimal, priceStart: Decimal, priceRatio: Decimal, currentOwned: DecimalSource): Decimal;
@@ -121,14 +160,14 @@ const E: {
     efficiencyOfPurchase_core(cost: Decimal, currentRpS: Decimal, deltaRpS: Decimal): Decimal;
     slog_critical(base: number, height: number): number;
     tetrate_critical(base: number, height: number): number;
-    critical_section(base: number, height: number, grid: number[][]): number;
+    critical_section(base: number, height: number, grid: number[][], linear?: boolean): number;
 
     smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
     format(e: DecimalSource, acc?: number, max?: number): string;
 	/* eslint-enable */
 } = (x?: DecimalSource) => new Decimal(x);
 
-// Copy static properties from Decimal to E
+// Copy properties from Decimal to E
 (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b)) as string[]).forEach((prop) => {
     (E as any)[prop] = (Decimal as any)[prop];
 });

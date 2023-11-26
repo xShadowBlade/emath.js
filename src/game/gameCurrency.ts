@@ -5,20 +5,25 @@ import type { game } from "./game";
 
 /**
  * Represents a game currency.
+ * To use, destruct the `data` and `static` properties from the class.
  */
 class gameCurrency {
-    public currencyPointer: currency;
-    public staticPointer: currencyStatic;
+    public data: currency;
+    public static: currencyStatic;
 
     /**
      * Creates a new instance of the game class.
      * @param currencyPointer A function that returns the current currency value.
-     * @param staticPointer A function that returns the static data for the game.
+     * @param static A function that returns the static data for the game.
      */
     constructor (currencyPointer: currency, staticPointer: currencyStatic) {
-        this.currencyPointer = currencyPointer;
-        this.staticPointer = staticPointer;
+        this.data = currencyPointer;
+        this.static = staticPointer;
     }
+
+    // get value (): E {
+    //     return this.data.value;
+    // }
 
     /**
      * Adds an attribute with the given name and value to the game's static pointer.
@@ -27,7 +32,7 @@ class gameCurrency {
      * @returns The newly created attribute.
      */
     // public addAttribute (name: string, value: E): attribute {
-    //     return this.staticPointer.attributes[name] = new attribute(value);
+    //     return this.static.attributes[name] = new attribute(value);
     // }
 }
 
