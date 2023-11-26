@@ -1,4 +1,4 @@
-import { game } from "./game";
+import { game } from "../game";
 import "reflect-metadata";
 /**
  * A class that manages game data, including saving, loading, and exporting data.

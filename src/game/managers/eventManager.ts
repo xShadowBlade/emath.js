@@ -8,7 +8,7 @@ Saving/loading
  * @namespace
  */
 
-import { E } from "../eMath";
+import { E } from "../../eMath";
 import { configManager, RequiredDeep } from "./configManager";
 
 interface Event {

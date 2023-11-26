@@ -1,8 +1,8 @@
 import { game, gameConfigOptions } from "../game/game";
-import { Application } from "pixi.js";
-import type { Graphics, Sprite } from "pixi.js";
-import { configManager, RequiredDeep } from "game/configManager";
+import { configManager, RequiredDeep } from "game/managers/configManager";
 import { sprite } from "./sprite";
+import type { Graphics, Sprite } from "pixi.js";
+declare const Application: typeof import("pixi.js").Application;
 interface pixiGameConfig extends gameConfigOptions {
     /**
      * Whether or not to setup a 2d camera system.
@@ -20,7 +20,7 @@ declare class pixiGame extends game {
     protected static configManager: configManager<RequiredDeep<pixiGameConfig>>;
     config: RequiredDeep<pixiGameConfig>;
     PIXI: {
-        app: Application;
+        app: InstanceType<typeof Application>;
         camera: {
             x: number;
             y: number;

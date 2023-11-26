@@ -11,14 +11,18 @@ class gameCurrency {
     public data: currency;
     public static: currencyStatic;
 
+    public game?: game;
+
     /**
      * Creates a new instance of the game class.
      * @param currencyPointer A function that returns the current currency value.
      * @param static A function that returns the static data for the game.
      */
-    constructor (currencyPointer: currency, staticPointer: currencyStatic) {
+    constructor (currencyPointer: currency, staticPointer: currencyStatic, gamePointer?: game) {
         this.data = currencyPointer;
         this.static = staticPointer;
+
+        this.game = gamePointer;
     }
 
     // get value (): E {

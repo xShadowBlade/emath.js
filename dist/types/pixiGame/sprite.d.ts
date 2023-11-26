@@ -5,11 +5,11 @@
  * created from a PIXI.Sprite. It provides functionality for managing sprite properties, collision
  * detection, and rendering offset by the camera.
  */
-import * as PIXI from "pixi.js";
 import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
+import type { Sprite, Graphics } from "pixi.js";
 declare class sprite {
-    sprite: PIXI.Sprite | PIXI.Graphics;
+    sprite: Sprite | Graphics;
     x: number;
     y: number;
     collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
@@ -24,7 +24,7 @@ declare class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor(gameRef: pixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line");
+    constructor(gameRef: pixiGame, spr: Sprite | Graphics, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line");
     private tickerFn;
     /**
      * Checks if this sprite collides with another sprite.

@@ -2,8 +2,8 @@
  * Event system for managing intervals and timeouts.
  * @namespace
  */
-import { E } from "../eMath";
-import { RequiredDeep } from "./managers/configManager";
+import { E } from "../../eMath";
+import { RequiredDeep } from "./configManager";
 interface eventManagerConfig {
     /**
      * Whether or not to automatically add an interval

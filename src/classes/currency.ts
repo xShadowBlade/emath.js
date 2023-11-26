@@ -30,42 +30,47 @@ interface upgrade extends upgradeInit {
     /* eslint-disable no-unused-vars */
     // Below are types that are automatically added
     getLevel: () => E;
-    setLevel: (n: E) => void;
+    setLevel: (n: ESource) => void;
     level: E;
     /* eslint-enable */
 }
 
 /**
- * Represents the frontend READONLY for a currency. (unless you want to hack in currency or smth)
- *
+ * Represents the frontend READONLY for a currency. Useful for saving / data management.
+ * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  * @class
  */
 class currency {
     /**
      * The current value of the currency.
-     * @type {E}
      */
     public value: E;
 
     /**
      * An array that represents upgrades and their levels.
-     * @type {Array}
      */
     public upgrades: upgrade[];
 
     /**
-     * Constructs a new currency object with an initial value of 0 and a boost.
+     * A boost object that affects the currency gain.
+     */
+    public boost: boost;
+
+    /**
+     * Constructs a new currency object with an initial value of 0.
      *
      * @constructor
      */
     constructor () {
         this.value = E(0);
         this.upgrades = [];
+        this.boost = new boost();
     }
 }
 
 /**
  * Represents the backend for a currency in the game.
+ * All the functions are here instead of the `currency` class.
  *
  * @class
  */
@@ -78,9 +83,8 @@ class currencyStatic {
 
     /**
      * A function that returns the pointer of the data
-     * @type {function}
      */
-    public pointer: () => currency;
+    protected pointer: currency;
 
     /**
      * A boost object that affects the currency gain.
@@ -88,15 +92,62 @@ class currencyStatic {
      */
     public boost: boost;
 
+    protected defaultVal: E;
+    protected defaultBoost: E;
+
     /**
      * @constructor
-     * @param {function} pointer - returns Game.classes.currency
+     * @param pointer - A function or reference that returns the pointer of the data / frontend.
+     * @param defaultVal - The default value of the currency.
+     * @param defaultBoost - The default boost of the currency.
      */
-    constructor (pointer: () => currency) {
+    constructor (pointer?: currency | (() => currency), defaultVal: ESource = E(0), defaultBoost: ESource = E(1)) {
+        this.defaultVal = E(defaultVal);
+        this.defaultBoost = E(defaultBoost);
+
         this.upgrades = [];
-        this.pointer = pointer;
-        this.boost = new boost(1);
+        this.pointer = (typeof pointer === "function" ? pointer() : pointer) ?? new currency();
+        this.boost = new boost(defaultBoost);
+
+        this.pointer.value = this.defaultVal;
     }
+
+    /**
+     * The current value of the currency.
+     * @type {E}
+     */
+    get value (): E {
+        return this.pointer.value;
+    }
+
+    /**
+     * The current value of the currency.
+     * @type {E}
+     */
+    set value (value: E) {
+        this.pointer.value = value;
+    }
+
+    /**
+     * Resets the currency and upgrade levels.
+     * @param resetCurrency - Whether to reset the currency value. Default is true.
+     * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+     */
+    public reset (resetCurrency: boolean = true, resetUpgradeLevels = true): void {
+        if (resetCurrency) this.value = this.defaultVal;
+        if (resetUpgradeLevels) {
+            this.upgrades.forEach((upgrade) => {
+                upgrade.setLevel(E(0));
+            });
+        };
+    }
+    // public reset ({
+    //     resetCurrency = true,
+    //     resetUpgradeAmount = true,
+    // }): void
+    // public reset (...params): void {
+    //     // Function implementation
+    // }
 
     /**
      * The new currency value after applying the boost.
@@ -105,10 +156,10 @@ class currencyStatic {
      * @returns {E}
      */
     public gain (dt: ESource = 1000): E {
-        this.pointer().value = this.pointer().value.add(
+        this.value = this.value.add(
             this.boost.calculate().mul(E(dt).div(1000)),
         );
-        return this.pointer().value;
+        return this.value;
     }
 
     /**
@@ -125,7 +176,8 @@ class currencyStatic {
      * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
      * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
      */
-    public addUpgrade (upgrades: upgradeInit[], runEffectInstantly: boolean = true): void {
+    public addUpgrade (upgrades: upgradeInit | upgradeInit[], runEffectInstantly: boolean = true): void {
+        if (!Array.isArray(upgrades)) upgrades = [upgrades];
         const pointerAddUpgrade = (upgrades1: upgradeInit) => {
             // @ts-ignore
 
@@ -133,7 +185,7 @@ class currencyStatic {
             const upgrades2: upgrade = upgrades1.level
                 ? { level: upgrades1.level }
                 : { level: E(1) };
-            this.pointer().upgrades.push(upgrades2);
+            this.pointer.upgrades.push(upgrades2);
             return upgrades1;
         };
 
@@ -142,9 +194,9 @@ class currencyStatic {
         for (let i = 0; i < upgrades.length; i++) {
             const upgrade = pointerAddUpgrade(upgrades[i]);
             // @ts-ignore
-            upgrade.getLevel = () => this.pointer().upgrades[i].level ?? E(0);
+            upgrade.getLevel = () => this.pointer.upgrades[i].level ?? E(0);
             // @ts-ignore
-            upgrade.setLevel = (n: E) => this.pointer().upgrades[i].level = this.pointer().upgrades[i].level?.add(n) ?? n;
+            upgrade.setLevel = (n: ESource) => this.pointer.upgrades[i].level = this.pointer.upgrades[i].level?.add(n) ?? E(n);
             if (runEffectInstantly) upgrade.effect(upgrade.level);
             // @ts-ignore
             upgradesDefault.push(upgrade);
@@ -152,19 +204,22 @@ class currencyStatic {
 
         this.upgrades = this.upgrades.concat(upgradesDefault);
     }
+
     /**
      * Calculates the cost and how many upgrades you can buy
      *
-     * @param {*} id
-     * @param {*} target
-     * @param {boolean} [el=false] - ie Endless: Flag to exclude the sum calculation and only perform binary search.
-     * @returns {array} - [amount, cost]
+     * NOTE: This becomes very slow for higher levels. Use el=true to skip the sum calculation and speed up dramatically.
+     *
+     * @param id
+     * @param target
+     * @param el ie Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @returns [amount, cost] | amount | false - Returns the amount of upgrades you can buy, the cost of the upgrades, or false if the upgrade does not exist.
      */
     public calculateUpgrade (
         id: string | number,
         target: E,
         el: boolean = false,
-    ): [E, E] | E | Boolean {
+    ): [E, E] | E | false {
         target = E(target);
 
         /**
@@ -266,23 +321,23 @@ class currencyStatic {
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
         return findHighestB(
             (level: number | E) => upgrade.costScaling(upgrade.getLevel().add(level)),
-            this.pointer().value,
+            this.value,
         );
     }
 
     /**
-     * Buys an upgrade based on its ID or array position,
-     * if enough currency is available.
+     * Buys an upgrade based on its ID or array position if enough currency is available.
      *
-     * @param {string|number} id - The ID or position of the upgrade to buy or upgrade.
+     * @param id - The ID or position of the upgrade to buy or upgrade.
      * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
-     * @param {E} target - The target level or quantity to reach for the upgrade.
+     * @param target - The target level or quantity to reach for the upgrade.
      * This represents how many upgrades to buy or upgrade.
      *
      * @returns {boolean} Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      *
      */
-    public buyUpgrade (id: string | number, target: E): boolean {
+    public buyUpgrade (id: string | number, target: ESource): boolean {
+        target = E(target);
         // Implementation logic to find the upgrade based on ID or position
         const upgrade: upgrade | boolean = (() => {
             let output1: upgrade | boolean;
@@ -339,7 +394,7 @@ class currencyStatic {
             //     : this.calculateSum(upgrade.costScaling, target);
 
             // Deduct the cost from available currency and increase the upgrade level
-            this.pointer().value = this.pointer().value.sub(
+            this.value = this.value.sub(
                 maxAffordableQuantity[1],
             );
             upgrade.setLevel(upgrade.getLevel().add(maxAffordableQuantity[0]));

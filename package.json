@@ -2,18 +2,51 @@
     "name": "emath.js",
     "version": "3.1.0",
     "description": "A math library for incremental games based on break_eternity.js",
-    "typings": "dist/types/index.d.ts",
-    "main": "dist/eMath.cjs",
-    "module": "dist/eMath.esm.js",
+    "exports": {
+        ".": {
+            "import": "./dist/eMath.esm.js",
+            "require": "./dist/eMath.cjs",
+            "default": "./dist/eMath.cjs",
+            "types": "./dist/types/index.d.ts"
+        },
+        "./game": {
+            "import": "./dist/game/eMath.game.mjs",
+            "require": "./dist/game/eMath.game.cjs",
+            "default": "./dist/game/eMath.game.cjs",
+            "types": "./dist/types/game/index.d.ts"
+        },
+        "./pixiGame": {
+            "import": "./dist/pixiGame/eMath.pixiGame.mjs",
+            "require": "./dist/pixiGame/eMath.pixiGame.cjs",
+            "default": "./dist/pixiGame/eMath.pixiGame.cjs",
+            "types": "./dist/types/pixiGame/index.d.ts"
+        }
+    },
     "unpkg": "dist/eMath.mjs",
     "scripts": {
-        "build": "run-p build:bundle build:minify build:esm build:cjs build:types",
-        "build:bundle": "esbuild src/index.ts --bundle --tree-shaking=false --format=iife --outfile=dist/eMath.bundle.js",
-        "build:minify": "esbuild src/index.ts --bundle --tree-shaking=false --minify --format=iife --outfile=dist/eMath.min.js",
-        "build:esm": "esbuild src/index.ts --bundle --tree-shaking=false --format=esm --outfile=dist/eMath.mjs",
-        "build:cjs": "esbuild src/index.ts --bundle --tree-shaking=false --format=cjs --outfile=dist/eMath.cjs",
-        "build:umd": "node ./bin/build/umd.js",
+        "build": "run-p build-main build-game build-pixiGame build:types",
+
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
+
+        "build-main": "run-p build-main:bundle build-main:minify build-main:esm build-main:cjs",
+        "build-main:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/main/eMath.bundle.js",
+        "build-main:minify": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/main/eMath.min.js",
+        "build-main:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/main/eMath.mjs",
+        "build-main:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/main/eMath.cjs",
+
+        "build-game": "run-p build-game:bundle build-game:minify build-game:esm build-game:cjs",
+        "build-game:bundle": "esbuild src/game/index.ts --bundle --format=iife --outfile=dist/game/eMath.game.bundle.js",
+        "build-game:minify": "esbuild src/game/index.ts --bundle --minify --format=iife --outfile=dist/game/eMath.game.min.js",
+        "build-game:esm": "esbuild src/game/index.ts --bundle --format=esm --outfile=dist/game/eMath.game.mjs",
+        "build-game:cjs": "esbuild src/game/index.ts --bundle --format=cjs --outfile=dist/game/eMath.game.cjs",
+
+        "build-pixiGame": "run-p build-pixiGame:bundle build-pixiGame:minify build-pixiGame:esm build-pixiGame:cjs",
+        "build-pixiGame:bundle": "esbuild src/pixiGame/index.ts --bundle --format=iife --outfile=dist/pixiGame/eMath.pixiGame.bundle.js",
+        "build-pixiGame:minify": "esbuild src/pixiGame/index.ts --bundle --minify --format=iife --outfile=dist/pixiGame/eMath.pixiGame.min.js",
+        "build-pixiGame:esm": "esbuild src/pixiGame/index.ts --bundle --format=esm --outfile=dist/pixiGame/eMath.pixiGame.mjs",
+        "build-pixiGame:cjs": "esbuild src/pixiGame/index.ts --bundle --format=cjs --outfile=dist/pixiGame/eMath.pixiGame.cjs",
+
+        "lint": "eslint src/**/*.ts test/**/*.ts",
         "test": "ts-mocha test/**/*.test.ts"
     },
     "repository": {

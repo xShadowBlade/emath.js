@@ -1,20 +1,5 @@
 import { E, ESource } from "../../src/eMath";
 /**
- * Represents a boost manager that applies various effects to a base value.
- *
- * @class
- * @param {number|E} baseEffect - The base effect value to which boosts are applied.
- * @param {...Object} boosts - An array of boost objects to initialize with.
- * @example
- * const myboost = new Game.classes.boost(100, {
- *   id: "reallyCoolboost124",
- *   name: "buff this",
- *   desc: "really cool lol",
- *   type: "add",
- *   value: E(124),
- * });
- */
-/**
  * An object representing a boost.
  */
 interface boostsObject {
@@ -54,15 +39,28 @@ type boostArrayObject = ({
     index: number;
     order: number;
 } & boostsObject);
+/**
+ * Represents a boost manager that applies various effects to a base value.
+ *
+ * @class
+ * @param {number|E} baseEffect - The base effect value to which boosts are applied.
+ * @param {...Object} boosts - An array of boost objects to initialize with.
+ * @example
+ * const myboost = new Game.classes.boost(100, {
+ *   id: "reallyCoolboost124",
+ *   name: "buff this",
+ *   desc: "really cool lol",
+ *   type: "add",
+ *   value: E(124),
+ * });
+ */
 declare class boost {
     /**
      * An array of boost objects.
-     * @type {boostArrayObject[]}
      */
     boostArray: boostArrayObject[];
     /**
      * The base effect value.
-     * @type {E}
      */
     baseEffect: E;
     /**
@@ -82,44 +80,55 @@ declare class boost {
      * Constructs a new boost manager.
      *
      * @constructor
-     * @param {number} [baseEffect] - The base effect value to which boosts are applied.
-     * @param {...boostsObject} boosts - An array of boost objects to initialize with.
+     * @param baseEffect - The base effect value to which boosts are applied.
+     * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: ESource, boosts?: boostsObject[]);
+    constructor(baseEffect?: ESource, boosts?: boostsObject | boostsObject[]);
     /**
      * Gets a boost object by its ID.
      *
-     * @param {string} id - The ID of the boost to retrieve.
-     * @returns {boostsObject|null} The boost object if found, or null if not found.
+     * @param id - The ID of the boost to retrieve.
+     * @returns The boost object if found, or null if not found.
      */
     bGet(id: string): boostArrayObject | null;
     /**
      * Removes a boost by its ID.
      *
-     * @param {string} id - The ID of the boost to remove.
+     * @param id - The ID of the boost to remove.
      */
     bRemove(id: string): void;
     /**
      * Sets or updates a boost with the given parameters.
      *
-     * @param {string} id - The ID of the boost.
-     * @param {string} name - The name of the boost.
-     * @param {string} desc - The description of the boost.
-     * @param {function} value - The value of the boost (function).
-     * @param {number} order - The order of the boost (higher order are go first)
+     * @param id - The ID of the boost.
+     * @param name - The name of the boost.
+     * @param desc - The description of the boost.
+     * @param value - The value of the boost (function).
+     * @param order - The order of the boost (higher order are go first)
      */
     bSet(id: string, name: string, desc: string, value: () => E, order?: number): void;
     /**
+     * Sets or updates a boost with the given parameters.
+     *
+     * @param boostObj - The boost object containing the parameters.
+     */
+    bSet(boostObj: boostsObject): void;
+    /**
      * Sets or updates multiple boosts with advanced parameters.
      *
-     * @param {...boostsObject} x - boost objects to set or update.
+     * @param boostsArray - boost objects to set or update.
      */
-    bSetAdvanced(...x: boostsObject[]): void;
+    bSetArray(boostsArray: boostsObject[]): void;
+    /**
+     * Sets or updates multiple boosts with advanced parameters.
+     * @deprecated Use bSetArray instead.
+     */
+    bSetAdvanced(...boostsArray: boostsObject[]): void;
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
      *
-     * @param {number|E} [base=this.baseEffect] - The base effect value to calculate with.
-     * @returns {E} The calculated effect after applying boosts.
+     * @param base - The base effect value to calculate with.
+     * @returns The calculated effect after applying boosts.
      */
     calculate(base?: ESource): E;
 }

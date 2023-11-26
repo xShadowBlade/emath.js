@@ -1,9 +1,9 @@
-import { keyManager } from "./keyManager";
-import { eventManager } from "./main";
-import { dataManager } from "./dataManager";
+import { keyManager } from "./managers/keyManager";
+import { eventManager } from "./managers/eventManager";
+import { dataManager } from "./managers/dataManager";
 import { gameCurrency } from "./gameCurrency";
 import { gameReset } from "./resetLayer";
-import { configManager, RequiredDeep } from "./configManager";
+import { configManager, RequiredDeep } from "./managers/configManager";
 interface gameConfigOptions {
     mode?: "development" | "production";
     name: {

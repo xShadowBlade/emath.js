@@ -6,13 +6,13 @@ import { E } from "../eMath";
 import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute } from "../classes/attribute";
-import { keyManager } from "./keyManager";
-import { eventManager } from "./main";
-import { dataManager } from "./dataManager";
+import { keyManager } from "./managers/keyManager";
+import { eventManager } from "./managers/eventManager";
+import { dataManager } from "./managers/dataManager";
 import { gameCurrency } from "./gameCurrency";
 import { gameReset } from "./resetLayer";
 
-import { configManager, RequiredDeep } from "./configManager";
+import { configManager, RequiredDeep } from "./managers/configManager";
 
 // type gameType = {
 //     data: {
@@ -155,7 +155,7 @@ class game {
             attributes: {},
         });
 
-        const classInstance = new gameCurrency(this.data.get(name), this.static.get(name));
+        const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
         return classInstance;
     }
 

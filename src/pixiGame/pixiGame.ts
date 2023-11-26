@@ -1,9 +1,14 @@
 import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
-import { Application } from "pixi.js";
+import { configManager, RequiredDeep } from "game/managers/configManager";
+import { sprite } from "./sprite";
+
+import { loadPIXI } from "./loadPIXI";
+
+// import { Application } from "pixi.js";
 import type { Graphics, Sprite } from "pixi.js";
 
-import { configManager, RequiredDeep } from "game/configManager";
-import { sprite } from "./sprite";
+const PIXI = loadPIXI();
+const { Application } = PIXI;
 
 interface pixiGameConfig extends gameConfigOptions {
     /**
@@ -46,7 +51,7 @@ class pixiGame extends game {
     public config: RequiredDeep<pixiGameConfig>;
 
     public PIXI: {
-        app: Application,
+        app: InstanceType<typeof Application>,
         camera: {
             x: number,
             y: number,

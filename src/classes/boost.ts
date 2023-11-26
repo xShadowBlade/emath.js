@@ -1,21 +1,5 @@
 "use strict";
 import { E, ESource } from "../../src/eMath";
-
-/**
- * Represents a boost manager that applies various effects to a base value.
- *
- * @class
- * @param {number|E} baseEffect - The base effect value to which boosts are applied.
- * @param {...Object} boosts - An array of boost objects to initialize with.
- * @example
- * const myboost = new Game.classes.boost(100, {
- *   id: "reallyCoolboost124",
- *   name: "buff this",
- *   desc: "really cool lol",
- *   type: "add",
- *   value: E(124),
- * });
- */
 /**
  * An object representing a boost.
  */
@@ -54,16 +38,30 @@ interface boostsObject {
     index?: number,
 }
 type boostArrayObject = ({index: number, order: number} & boostsObject);
+
+/**
+ * Represents a boost manager that applies various effects to a base value.
+ *
+ * @class
+ * @param {number|E} baseEffect - The base effect value to which boosts are applied.
+ * @param {...Object} boosts - An array of boost objects to initialize with.
+ * @example
+ * const myboost = new Game.classes.boost(100, {
+ *   id: "reallyCoolboost124",
+ *   name: "buff this",
+ *   desc: "really cool lol",
+ *   type: "add",
+ *   value: E(124),
+ * });
+ */
 class boost {
     /**
      * An array of boost objects.
-     * @type {boostArrayObject[]}
      */
     public boostArray: boostArrayObject[];
 
     /**
      * The base effect value.
-     * @type {E}
      */
     public baseEffect: E;
 
@@ -96,10 +94,12 @@ class boost {
      * Constructs a new boost manager.
      *
      * @constructor
-     * @param {number} [baseEffect] - The base effect value to which boosts are applied.
-     * @param {...boostsObject} boosts - An array of boost objects to initialize with.
+     * @param baseEffect - The base effect value to which boosts are applied.
+     * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect?: ESource, boosts?: boostsObject[]) {
+    constructor (baseEffect?: ESource, boosts?: boostsObject | boostsObject[]) {
+        boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
+
         baseEffect = baseEffect ? E(baseEffect) : 1;
         this.baseEffect = E(baseEffect);
         if (boosts) {
@@ -112,8 +112,8 @@ class boost {
     /**
      * Gets a boost object by its ID.
      *
-     * @param {string} id - The ID of the boost to retrieve.
-     * @returns {boostsObject|null} The boost object if found, or null if not found.
+     * @param id - The ID of the boost to retrieve.
+     * @returns The boost object if found, or null if not found.
      */
     public bGet (id: string): boostArrayObject | null {
         let output: boostArrayObject | null = null;
@@ -130,7 +130,7 @@ class boost {
     /**
      * Removes a boost by its ID.
      *
-     * @param {string} id - The ID of the boost to remove.
+     * @param id - The ID of the boost to remove.
      */
     public bRemove (id: string): void {
         const bCheck: boostArrayObject | null = this.bGet(id);
@@ -142,44 +142,74 @@ class boost {
     /**
      * Sets or updates a boost with the given parameters.
      *
-     * @param {string} id - The ID of the boost.
-     * @param {string} name - The name of the boost.
-     * @param {string} desc - The description of the boost.
-     * @param {function} value - The value of the boost (function).
-     * @param {number} order - The order of the boost (higher order are go first)
+     * @param id - The ID of the boost.
+     * @param name - The name of the boost.
+     * @param desc - The description of the boost.
+     * @param value - The value of the boost (function).
+     * @param order - The order of the boost (higher order are go first)
      */
-    public bSet (id: string, name: string, desc: string, value: () => E, order?: number): void {
-        const bCheck = this.bGet(id);
+    public bSet(id: string, name: string, desc: string, value: () => E, order?: number): void;
 
-        if (!bCheck) {
-            this.boostArray.push(boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
+    /**
+     * Sets or updates a boost with the given parameters.
+     *
+     * @param boostObj - The boost object containing the parameters.
+     */
+    public bSet(boostObj: boostsObject): void;
+    public bSet (arg1: string | boostsObject, arg2?: string, arg3?: string, arg4?: () => E, arg5?: number): void {
+        if (typeof arg1 === "string") {
+            const id = arg1;
+            const name = arg2 || "";
+            const desc = arg3 || "";
+            const value = arg4 || (() => E(0));
+            const order = arg5;
+            const bCheck = this.bGet(id);
+
+            if (!bCheck) {
+                this.boostArray.push(boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
+            } else {
+                this.boostArray[bCheck.index] = boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
+            }
         } else {
-            this.boostArray[bCheck.index] = boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
+            const boostObj = arg1;
+            const bCheck = this.bGet(boostObj.id);
+
+            if (!bCheck) {
+                this.boostArray.push(boost.normalizeBoost(boostObj));
+            } else {
+                this.boostArray[bCheck.index] = boost.normalizeBoost(boostObj);
+            }
         }
     }
 
     /**
      * Sets or updates multiple boosts with advanced parameters.
      *
-     * @param {...boostsObject} x - boost objects to set or update.
+     * @param boostsArray - boost objects to set or update.
      */
-    public bSetAdvanced (...x: boostsObject[]): void {
-        for (let i = 0; i < x.length; i++) {
-            const bCheck = this.bGet(x[i].id);
+    public bSetArray (boostsArray: boostsObject[]): void {
+        for (let i = 0; i < boostsArray.length; i++) {
+            const bCheck = this.bGet(boostsArray[i].id);
             if (!bCheck) {
-                this.boostArray = this.boostArray.concat(boost.normalizeBoost(x[i]));
+                this.boostArray = this.boostArray.concat(boost.normalizeBoost(boostsArray[i]));
             } else {
                 console.log(i);
-                this.boostArray[bCheck.index] = boost.normalizeBoost(x[i]);
+                this.boostArray[bCheck.index] = boost.normalizeBoost(boostsArray[i]);
             }
         }
     }
 
     /**
+     * Sets or updates multiple boosts with advanced parameters.
+     * @deprecated Use bSetArray instead.
+     */
+    public bSetAdvanced (...boostsArray: boostsObject[]): void { this.bSetArray(boostsArray); };
+
+    /**
      * Calculates the cumulative effect of all boosts on the base effect.
      *
-     * @param {number|E} [base=this.baseEffect] - The base effect value to calculate with.
-     * @returns {E} The calculated effect after applying boosts.
+     * @param base - The base effect value to calculate with.
+     * @returns The calculated effect after applying boosts.
      */
     public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);

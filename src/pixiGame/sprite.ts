@@ -8,11 +8,14 @@
 
 // import React, { useEffect } from "react";
 // import { Sprite as PixiSprite } from "@pixi/react";
-import * as PIXI from "pixi.js";
+import { loadPIXI } from "./loadPIXI.js";
 import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
+import type { Sprite, Graphics } from "pixi.js";
+
+const PIXI = loadPIXI();
 class sprite {
-    public sprite: PIXI.Sprite | PIXI.Graphics;
+    public sprite: Sprite | Graphics;
     public x: number;
     public y: number;
     public collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
@@ -29,7 +32,7 @@ class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor (gameRef: pixiGame, spr: PIXI.Sprite | PIXI.Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
+    constructor (gameRef: pixiGame, spr: Sprite | Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
         this.gameRef = gameRef;
         this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
         this.x = this.sprite.x; // absolute position

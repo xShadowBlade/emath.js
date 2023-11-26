@@ -2,127 +2,41 @@
  * The main eMath module.
  * @module eMath
  */
-"use strict";
-import { eMath as eMathE, E } from "./eMath";
-import { boost } from "./classes/boost";
-import { currency, currencyStatic } from "./classes/currency";
-import { attribute } from "./classes/attribute";
-import { grid, gridCell } from "./classes/grid";
+import { hookMain } from "hookMain";
+// Attach eMath to the window object.
+hookMain();
 
-import { EString } from "./classes/utility/eString";
-import { obb } from "./classes/utility/obb";
-import { EArray } from "./classes/utility/eArray";
-import { EObject } from "./classes/utility/eObject";
+// export {
+//     eMath,
 
-import { game } from "./game/game";
-import { keyManager } from "./game/keyManager";
-import { eventManager } from "./game/main";
-import { dataManager } from "./game/dataManager";
-const eMath = { ...eMathE, ...{
-    /**
-     * @deprecated Use `import { E } from "emath.js"` instead.
-     */
-    E: E,
-    classes: {
-        /**
-         * @deprecated Use `import { boost } from "emath.js"` instead.
-         */
-        boost,
+//     E,
+//     boost,
+//     currency,
+//     currencyStatic,
+//     attribute,
+//     grid,
+//     gridCell,
+//     EString,
+//     EArray,
+//     EObject,
+//     obb,
 
-        /**
-         * @deprecated Use `import { currency } from "emath.js"` instead.
-         */
-        currency,
+//     // game,
+//     // keyManager,
+//     // eventManager,
+//     // dataManager,
+// };
 
-        /**
-         * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-         */
-        currencyStatic,
+export * from "./eMath";
+export * from "./classes/boost";
+export * from "./classes/currency";
+export * from "./classes/attribute";
+export * from "./classes/grid";
 
-        /**
-         * @deprecated Use `import { attribute } from "emath.js"` instead.
-         */
-        attribute,
-
-        /**
-         * @deprecated Use `import { grid } from "emath.js"` instead.
-         */
-        grid,
-
-        /**
-         * @deprecated Use `import { gridCell } from "emath.js"` instead.
-         */
-        gridCell,
-
-        /**
-         * @deprecated Use `import { EString } from "emath.js"` instead.
-         */
-        EString,
-
-        /**
-         * @deprecated Use `import { EArray } from "emath.js"` instead.
-         */
-        EArray,
-
-        /**
-         * @deprecated Use `import { EObject } from "emath.js"` instead.
-         */
-        EObject,
-
-        /**
-         * @deprecated Use `import { obb } from "emath.js"` instead.
-         */
-        obb,
-    },
-
-    /**
-     * @deprecated Use `import { game } from "emath.js"` instead.
-     */
-    game,
-
-    managers: {
-        /**
-         * @deprecated Use `import { keyManager } from "emath.js"` instead.
-         */
-        keyManager,
-
-        /**
-         * @deprecated Use `import { eventManager } from "emath.js"` instead.
-         */
-        eventManager,
-
-        /**
-         * @deprecated Use `import { dataManager } from "emath.js"` instead.
-         */
-        dataManager,
-    },
-},
-};
-// @ts-ignore
-if (typeof process! !== "object" && typeof window! !== "undefined") {
-    (window as any)["eMath"] = eMath;
-}
-
-export {
-    eMath,
-
-    E,
-    boost,
-    currency,
-    currencyStatic,
-    attribute,
-    grid,
-    gridCell,
-    EString,
-    EArray,
-    EObject,
-    obb,
-
-    game,
-    keyManager,
-    eventManager,
-    dataManager,
-};
+export * from "./classes/utility/eString";
+export * from "./classes/utility/eArray";
+export * from "./classes/utility/eObject";
+export * from "./classes/utility/obb";
 
 // export { E } from "./eMath";
 // export { boost } from "./classes/boost";
