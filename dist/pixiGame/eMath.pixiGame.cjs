@@ -1486,39 +1486,65 @@ var require_implementation = __commonJS({
   "node_modules/function-bind/implementation.js"(exports, module2) {
     "use strict";
     var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
-    var slice = Array.prototype.slice;
     var toStr = Object.prototype.toString;
+    var max = Math.max;
     var funcType = "[object Function]";
+    var concatty = function concatty2(a2, b2) {
+      var arr = [];
+      for (var i2 = 0; i2 < a2.length; i2 += 1) {
+        arr[i2] = a2[i2];
+      }
+      for (var j2 = 0; j2 < b2.length; j2 += 1) {
+        arr[j2 + a2.length] = b2[j2];
+      }
+      return arr;
+    };
+    var slicy = function slicy2(arrLike, offset) {
+      var arr = [];
+      for (var i2 = offset || 0, j2 = 0; i2 < arrLike.length; i2 += 1, j2 += 1) {
+        arr[j2] = arrLike[i2];
+      }
+      return arr;
+    };
+    var joiny = function(arr, joiner) {
+      var str = "";
+      for (var i2 = 0; i2 < arr.length; i2 += 1) {
+        str += arr[i2];
+        if (i2 + 1 < arr.length) {
+          str += joiner;
+        }
+      }
+      return str;
+    };
     module2.exports = function bind(that) {
       var target = this;
-      if (typeof target !== "function" || toStr.call(target) !== funcType) {
+      if (typeof target !== "function" || toStr.apply(target) !== funcType) {
         throw new TypeError(ERROR_MESSAGE + target);
       }
-      var args = slice.call(arguments, 1);
+      var args = slicy(arguments, 1);
       var bound;
       var binder = function() {
         if (this instanceof bound) {
           var result = target.apply(
             this,
-            args.concat(slice.call(arguments))
+            concatty(args, arguments)
           );
           if (Object(result) === result) {
             return result;
           }
           return this;
-        } else {
-          return target.apply(
-            that,
-            args.concat(slice.call(arguments))
-          );
         }
+        return target.apply(
+          that,
+          concatty(args, arguments)
+        );
       };
-      var boundLength = Math.max(0, target.length - args.length);
+      var boundLength = max(0, target.length - args.length);
       var boundArgs = [];
       for (var i2 = 0; i2 < boundLength; i2++) {
-        boundArgs.push("$" + i2);
+        boundArgs[i2] = "$" + i2;
       }
-      bound = Function("binder", "return function (" + boundArgs.join(",") + "){ return binder.apply(this,arguments); }")(binder);
+      bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
       if (target.prototype) {
         var Empty = function Empty2() {
         };
@@ -1540,12 +1566,14 @@ var require_function_bind = __commonJS({
   }
 });
 
-// node_modules/has/src/index.js
-var require_src = __commonJS({
-  "node_modules/has/src/index.js"(exports, module2) {
+// node_modules/hasown/index.js
+var require_hasown = __commonJS({
+  "node_modules/hasown/index.js"(exports, module2) {
     "use strict";
+    var call = Function.prototype.call;
+    var $hasOwn = Object.prototype.hasOwnProperty;
     var bind = require_function_bind();
-    module2.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
+    module2.exports = bind.call(call, $hasOwn);
   }
 });
 
@@ -1747,7 +1775,7 @@ var require_get_intrinsic = __commonJS({
       "%WeakSetPrototype%": ["WeakSet", "prototype"]
     };
     var bind = require_function_bind();
-    var hasOwn = require_src();
+    var hasOwn = require_hasown();
     var $concat = bind.call(Function.call, Array.prototype.concat);
     var $spliceApply = bind.call(Function.apply, Array.prototype.splice);
     var $replace = bind.call(Function.call, String.prototype.replace);
@@ -1856,16 +1884,163 @@ var require_get_intrinsic = __commonJS({
   }
 });
 
+// node_modules/has-property-descriptors/index.js
+var require_has_property_descriptors = __commonJS({
+  "node_modules/has-property-descriptors/index.js"(exports, module2) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var $defineProperty = GetIntrinsic("%Object.defineProperty%", true);
+    var hasPropertyDescriptors = function hasPropertyDescriptors2() {
+      if ($defineProperty) {
+        try {
+          $defineProperty({}, "a", { value: 1 });
+          return true;
+        } catch (e2) {
+          return false;
+        }
+      }
+      return false;
+    };
+    hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBug() {
+      if (!hasPropertyDescriptors()) {
+        return null;
+      }
+      try {
+        return $defineProperty([], "length", { value: 1 }).length !== 1;
+      } catch (e2) {
+        return true;
+      }
+    };
+    module2.exports = hasPropertyDescriptors;
+  }
+});
+
+// node_modules/gopd/index.js
+var require_gopd = __commonJS({
+  "node_modules/gopd/index.js"(exports, module2) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var $gOPD = GetIntrinsic("%Object.getOwnPropertyDescriptor%", true);
+    if ($gOPD) {
+      try {
+        $gOPD([], "length");
+      } catch (e2) {
+        $gOPD = null;
+      }
+    }
+    module2.exports = $gOPD;
+  }
+});
+
+// node_modules/define-data-property/index.js
+var require_define_data_property = __commonJS({
+  "node_modules/define-data-property/index.js"(exports, module2) {
+    "use strict";
+    var hasPropertyDescriptors = require_has_property_descriptors()();
+    var GetIntrinsic = require_get_intrinsic();
+    var $defineProperty = hasPropertyDescriptors && GetIntrinsic("%Object.defineProperty%", true);
+    if ($defineProperty) {
+      try {
+        $defineProperty({}, "a", { value: 1 });
+      } catch (e2) {
+        $defineProperty = false;
+      }
+    }
+    var $SyntaxError = GetIntrinsic("%SyntaxError%");
+    var $TypeError = GetIntrinsic("%TypeError%");
+    var gopd = require_gopd();
+    module2.exports = function defineDataProperty(obj, property, value) {
+      if (!obj || typeof obj !== "object" && typeof obj !== "function") {
+        throw new $TypeError("`obj` must be an object or a function`");
+      }
+      if (typeof property !== "string" && typeof property !== "symbol") {
+        throw new $TypeError("`property` must be a string or a symbol`");
+      }
+      if (arguments.length > 3 && typeof arguments[3] !== "boolean" && arguments[3] !== null) {
+        throw new $TypeError("`nonEnumerable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 4 && typeof arguments[4] !== "boolean" && arguments[4] !== null) {
+        throw new $TypeError("`nonWritable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 5 && typeof arguments[5] !== "boolean" && arguments[5] !== null) {
+        throw new $TypeError("`nonConfigurable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 6 && typeof arguments[6] !== "boolean") {
+        throw new $TypeError("`loose`, if provided, must be a boolean");
+      }
+      var nonEnumerable = arguments.length > 3 ? arguments[3] : null;
+      var nonWritable = arguments.length > 4 ? arguments[4] : null;
+      var nonConfigurable = arguments.length > 5 ? arguments[5] : null;
+      var loose = arguments.length > 6 ? arguments[6] : false;
+      var desc = !!gopd && gopd(obj, property);
+      if ($defineProperty) {
+        $defineProperty(obj, property, {
+          configurable: nonConfigurable === null && desc ? desc.configurable : !nonConfigurable,
+          enumerable: nonEnumerable === null && desc ? desc.enumerable : !nonEnumerable,
+          value,
+          writable: nonWritable === null && desc ? desc.writable : !nonWritable
+        });
+      } else if (loose || !nonEnumerable && !nonWritable && !nonConfigurable) {
+        obj[property] = value;
+      } else {
+        throw new $SyntaxError("This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.");
+      }
+    };
+  }
+});
+
+// node_modules/set-function-length/index.js
+var require_set_function_length = __commonJS({
+  "node_modules/set-function-length/index.js"(exports, module2) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var define2 = require_define_data_property();
+    var hasDescriptors = require_has_property_descriptors()();
+    var gOPD = require_gopd();
+    var $TypeError = GetIntrinsic("%TypeError%");
+    var $floor = GetIntrinsic("%Math.floor%");
+    module2.exports = function setFunctionLength(fn, length) {
+      if (typeof fn !== "function") {
+        throw new $TypeError("`fn` is not a function");
+      }
+      if (typeof length !== "number" || length < 0 || length > 4294967295 || $floor(length) !== length) {
+        throw new $TypeError("`length` must be a positive 32-bit integer");
+      }
+      var loose = arguments.length > 2 && !!arguments[2];
+      var functionLengthIsConfigurable = true;
+      var functionLengthIsWritable = true;
+      if ("length" in fn && gOPD) {
+        var desc = gOPD(fn, "length");
+        if (desc && !desc.configurable) {
+          functionLengthIsConfigurable = false;
+        }
+        if (desc && !desc.writable) {
+          functionLengthIsWritable = false;
+        }
+      }
+      if (functionLengthIsConfigurable || functionLengthIsWritable || !loose) {
+        if (hasDescriptors) {
+          define2(fn, "length", length, true, true);
+        } else {
+          define2(fn, "length", length);
+        }
+      }
+      return fn;
+    };
+  }
+});
+
 // node_modules/call-bind/index.js
 var require_call_bind = __commonJS({
   "node_modules/call-bind/index.js"(exports, module2) {
     "use strict";
     var bind = require_function_bind();
     var GetIntrinsic = require_get_intrinsic();
+    var setFunctionLength = require_set_function_length();
+    var $TypeError = GetIntrinsic("%TypeError%");
     var $apply = GetIntrinsic("%Function.prototype.apply%");
     var $call = GetIntrinsic("%Function.prototype.call%");
     var $reflectApply = GetIntrinsic("%Reflect.apply%", true) || bind.call($call, $apply);
-    var $gOPD = GetIntrinsic("%Object.getOwnPropertyDescriptor%", true);
     var $defineProperty = GetIntrinsic("%Object.defineProperty%", true);
     var $max = GetIntrinsic("%Math.max%");
     if ($defineProperty) {
@@ -1876,18 +2051,15 @@ var require_call_bind = __commonJS({
       }
     }
     module2.exports = function callBind(originalFunction) {
-      var func = $reflectApply(bind, $call, arguments);
-      if ($gOPD && $defineProperty) {
-        var desc = $gOPD(func, "length");
-        if (desc.configurable) {
-          $defineProperty(
-            func,
-            "length",
-            { value: 1 + $max(0, originalFunction.length - (arguments.length - 1)) }
-          );
-        }
+      if (typeof originalFunction !== "function") {
+        throw new $TypeError("a function is required");
       }
-      return func;
+      var func = $reflectApply(bind, $call, arguments);
+      return setFunctionLength(
+        func,
+        1 + $max(0, originalFunction.length - (arguments.length - 1)),
+        true
+      );
     };
     var applyBind = function applyBind2() {
       return $reflectApply(bind, $apply, arguments);
@@ -2138,6 +2310,12 @@ var require_object_inspect = __commonJS({
       }
       if (isString(obj)) {
         return markBoxed(inspect(String(obj)));
+      }
+      if (typeof window !== "undefined" && obj === window) {
+        return "{ [object Window] }";
+      }
+      if (obj === global) {
+        return "{ [object globalThis] }";
       }
       if (!isDate(obj) && !isRegExp(obj)) {
         var ys = arrObjKeys(obj, inspect);
@@ -7571,6 +7749,12 @@ var boost = class _boost {
 };
 
 // src/classes/currency.ts
+var upgradeData = class {
+  constructor(init2) {
+    this.id = init2.id;
+    this.level = init2.level ? E(init2.level) : E(1);
+  }
+};
 var currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
@@ -7590,25 +7774,20 @@ var currencyStatic = class {
    * @param defaultVal - The default value of the currency.
    * @param defaultBoost - The default boost of the currency.
    */
-  constructor(pointer, defaultVal = E(0), defaultBoost = E(1)) {
+  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
     this.defaultVal = E(defaultVal);
     this.defaultBoost = E(defaultBoost);
     this.upgrades = [];
-    this.pointer = (typeof pointer === "function" ? pointer() : pointer) ?? new currency();
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
     this.boost = new boost(defaultBoost);
     this.pointer.value = this.defaultVal;
   }
   /**
    * The current value of the currency.
-   * @type {E}
    */
   get value() {
     return this.pointer.value;
   }
-  /**
-   * The current value of the currency.
-   * @type {E}
-   */
   set value(value) {
     this.pointer.value = value;
   }
@@ -7622,7 +7801,7 @@ var currencyStatic = class {
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
       this.upgrades.forEach((upgrade) => {
-        upgrade.setLevel(E(0));
+        upgrade.level = E(0);
       });
     }
     ;
@@ -7647,47 +7826,80 @@ var currencyStatic = class {
     return this.value;
   }
   /**
-   * Create new upgrades
+   * Adds an upgrade to the upgrades array.
+   * @param upgrades1 Upgrade to add
+   */
+  pointerAddUpgrade(upgrades1) {
+    const upgrades2 = new upgradeData(upgrades1);
+    this.pointer.upgrades.push(upgrades2);
+    return upgrades1;
+  }
+  /**
+   * Retrieves an upgrade object based on the provided id.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object if found, otherwise null.
+   */
+  getUpgrade(id) {
+    let upgrade = null;
+    if (id === void 0) {
+      return null;
+    } else if (typeof id == "number") {
+      upgrade = this.upgrades[id];
+    } else if (typeof id == "string") {
+      for (let i2 = 0; i2 < this.upgrades.length; i2++) {
+        if (this.upgrades[i2].id === id) {
+          upgrade = this.upgrades[i2];
+          break;
+        }
+      }
+    }
+    return upgrade;
+  }
+  /**
+   * Creates or updates upgrades
    *
-   * @typedef {Object} currencyUpgrade
-   * @property {string} [id] - id
-   * @property {string} [name] - name
-   * @property {E} cost - The cost of the first upgrade
-   * @property {function} costScaling - Scalar function for cost with param level
-   * @property {E} maxLevel - Max level
-   * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
-   *
-   * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
-   * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
+   * @param upgrades - An array of upgrade objects.
+   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
     if (!Array.isArray(upgrades))
       upgrades = [upgrades];
-    const pointerAddUpgrade = (upgrades1) => {
-      const upgrades2 = upgrades1.level ? { level: upgrades1.level } : { level: E(1) };
-      this.pointer.upgrades.push(upgrades2);
-      return upgrades1;
-    };
     const upgradesDefault = [];
     for (let i2 = 0; i2 < upgrades.length; i2++) {
-      const upgrade = pointerAddUpgrade(upgrades[i2]);
-      upgrade.getLevel = () => this.pointer.upgrades[i2].level ?? E(0);
-      upgrade.setLevel = (n2) => this.pointer.upgrades[i2].level = this.pointer.upgrades[i2].level?.add(n2) ?? E(n2);
-      if (runEffectInstantly)
-        upgrade.effect(upgrade.level);
-      upgradesDefault.push(upgrade);
+      if (!upgrades[i2].id)
+        upgrades[i2].id = i2;
+      if (this.getUpgrade(upgrades[i2].id)) {
+        const upgrade = this.getUpgrade(upgrades[i2].id);
+        if (upgrade === null)
+          continue;
+        upgrade.name = upgrades[i2].name ?? upgrade.name;
+        upgrade.cost = upgrades[i2].cost ?? upgrade.cost;
+        upgrade.costScaling = upgrades[i2].costScaling ?? upgrade.costScaling;
+        upgrade.maxLevel = upgrades[i2].maxLevel ?? upgrade.maxLevel;
+        upgrade.effect = upgrades[i2].effect ?? upgrade.effect;
+        if (runEffectInstantly)
+          upgrade.effect(upgrade.level);
+      } else {
+        this.pointerAddUpgrade(upgrades[i2]);
+        const upgrade = this.getUpgrade(upgrades[i2].id);
+        if (upgrade === null)
+          continue;
+        if (runEffectInstantly)
+          upgrade.effect(upgrade.level);
+        upgradesDefault.push(upgrade);
+      }
     }
     this.upgrades = this.upgrades.concat(upgradesDefault);
   }
   /**
    * Calculates the cost and how many upgrades you can buy
    *
-   * NOTE: This becomes very slow for higher levels. Use el=true to skip the sum calculation and speed up dramatically.
+   * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
    *
-   * @param id
-   * @param target
-   * @param el ie Endless: Flag to exclude the sum calculation and only perform binary search.
-   * @returns [amount, cost] | amount | false - Returns the amount of upgrades you can buy, the cost of the upgrades, or false if the upgrade does not exist.
+   * @param id - Index or ID of the upgrade
+   * @param target - How many to buy
+   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
    */
   calculateUpgrade(id, target, el = false) {
     target = E(target);
@@ -7702,9 +7914,7 @@ var currencyStatic = class {
       if (!el1) {
         let left = E(0);
         let right = E(1);
-        let highestB = E(0);
         while (calculateSum(f2, right).lt(a2)) {
-          highestB = right;
           right = right.mul(2);
         }
         while (left.lt(right)) {
@@ -7716,11 +7926,11 @@ var currencyStatic = class {
             right = mid;
           }
         }
-        return [left, calculateSum(f2, left.sub(1))];
+        return [left, left.gt(0) ? calculateSum(f2, left.sub(1)) : E(0)];
       } else {
         let left = E(0);
         let right = target;
-        let result = E(-1);
+        let result = E(0);
         while (left.lessThanOrEqualTo(right)) {
           const mid = left.plus(right).dividedBy(2).floor();
           const value = f2(mid);
@@ -7731,26 +7941,14 @@ var currencyStatic = class {
             right = mid.minus(1);
           }
         }
-        return result;
+        return [result, result.gt(0) ? f2(result) : E(0)];
       }
     }
-    let upgrade;
-    if (typeof id == "number") {
-      upgrade = this.upgrades[id];
-    } else if (typeof id == "string") {
-      for (let i2 = 0; i2 < this.upgrades.length; i2++) {
-        if (this.upgrades[i2].id == id) {
-          upgrade = this.upgrades[i2];
-          break;
-        } else {
-          continue;
-        }
-      }
-    } else {
-      return false;
-    }
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null)
+      return [E(0), E(0)];
     return findHighestB(
-      (level) => upgrade.costScaling(upgrade.getLevel().add(level)),
+      (level) => upgrade.costScaling(upgrade.level.add(level)),
       this.value
     );
   }
@@ -7762,50 +7960,28 @@ var currencyStatic = class {
    * @param target - The target level or quantity to reach for the upgrade.
    * This represents how many upgrades to buy or upgrade.
    *
-   * @returns {boolean} Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    *
    */
   buyUpgrade(id, target) {
-    target = E(target);
-    const upgrade = (() => {
-      let output1;
-      if (typeof id == "number") {
-        output1 = this.upgrades[id];
-      } else if (typeof id == "string") {
-        for (let i2 = 0; i2 < this.upgrades.length; i2++) {
-          if (this.upgrades[i2].id === id) {
-            output1 = this.upgrades[i2];
-            break;
-          }
-        }
-      } else {
-        output1 = false;
-      }
-      return output1;
-    })();
-    if (typeof upgrade === "boolean")
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null)
       return false;
+    target = E(target);
+    target = upgrade.level.add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.level);
     const maxAffordableQuantity = this.calculateUpgrade(
       id,
       target
     );
-    if (!Array.isArray(maxAffordableQuantity) || maxAffordableQuantity.length !== 2) {
+    if (maxAffordableQuantity[0].lte(0)) {
       return false;
     }
-    if (!maxAffordableQuantity[0].lte(0)) {
-      target = upgrade.getLevel().add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.getLevel());
-      const condition = maxAffordableQuantity[0].lte(target);
-      this.value = this.value.sub(
-        maxAffordableQuantity[1]
-      );
-      upgrade.setLevel(upgrade.getLevel().add(maxAffordableQuantity[0]));
-      if (typeof upgrade.effect === "function") {
-        upgrade.effect(upgrade.getLevel(), upgrade);
-      }
-      return true;
-    } else {
-      return false;
+    this.value = this.value.sub(maxAffordableQuantity[1]);
+    upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
+    if (typeof upgrade.effect === "function") {
+      upgrade.effect(upgrade.level, upgrade);
     }
+    return true;
   }
 };
 
@@ -9654,14 +9830,14 @@ var gameReset = class {
     this.currenciesToReset = currenciesToReset;
     this.extender = extender;
   }
-  // public reset (): void {
-  //     this.currenciesToReset.forEach((currency) => {
-  //         currency.reset(game);
-  //     });
-  //     if (this.extender) {
-  //         this.extender.reset(game);
-  //     }
-  // }
+  reset() {
+    this.currenciesToReset.forEach((currency2) => {
+      currency2.static.reset();
+    });
+    if (this.extender) {
+      this.extender.reset();
+    }
+  }
 };
 
 // src/game/game.ts
@@ -33353,7 +33529,7 @@ function loadPIXI() {
 }
 
 // src/pixiGame/pixi-intersects.js
-var Intersects = function() {
+var Intersects = /* @__PURE__ */ function() {
   class Shape {
     /**
     * @param {object} [article] that uses this shape

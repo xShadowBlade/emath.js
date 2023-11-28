@@ -3930,6 +3930,12 @@ var boost = class _boost {
 };
 
 // src/classes/currency.ts
+var upgradeData = class {
+  constructor(init) {
+    this.id = init.id;
+    this.level = init.level ? E(init.level) : E(1);
+  }
+};
 var currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
@@ -3949,25 +3955,20 @@ var currencyStatic = class {
    * @param defaultVal - The default value of the currency.
    * @param defaultBoost - The default boost of the currency.
    */
-  constructor(pointer, defaultVal = E(0), defaultBoost = E(1)) {
+  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
     this.defaultVal = E(defaultVal);
     this.defaultBoost = E(defaultBoost);
     this.upgrades = [];
-    this.pointer = (typeof pointer === "function" ? pointer() : pointer) ?? new currency();
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
     this.boost = new boost(defaultBoost);
     this.pointer.value = this.defaultVal;
   }
   /**
    * The current value of the currency.
-   * @type {E}
    */
   get value() {
     return this.pointer.value;
   }
-  /**
-   * The current value of the currency.
-   * @type {E}
-   */
   set value(value) {
     this.pointer.value = value;
   }
@@ -3981,7 +3982,7 @@ var currencyStatic = class {
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
       this.upgrades.forEach((upgrade) => {
-        upgrade.setLevel(E(0));
+        upgrade.level = E(0);
       });
     }
     ;
@@ -4006,47 +4007,80 @@ var currencyStatic = class {
     return this.value;
   }
   /**
-   * Create new upgrades
+   * Adds an upgrade to the upgrades array.
+   * @param upgrades1 Upgrade to add
+   */
+  pointerAddUpgrade(upgrades1) {
+    const upgrades2 = new upgradeData(upgrades1);
+    this.pointer.upgrades.push(upgrades2);
+    return upgrades1;
+  }
+  /**
+   * Retrieves an upgrade object based on the provided id.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object if found, otherwise null.
+   */
+  getUpgrade(id) {
+    let upgrade = null;
+    if (id === void 0) {
+      return null;
+    } else if (typeof id == "number") {
+      upgrade = this.upgrades[id];
+    } else if (typeof id == "string") {
+      for (let i = 0; i < this.upgrades.length; i++) {
+        if (this.upgrades[i].id === id) {
+          upgrade = this.upgrades[i];
+          break;
+        }
+      }
+    }
+    return upgrade;
+  }
+  /**
+   * Creates or updates upgrades
    *
-   * @typedef {Object} currencyUpgrade
-   * @property {string} [id] - id
-   * @property {string} [name] - name
-   * @property {E} cost - The cost of the first upgrade
-   * @property {function} costScaling - Scalar function for cost with param level
-   * @property {E} maxLevel - Max level
-   * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
-   *
-   * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
-   * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
+   * @param upgrades - An array of upgrade objects.
+   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
     if (!Array.isArray(upgrades))
       upgrades = [upgrades];
-    const pointerAddUpgrade = (upgrades1) => {
-      const upgrades2 = upgrades1.level ? { level: upgrades1.level } : { level: E(1) };
-      this.pointer.upgrades.push(upgrades2);
-      return upgrades1;
-    };
     const upgradesDefault = [];
     for (let i = 0; i < upgrades.length; i++) {
-      const upgrade = pointerAddUpgrade(upgrades[i]);
-      upgrade.getLevel = () => this.pointer.upgrades[i].level ?? E(0);
-      upgrade.setLevel = (n) => this.pointer.upgrades[i].level = this.pointer.upgrades[i].level?.add(n) ?? E(n);
-      if (runEffectInstantly)
-        upgrade.effect(upgrade.level);
-      upgradesDefault.push(upgrade);
+      if (!upgrades[i].id)
+        upgrades[i].id = i;
+      if (this.getUpgrade(upgrades[i].id)) {
+        const upgrade = this.getUpgrade(upgrades[i].id);
+        if (upgrade === null)
+          continue;
+        upgrade.name = upgrades[i].name ?? upgrade.name;
+        upgrade.cost = upgrades[i].cost ?? upgrade.cost;
+        upgrade.costScaling = upgrades[i].costScaling ?? upgrade.costScaling;
+        upgrade.maxLevel = upgrades[i].maxLevel ?? upgrade.maxLevel;
+        upgrade.effect = upgrades[i].effect ?? upgrade.effect;
+        if (runEffectInstantly)
+          upgrade.effect(upgrade.level);
+      } else {
+        this.pointerAddUpgrade(upgrades[i]);
+        const upgrade = this.getUpgrade(upgrades[i].id);
+        if (upgrade === null)
+          continue;
+        if (runEffectInstantly)
+          upgrade.effect(upgrade.level);
+        upgradesDefault.push(upgrade);
+      }
     }
     this.upgrades = this.upgrades.concat(upgradesDefault);
   }
   /**
    * Calculates the cost and how many upgrades you can buy
    *
-   * NOTE: This becomes very slow for higher levels. Use el=true to skip the sum calculation and speed up dramatically.
+   * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
    *
-   * @param id
-   * @param target
-   * @param el ie Endless: Flag to exclude the sum calculation and only perform binary search.
-   * @returns [amount, cost] | amount | false - Returns the amount of upgrades you can buy, the cost of the upgrades, or false if the upgrade does not exist.
+   * @param id - Index or ID of the upgrade
+   * @param target - How many to buy
+   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
    */
   calculateUpgrade(id, target, el = false) {
     target = E(target);
@@ -4061,9 +4095,7 @@ var currencyStatic = class {
       if (!el1) {
         let left = E(0);
         let right = E(1);
-        let highestB = E(0);
         while (calculateSum(f, right).lt(a)) {
-          highestB = right;
           right = right.mul(2);
         }
         while (left.lt(right)) {
@@ -4075,11 +4107,11 @@ var currencyStatic = class {
             right = mid;
           }
         }
-        return [left, calculateSum(f, left.sub(1))];
+        return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
       } else {
         let left = E(0);
         let right = target;
-        let result = E(-1);
+        let result = E(0);
         while (left.lessThanOrEqualTo(right)) {
           const mid = left.plus(right).dividedBy(2).floor();
           const value = f(mid);
@@ -4090,26 +4122,14 @@ var currencyStatic = class {
             right = mid.minus(1);
           }
         }
-        return result;
+        return [result, result.gt(0) ? f(result) : E(0)];
       }
     }
-    let upgrade;
-    if (typeof id == "number") {
-      upgrade = this.upgrades[id];
-    } else if (typeof id == "string") {
-      for (let i = 0; i < this.upgrades.length; i++) {
-        if (this.upgrades[i].id == id) {
-          upgrade = this.upgrades[i];
-          break;
-        } else {
-          continue;
-        }
-      }
-    } else {
-      return false;
-    }
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null)
+      return [E(0), E(0)];
     return findHighestB(
-      (level) => upgrade.costScaling(upgrade.getLevel().add(level)),
+      (level) => upgrade.costScaling(upgrade.level.add(level)),
       this.value
     );
   }
@@ -4121,50 +4141,28 @@ var currencyStatic = class {
    * @param target - The target level or quantity to reach for the upgrade.
    * This represents how many upgrades to buy or upgrade.
    *
-   * @returns {boolean} Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    *
    */
   buyUpgrade(id, target) {
-    target = E(target);
-    const upgrade = (() => {
-      let output1;
-      if (typeof id == "number") {
-        output1 = this.upgrades[id];
-      } else if (typeof id == "string") {
-        for (let i = 0; i < this.upgrades.length; i++) {
-          if (this.upgrades[i].id === id) {
-            output1 = this.upgrades[i];
-            break;
-          }
-        }
-      } else {
-        output1 = false;
-      }
-      return output1;
-    })();
-    if (typeof upgrade === "boolean")
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null)
       return false;
+    target = E(target);
+    target = upgrade.level.add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.level);
     const maxAffordableQuantity = this.calculateUpgrade(
       id,
       target
     );
-    if (!Array.isArray(maxAffordableQuantity) || maxAffordableQuantity.length !== 2) {
+    if (maxAffordableQuantity[0].lte(0)) {
       return false;
     }
-    if (!maxAffordableQuantity[0].lte(0)) {
-      target = upgrade.getLevel().add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.getLevel());
-      const condition = maxAffordableQuantity[0].lte(target);
-      this.value = this.value.sub(
-        maxAffordableQuantity[1]
-      );
-      upgrade.setLevel(upgrade.getLevel().add(maxAffordableQuantity[0]));
-      if (typeof upgrade.effect === "function") {
-        upgrade.effect(upgrade.getLevel(), upgrade);
-      }
-      return true;
-    } else {
-      return false;
+    this.value = this.value.sub(maxAffordableQuantity[1]);
+    upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
+    if (typeof upgrade.effect === "function") {
+      upgrade.effect(upgrade.level, upgrade);
     }
+    return true;
   }
 };
 

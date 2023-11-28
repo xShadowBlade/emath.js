@@ -1,28 +1,71 @@
 import { E, ESource } from "../eMath";
 import { boost } from "./boost";
 /**
- * Upgrades
- *
- * @property {string} [id] - id
- * @property {string} [name] - name
- * @property {E} cost - The cost of the first upgrade (deprecated)
- * @property {function} costScaling - Scalar function for cost with param level
- * @property {E} [maxLevel] - Max level
- * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
+ * Interface for initializing an upgrade.
  */
 interface upgradeInit {
+    /**
+     * The ID of the upgrade. If not provided, it will default to the array position.
+     */
+    id?: string | number;
+    /**
+     * The name of the upgrade.
+     */
+    name?: string;
+    /**
+     * The cost of the first upgrade.
+     * @deprecated Use `costScaling` function instead.
+     */
+    cost?: E;
+    /**
+     * The cost of upgrades at a certain level.
+     */
+    costScaling: (level: E) => E;
+    /**
+     * The maximum level of the upgrade.
+     */
+    maxLevel: E;
+    /**
+     * The effect of the upgrade.
+     */
+    effect: (level?: E, context?: any) => any;
+    /**
+     * The current level of the upgrade. Automatically added.
+     */
+    level?: E;
+}
+/**
+ * Interface for an upgrade.
+ */
+interface upgrade extends Omit<upgradeInit, "level"> {
+}
+interface upgradeDataInterface {
+    id?: string | number;
+    level?: E;
+}
+declare class upgradeData implements upgradeDataInterface {
+    id?: string | number;
+    level: E;
+    constructor(init: upgradeInit);
+}
+declare class upgradeStatic implements upgrade {
     id?: string | number;
     name?: string;
     cost?: E;
-    costScaling: (input: E) => E;
+    costScaling: (level: E) => E;
     maxLevel: E;
     effect: (level?: E, context?: any) => any;
-    level?: E;
-}
-interface upgrade extends upgradeInit {
-    getLevel: () => E;
-    setLevel: (n: ESource) => void;
-    level: E;
+    protected data: upgradeData;
+    /**
+     * @constructor
+     * @param init - The upgrade object to initialize.
+     */
+    constructor(init: upgradeInit, dataPointer: (() => upgradeData) | upgradeData);
+    /**
+     * The current level of the upgrade.
+     */
+    get level(): E;
+    set level(n: ESource);
 }
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
@@ -37,7 +80,7 @@ declare class currency {
     /**
      * An array that represents upgrades and their levels.
      */
-    upgrades: upgrade[];
+    upgrades: upgradeData[];
     /**
      * A boost object that affects the currency gain.
      */
@@ -58,16 +101,14 @@ declare class currency {
 declare class currencyStatic {
     /**
      * An array that represents upgrades, their costs, and their effects.
-     * @type {Array}
      */
-    upgrades: upgrade[];
+    upgrades: upgradeStatic[];
     /**
      * A function that returns the pointer of the data
      */
     protected pointer: currency;
     /**
      * A boost object that affects the currency gain.
-     * @type {boost}
      */
     boost: boost;
     protected defaultVal: E;
@@ -81,13 +122,8 @@ declare class currencyStatic {
     constructor(pointer?: currency | (() => currency), defaultVal?: ESource, defaultBoost?: ESource);
     /**
      * The current value of the currency.
-     * @type {E}
      */
     get value(): E;
-    /**
-     * The current value of the currency.
-     * @type {E}
-     */
     set value(value: E);
     /**
      * Resets the currency and upgrade levels.
@@ -103,31 +139,34 @@ declare class currencyStatic {
      */
     gain(dt?: ESource): E;
     /**
-     * Create new upgrades
+     * Adds an upgrade to the upgrades array.
+     * @param upgrades1 Upgrade to add
+     */
+    private pointerAddUpgrade;
+    /**
+     * Retrieves an upgrade object based on the provided id.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object if found, otherwise null.
+     */
+    getUpgrade(id?: string | number): upgradeStatic | null;
+    /**
+     * Creates or updates upgrades
      *
-     * @typedef {Object} currencyUpgrade
-     * @property {string} [id] - id
-     * @property {string} [name] - name
-     * @property {E} cost - The cost of the first upgrade
-     * @property {function} costScaling - Scalar function for cost with param level
-     * @property {E} maxLevel - Max level
-     * @property {function} [effect] - Function to call after the upgrade is bought with param upgrade.level and param context
-     *
-     * @param {Array<currencyUpgrade>} upgrades - An array of upgrade objects.
-     * @param {boolean} [runEffectInstantly] - Whether to run the effect immediately
+     * @param upgrades - An array of upgrade objects.
+     * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
     addUpgrade(upgrades: upgradeInit | upgradeInit[], runEffectInstantly?: boolean): void;
     /**
      * Calculates the cost and how many upgrades you can buy
      *
-     * NOTE: This becomes very slow for higher levels. Use el=true to skip the sum calculation and speed up dramatically.
+     * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
      *
-     * @param id
-     * @param target
-     * @param el ie Endless: Flag to exclude the sum calculation and only perform binary search.
-     * @returns [amount, cost] | amount | false - Returns the amount of upgrades you can buy, the cost of the upgrades, or false if the upgrade does not exist.
+     * @param id - Index or ID of the upgrade
+     * @param target - How many to buy
+     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      */
-    calculateUpgrade(id: string | number, target: E, el?: boolean): [E, E] | E | false;
+    calculateUpgrade(id: string | number, target: E, el?: boolean): [amount: E, cost: E];
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      *
@@ -136,7 +175,7 @@ declare class currencyStatic {
      * @param target - The target level or quantity to reach for the upgrade.
      * This represents how many upgrades to buy or upgrade.
      *
-     * @returns {boolean} Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      *
      */
     buyUpgrade(id: string | number, target: ESource): boolean;

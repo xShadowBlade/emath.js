@@ -271,10 +271,10 @@ declare class Rectangle extends Rectangle_base {
     noRotate: boolean | undefined;
     hw: number | undefined;
     hh: number | undefined;
-    set width(arg: any);
+    set width(value: any);
     /** width of rectangle */
     get width(): any;
-    set height(arg: any);
+    set height(value: any);
     /** height of rectangle */
     get height(): any;
     verticesDirty: boolean | undefined;

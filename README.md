@@ -26,10 +26,10 @@ Massive credits to [MrRedShark77](https://github.com/MrRedShark77/) for the form
 npm install emath.js
 ```
 
-The package exports a default export named ``eMath``. Use as the following: (CJS support only in version ^2.0.0)
+The package has no default exports. Use as the following: (CJS support only in version ^2.0.0)
 
 ```js
-import eMath from "emath.js";
+import { eMath, currency, /* import more here */ } from "emath.js";
 ```
 
 ### Include using CDN

@@ -22,6 +22,7 @@ class gameCurrency {
         this.data = currencyPointer;
         this.static = staticPointer;
 
+        
         this.game = gamePointer;
     }
 

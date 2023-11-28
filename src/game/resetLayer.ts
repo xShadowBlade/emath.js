@@ -10,15 +10,15 @@ class gameReset {
         this.extender = extender;
     }
 
-    // public reset (): void {
-    //     this.currenciesToReset.forEach((currency) => {
-    //         currency.reset(game);
-    //     });
+    public reset (): void {
+        this.currenciesToReset.forEach((currency) => {
+            currency.static.reset();
+        });
 
-    //     if (this.extender) {
-    //         this.extender.reset(game);
-    //     }
-    // }
+        if (this.extender) {
+            this.extender.reset();
+        }
+    }
 }
 
 export { gameReset };
