@@ -1,11 +1,24 @@
-var __create = Object.create;
+(function (g, f) {
+    var hasExports = typeof exports === 'object';
+    if (typeof define === "function" && define.amd) {
+      define(['pixi.js'], f);
+    } else if (typeof module === "object" && module.exports) {
+      module.exports = f(require('pixi.js'));
+    } else {
+      var m = hasExports ? f(require('pixi.js')) : f(g["pixi.js"]);
+      var root = hasExports ? exports : g;
+      
+    }}(typeof self !== 'undefined' ? self : this, (__da) => {
+  var exports = {};
+  var module = { exports };
+"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -15,481 +28,25 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// node_modules/lz-string/libs/lz-string.js
-var require_lz_string = __commonJS({
-  "node_modules/lz-string/libs/lz-string.js"(exports, module) {
-    var LZString2 = function() {
-      var f = String.fromCharCode;
-      var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-      var baseReverseDic = {};
-      function getBaseValue(alphabet, character) {
-        if (!baseReverseDic[alphabet]) {
-          baseReverseDic[alphabet] = {};
-          for (var i = 0; i < alphabet.length; i++) {
-            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
-          }
-        }
-        return baseReverseDic[alphabet][character];
-      }
-      var LZString3 = {
-        compressToBase64: function(input) {
-          if (input == null)
-            return "";
-          var res = LZString3._compress(input, 6, function(a) {
-            return keyStrBase64.charAt(a);
-          });
-          switch (res.length % 4) {
-            default:
-            case 0:
-              return res;
-            case 1:
-              return res + "===";
-            case 2:
-              return res + "==";
-            case 3:
-              return res + "=";
-          }
-        },
-        decompressFromBase64: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          return LZString3._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrBase64, input.charAt(index));
-          });
-        },
-        compressToUTF16: function(input) {
-          if (input == null)
-            return "";
-          return LZString3._compress(input, 15, function(a) {
-            return f(a + 32);
-          }) + " ";
-        },
-        decompressFromUTF16: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString3._decompress(compressed.length, 16384, function(index) {
-            return compressed.charCodeAt(index) - 32;
-          });
-        },
-        //compress into uint8array (UCS-2 big endian format)
-        compressToUint8Array: function(uncompressed) {
-          var compressed = LZString3.compress(uncompressed);
-          var buf = new Uint8Array(compressed.length * 2);
-          for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
-            var current_value = compressed.charCodeAt(i);
-            buf[i * 2] = current_value >>> 8;
-            buf[i * 2 + 1] = current_value % 256;
-          }
-          return buf;
-        },
-        //decompress from uint8array (UCS-2 big endian format)
-        decompressFromUint8Array: function(compressed) {
-          if (compressed === null || compressed === void 0) {
-            return LZString3.decompress(compressed);
-          } else {
-            var buf = new Array(compressed.length / 2);
-            for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
-              buf[i] = compressed[i * 2] * 256 + compressed[i * 2 + 1];
-            }
-            var result = [];
-            buf.forEach(function(c) {
-              result.push(f(c));
-            });
-            return LZString3.decompress(result.join(""));
-          }
-        },
-        //compress into a string that is already URI encoded
-        compressToEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          return LZString3._compress(input, 6, function(a) {
-            return keyStrUriSafe.charAt(a);
-          });
-        },
-        //decompress from an output of compressToEncodedURIComponent
-        decompressFromEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          input = input.replace(/ /g, "+");
-          return LZString3._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrUriSafe, input.charAt(index));
-          });
-        },
-        compress: function(uncompressed) {
-          return LZString3._compress(uncompressed, 16, function(a) {
-            return f(a);
-          });
-        },
-        _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
-          if (uncompressed == null)
-            return "";
-          var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-          for (ii = 0; ii < uncompressed.length; ii += 1) {
-            context_c = uncompressed.charAt(ii);
-            if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-              context_dictionary[context_c] = context_dictSize++;
-              context_dictionaryToCreate[context_c] = true;
-            }
-            context_wc = context_w + context_c;
-            if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-              context_w = context_wc;
-            } else {
-              if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-                if (context_w.charCodeAt(0) < 256) {
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 8; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                } else {
-                  value = 1;
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1 | value;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = 0;
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 16; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                }
-                context_enlargeIn--;
-                if (context_enlargeIn == 0) {
-                  context_enlargeIn = Math.pow(2, context_numBits);
-                  context_numBits++;
-                }
-                delete context_dictionaryToCreate[context_w];
-              } else {
-                value = context_dictionary[context_w];
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              context_dictionary[context_wc] = context_dictSize++;
-              context_w = String(context_c);
-            }
-          }
-          if (context_w !== "") {
-            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-              if (context_w.charCodeAt(0) < 256) {
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 8; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              } else {
-                value = 1;
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = 0;
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 16; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              delete context_dictionaryToCreate[context_w];
-            } else {
-              value = context_dictionary[context_w];
-              for (i = 0; i < context_numBits; i++) {
-                context_data_val = context_data_val << 1 | value & 1;
-                if (context_data_position == bitsPerChar - 1) {
-                  context_data_position = 0;
-                  context_data.push(getCharFromInt(context_data_val));
-                  context_data_val = 0;
-                } else {
-                  context_data_position++;
-                }
-                value = value >> 1;
-              }
-            }
-            context_enlargeIn--;
-            if (context_enlargeIn == 0) {
-              context_enlargeIn = Math.pow(2, context_numBits);
-              context_numBits++;
-            }
-          }
-          value = 2;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-          while (true) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data.push(getCharFromInt(context_data_val));
-              break;
-            } else
-              context_data_position++;
-          }
-          return context_data.join("");
-        },
-        decompress: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString3._decompress(compressed.length, 32768, function(index) {
-            return compressed.charCodeAt(index);
-          });
-        },
-        _decompress: function(length, resetValue, getNextValue) {
-          var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c, data = { val: getNextValue(0), position: resetValue, index: 1 };
-          for (i = 0; i < 3; i += 1) {
-            dictionary[i] = i;
-          }
-          bits = 0;
-          maxpower = Math.pow(2, 2);
-          power = 1;
-          while (power != maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = resetValue;
-              data.val = getNextValue(data.index++);
-            }
-            bits |= (resb > 0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-          switch (next = bits) {
-            case 0:
-              bits = 0;
-              maxpower = Math.pow(2, 8);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 1:
-              bits = 0;
-              maxpower = Math.pow(2, 16);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 2:
-              return "";
-          }
-          dictionary[3] = c;
-          w = c;
-          result.push(c);
-          while (true) {
-            if (data.index > length) {
-              return "";
-            }
-            bits = 0;
-            maxpower = Math.pow(2, numBits);
-            power = 1;
-            while (power != maxpower) {
-              resb = data.val & data.position;
-              data.position >>= 1;
-              if (data.position == 0) {
-                data.position = resetValue;
-                data.val = getNextValue(data.index++);
-              }
-              bits |= (resb > 0 ? 1 : 0) * power;
-              power <<= 1;
-            }
-            switch (c = bits) {
-              case 0:
-                bits = 0;
-                maxpower = Math.pow(2, 8);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 1:
-                bits = 0;
-                maxpower = Math.pow(2, 16);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 2:
-                return result.join("");
-            }
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-            if (dictionary[c]) {
-              entry = dictionary[c];
-            } else {
-              if (c === dictSize) {
-                entry = w + w.charAt(0);
-              } else {
-                return null;
-              }
-            }
-            result.push(entry);
-            dictionary[dictSize++] = w + entry.charAt(0);
-            enlargeIn--;
-            w = entry;
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-          }
-        }
-      };
-      return LZString3;
-    }();
-    if (typeof define === "function" && define.amd) {
-      define(function() {
-        return LZString2;
-      });
-    } else if (typeof module !== "undefined" && module != null) {
-      module.exports = LZString2;
-    } else if (typeof angular !== "undefined" && angular != null) {
-      angular.module("LZString", []).factory("LZString", function() {
-        return LZString2;
-      });
-    }
-  }
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  E: () => E,
+  EArray: () => EArray,
+  EObject: () => EObject,
+  EString: () => EString,
+  attribute: () => attribute,
+  boost: () => boost,
+  currency: () => currency,
+  currencyStatic: () => currencyStatic,
+  eMath: () => eMath,
+  grid: () => grid,
+  gridCell: () => gridCell,
+  obb: () => obb
 });
+module.exports = __toCommonJS(src_exports);
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -2748,7 +2305,7 @@ var Decimal = class _Decimal {
   static tetrate_critical(base, height) {
     return _Decimal.critical_section(base, height, critical_tetr_values);
   }
-  static critical_section(base, height, grid, linear = false) {
+  static critical_section(base, height, grid2, linear = false) {
     height *= 10;
     if (height < 0) {
       height = 0;
@@ -2766,13 +2323,13 @@ var Decimal = class _Decimal {
     let upper = 0;
     for (let i = 0; i < critical_headers.length; ++i) {
       if (critical_headers[i] == base) {
-        lower = grid[i][Math.floor(height)];
-        upper = grid[i][Math.ceil(height)];
+        lower = grid2[i][Math.floor(height)];
+        upper = grid2[i][Math.ceil(height)];
         break;
       } else if (critical_headers[i] < base && critical_headers[i + 1] > base) {
         const basefrac = (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
-        lower = grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
-        upper = grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
+        lower = grid2[i][Math.floor(height)] * (1 - basefrac) + grid2[i + 1][Math.floor(height)] * basefrac;
+        upper = grid2[i][Math.ceil(height)] * (1 - basefrac) + grid2[i + 1][Math.ceil(height)] * basefrac;
         break;
       }
     }
@@ -4119,12 +3676,172 @@ var formats = { ...FORMATS, ...{
 Decimal.formats = formats;
 var e_default = Decimal;
 
+// src/classes/utility/eString.ts
+var EString = class extends String {
+  constructor(value) {
+    super(value);
+    this.forEach = function(callbackfn) {
+      for (let i = 0; i < this.length; i++) {
+        callbackfn(this[i]);
+      }
+    };
+    this.forEachAdvanced = function(callbackfn, start, end) {
+      for (let i = start < 0 ? 0 : start; i < (end > this.length ? this.length : end < start ? this.length : end); i++) {
+        callbackfn({
+          value: this[i],
+          index: i
+        });
+      }
+    };
+    this.toNumber = function() {
+      let output = "";
+      for (let i = 0; i < this.length; i++) {
+        output += this.charCodeAt(i).toString();
+      }
+      return parseInt(output);
+    };
+    this.toArray = function() {
+      const output = [];
+      for (let i = 0; i < this.length; i++) {
+        output.push(this[i]);
+      }
+      return output;
+    };
+    this.before = function(index) {
+      let output = "";
+      this.forEachAdvanced(function(char) {
+        output += char.value;
+      }, 0, index);
+      return output;
+    };
+    this.after = function(index) {
+      let output = "";
+      this.forEachAdvanced(function(char) {
+        output += char.value;
+      }, index, -1);
+      return output;
+    };
+    this.customSplit = function(index) {
+      const output = [];
+      output.push(this.before(index));
+      output.push(this.after(index));
+      return output;
+    };
+    this.random = function(qty) {
+      const random = (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max);
+      let output = "";
+      if (qty > 0) {
+        for (let i = 0; i < qty; i++) {
+          output += this.charAt(random(0, this.length));
+        }
+      } else {
+        output = this.charAt(random(0, this.length));
+      }
+      return output;
+    };
+  }
+};
+
 // src/eMath.ts
 var E = (x) => new e_default(x);
 Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(class {
 }).includes(b)).forEach((prop) => {
   E[prop] = e_default[prop];
 });
+var eMath = {
+  getFast: function(object, id) {
+    object = JSON.stringify(object);
+    const length = id.toString().replace(/\\/g, "").length;
+    const searchIndex = object.search(id);
+    let output = "";
+    let offset = length + 2;
+    let unclosedQdb = 0;
+    let unclosedQsb = 0;
+    let unclosedQib = 0;
+    let unclosedB = 0;
+    let unclosedCB = 0;
+    function check() {
+      const read = object[searchIndex + offset];
+      if (object[searchIndex + offset - 1] != "\\") {
+        switch (read) {
+          case '"':
+            if (unclosedQdb == 0) {
+              unclosedQdb = 1;
+            } else {
+              unclosedQdb = 0;
+            }
+            break;
+          case "'":
+            if (unclosedQsb == 0) {
+              unclosedQsb = 1;
+            } else {
+              unclosedQsb = 0;
+            }
+            break;
+          case "`":
+            if (unclosedQib == 0) {
+              unclosedQib = 1;
+            } else {
+              unclosedQib = 0;
+            }
+            break;
+          case "[":
+            unclosedB++;
+            break;
+          case "]":
+            unclosedB--;
+            break;
+          case "{":
+            unclosedCB++;
+            break;
+          case "}":
+            unclosedCB--;
+            break;
+        }
+      }
+      output += read;
+      offset++;
+    }
+    check();
+    while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
+      check();
+    }
+    return JSON.parse(output);
+  },
+  get: function(object, id) {
+    try {
+      for (let i = 0; i < Object.keys(object).length; i++) {
+        if (Object.keys(object)[i] == "sign")
+          break;
+        if (Object.keys(object)[i] == id) {
+          return object[Object.keys(object)[i]];
+        } else if (typeof object[Object.keys(object)[i]] == "object") {
+          const output = this.get(object[Object.keys(object)[i]], id);
+          if (output != null)
+            return output;
+        } else {
+          continue;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+  randomNumber: (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max),
+  // rounds by default, can disable
+  /**
+   * @deprecated dont ever use this
+   */
+  randomString64: (times, type) => {
+    let output = (Math.random() * 1232311).toString();
+    for (let i = 0; i < times; i++) {
+      output = btoa(output) + btoa(btoa(Math.random().toString()));
+    }
+    return type ? output.length : output;
+  },
+  randomString: (length) => new EString("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").random(length).toString()
+};
 
 // src/classes/boost.ts
 var boost = class _boost {
@@ -4499,2013 +4216,517 @@ var currencyStatic = class {
   }
 };
 
-// src/game/managers/configManager.ts
-var configManager = class {
-  constructor(configOptionTemplate) {
-    this.configOptionTemplate = configOptionTemplate;
+// src/classes/attribute.ts
+var attribute = class {
+  /**
+   * Constructs a static attribute with an initial effect.
+   *
+   * @constructor
+   * @param {ESource} initial - The inital value of the attribute.
+   */
+  constructor(initial) {
+    this.initial = E(initial);
+    this.value = E(initial);
+    this.boost = new boost(1);
   }
   /**
-   * Parses the given configuration object and returns a new object with default values for any missing options.
-   * @param config - The configuration object to parse.
-   * @returns A new object with default values for any missing options.
+   * Updates the value of the attribute based on the provided effect function and initial value.
+   *
+   * @param {function} effect - The effect function to apply to the attribute.
+   * @returns {E} The updated value of the attribute after applying the effect.
    */
-  parse(config) {
-    if (typeof config === "undefined") {
-      return this.configOptionTemplate;
-    }
-    const parseObject = (obj, template) => {
-      for (const key in template) {
-        if (typeof obj[key] === "undefined") {
-          obj[key] = template[key];
-        } else if (typeof obj[key] === "object" && typeof template[key] === "object") {
-          obj[key] = parseObject(obj[key], template[key]);
-        }
-      }
-      return obj;
-    };
-    return parseObject(config, this.configOptionTemplate);
-  }
-  get options() {
-    return this.configOptionTemplate;
+  update(effect) {
+    if (effect)
+      effect();
+    this.value = this.boost.calculate(this.initial);
+    return this.value;
   }
 };
 
-// src/game/managers/keyManager.ts
-var keyManager = class _keyManager {
-  static {
-    this.configManager = new configManager({
-      autoAddInterval: true,
-      fps: 30
-    });
-  }
-  constructor(config) {
-    this.keysPressed = [];
-    this.binds = [];
-    this.tickers = [];
-    this.config = _keyManager.configManager.parse(config);
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        for (const ticker of this.tickers) {
-          ticker(1e3 / fps);
-        }
-      }, 1e3 / fps);
-    }
-    if (typeof document === "undefined") {
-      return;
-    }
-    document.addEventListener("keydown", (e) => this.logKey(e, true));
-    document.addEventListener("keyup", (e) => this.logKey(e, false));
-  }
-  logKey(event, type) {
-    const key = event.key;
-    if (type && !this.keysPressed.includes(key))
-      this.keysPressed.push(key);
-    else if (!type && this.keysPressed.includes(key))
-      this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+// src/classes/grid.ts
+var gridCell = class {
+  /**
+   * Initializes a new instance of the grid cell.
+   * @constructor
+   * @param {number} x - The x-coordinate.
+   * @param {number} y - The y-coordinate.
+   * @param {any} [props] - The properties to initialize with.
+   */
+  constructor(x, y, props) {
+    this.x = x;
+    this.y = y;
+    this.properties = props ? props : {};
   }
   /**
-   * Checks if a specific key binding is currently being pressed.
-   *
-   * @param {string} name - The name of the key binding to check.
-   * @returns {boolean} True if the key binding is being pressed, otherwise false.
+   * Sets the value of a property on the cell.
+   * @param {string} name - The name of the property.
+   * @param {any} value - The value to set.
+   * @returns {any} - The set value.
    */
-  isPressing(name) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        return this.keysPressed.includes(current.key);
+  setValue(name, value) {
+    this.properties[name] = value;
+    return value;
+  }
+  /**
+   * Gets the value of a property on the cell.
+   * @param {string} name - The name of the property.
+   * @returns {any} - The value of the property.
+   */
+  getValue(name) {
+    return this.properties[name];
+  }
+};
+var grid = class {
+  // Add this index signature
+  /**
+   * Initializes a new instance of the grid.
+   * @constructor
+   * @param {number} x_size - The size of the grid along the x-axis.
+   * @param {number} y_size - The size of the grid along the y-axis.
+   * @param {any} [starterProps] - The properties to initialize with.
+   */
+  constructor(x_size, y_size, starterProps) {
+    this.x_size = x_size;
+    this.y_size = y_size;
+    this.cells = [];
+    for (let a = 0; a < y_size; a++) {
+      this.cells[a] = [];
+      for (let b = 0; b < x_size; b++) {
+        this.cells[a][b] = new gridCell(b, a, starterProps);
       }
     }
-    return false;
   }
   /**
-   * Adds or updates a key binding.
-   *
-   * @param {string} name - The name of the key binding.
-   * @param {string} key - The key associated with the binding.
-   * @param {function} [fn] - The function executed when the binding is pressed
-   * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
+   * Gets an array containing all cells in the grid.
+   * @returns {gridCell[]} - An array of all cells.
    */
-  addKey(name, key, fn) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        current.key = key;
-        return;
+  getAll() {
+    const output = [];
+    for (let a = 0; a < this.y_size; a++) {
+      for (let b = 0; b < this.x_size; b++) {
+        output.push(this.cells[a][b]);
       }
     }
-    this.binds.push({ name, key, fn });
-    if (typeof fn == "function") {
-      this.tickers.push((dt) => {
-        if (this.isPressing(name))
-          fn(dt);
-      });
-    }
+    return output;
   }
   /**
-   * Adds or updates multiple key bindings.
-   *
-   * @param {KeyBinding[]} keysToAdd - An array of key binding objects.
-   * @example
-   * addKeys([
-   *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
-   *     // Add more key bindings here...
-   * ]);
+   * Returns an array of all grid cells.
+   * @returns {gridCell[]} An array of all grid cells.
+   * @deprecated Use getAll() instead.
    */
-  addKeys(keysToAdd) {
-    for (const keyBinding of keysToAdd) {
-      this.addKey(keyBinding.name, keyBinding.key, keyBinding.fn);
+  all() {
+    return this.getAll();
+  }
+  /**
+   * Gets an array containing all cells in the grid.
+   * @param {grid} grid - The grid to get the cells from.
+   * @returns {gridCell[]} - An array of all cells.
+   */
+  static getAll(grid2) {
+    return grid2.getAll();
+  }
+  /**
+   * Gets an array containing all cells that have the same x coordinate.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} x - The x coordinate to check.
+   */
+  getAllX(x) {
+    const output = [];
+    for (let i = 0; i < this.y_size; i++) {
+      output.push(this.cells[i][x]);
     }
+    return output;
+  }
+  /**
+   * Returns an array of all grid cells with the same x coordinate.
+   * @returns {gridCell[]} An array of all grid cells with the same x coordinate.
+   * @deprecated Use getAllX() instead.
+   */
+  allX(x) {
+    return this.getAllX(x);
+  }
+  /**
+   * Gets an array containing all cells that have the same x coordinate.
+   * @param {grid} grid - The grid to get the cells from.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} x - The x coordinate to check.
+   */
+  static getAllX(grid2, x) {
+    return grid2.getAllX(x);
+  }
+  /**
+   * Gets an array containing all cells that have the same y coordinate.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} y - The y coordinate to check.
+   */
+  getAllY(y) {
+    const output = [];
+    for (let i = 0; this.x_size; i++) {
+      output.push(this.cells[y][i]);
+    }
+    return output;
+  }
+  /**
+   * Returns an array of all grid cells with the same y coordinate.
+   * @returns {gridCell[]} An array of all grid cells with the same y coordinate.
+   * @deprecated Use allY() instead.
+   */
+  allY(y) {
+    return this.getAllY(y);
+  }
+  /**
+   * Gets an array containing all cells that have the same y coordinate.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {grid} grid - The grid to get the cells from.
+   * @param {number} y - The y coordinate to check.
+   */
+  static getAllY(grid2, y) {
+    return grid2.getAllY(y);
+  }
+  /**
+   * Gets a cell.
+   * @returns {gridCell} - The cell.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  getCell(x, y) {
+    return this.cells[y][x];
+  }
+  /**
+   * Gets a cell.
+   * @returns {gridCell} - The cell.
+   * @param {grid} grid - The grid to get the cell from.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  static getCell(grid2, x, y) {
+    return grid2.getCell(x, y);
+  }
+  /**
+  * Sets the value of a cell in the grid.
+  * @param {number} x The x-coordinate of the cell.
+  * @param {number} y The y-coordinate of the cell.
+  * @param {gridCell} value The value to set for the cell.
+  */
+  setCell(x, y, value) {
+    this.cells[y][x] = value;
+  }
+  /**
+   * Gets a cell.
+   * @returns {gridCell} - The cell.
+   * @param {grid} grid - The grid to get the cell from.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   * @param {gridCell} value The value to set for the cell.
+   */
+  static setCell(grid2, x, y, value) {
+    return grid2.setCell(x, y, value);
+  }
+  /**
+   * Gets an array containing all cells adjacent to a specific cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  getAdjacent(x, y) {
+    const output = [];
+    output[0] = this.getCell(x, y + 1);
+    output[1] = this.getCell(x + 1, y);
+    output[2] = this.getCell(x, y - 1);
+    output[3] = this.getCell(x - 1, y + 1);
+    return output;
+  }
+  /**
+   * Gets an array containing all cells adjacent to a specific cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {grid} grid - The grid to get the cells from.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  static getAdjacent(grid2, x, y) {
+    return grid2.getAdjacent(x, y);
+  }
+  /**
+   * Gets an array containing all cells diagonal from a specific cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  getDiagonal(x, y) {
+    const output = [];
+    output[0] = this.getCell(x - 1, y + 1);
+    output[1] = this.getCell(x + 1, y + 1);
+    output[2] = this.getCell(x + 1, y - 1);
+    output[3] = this.getCell(x - 1, y - 1);
+    return output;
+  }
+  /**
+   * Gets an array containing all cells diagonal from a specific cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {grid} grid - The grid to get the cells from.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  static getDiagonal(grid2, x, y) {
+    return grid2.getDiagonal(x, y);
+  }
+  /**
+   * Gets an array containing all cells that surround a cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  getEncircling(x, y) {
+    return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
+  }
+  /**
+   * Gets an array containing all cells that surround a cell.
+   * @returns {gridCell[]} - An array of all cells.
+   * @param {grid} grid - The grid to get the cells from.
+   * @param {number} x - The x coordinate to check.
+   * @param {number} y - The y coordinate to check.
+   */
+  static getEncircling(grid2, x, y) {
+    return grid2.getEncircling(x, y);
+  }
+  /**
+   * Calculates the distance between two points on the grid.
+   * @param {number} x1 - The x-coordinate of the first point.
+   * @param {number} y1 - The y-coordinate of the first point.
+   * @param {number} x2 - The x-coordinate of the second point.
+   * @param {number} y2 - The y-coordinate of the second point.
+   * @returns {number} The distance between the two points.
+   */
+  static getDistance(x1, y1, x2, y2) {
+    return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
   }
 };
 
-// src/game/managers/eventManager.ts
-var eventManagerDefaultConfig = {
-  autoAddInterval: true,
-  fps: 30
-};
-var eventManager = class _eventManager {
-  static {
-    this.configManager = new configManager(eventManagerDefaultConfig);
-  }
-  constructor(config) {
-    this.config = _eventManager.configManager.parse(config);
-    this.events = [];
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        this.tickerFunction();
-      }, 1e3 / fps);
-    }
-  }
-  tickerFunction() {
-    const currentTime = E(Date.now());
-    for (let i = 0; i < this.events.length; i++) {
-      const event = this.events[i];
-      if (event.type === "interval") {
-        if (currentTime.sub(event.intervalLast).gte(event.delay)) {
-          event.callbackFn();
-          event.intervalLast = currentTime;
-        }
-      } else if (event.type === "timeout") {
-        if (currentTime.sub(event.timeCreated).gte(event.delay)) {
-          event.callbackFn();
-          this.events.splice(i, 1);
-          i--;
-        }
+// src/classes/utility/obb.ts
+var obb = class {
+  constructor(array, methods) {
+    for (const x of array) {
+      if (!x["name"] || !x["value"]) {
+        break;
       }
-    }
-  }
-  /**
-   * Adds a new event to the event system.
-   *
-   * @param name - The name of the event.
-   * @param type - The type of the event, either "interval" or "timeout".
-   * @param delay - The delay in milliseconds before the event triggers.
-   * @param callbackFn - The callback function to execute when the event triggers.
-   *
-   * @example
-   * const myEventManger = new eventManager();
-   * // Add an interval event that executes every 2 seconds.
-   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
-   *    console.log("Interval event executed.");
-   * });
-   *
-   * // Add a timeout event that executes after 5 seconds.
-   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
-   *   console.log("Timeout event executed.");
-   * });
-   */
-  addEvent(name, type, delay, callbackFn) {
-    this.events.push((() => {
-      switch (type) {
-        case "interval":
-          {
-            const event = {
-              name,
-              type,
-              delay: E(delay),
-              callbackFn,
-              timeCreated: E(Date.now()),
-              intervalLast: E(Date.now())
-            };
-            return event;
+      this[x["name"]] = x["value"];
+      if (methods != void 0) {
+        for (const y of methods) {
+          if (!y["name"] || !y["value"]) {
+            break;
           }
-          ;
-          break;
-        case "timeout":
-        default: {
-          const event = {
-            name,
-            type,
-            delay: E(delay),
-            callbackFn,
-            timeCreated: E(Date.now())
-          };
-          return event;
+          if (!this[x["name"]][y["name"]])
+            this[x["name"]][y["name"]] = y["value"];
         }
       }
-    })());
+      delete this[x["name"]]["name"];
+      delete this[x["name"]]["value"];
+    }
   }
 };
 
-// src/game/managers/dataManager.ts
-var import_lz_string = __toESM(require_lz_string());
-
-// node_modules/reflect-metadata/Reflect.js
-var Reflect2;
-(function(Reflect3) {
-  (function(factory) {
-    var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : Function("return this;")();
-    var exporter = makeExporter(Reflect3);
-    if (typeof root.Reflect === "undefined") {
-      root.Reflect = Reflect3;
+// src/classes/utility/eArray.ts
+var EArray = class extends Array {
+  constructor(value) {
+    super(value);
+  }
+  random(qty) {
+    let output = "";
+    if (qty > 0) {
+      for (let i = 0; i < qty; i++) {
+        output += this[eMath.randomNumber(0, this.length)];
+      }
     } else {
-      exporter = makeExporter(root.Reflect, exporter);
+      output = this[eMath.randomNumber(0, this.length)];
     }
-    factory(exporter);
-    function makeExporter(target, previous) {
-      return function(key, value) {
-        if (typeof target[key] !== "function") {
-          Object.defineProperty(target, key, { configurable: true, writable: true, value });
-        }
-        if (previous)
-          previous(key, value);
-      };
-    }
-  })(function(exporter) {
-    var hasOwn = Object.prototype.hasOwnProperty;
-    var supportsSymbol = typeof Symbol === "function";
-    var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
-    var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
-    var supportsCreate = typeof Object.create === "function";
-    var supportsProto = { __proto__: [] } instanceof Array;
-    var downLevel = !supportsCreate && !supportsProto;
-    var HashMap = {
-      // create an object in dictionary mode (a.k.a. "slow" mode in v8)
-      create: supportsCreate ? function() {
-        return MakeDictionary(/* @__PURE__ */ Object.create(null));
-      } : supportsProto ? function() {
-        return MakeDictionary({ __proto__: null });
-      } : function() {
-        return MakeDictionary({});
-      },
-      has: downLevel ? function(map, key) {
-        return hasOwn.call(map, key);
-      } : function(map, key) {
-        return key in map;
-      },
-      get: downLevel ? function(map, key) {
-        return hasOwn.call(map, key) ? map[key] : void 0;
-      } : function(map, key) {
-        return map[key];
-      }
-    };
-    var functionPrototype = Object.getPrototypeOf(Function);
-    var usePolyfill = typeof process === "object" && process.env && process.env["REFLECT_METADATA_USE_MAP_POLYFILL"] === "true";
-    var _Map = !usePolyfill && typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
-    var _Set = !usePolyfill && typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
-    var _WeakMap = !usePolyfill && typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
-    var Metadata = new _WeakMap();
-    function decorate(decorators, target, propertyKey, attributes) {
-      if (!IsUndefined(propertyKey)) {
-        if (!IsArray(decorators))
-          throw new TypeError();
-        if (!IsObject(target))
-          throw new TypeError();
-        if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
-          throw new TypeError();
-        if (IsNull(attributes))
-          attributes = void 0;
-        propertyKey = ToPropertyKey(propertyKey);
-        return DecorateProperty(decorators, target, propertyKey, attributes);
-      } else {
-        if (!IsArray(decorators))
-          throw new TypeError();
-        if (!IsConstructor(target))
-          throw new TypeError();
-        return DecorateConstructor(decorators, target);
-      }
-    }
-    exporter("decorate", decorate);
-    function metadata(metadataKey, metadataValue) {
-      function decorator(target, propertyKey) {
-        if (!IsObject(target))
-          throw new TypeError();
-        if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
-          throw new TypeError();
-        OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
-      }
-      return decorator;
-    }
-    exporter("metadata", metadata);
-    function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
-    }
-    exporter("defineMetadata", defineMetadata);
-    function hasMetadata(metadataKey, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryHasMetadata(metadataKey, target, propertyKey);
-    }
-    exporter("hasMetadata", hasMetadata);
-    function hasOwnMetadata(metadataKey, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
-    }
-    exporter("hasOwnMetadata", hasOwnMetadata);
-    function getMetadata(metadataKey, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryGetMetadata(metadataKey, target, propertyKey);
-    }
-    exporter("getMetadata", getMetadata);
-    function getOwnMetadata(metadataKey, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
-    }
-    exporter("getOwnMetadata", getOwnMetadata);
-    function getMetadataKeys(target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryMetadataKeys(target, propertyKey);
-    }
-    exporter("getMetadataKeys", getMetadataKeys);
-    function getOwnMetadataKeys(target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      return OrdinaryOwnMetadataKeys(target, propertyKey);
-    }
-    exporter("getOwnMetadataKeys", getOwnMetadataKeys);
-    function deleteMetadata(metadataKey, target, propertyKey) {
-      if (!IsObject(target))
-        throw new TypeError();
-      if (!IsUndefined(propertyKey))
-        propertyKey = ToPropertyKey(propertyKey);
-      var metadataMap = GetOrCreateMetadataMap(
-        target,
-        propertyKey,
-        /*Create*/
-        false
-      );
-      if (IsUndefined(metadataMap))
-        return false;
-      if (!metadataMap.delete(metadataKey))
-        return false;
-      if (metadataMap.size > 0)
-        return true;
-      var targetMetadata = Metadata.get(target);
-      targetMetadata.delete(propertyKey);
-      if (targetMetadata.size > 0)
-        return true;
-      Metadata.delete(target);
-      return true;
-    }
-    exporter("deleteMetadata", deleteMetadata);
-    function DecorateConstructor(decorators, target) {
-      for (var i = decorators.length - 1; i >= 0; --i) {
-        var decorator = decorators[i];
-        var decorated = decorator(target);
-        if (!IsUndefined(decorated) && !IsNull(decorated)) {
-          if (!IsConstructor(decorated))
-            throw new TypeError();
-          target = decorated;
-        }
-      }
-      return target;
-    }
-    function DecorateProperty(decorators, target, propertyKey, descriptor) {
-      for (var i = decorators.length - 1; i >= 0; --i) {
-        var decorator = decorators[i];
-        var decorated = decorator(target, propertyKey, descriptor);
-        if (!IsUndefined(decorated) && !IsNull(decorated)) {
-          if (!IsObject(decorated))
-            throw new TypeError();
-          descriptor = decorated;
-        }
-      }
-      return descriptor;
-    }
-    function GetOrCreateMetadataMap(O, P, Create) {
-      var targetMetadata = Metadata.get(O);
-      if (IsUndefined(targetMetadata)) {
-        if (!Create)
-          return void 0;
-        targetMetadata = new _Map();
-        Metadata.set(O, targetMetadata);
-      }
-      var metadataMap = targetMetadata.get(P);
-      if (IsUndefined(metadataMap)) {
-        if (!Create)
-          return void 0;
-        metadataMap = new _Map();
-        targetMetadata.set(P, metadataMap);
-      }
-      return metadataMap;
-    }
-    function OrdinaryHasMetadata(MetadataKey, O, P) {
-      var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-      if (hasOwn2)
-        return true;
-      var parent = OrdinaryGetPrototypeOf(O);
-      if (!IsNull(parent))
-        return OrdinaryHasMetadata(MetadataKey, parent, P);
-      return false;
-    }
-    function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
-      var metadataMap = GetOrCreateMetadataMap(
-        O,
-        P,
-        /*Create*/
-        false
-      );
-      if (IsUndefined(metadataMap))
-        return false;
-      return ToBoolean(metadataMap.has(MetadataKey));
-    }
-    function OrdinaryGetMetadata(MetadataKey, O, P) {
-      var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-      if (hasOwn2)
-        return OrdinaryGetOwnMetadata(MetadataKey, O, P);
-      var parent = OrdinaryGetPrototypeOf(O);
-      if (!IsNull(parent))
-        return OrdinaryGetMetadata(MetadataKey, parent, P);
-      return void 0;
-    }
-    function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
-      var metadataMap = GetOrCreateMetadataMap(
-        O,
-        P,
-        /*Create*/
-        false
-      );
-      if (IsUndefined(metadataMap))
-        return void 0;
-      return metadataMap.get(MetadataKey);
-    }
-    function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
-      var metadataMap = GetOrCreateMetadataMap(
-        O,
-        P,
-        /*Create*/
-        true
-      );
-      metadataMap.set(MetadataKey, MetadataValue);
-    }
-    function OrdinaryMetadataKeys(O, P) {
-      var ownKeys = OrdinaryOwnMetadataKeys(O, P);
-      var parent = OrdinaryGetPrototypeOf(O);
-      if (parent === null)
-        return ownKeys;
-      var parentKeys = OrdinaryMetadataKeys(parent, P);
-      if (parentKeys.length <= 0)
-        return ownKeys;
-      if (ownKeys.length <= 0)
-        return parentKeys;
-      var set = new _Set();
-      var keys = [];
-      for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
-        var key = ownKeys_1[_i];
-        var hasKey = set.has(key);
-        if (!hasKey) {
-          set.add(key);
-          keys.push(key);
-        }
-      }
-      for (var _a = 0, parentKeys_1 = parentKeys; _a < parentKeys_1.length; _a++) {
-        var key = parentKeys_1[_a];
-        var hasKey = set.has(key);
-        if (!hasKey) {
-          set.add(key);
-          keys.push(key);
-        }
-      }
-      return keys;
-    }
-    function OrdinaryOwnMetadataKeys(O, P) {
-      var keys = [];
-      var metadataMap = GetOrCreateMetadataMap(
-        O,
-        P,
-        /*Create*/
-        false
-      );
-      if (IsUndefined(metadataMap))
-        return keys;
-      var keysObj = metadataMap.keys();
-      var iterator = GetIterator(keysObj);
-      var k = 0;
-      while (true) {
-        var next = IteratorStep(iterator);
-        if (!next) {
-          keys.length = k;
-          return keys;
-        }
-        var nextValue = IteratorValue(next);
-        try {
-          keys[k] = nextValue;
-        } catch (e) {
-          try {
-            IteratorClose(iterator);
-          } finally {
-            throw e;
-          }
-        }
-        k++;
-      }
-    }
-    function Type(x) {
-      if (x === null)
-        return 1;
-      switch (typeof x) {
-        case "undefined":
-          return 0;
-        case "boolean":
-          return 2;
-        case "string":
-          return 3;
-        case "symbol":
-          return 4;
-        case "number":
-          return 5;
-        case "object":
-          return x === null ? 1 : 6;
-        default:
-          return 6;
-      }
-    }
-    function IsUndefined(x) {
-      return x === void 0;
-    }
-    function IsNull(x) {
-      return x === null;
-    }
-    function IsSymbol(x) {
-      return typeof x === "symbol";
-    }
-    function IsObject(x) {
-      return typeof x === "object" ? x !== null : typeof x === "function";
-    }
-    function ToPrimitive(input, PreferredType) {
-      switch (Type(input)) {
-        case 0:
-          return input;
-        case 1:
-          return input;
-        case 2:
-          return input;
-        case 3:
-          return input;
-        case 4:
-          return input;
-        case 5:
-          return input;
-      }
-      var hint = PreferredType === 3 ? "string" : PreferredType === 5 ? "number" : "default";
-      var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
-      if (exoticToPrim !== void 0) {
-        var result = exoticToPrim.call(input, hint);
-        if (IsObject(result))
-          throw new TypeError();
-        return result;
-      }
-      return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
-    }
-    function OrdinaryToPrimitive(O, hint) {
-      if (hint === "string") {
-        var toString_1 = O.toString;
-        if (IsCallable(toString_1)) {
-          var result = toString_1.call(O);
-          if (!IsObject(result))
-            return result;
-        }
-        var valueOf = O.valueOf;
-        if (IsCallable(valueOf)) {
-          var result = valueOf.call(O);
-          if (!IsObject(result))
-            return result;
-        }
-      } else {
-        var valueOf = O.valueOf;
-        if (IsCallable(valueOf)) {
-          var result = valueOf.call(O);
-          if (!IsObject(result))
-            return result;
-        }
-        var toString_2 = O.toString;
-        if (IsCallable(toString_2)) {
-          var result = toString_2.call(O);
-          if (!IsObject(result))
-            return result;
-        }
-      }
-      throw new TypeError();
-    }
-    function ToBoolean(argument) {
-      return !!argument;
-    }
-    function ToString(argument) {
-      return "" + argument;
-    }
-    function ToPropertyKey(argument) {
-      var key = ToPrimitive(
-        argument,
-        3
-        /* String */
-      );
-      if (IsSymbol(key))
-        return key;
-      return ToString(key);
-    }
-    function IsArray(argument) {
-      return Array.isArray ? Array.isArray(argument) : argument instanceof Object ? argument instanceof Array : Object.prototype.toString.call(argument) === "[object Array]";
-    }
-    function IsCallable(argument) {
-      return typeof argument === "function";
-    }
-    function IsConstructor(argument) {
-      return typeof argument === "function";
-    }
-    function IsPropertyKey(argument) {
-      switch (Type(argument)) {
-        case 3:
-          return true;
-        case 4:
-          return true;
-        default:
-          return false;
-      }
-    }
-    function GetMethod(V, P) {
-      var func = V[P];
-      if (func === void 0 || func === null)
-        return void 0;
-      if (!IsCallable(func))
-        throw new TypeError();
-      return func;
-    }
-    function GetIterator(obj) {
-      var method = GetMethod(obj, iteratorSymbol);
-      if (!IsCallable(method))
-        throw new TypeError();
-      var iterator = method.call(obj);
-      if (!IsObject(iterator))
-        throw new TypeError();
-      return iterator;
-    }
-    function IteratorValue(iterResult) {
-      return iterResult.value;
-    }
-    function IteratorStep(iterator) {
-      var result = iterator.next();
-      return result.done ? false : result;
-    }
-    function IteratorClose(iterator) {
-      var f = iterator["return"];
-      if (f)
-        f.call(iterator);
-    }
-    function OrdinaryGetPrototypeOf(O) {
-      var proto = Object.getPrototypeOf(O);
-      if (typeof O !== "function" || O === functionPrototype)
-        return proto;
-      if (proto !== functionPrototype)
-        return proto;
-      var prototype = O.prototype;
-      var prototypeProto = prototype && Object.getPrototypeOf(prototype);
-      if (prototypeProto == null || prototypeProto === Object.prototype)
-        return proto;
-      var constructor = prototypeProto.constructor;
-      if (typeof constructor !== "function")
-        return proto;
-      if (constructor === O)
-        return proto;
-      return constructor;
-    }
-    function CreateMapPolyfill() {
-      var cacheSentinel = {};
-      var arraySentinel = [];
-      var MapIterator = (
-        /** @class */
-        function() {
-          function MapIterator2(keys, values, selector) {
-            this._index = 0;
-            this._keys = keys;
-            this._values = values;
-            this._selector = selector;
-          }
-          MapIterator2.prototype["@@iterator"] = function() {
-            return this;
-          };
-          MapIterator2.prototype[iteratorSymbol] = function() {
-            return this;
-          };
-          MapIterator2.prototype.next = function() {
-            var index = this._index;
-            if (index >= 0 && index < this._keys.length) {
-              var result = this._selector(this._keys[index], this._values[index]);
-              if (index + 1 >= this._keys.length) {
-                this._index = -1;
-                this._keys = arraySentinel;
-                this._values = arraySentinel;
-              } else {
-                this._index++;
-              }
-              return { value: result, done: false };
-            }
-            return { value: void 0, done: true };
-          };
-          MapIterator2.prototype.throw = function(error) {
-            if (this._index >= 0) {
-              this._index = -1;
-              this._keys = arraySentinel;
-              this._values = arraySentinel;
-            }
-            throw error;
-          };
-          MapIterator2.prototype.return = function(value) {
-            if (this._index >= 0) {
-              this._index = -1;
-              this._keys = arraySentinel;
-              this._values = arraySentinel;
-            }
-            return { value, done: true };
-          };
-          return MapIterator2;
-        }()
-      );
-      return (
-        /** @class */
-        function() {
-          function Map2() {
-            this._keys = [];
-            this._values = [];
-            this._cacheKey = cacheSentinel;
-            this._cacheIndex = -2;
-          }
-          Object.defineProperty(Map2.prototype, "size", {
-            get: function() {
-              return this._keys.length;
-            },
-            enumerable: true,
-            configurable: true
-          });
-          Map2.prototype.has = function(key) {
-            return this._find(
-              key,
-              /*insert*/
-              false
-            ) >= 0;
-          };
-          Map2.prototype.get = function(key) {
-            var index = this._find(
-              key,
-              /*insert*/
-              false
-            );
-            return index >= 0 ? this._values[index] : void 0;
-          };
-          Map2.prototype.set = function(key, value) {
-            var index = this._find(
-              key,
-              /*insert*/
-              true
-            );
-            this._values[index] = value;
-            return this;
-          };
-          Map2.prototype.delete = function(key) {
-            var index = this._find(
-              key,
-              /*insert*/
-              false
-            );
-            if (index >= 0) {
-              var size = this._keys.length;
-              for (var i = index + 1; i < size; i++) {
-                this._keys[i - 1] = this._keys[i];
-                this._values[i - 1] = this._values[i];
-              }
-              this._keys.length--;
-              this._values.length--;
-              if (key === this._cacheKey) {
-                this._cacheKey = cacheSentinel;
-                this._cacheIndex = -2;
-              }
-              return true;
-            }
-            return false;
-          };
-          Map2.prototype.clear = function() {
-            this._keys.length = 0;
-            this._values.length = 0;
-            this._cacheKey = cacheSentinel;
-            this._cacheIndex = -2;
-          };
-          Map2.prototype.keys = function() {
-            return new MapIterator(this._keys, this._values, getKey);
-          };
-          Map2.prototype.values = function() {
-            return new MapIterator(this._keys, this._values, getValue);
-          };
-          Map2.prototype.entries = function() {
-            return new MapIterator(this._keys, this._values, getEntry);
-          };
-          Map2.prototype["@@iterator"] = function() {
-            return this.entries();
-          };
-          Map2.prototype[iteratorSymbol] = function() {
-            return this.entries();
-          };
-          Map2.prototype._find = function(key, insert) {
-            if (this._cacheKey !== key) {
-              this._cacheIndex = this._keys.indexOf(this._cacheKey = key);
-            }
-            if (this._cacheIndex < 0 && insert) {
-              this._cacheIndex = this._keys.length;
-              this._keys.push(key);
-              this._values.push(void 0);
-            }
-            return this._cacheIndex;
-          };
-          return Map2;
-        }()
-      );
-      function getKey(key, _) {
-        return key;
-      }
-      function getValue(_, value) {
-        return value;
-      }
-      function getEntry(key, value) {
-        return [key, value];
-      }
-    }
-    function CreateSetPolyfill() {
-      return (
-        /** @class */
-        function() {
-          function Set2() {
-            this._map = new _Map();
-          }
-          Object.defineProperty(Set2.prototype, "size", {
-            get: function() {
-              return this._map.size;
-            },
-            enumerable: true,
-            configurable: true
-          });
-          Set2.prototype.has = function(value) {
-            return this._map.has(value);
-          };
-          Set2.prototype.add = function(value) {
-            return this._map.set(value, value), this;
-          };
-          Set2.prototype.delete = function(value) {
-            return this._map.delete(value);
-          };
-          Set2.prototype.clear = function() {
-            this._map.clear();
-          };
-          Set2.prototype.keys = function() {
-            return this._map.keys();
-          };
-          Set2.prototype.values = function() {
-            return this._map.values();
-          };
-          Set2.prototype.entries = function() {
-            return this._map.entries();
-          };
-          Set2.prototype["@@iterator"] = function() {
-            return this.keys();
-          };
-          Set2.prototype[iteratorSymbol] = function() {
-            return this.keys();
-          };
-          return Set2;
-        }()
-      );
-    }
-    function CreateWeakMapPolyfill() {
-      var UUID_SIZE = 16;
-      var keys = HashMap.create();
-      var rootKey = CreateUniqueKey();
-      return (
-        /** @class */
-        function() {
-          function WeakMap2() {
-            this._key = CreateUniqueKey();
-          }
-          WeakMap2.prototype.has = function(target) {
-            var table = GetOrCreateWeakMapTable(
-              target,
-              /*create*/
-              false
-            );
-            return table !== void 0 ? HashMap.has(table, this._key) : false;
-          };
-          WeakMap2.prototype.get = function(target) {
-            var table = GetOrCreateWeakMapTable(
-              target,
-              /*create*/
-              false
-            );
-            return table !== void 0 ? HashMap.get(table, this._key) : void 0;
-          };
-          WeakMap2.prototype.set = function(target, value) {
-            var table = GetOrCreateWeakMapTable(
-              target,
-              /*create*/
-              true
-            );
-            table[this._key] = value;
-            return this;
-          };
-          WeakMap2.prototype.delete = function(target) {
-            var table = GetOrCreateWeakMapTable(
-              target,
-              /*create*/
-              false
-            );
-            return table !== void 0 ? delete table[this._key] : false;
-          };
-          WeakMap2.prototype.clear = function() {
-            this._key = CreateUniqueKey();
-          };
-          return WeakMap2;
-        }()
-      );
-      function CreateUniqueKey() {
-        var key;
-        do
-          key = "@@WeakMap@@" + CreateUUID();
-        while (HashMap.has(keys, key));
-        keys[key] = true;
-        return key;
-      }
-      function GetOrCreateWeakMapTable(target, create) {
-        if (!hasOwn.call(target, rootKey)) {
-          if (!create)
-            return void 0;
-          Object.defineProperty(target, rootKey, { value: HashMap.create() });
-        }
-        return target[rootKey];
-      }
-      function FillRandomBytes(buffer, size) {
-        for (var i = 0; i < size; ++i)
-          buffer[i] = Math.random() * 255 | 0;
-        return buffer;
-      }
-      function GenRandomBytes(size) {
-        if (typeof Uint8Array === "function") {
-          if (typeof crypto !== "undefined")
-            return crypto.getRandomValues(new Uint8Array(size));
-          if (typeof msCrypto !== "undefined")
-            return msCrypto.getRandomValues(new Uint8Array(size));
-          return FillRandomBytes(new Uint8Array(size), size);
-        }
-        return FillRandomBytes(new Array(size), size);
-      }
-      function CreateUUID() {
-        var data = GenRandomBytes(UUID_SIZE);
-        data[6] = data[6] & 79 | 64;
-        data[8] = data[8] & 191 | 128;
-        var result = "";
-        for (var offset = 0; offset < UUID_SIZE; ++offset) {
-          var byte = data[offset];
-          if (offset === 4 || offset === 6 || offset === 8)
-            result += "-";
-          if (byte < 16)
-            result += "0";
-          result += byte.toString(16).toLowerCase();
-        }
-        return result;
-      }
-    }
-    function MakeDictionary(obj) {
-      obj.__ = void 0;
-      delete obj.__;
-      return obj;
-    }
-  });
-})(Reflect2 || (Reflect2 = {}));
-
-// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
-var TransformationType;
-(function(TransformationType2) {
-  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
-  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
-  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
-})(TransformationType || (TransformationType = {}));
-
-// node_modules/class-transformer/esm5/MetadataStorage.js
-var MetadataStorage = (
-  /** @class */
-  function() {
-    function MetadataStorage2() {
-      this._typeMetadatas = /* @__PURE__ */ new Map();
-      this._transformMetadatas = /* @__PURE__ */ new Map();
-      this._exposeMetadatas = /* @__PURE__ */ new Map();
-      this._excludeMetadatas = /* @__PURE__ */ new Map();
-      this._ancestorsMap = /* @__PURE__ */ new Map();
-    }
-    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
-      if (!this._typeMetadatas.has(metadata.target)) {
-        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
-      if (!this._transformMetadatas.has(metadata.target)) {
-        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
-        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
-      }
-      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
-    };
-    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
-      if (!this._exposeMetadatas.has(metadata.target)) {
-        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
-      if (!this._excludeMetadatas.has(metadata.target)) {
-        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
-      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      });
-    };
-    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._excludeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._exposeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
-      return this.getExposedMetadatas(target).find(function(metadata) {
-        return metadata.options && metadata.options.name === name;
-      });
-    };
-    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._typeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.getStrategy = function(target) {
-      var excludeMap = this._excludeMetadatas.get(target);
-      var exclude = excludeMap && excludeMap.get(void 0);
-      var exposeMap = this._exposeMetadatas.get(target);
-      var expose = exposeMap && exposeMap.get(void 0);
-      if (exclude && expose || !exclude && !expose)
-        return "none";
-      return exclude ? "excludeAll" : "exposeAll";
-    };
-    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
-      return this.getMetadata(this._exposeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
-      return this.getMetadata(this._excludeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
-      return this.getExposedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
-      return this.getExcludedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.clear = function() {
-      this._typeMetadatas.clear();
-      this._exposeMetadatas.clear();
-      this._excludeMetadatas.clear();
-      this._ancestorsMap.clear();
-    };
-    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
-          return meta.propertyName !== void 0;
-        });
-      }
-      var metadataFromAncestors = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
-            return meta.propertyName !== void 0;
-          });
-          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
-        }
-      }
-      return metadataFromAncestors.concat(metadataFromTarget || []);
-    };
-    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      if (metadataFromTargetMap) {
-        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
-        if (metadataFromTarget) {
-          return metadataFromTarget;
-        }
-      }
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var ancestorResult = ancestorMetadataMap.get(propertyName);
-          if (ancestorResult) {
-            return ancestorResult;
-          }
-        }
-      }
-      return void 0;
-    };
-    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = metadataFromTargetMap.get(propertyName);
-      }
-      var metadataFromAncestorsTarget = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          if (ancestorMetadataMap.has(propertyName)) {
-            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
-          }
-        }
-      }
-      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
-    };
-    MetadataStorage2.prototype.getAncestors = function(target) {
-      if (!target)
-        return [];
-      if (!this._ancestorsMap.has(target)) {
-        var ancestors = [];
-        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
-          ancestors.push(baseClass);
-        }
-        this._ancestorsMap.set(target, ancestors);
-      }
-      return this._ancestorsMap.get(target);
-    };
-    return MetadataStorage2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/storage.js
-var defaultMetadataStorage = new MetadataStorage();
-
-// node_modules/class-transformer/esm5/utils/get-global.util.js
-function getGlobal() {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
+    return output;
   }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-}
-
-// node_modules/class-transformer/esm5/utils/is-promise.util.js
-function isPromise(p) {
-  return p !== null && typeof p === "object" && typeof p.then === "function";
-}
-
-// node_modules/class-transformer/esm5/TransformOperationExecutor.js
-var __spreadArray = function(to, from, pack) {
-  if (pack || arguments.length === 2)
-    for (var i = 0, l = from.length, ar; i < l; i++) {
-      if (ar || !(i in from)) {
-        if (!ar)
-          ar = Array.prototype.slice.call(from, 0, i);
-        ar[i] = from[i];
-      }
-    }
-  return to.concat(ar || Array.prototype.slice.call(from));
 };
-function instantiateArrayType(arrayType) {
-  var array = new arrayType();
-  if (!(array instanceof Set) && !("push" in array)) {
-    return [];
+
+// src/classes/utility/eObject.ts
+var EObject = class _EObject extends Object {
+  constructor(value) {
+    super(value);
   }
-  return array;
-}
-var TransformOperationExecutor = (
-  /** @class */
-  function() {
-    function TransformOperationExecutor2(transformationType, options) {
-      this.transformationType = transformationType;
-      this.options = options;
-      this.recursionStack = /* @__PURE__ */ new Set();
+  static getFast(object, id) {
+    object = JSON.stringify(object);
+    const length = id.toString().replace(/\\/g, "").length;
+    const searchIndex = object.search(id);
+    let output = "";
+    let offset = length + 2;
+    let unclosedQdb = 0;
+    let unclosedQsb = 0;
+    let unclosedQib = 0;
+    let unclosedB = 0;
+    let unclosedCB = 0;
+    function check() {
+      const read = object[searchIndex + offset];
+      if (object[searchIndex + offset - 1] != "\\") {
+        switch (read) {
+          case '"':
+            if (unclosedQdb == 0) {
+              unclosedQdb = 1;
+            } else {
+              unclosedQdb = 0;
+            }
+            break;
+          case "'":
+            if (unclosedQsb == 0) {
+              unclosedQsb = 1;
+            } else {
+              unclosedQsb = 0;
+            }
+            break;
+          case "`":
+            if (unclosedQib == 0) {
+              unclosedQib = 1;
+            } else {
+              unclosedQib = 0;
+            }
+            break;
+          case "[":
+            unclosedB++;
+            break;
+          case "]":
+            unclosedB--;
+            break;
+          case "{":
+            unclosedCB++;
+            break;
+          case "}":
+            unclosedCB--;
+            break;
+        }
+      }
+      output += read;
+      offset++;
     }
-    TransformOperationExecutor2.prototype.transform = function(source, value, targetType, arrayType, isMap, level) {
-      var _this = this;
-      if (level === void 0) {
-        level = 0;
-      }
-      if (Array.isArray(value) || value instanceof Set) {
-        var newValue_1 = arrayType && this.transformationType === TransformationType.PLAIN_TO_CLASS ? instantiateArrayType(arrayType) : [];
-        value.forEach(function(subValue, index) {
-          var subSource = source ? source[index] : void 0;
-          if (!_this.options.enableCircularCheck || !_this.isCircular(subValue)) {
-            var realTargetType = void 0;
-            if (typeof targetType !== "function" && targetType && targetType.options && targetType.options.discriminator && targetType.options.discriminator.property && targetType.options.discriminator.subTypes) {
-              if (_this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                realTargetType = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.name === subValue[targetType.options.discriminator.property];
-                });
-                var options = { newObject: newValue_1, object: subValue, property: void 0 };
-                var newType = targetType.typeFunction(options);
-                realTargetType === void 0 ? realTargetType = newType : realTargetType = realTargetType.value;
-                if (!targetType.options.keepDiscriminatorProperty)
-                  delete subValue[targetType.options.discriminator.property];
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-                realTargetType = subValue.constructor;
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                subValue[targetType.options.discriminator.property] = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.value === subValue.constructor;
-                }).name;
-              }
-            } else {
-              realTargetType = targetType;
-            }
-            var value_1 = _this.transform(subSource, subValue, realTargetType, void 0, subValue instanceof Map, level + 1);
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(value_1);
-            } else {
-              newValue_1.push(value_1);
-            }
-          } else if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(subValue);
-            } else {
-              newValue_1.push(subValue);
-            }
-          }
-        });
-        return newValue_1;
-      } else if (targetType === String && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return String(value);
-      } else if (targetType === Number && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Number(value);
-      } else if (targetType === Boolean && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Boolean(value);
-      } else if ((targetType === Date || value instanceof Date) && !isMap) {
-        if (value instanceof Date) {
-          return new Date(value.valueOf());
-        }
-        if (value === null || value === void 0)
-          return value;
-        return new Date(value);
-      } else if (!!getGlobal().Buffer && (targetType === Buffer || value instanceof Buffer) && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Buffer.from(value);
-      } else if (isPromise(value) && !isMap) {
-        return new Promise(function(resolve, reject) {
-          value.then(function(data) {
-            return resolve(_this.transform(void 0, data, targetType, void 0, void 0, level + 1));
-          }, reject);
-        });
-      } else if (!isMap && value !== null && typeof value === "object" && typeof value.then === "function") {
-        return value;
-      } else if (typeof value === "object" && value !== null) {
-        if (!targetType && value.constructor !== Object)
-          if (!Array.isArray(value) && value.constructor === Array) {
-          } else {
-            targetType = value.constructor;
-          }
-        if (!targetType && source)
-          targetType = source.constructor;
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.add(value);
-        }
-        var keys = this.getKeys(targetType, value, isMap);
-        var newValue = source ? source : {};
-        if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
-          if (isMap) {
-            newValue = /* @__PURE__ */ new Map();
-          } else if (targetType) {
-            newValue = new targetType();
-          } else {
-            newValue = {};
-          }
-        }
-        var _loop_1 = function(key2) {
-          if (key2 === "__proto__" || key2 === "constructor") {
-            return "continue";
-          }
-          var valueKey = key2;
-          var newValueKey = key2, propertyName = key2;
-          if (!this_1.options.ignoreDecorators && targetType) {
-            if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadataByCustomName(targetType, key2);
-              if (exposeMetadata) {
-                propertyName = exposeMetadata.propertyName;
-                newValueKey = exposeMetadata.propertyName;
-              }
-            } else if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN || this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadata(targetType, key2);
-              if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-                newValueKey = exposeMetadata.options.name;
-              }
-            }
-          }
-          var subValue = void 0;
-          if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-            subValue = value[valueKey];
-          } else {
-            if (value instanceof Map) {
-              subValue = value.get(valueKey);
-            } else if (value[valueKey] instanceof Function) {
-              subValue = value[valueKey]();
-            } else {
-              subValue = value[valueKey];
-            }
-          }
-          var type = void 0, isSubValueMap = subValue instanceof Map;
-          if (targetType && isMap) {
-            type = targetType;
-          } else if (targetType) {
-            var metadata_1 = defaultMetadataStorage.findTypeMetadata(targetType, propertyName);
-            if (metadata_1) {
-              var options = { newObject: newValue, object: value, property: propertyName };
-              var newType = metadata_1.typeFunction ? metadata_1.typeFunction(options) : metadata_1.reflectedType;
-              if (metadata_1.options && metadata_1.options.discriminator && metadata_1.options.discriminator.property && metadata_1.options.discriminator.subTypes) {
-                if (!(value[valueKey] instanceof Array)) {
-                  if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                    type = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        return subType.name === subValue[metadata_1.options.discriminator.property];
-                      }
-                    });
-                    type === void 0 ? type = newType : type = type.value;
-                    if (!metadata_1.options.keepDiscriminatorProperty) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        delete subValue[metadata_1.options.discriminator.property];
-                      }
-                    }
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-                    type = subValue.constructor;
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                    if (subValue) {
-                      subValue[metadata_1.options.discriminator.property] = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                        return subType.value === subValue.constructor;
-                      }).name;
-                    }
-                  }
-                } else {
-                  type = metadata_1;
-                }
-              } else {
-                type = newType;
-              }
-              isSubValueMap = isSubValueMap || metadata_1.reflectedType === Map;
-            } else if (this_1.options.targetMaps) {
-              this_1.options.targetMaps.filter(function(map) {
-                return map.target === targetType && !!map.properties[propertyName];
-              }).forEach(function(map) {
-                return type = map.properties[propertyName];
-              });
-            } else if (this_1.options.enableImplicitConversion && this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var reflectedType = Reflect.getMetadata("design:type", targetType.prototype, propertyName);
-              if (reflectedType) {
-                type = reflectedType;
-              }
-            }
-          }
-          var arrayType_1 = Array.isArray(value[valueKey]) ? this_1.getReflectedType(targetType, propertyName) : void 0;
-          var subSource = source ? source[valueKey] : void 0;
-          if (newValue.constructor.prototype) {
-            var descriptor = Object.getOwnPropertyDescriptor(newValue.constructor.prototype, newValueKey);
-            if ((this_1.transformationType === TransformationType.PLAIN_TO_CLASS || this_1.transformationType === TransformationType.CLASS_TO_CLASS) && // eslint-disable-next-line @typescript-eslint/unbound-method
-            (descriptor && !descriptor.set || newValue[newValueKey] instanceof Function))
-              return "continue";
-          }
-          if (!this_1.options.enableCircularCheck || !this_1.isCircular(subValue)) {
-            var transformKey = this_1.transformationType === TransformationType.PLAIN_TO_CLASS ? newValueKey : key2;
-            var finalValue = void 0;
-            if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-              finalValue = value[transformKey];
-              finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              finalValue = value[transformKey] === finalValue ? subValue : finalValue;
-              finalValue = this_1.transform(subSource, finalValue, type, arrayType_1, isSubValueMap, level + 1);
-            } else {
-              if (subValue === void 0 && this_1.options.exposeDefaultValues) {
-                finalValue = newValue[newValueKey];
-              } else {
-                finalValue = this_1.transform(subSource, subValue, type, arrayType_1, isSubValueMap, level + 1);
-                finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              }
-            }
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          } else if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-            var finalValue = subValue;
-            finalValue = this_1.applyCustomTransformations(finalValue, targetType, key2, value, this_1.transformationType);
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          }
-        };
-        var this_1 = this;
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-          var key = keys_1[_i];
-          _loop_1(key);
-        }
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.delete(value);
-        }
-        return newValue;
-      } else {
-        return value;
-      }
-    };
-    TransformOperationExecutor2.prototype.applyCustomTransformations = function(value, target, key, obj, transformationType) {
-      var _this = this;
-      var metadatas = defaultMetadataStorage.findTransformMetadatas(target, key, this.transformationType);
-      if (this.options.version !== void 0) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkVersion(metadata.options.since, metadata.options.until);
-        });
-      }
-      if (this.options.groups && this.options.groups.length) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkGroups(metadata.options.groups);
-        });
-      } else {
-        metadatas = metadatas.filter(function(metadata) {
-          return !metadata.options || !metadata.options.groups || !metadata.options.groups.length;
-        });
-      }
-      metadatas.forEach(function(metadata) {
-        value = metadata.transformFn({ value, key, obj, type: transformationType, options: _this.options });
-      });
-      return value;
-    };
-    TransformOperationExecutor2.prototype.isCircular = function(object) {
-      return this.recursionStack.has(object);
-    };
-    TransformOperationExecutor2.prototype.getReflectedType = function(target, propertyName) {
-      if (!target)
-        return void 0;
-      var meta = defaultMetadataStorage.findTypeMetadata(target, propertyName);
-      return meta ? meta.reflectedType : void 0;
-    };
-    TransformOperationExecutor2.prototype.getKeys = function(target, object, isMap) {
-      var _this = this;
-      var strategy = defaultMetadataStorage.getStrategy(target);
-      if (strategy === "none")
-        strategy = this.options.strategy || "exposeAll";
-      var keys = [];
-      if (strategy === "exposeAll" || isMap) {
-        if (object instanceof Map) {
-          keys = Array.from(object.keys());
+    check();
+    while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
+      check();
+    }
+    return JSON.parse(output);
+  }
+  getFast(id) {
+    return _EObject.getFast(this, id);
+  }
+  static get(object, id) {
+    try {
+      for (let i = 0; i < Object.keys(object).length; i++) {
+        if (Object.keys(object)[i] == "sign")
+          break;
+        if (Object.keys(object)[i] == id) {
+          return object[Object.keys(object)[i]];
+        } else if (typeof object[Object.keys(object)[i]] == "object") {
+          const output = _EObject.get(object[Object.keys(object)[i]], id);
+          if (output != null)
+            return output;
         } else {
-          keys = Object.keys(object);
+          continue;
         }
       }
-      if (isMap) {
-        return keys;
-      }
-      if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
-      }
-      if (!this.options.ignoreDecorators && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        if (this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-          exposedProperties = exposedProperties.map(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-              return exposeMetadata.options.name;
-            }
-            return key;
-          });
-        }
-        if (this.options.excludeExtraneousValues) {
-          keys = exposedProperties;
-        } else {
-          keys = keys.concat(exposedProperties);
-        }
-        var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        if (excludedProperties_1.length > 0) {
-          keys = keys.filter(function(key) {
-            return !excludedProperties_1.includes(key);
-          });
-        }
-        if (this.options.version !== void 0) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkVersion(exposeMetadata.options.since, exposeMetadata.options.until);
-          });
-        }
-        if (this.options.groups && this.options.groups.length) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkGroups(exposeMetadata.options.groups);
-          });
-        } else {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
-          });
-        }
-      }
-      if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
-        keys = keys.filter(function(key) {
-          return _this.options.excludePrefixes.every(function(prefix) {
-            return key.substr(0, prefix.length) !== prefix;
-          });
-        });
-      }
-      keys = keys.filter(function(key, index, self2) {
-        return self2.indexOf(key) === index;
-      });
-      return keys;
-    };
-    TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
-      var decision = true;
-      if (decision && since)
-        decision = this.options.version >= since;
-      if (decision && until)
-        decision = this.options.version < until;
-      return decision;
-    };
-    TransformOperationExecutor2.prototype.checkGroups = function(groups) {
-      if (!groups)
-        return true;
-      return this.options.groups.some(function(optionGroup) {
-        return groups.includes(optionGroup);
-      });
-    };
-    return TransformOperationExecutor2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/constants/default-options.constant.js
-var defaultOptions = {
-  enableCircularCheck: false,
-  enableImplicitConversion: false,
-  excludeExtraneousValues: false,
-  excludePrefixes: void 0,
-  exposeDefaultValues: false,
-  exposeUnsetFields: true,
-  groups: void 0,
-  ignoreDecorators: false,
-  strategy: void 0,
-  targetMaps: void 0,
-  version: void 0
+      return null;
+    } catch {
+      return null;
+    }
+  }
+  get(id) {
+    return _EObject.get(this, id);
+  }
 };
 
-// node_modules/class-transformer/esm5/ClassTransformer.js
-var __assign = function() {
-  __assign = Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-      s = arguments[i];
-      for (var p in s)
-        if (Object.prototype.hasOwnProperty.call(s, p))
-          t[p] = s[p];
+// src/hookMain.ts
+var eMathHook = {
+  ...eMath,
+  ...{
+    /**
+     * @deprecated Use `import { E } from "emath.js"` instead.
+     */
+    E,
+    classes: {
+      /**
+       * @deprecated Use `import { boost } from "emath.js"` instead.
+       */
+      boost,
+      /**
+       * @deprecated Use `import { currency } from "emath.js"` instead.
+       */
+      currency,
+      /**
+       * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
+       */
+      currencyStatic,
+      /**
+       * @deprecated Use `import { attribute } from "emath.js"` instead.
+       */
+      attribute,
+      /**
+       * @deprecated Use `import { grid } from "emath.js"` instead.
+       */
+      grid,
+      /**
+       * @deprecated Use `import { gridCell } from "emath.js"` instead.
+       */
+      gridCell,
+      /**
+       * @deprecated Use `import { EString } from "emath.js"` instead.
+       */
+      EString,
+      /**
+       * @deprecated Use `import { EArray } from "emath.js"` instead.
+       */
+      EArray,
+      /**
+       * @deprecated Use `import { EObject } from "emath.js"` instead.
+       */
+      EObject,
+      /**
+       * @deprecated Use `import { obb } from "emath.js"` instead.
+       */
+      obb
     }
-    return t;
-  };
-  return __assign.apply(this, arguments);
+    // /**
+    //  * @deprecated Use `import { game } from "emath.js"` instead.
+    //  */
+    // game,
+    // managers: {
+    //     /**
+    //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
+    //      */
+    //     keyManager,
+    //     /**
+    //      * @deprecated Use `import { eventManager } from "emath.js"` instead.
+    //      */
+    //     eventManager,
+    //     /**
+    //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
+    //      */
+    //     dataManager,
+    // },
+  }
 };
-var ClassTransformer = (
-  /** @class */
-  function() {
-    function ClassTransformer2() {
-    }
-    ClassTransformer2.prototype.instanceToPlain = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToPlainFromExist = function(object, plainObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(plainObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToInstance = function(cls, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, plain, cls, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToClassFromExist = function(clsObject, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(clsObject, plain, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.instanceToInstance = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToClassFromExist = function(object, fromObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(fromObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.serialize = function(object, options) {
-      return JSON.stringify(this.instanceToPlain(object, options));
-    };
-    ClassTransformer2.prototype.deserialize = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    ClassTransformer2.prototype.deserializeArray = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    return ClassTransformer2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/index.js
-var classTransformer = new ClassTransformer();
-function instanceToPlain(object, options) {
-  return classTransformer.instanceToPlain(object, options);
-}
-function plainToInstance(cls, plain, options) {
-  return classTransformer.plainToInstance(cls, plain, options);
+function hookMain() {
+  if (typeof process !== "object" && typeof window !== "undefined") {
+    window["eMath"] = eMathHook;
+  }
 }
 
-// src/game/managers/dataManager.ts
-var dataManager = class {
-  /**
-   * Creates a new instance of the game class.
-   * @constructor
-   * @param gameRef - A function that returns the game instance.
-   */
-  constructor(gameRef) {
-    if (typeof window === "undefined") {
-      throw new Error("dataManager cannot be run on serverside");
-    }
-    this.gameRef = gameRef;
-    this.normalData = gameRef.data;
-    this.gameData = gameRef.data;
-  }
-  compileData(data = this.gameData) {
-    return import_lz_string.default.compressToBase64(JSON.stringify(instanceToPlain(data)));
-  }
-  decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
-    return data ? plainToInstance(gameData, JSON.parse(import_lz_string.default.decompressFromBase64(data))) : null;
-  }
-  /**
-   * Resets the game data to its initial state and saves it.
-   * @param reload - Whether to reload the page after resetting the data. Defaults to false.
-   */
-  resetData(reload = false) {
-    this.gameRef.data = this.normalData;
-    this.saveData();
-    if (reload)
-      window.location.reload();
-  }
-  /**
-   * Saves the game data to local storage.
-   */
-  saveData() {
-    localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
-  }
-  /**
-   * Compiles the game data and prompts the user to download it as a text file.
-   */
-  exportData() {
-    const content = this.compileData();
-    if (prompt("Download save data?:", content) != null) {
-      const blob = new Blob([content], { type: "text/plain" });
-      const downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = `${this.gameRef.config.name.id}-data.txt`;
-      downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-  }
-  /**
-   * Loads game data and processes it.
-   */
-  loadData() {
-    if (!this.gameData) {
-      return;
-    }
-    function processObject(obj) {
-      for (const prop in obj) {
-        if (typeof obj[prop] === "string") {
-          try {
-            const processedValue = E(obj[prop]);
-            obj[prop] = processedValue;
-          } catch (error) {
-            console.error(`Error processing value: ${obj[prop]}`);
-          }
-        } else if (typeof obj[prop] === "object" && obj[prop] !== null) {
-          processObject(obj[prop]);
+// src/index.ts
+hookMain();
+if (typeof module.exports == "object" && typeof exports == "object") {
+    var __cp = (to, from, except, desc) => {
+      if ((from && typeof from === "object") || typeof from === "function") {
+        for (let key of Object.getOwnPropertyNames(from)) {
+          if (!Object.prototype.hasOwnProperty.call(to, key) && key !== except)
+          Object.defineProperty(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = Object.getOwnPropertyDescriptor(from, key)) || desc.enumerable,
+          });
         }
       }
-      return obj;
-    }
-    let loadedData = this.decompileData();
-    console.log(loadedData);
-    console.log(loadedData = processObject(loadedData));
-    function deepMerge(source, target) {
-      for (const key in source) {
-        if (source.hasOwnProperty(key)) {
-          if (!target.hasOwnProperty(key)) {
-            target[key] = source[key];
-          } else if (typeof source[key] === "object" && typeof target[key] === "object") {
-            deepMerge(source[key], target[key]);
-          }
-        }
-      }
-    }
-    console.log(deepMerge(this.normalData, loadedData));
+      return to;
+    };
+    module.exports = __cp(module.exports, exports);
   }
-};
-
-// src/game/gameCurrency.ts
-var gameCurrency = class {
-  /**
-   * Creates a new instance of the game class.
-   * @param currencyPointer A function that returns the current currency value.
-   * @param static A function that returns the static data for the game.
-   */
-  constructor(currencyPointer, staticPointer, gamePointer) {
-    this.data = currencyPointer;
-    this.static = staticPointer;
-    this.game = gamePointer;
-  }
-  // get value (): E {
-  //     return this.data.value;
-  // }
-  /**
-   * Adds an attribute with the given name and value to the game's static pointer.
-   * @param name - The name of the attribute to add.
-   * @param value - The value of the attribute to add.
-   * @returns The newly created attribute.
-   */
-  // public addAttribute (name: string, value: E): attribute {
-  //     return this.static.attributes[name] = new attribute(value);
-  // }
-};
-
-// src/game/resetLayer.ts
-var gameReset = class {
-  constructor(currenciesToReset, extender) {
-    this.currenciesToReset = currenciesToReset;
-    this.extender = extender;
-  }
-  reset() {
-    this.currenciesToReset.forEach((currency2) => {
-      currency2.static.reset();
-    });
-    if (this.extender) {
-      this.extender.reset();
-    }
-  }
-};
-
-// src/game/game.ts
-var gameDefaultConfig = {
-  mode: "production",
-  name: {
-    title: "",
-    id: ""
-  },
-  settings: {
-    framerate: 30
-  }
-};
-var gameStatic = class {
-  constructor(staticData) {
-    this.staticData = staticData ? staticData : {};
-  }
-  set(name, value) {
-    this.staticData[name] = value;
-  }
-  get(name) {
-    return this.staticData[name];
-  }
-};
-var gameData = class {
-  constructor(data) {
-    this.data = data ? data : {};
-  }
-  set(name, value) {
-    this.data[name] = value;
-  }
-  get(name) {
-    return this.data[name];
-  }
-};
-var game2 = class _game {
-  static {
-    this.configManager = new configManager(gameDefaultConfig);
-  }
-  /**
-   * Creates a new instance of the game class.
-   * @constructor
-   * @param config - The configuration object for the game.
-   */
-  constructor(config) {
-    this.config = _game.configManager.parse(config);
-    this.data = new gameData();
-    this.static = new gameStatic();
-    this.dataManager = new dataManager(this);
-    this.keyManager = new keyManager({
-      autoAddInterval: true,
-      fps: this.config.settings.framerate
-    });
-    this.eventManager = new eventManager({
-      autoAddInterval: true,
-      fps: this.config.settings.framerate
-    });
-    this.tickers = [];
-    this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
-  }
-  /**
-   * Adds a new currency section to the game.
-   * @param name - The name of the currency section.
-   * @returns A new instance of the gameCurrency class.
-   */
-  addCurrency(name) {
-    this.data.set(name, {
-      currency: new currency()
-    });
-    this.static.set(name, {
-      currency: new currencyStatic(() => this.data.get(name)),
-      attributes: {}
-    });
-    const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
-    return classInstance;
-  }
-  /**
-   * Adds a new currency group to the game.
-   * @param name - The name of the currency group.
-   * @param currencies - An array of currency names to add to the group.
-   */
-  addCurrencyGroup(name, currencies) {
-    this.data.set(name, {});
-    this.static.set(name, {
-      attributes: {}
-    });
-    currencies.forEach((currencyName) => {
-      this.data.get(name)[currencyName] = new currency();
-      this.static.get(name)[currencyName] = new currencyStatic(() => this.data.get(name)[currencyName]);
-    });
-  }
-  /**
-   * Creates a new game reset object with the specified currencies to reset.
-   * @param currenciesToReset - The currencies to reset.
-   * @returns The newly created game reset object.
-   */
-  addReset(currenciesToReset, extender) {
-    const reset = new gameReset(currenciesToReset, extender);
-    return reset;
-  }
-};
-
-// src/game/hookGame.ts
-function hookGame() {
-  if (!(typeof process !== "object" && typeof window !== "undefined")) {
-    return;
-  }
-  if (!window["eMath"]) {
-    console.error("eMath.js/game: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");
-  }
-  window["eMath"].game = game2;
-  window["eMath"].managers = {
-    /**
-     * @deprecated Use `import { keyManager } from "emath.js/game"` instead.
-     */
-    keyManager,
-    /**
-     * @deprecated Use `import { eventManager } from "emath.js/game"` instead.
-     */
-    eventManager,
-    /**
-     * @deprecated Use `import { dataManager } from "emath.js/game"` instead.
-     */
-    dataManager
-  };
-}
-
-// src/game/index.ts
-hookGame();
-export {
-  dataManager,
-  eventManager,
-  game2 as game,
-  gameCurrency,
-  gameData,
-  gameDefaultConfig,
-  gameStatic,
-  keyManager
-};
-/*! Bundled license information:
-
-reflect-metadata/Reflect.js:
-  (*! *****************************************************************************
-  Copyright (C) Microsoft. All rights reserved.
-  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-  this file except in compliance with the License. You may obtain a copy of the
-  License at http://www.apache.org/licenses/LICENSE-2.0
-  
-  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-  MERCHANTABLITY OR NON-INFRINGEMENT.
-  
-  See the Apache Version 2.0 License for specific language governing permissions
-  and limitations under the License.
-  ***************************************************************************** *)
-*/
+  return module.exports;
+  }))

@@ -39,7 +39,7 @@ import { eMath, currency, /* import more here */ } from "emath.js";
 #### Development Build
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.js"></script>
 ```
 
 #### Production/Minified Build

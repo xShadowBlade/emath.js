@@ -1,14 +1,86 @@
 const esbuild = require("esbuild");
-const umdWrapper = require("esbuild-plugin-umd-wrapper");
+const { umdWrapper } = require("./umdPlugin.js");
+/*
+"build-main": "run-p build-main:bundle build-main:minify build-main:esm build-main:cjs",
+"build-main:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/main/eMath.bundle.js",
+"build-main:minify": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/main/eMath.min.js",
+"build-main:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/main/eMath.mjs",
+"build-main:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/main/eMath.cjs",
 
-esbuild
-    .build({
-        entryPoints: ["../../src/index.ts"],
-        outfile: "../../dist/eMath.umd.js",
+"build-game": "run-p build-game:bundle build-game:minify build-game:esm build-game:cjs",
+"build-game:bundle": "esbuild src/game/index.ts --bundle --format=iife --outfile=dist/game/eMath.game.bundle.js",
+"build-game:minify": "esbuild src/game/index.ts --bundle --minify --format=iife --outfile=dist/game/eMath.game.min.js",
+"build-game:esm": "esbuild src/game/index.ts --bundle --format=esm --outfile=dist/game/eMath.game.mjs",
+"build-game:cjs": "esbuild src/game/index.ts --bundle --format=cjs --outfile=dist/game/eMath.game.cjs",
+
+"build-pixiGame": "run-p build-pixiGame:bundle build-pixiGame:minify build-pixiGame:esm build-pixiGame:cjs",
+"build-pixiGame:bundle": "esbuild src/pixiGame/index.ts --bundle --format=iife --outfile=dist/pixiGame/eMath.pixiGame.bundle.js",
+"build-pixiGame:minify": "esbuild src/pixiGame/index.ts --bundle --minify --format=iife --outfile=dist/pixiGame/eMath.pixiGame.min.js",
+"build-pixiGame:esm": "esbuild src/pixiGame/index.ts --bundle --format=esm --outfile=dist/pixiGame/eMath.pixiGame.mjs",
+"build-pixiGame:cjs": "esbuild src/pixiGame/index.ts --bundle --format=cjs --outfile=dist/pixiGame/eMath.pixiGame.cjs",
+*/
+/**
+ * @type {(import('esbuild')).BuildOptions[]}
+ */
+const buildOptions = [
+    {
+        entryPoints: ["src/index.ts"],
+        outfile: "dist/main/eMath.js",
         format: "umd",
-        bundle: true,
-        // treeShaking: false,
-        plugins: [umdWrapper()],
-    })
-    .then((result) => console.log(result))
-    .catch(() => process.exit(1));
+    },
+    {
+        entryPoints: ["src/index.ts"],
+        outfile: "dist/main/eMath.min.js",
+        format: "iife",
+        minify: true,
+    },
+
+    {
+        entryPoints: ["src/game/index.ts"],
+        outfile: "dist/game/eMath.game.js",
+        format: "umd",
+    },
+    {
+        entryPoints: ["src/game/index.ts"],
+        outfile: "dist/game/eMath.game.min.js",
+        format: "iife",
+        minify: true,
+    },
+
+    {
+        entryPoints: ["src/pixiGame/index.ts"],
+        outfile: "dist/pixiGame/eMath.pixiGame.js",
+        format: "umd",
+    },
+    {
+        entryPoints: ["src/pixiGame/index.ts"],
+        outfile: "dist/pixiGame/eMath.pixiGame.min.js",
+        format: "iife",
+        minify: true,
+    },
+];
+buildOptions.forEach((option) => {
+    option.external = ["pixi.js"];
+    option.bundle = true;
+    option.plugins = [umdWrapper()];
+});
+
+// esbuild
+//     .build({
+//         entryPoints: ["src/index.ts"],
+//         outfile: "dist/eMath.umd.js",
+//         format: "umd",
+//         bundle: true,
+//         // treeShaking: false,
+//         plugins: [umdWrapper()],
+//     })
+//     .then((result) => console.log(result))
+//     .catch(() => process.exit(1));
+
+buildOptions.forEach((option) => {
+    console.log(option.outfile);
+    esbuild
+        .build(option)
+        // .then((result) => console.log(result))
+        .catch(() => process.exit(1));
+});
