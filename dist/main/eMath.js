@@ -1,14 +1,14 @@
 (function (g, f) {
     var hasExports = typeof exports === 'object';
     if (typeof define === "function" && define.amd) {
-      define(['pixi.js'], f);
+      define([], f);
     } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('pixi.js'));
+      module.exports = f();
     } else {
-      var m = hasExports ? f(require('pixi.js')) : f(g["pixi.js"]);
+      var m = hasExports ? f() : f();
       var root = hasExports ? exports : g;
       
-    }}(typeof self !== 'undefined' ? self : this, (__da) => {
+    }}(typeof self !== 'undefined' ? self : this, () => {
   var exports = {};
   var module = { exports };
 "use strict";
@@ -34,17 +34,14 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var src_exports = {};
 __export(src_exports, {
   E: () => E,
-  EArray: () => EArray,
-  EObject: () => EObject,
-  EString: () => EString,
   attribute: () => attribute,
   boost: () => boost,
+  boostObject: () => boostObject,
   currency: () => currency,
   currencyStatic: () => currencyStatic,
   eMath: () => eMath,
   grid: () => grid,
-  gridCell: () => gridCell,
-  obb: () => obb
+  gridCell: () => gridCell
 });
 module.exports = __toCommonJS(src_exports);
 
@@ -3844,61 +3841,41 @@ var eMath = {
 };
 
 // src/classes/boost.ts
-var boost = class _boost {
-  /**
-   * Normalizes the given boosts object to a boost array object.
-   * @param boosts - The boosts object to normalize.
-   * @param index - The index to use for the boost array object.
-   * @returns The normalized boost array object.
-   */
-  static normalizeBoost(boosts, index) {
-    if (!boosts.order)
-      boosts.order = 99;
-    if (!boosts.index)
-      boosts.index = index ? index : 0;
-    return boosts;
+var boostObject = class {
+  constructor(init) {
+    this.id = init.id;
+    this.name = init.name;
+    this.desc = init.desc ?? "";
+    this.value = init.value;
+    this.order = init.order ?? 99;
+    this.index = init.index ?? -1;
   }
-  /**
-   * Normalizes an array of boosts to a standardized format.
-   * @param boosts - The array of boosts to normalize.
-   * @returns An array of normalized boosts.
-   */
-  static normalizeBoostArray(boosts) {
-    const output = [];
-    boosts.forEach((boostItem, i) => {
-      output.push(this.normalizeBoost(boostItem, i));
-    });
-    return output;
-  }
+};
+var boost = class {
   /**
    * Constructs a new boost manager.
-   *
-   * @constructor
    * @param baseEffect - The base effect value to which boosts are applied.
    * @param boosts - An array of boost objects to initialize with.
    */
   constructor(baseEffect, boosts) {
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    baseEffect = baseEffect ? E(baseEffect) : 1;
-    this.baseEffect = E(baseEffect);
+    this.baseEffect = E(baseEffect ?? 1);
+    this.boostArray = [];
     if (boosts) {
-      this.boostArray = _boost.normalizeBoostArray(boosts);
-    } else {
-      this.boostArray = [];
+      boosts.forEach((boostObj) => {
+        this.boostArray.push(new boostObject(boostObj));
+      });
     }
   }
   /**
    * Gets a boost object by its ID.
-   *
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
   bGet(id) {
     let output = null;
     for (let i = 0; i < this.boostArray.length; i++) {
-      if (i === this.boostArray.length)
-        break;
-      if (id === this.boostArray[i].id) {
+      if (id === i || id == this.boostArray[i].id) {
         output = this.boostArray[i];
         output["index"] = i;
       }
@@ -3907,7 +3884,6 @@ var boost = class _boost {
   }
   /**
    * Removes a boost by its ID.
-   *
    * @param id - The ID of the boost to remove.
    */
   bRemove(id) {
@@ -3925,38 +3901,38 @@ var boost = class _boost {
       const order = arg5;
       const bCheck = this.bGet(id);
       if (!bCheck) {
-        this.boostArray.push(_boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
+        this.boostArray.push(new boostObject({ id, name, desc, value, order, index: this.boostArray.length }));
       } else {
-        this.boostArray[bCheck.index] = _boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
+        this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
       }
     } else {
       const boostObj = arg1;
       const bCheck = this.bGet(boostObj.id);
       if (!bCheck) {
-        this.boostArray.push(_boost.normalizeBoost(boostObj));
+        this.boostArray.push(new boostObject(boostObj));
       } else {
-        this.boostArray[bCheck.index] = _boost.normalizeBoost(boostObj);
+        this.boostArray[bCheck.index] = new boostObject(boostObj);
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
-   *
    * @param boostsArray - boost objects to set or update.
    */
   bSetArray(boostsArray) {
     for (let i = 0; i < boostsArray.length; i++) {
       const bCheck = this.bGet(boostsArray[i].id);
       if (!bCheck) {
-        this.boostArray = this.boostArray.concat(_boost.normalizeBoost(boostsArray[i]));
+        this.boostArray = this.boostArray.concat(new boostObject(boostsArray[i]));
       } else {
         console.log(i);
-        this.boostArray[bCheck.index] = _boost.normalizeBoost(boostsArray[i]);
+        this.boostArray[bCheck.index] = new boostObject(boostsArray[i]);
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @param boostsArray - boost objects to set or update.
    * @deprecated Use bSetArray instead.
    */
   bSetAdvanced(...boostsArray) {
@@ -3964,7 +3940,6 @@ var boost = class _boost {
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
-   *
    * @param base - The base effect value to calculate with.
    * @returns The calculated effect after applying boosts.
    */
@@ -3989,8 +3964,6 @@ var upgradeData = class {
 var currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
-   *
-   * @constructor
    */
   constructor() {
     this.value = E(0);
@@ -4000,7 +3973,6 @@ var currency = class {
 };
 var currencyStatic = class {
   /**
-   * @constructor
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param defaultVal - The default value of the currency.
    * @param defaultBoost - The default boost of the currency.
@@ -4015,6 +3987,7 @@ var currencyStatic = class {
   }
   /**
    * The current value of the currency.
+   * @returns The current value of the currency.
    */
   get value() {
     return this.pointer.value;
@@ -4046,9 +4019,8 @@ var currencyStatic = class {
   // }
   /**
    * The new currency value after applying the boost.
-   * @type {E}
-   * @param {number|E} [dt=1000] Deltatime
-   * @returns {E}
+   * @param dt Deltatime
+   * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
     this.value = this.value.add(
@@ -4059,6 +4031,7 @@ var currencyStatic = class {
   /**
    * Adds an upgrade to the upgrades array.
    * @param upgrades1 Upgrade to add
+   * @returns The upgrade object.
    */
   pointerAddUpgrade(upgrades1) {
     const upgrades2 = new upgradeData(upgrades1);
@@ -4088,7 +4061,6 @@ var currencyStatic = class {
   }
   /**
    * Creates or updates upgrades
-   *
    * @param upgrades - An array of upgrade objects.
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    */
@@ -4126,7 +4098,6 @@ var currencyStatic = class {
    * Calculates the cost and how many upgrades you can buy
    *
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   *
    * @param id - Index or ID of the upgrade
    * @param target - How many to buy
    * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
@@ -4185,14 +4156,11 @@ var currencyStatic = class {
   }
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
-   *
    * @param id - The ID or position of the upgrade to buy or upgrade.
    * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
    * @param target - The target level or quantity to reach for the upgrade.
    * This represents how many upgrades to buy or upgrade.
-   *
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   *
    */
   buyUpgrade(id, target) {
     const upgrade = this.getUpgrade(id);
@@ -4220,9 +4188,7 @@ var currencyStatic = class {
 var attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
-   *
-   * @constructor
-   * @param {ESource} initial - The inital value of the attribute.
+   * @param initial - The inital value of the attribute.
    */
   constructor(initial) {
     this.initial = E(initial);
@@ -4231,9 +4197,8 @@ var attribute = class {
   }
   /**
    * Updates the value of the attribute based on the provided effect function and initial value.
-   *
-   * @param {function} effect - The effect function to apply to the attribute.
-   * @returns {E} The updated value of the attribute after applying the effect.
+   * @param effect - The effect function to apply to the attribute.
+   * @returns The updated value of the attribute after applying the effect.
    */
   update(effect) {
     if (effect)
@@ -4247,10 +4212,9 @@ var attribute = class {
 var gridCell = class {
   /**
    * Initializes a new instance of the grid cell.
-   * @constructor
-   * @param {number} x - The x-coordinate.
-   * @param {number} y - The y-coordinate.
-   * @param {any} [props] - The properties to initialize with.
+   * @param x - The x-coordinate.
+   * @param y - The y-coordinate.
+   * @param props - The properties to initialize with.
    */
   constructor(x, y, props) {
     this.x = x;
@@ -4259,9 +4223,9 @@ var gridCell = class {
   }
   /**
    * Sets the value of a property on the cell.
-   * @param {string} name - The name of the property.
-   * @param {any} value - The value to set.
-   * @returns {any} - The set value.
+   * @param name - The name of the property.
+   * @param value - The value to set.
+   * @returns The set value.
    */
   setValue(name, value) {
     this.properties[name] = value;
@@ -4269,8 +4233,8 @@ var gridCell = class {
   }
   /**
    * Gets the value of a property on the cell.
-   * @param {string} name - The name of the property.
-   * @returns {any} - The value of the property.
+   * @param name - The name of the property.
+   * @returns - The value of the property.
    */
   getValue(name) {
     return this.properties[name];
@@ -4280,10 +4244,9 @@ var grid = class {
   // Add this index signature
   /**
    * Initializes a new instance of the grid.
-   * @constructor
-   * @param {number} x_size - The size of the grid along the x-axis.
-   * @param {number} y_size - The size of the grid along the y-axis.
-   * @param {any} [starterProps] - The properties to initialize with.
+   * @param x_size - The size of the grid along the x-axis.
+   * @param y_size - The size of the grid along the y-axis.
+   * @param starterProps - The properties to initialize with.
    */
   constructor(x_size, y_size, starterProps) {
     this.x_size = x_size;
@@ -4298,7 +4261,7 @@ var grid = class {
   }
   /**
    * Gets an array containing all cells in the grid.
-   * @returns {gridCell[]} - An array of all cells.
+   * @returns - An array of all cells.
    */
   getAll() {
     const output = [];
@@ -4311,24 +4274,16 @@ var grid = class {
   }
   /**
    * Returns an array of all grid cells.
-   * @returns {gridCell[]} An array of all grid cells.
+   * @returns An array of all grid cells.
    * @deprecated Use getAll() instead.
    */
   all() {
     return this.getAll();
   }
   /**
-   * Gets an array containing all cells in the grid.
-   * @param {grid} grid - The grid to get the cells from.
-   * @returns {gridCell[]} - An array of all cells.
-   */
-  static getAll(grid2) {
-    return grid2.getAll();
-  }
-  /**
    * Gets an array containing all cells that have the same x coordinate.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} x - The x coordinate to check.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
    */
   getAllX(x) {
     const output = [];
@@ -4339,25 +4294,17 @@ var grid = class {
   }
   /**
    * Returns an array of all grid cells with the same x coordinate.
-   * @returns {gridCell[]} An array of all grid cells with the same x coordinate.
+   * @param x The x coordinate to check.
+   * @returns An array of all grid cells with the same x coordinate.
    * @deprecated Use getAllX() instead.
    */
   allX(x) {
     return this.getAllX(x);
   }
   /**
-   * Gets an array containing all cells that have the same x coordinate.
-   * @param {grid} grid - The grid to get the cells from.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} x - The x coordinate to check.
-   */
-  static getAllX(grid2, x) {
-    return grid2.getAllX(x);
-  }
-  /**
    * Gets an array containing all cells that have the same y coordinate.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} y - The y coordinate to check.
+   * @returns - An array of all cells.
+   * @param y - The y coordinate to check.
    */
   getAllY(y) {
     const output = [];
@@ -4368,65 +4315,36 @@ var grid = class {
   }
   /**
    * Returns an array of all grid cells with the same y coordinate.
-   * @returns {gridCell[]} An array of all grid cells with the same y coordinate.
+   * @param y The y coordinate to check.
+   * @returns An array of all grid cells with the same y coordinate.
    * @deprecated Use allY() instead.
    */
   allY(y) {
     return this.getAllY(y);
   }
   /**
-   * Gets an array containing all cells that have the same y coordinate.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {grid} grid - The grid to get the cells from.
-   * @param {number} y - The y coordinate to check.
-   */
-  static getAllY(grid2, y) {
-    return grid2.getAllY(y);
-  }
-  /**
    * Gets a cell.
-   * @returns {gridCell} - The cell.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
+   * @returns - The cell.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
   getCell(x, y) {
     return this.cells[y][x];
   }
   /**
-   * Gets a cell.
-   * @returns {gridCell} - The cell.
-   * @param {grid} grid - The grid to get the cell from.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
+   * Sets the value of a cell in the grid.
+   * @param x The x-coordinate of the cell.
+   * @param y The y-coordinate of the cell.
+   * @param value The value to set for the cell.
    */
-  static getCell(grid2, x, y) {
-    return grid2.getCell(x, y);
-  }
-  /**
-  * Sets the value of a cell in the grid.
-  * @param {number} x The x-coordinate of the cell.
-  * @param {number} y The y-coordinate of the cell.
-  * @param {gridCell} value The value to set for the cell.
-  */
   setCell(x, y, value) {
     this.cells[y][x] = value;
   }
   /**
-   * Gets a cell.
-   * @returns {gridCell} - The cell.
-   * @param {grid} grid - The grid to get the cell from.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
-   * @param {gridCell} value The value to set for the cell.
-   */
-  static setCell(grid2, x, y, value) {
-    return grid2.setCell(x, y, value);
-  }
-  /**
    * Gets an array containing all cells adjacent to a specific cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
   getAdjacent(x, y) {
     const output = [];
@@ -4437,20 +4355,10 @@ var grid = class {
     return output;
   }
   /**
-   * Gets an array containing all cells adjacent to a specific cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {grid} grid - The grid to get the cells from.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
-   */
-  static getAdjacent(grid2, x, y) {
-    return grid2.getAdjacent(x, y);
-  }
-  /**
    * Gets an array containing all cells diagonal from a specific cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
   getDiagonal(x, y) {
     const output = [];
@@ -4461,41 +4369,22 @@ var grid = class {
     return output;
   }
   /**
-   * Gets an array containing all cells diagonal from a specific cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {grid} grid - The grid to get the cells from.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
-   */
-  static getDiagonal(grid2, x, y) {
-    return grid2.getDiagonal(x, y);
-  }
-  /**
    * Gets an array containing all cells that surround a cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
   getEncircling(x, y) {
     return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
   }
   /**
-   * Gets an array containing all cells that surround a cell.
-   * @returns {gridCell[]} - An array of all cells.
-   * @param {grid} grid - The grid to get the cells from.
-   * @param {number} x - The x coordinate to check.
-   * @param {number} y - The y coordinate to check.
-   */
-  static getEncircling(grid2, x, y) {
-    return grid2.getEncircling(x, y);
-  }
-  /**
    * Calculates the distance between two points on the grid.
-   * @param {number} x1 - The x-coordinate of the first point.
-   * @param {number} y1 - The y-coordinate of the first point.
-   * @param {number} x2 - The x-coordinate of the second point.
-   * @param {number} y2 - The y-coordinate of the second point.
-   * @returns {number} The distance between the two points.
+   * @deprecated Use your own distance function instead.
+   * @param x1 - The x-coordinate of the first point.
+   * @param y1 - The y-coordinate of the first point.
+   * @param x2 - The x-coordinate of the second point.
+   * @param y2 - The y-coordinate of the second point.
+   * @returns The distance between the two points.
    */
   static getDistance(x1, y1, x2, y2) {
     return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));

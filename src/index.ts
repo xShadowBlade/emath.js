@@ -1,6 +1,6 @@
 /**
- * The main eMath module.
- * @module eMath
+ * @file index.ts
+ * @description This is the entry point for the library and exports all relevant things.
  */
 import { hookMain } from "hookMain";
 // Attach eMath to the window object.
@@ -33,10 +33,10 @@ export * from "./classes/currency";
 export * from "./classes/attribute";
 export * from "./classes/grid";
 
-export * from "./classes/utility/eString";
-export * from "./classes/utility/eArray";
-export * from "./classes/utility/eObject";
-export * from "./classes/utility/obb";
+// export * from "./classes/utility/eString";
+// export * from "./classes/utility/eArray";
+// export * from "./classes/utility/eObject";
+// export * from "./classes/utility/obb";
 
 // export { E } from "./eMath";
 // export { boost } from "./classes/boost";

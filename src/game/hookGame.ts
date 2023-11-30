@@ -1,3 +1,7 @@
+/**
+ * @file Declares a function that hooks the game to the window object.
+ */
+
 import { game } from "./game";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
@@ -5,6 +9,9 @@ import { dataManager } from "./managers/dataManager";
 
 // import type { eMathHook } from "../hookMain";
 
+/**
+ * Hooks the game to the window object.
+ */
 export function hookGame () {
     // @ts-ignore
     if (!(typeof process! !== "object" && typeof window! !== "undefined")) {

@@ -1,6 +1,6 @@
-// import keys from "./keybinds";
-// import pixigame from "./PIXI/pixiSetup";
-// import dataManagement from "./save";
+/**
+ * @file Declares the main game class.
+ */
 
 import { E } from "../eMath";
 import { boost } from "../classes/boost";
@@ -121,7 +121,6 @@ class game {
 
     /**
      * Creates a new instance of the game class.
-     * @constructor
      * @param config - The configuration object for the game.
      */
     constructor (config?: gameConfigOptions) {
@@ -180,6 +179,7 @@ class game {
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.
+     * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
     public addReset (currenciesToReset: gameCurrency[], extender?: gameReset): gameReset {

@@ -50,37 +50,29 @@ const buildOptions = [
     {
         entryPoints: ["src/pixiGame/index.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.js",
+        external: ["pixi.js"],
         format: "umd",
     },
     {
         entryPoints: ["src/pixiGame/index.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.min.js",
+        external: ["pixi.js"],
         format: "iife",
         minify: true,
     },
 ];
+
 buildOptions.forEach((option) => {
-    option.external = ["pixi.js"];
+    // option.external = ["pixi.js"];
     option.bundle = true;
     option.plugins = [umdWrapper()];
-});
 
-// esbuild
-//     .build({
-//         entryPoints: ["src/index.ts"],
-//         outfile: "dist/eMath.umd.js",
-//         format: "umd",
-//         bundle: true,
-//         // treeShaking: false,
-//         plugins: [umdWrapper()],
-//     })
-//     .then((result) => console.log(result))
-//     .catch(() => process.exit(1));
+    // Build
 
-buildOptions.forEach((option) => {
-    console.log(option.outfile);
+    // console.log(option.outfile);
+    const timeInit = Date.now();
     esbuild
         .build(option)
-        // .then((result) => console.log(result))
+        .then(() => console.log(`${option.outfile}: ${Date.now() - timeInit}ms`))
         .catch(() => process.exit(1));
 });

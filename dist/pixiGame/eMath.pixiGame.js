@@ -4154,61 +4154,41 @@ Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(
 });
 
 // src/classes/boost.ts
-var boost = class _boost {
-  /**
-   * Normalizes the given boosts object to a boost array object.
-   * @param boosts - The boosts object to normalize.
-   * @param index - The index to use for the boost array object.
-   * @returns The normalized boost array object.
-   */
-  static normalizeBoost(boosts, index) {
-    if (!boosts.order)
-      boosts.order = 99;
-    if (!boosts.index)
-      boosts.index = index ? index : 0;
-    return boosts;
+var boostObject = class {
+  constructor(init) {
+    this.id = init.id;
+    this.name = init.name;
+    this.desc = init.desc ?? "";
+    this.value = init.value;
+    this.order = init.order ?? 99;
+    this.index = init.index ?? -1;
   }
-  /**
-   * Normalizes an array of boosts to a standardized format.
-   * @param boosts - The array of boosts to normalize.
-   * @returns An array of normalized boosts.
-   */
-  static normalizeBoostArray(boosts) {
-    const output = [];
-    boosts.forEach((boostItem, i) => {
-      output.push(this.normalizeBoost(boostItem, i));
-    });
-    return output;
-  }
+};
+var boost = class {
   /**
    * Constructs a new boost manager.
-   *
-   * @constructor
    * @param baseEffect - The base effect value to which boosts are applied.
    * @param boosts - An array of boost objects to initialize with.
    */
   constructor(baseEffect, boosts) {
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    baseEffect = baseEffect ? E(baseEffect) : 1;
-    this.baseEffect = E(baseEffect);
+    this.baseEffect = E(baseEffect ?? 1);
+    this.boostArray = [];
     if (boosts) {
-      this.boostArray = _boost.normalizeBoostArray(boosts);
-    } else {
-      this.boostArray = [];
+      boosts.forEach((boostObj) => {
+        this.boostArray.push(new boostObject(boostObj));
+      });
     }
   }
   /**
    * Gets a boost object by its ID.
-   *
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
   bGet(id) {
     let output = null;
     for (let i = 0; i < this.boostArray.length; i++) {
-      if (i === this.boostArray.length)
-        break;
-      if (id === this.boostArray[i].id) {
+      if (id === i || id == this.boostArray[i].id) {
         output = this.boostArray[i];
         output["index"] = i;
       }
@@ -4217,7 +4197,6 @@ var boost = class _boost {
   }
   /**
    * Removes a boost by its ID.
-   *
    * @param id - The ID of the boost to remove.
    */
   bRemove(id) {
@@ -4235,38 +4214,38 @@ var boost = class _boost {
       const order = arg5;
       const bCheck = this.bGet(id);
       if (!bCheck) {
-        this.boostArray.push(_boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length }));
+        this.boostArray.push(new boostObject({ id, name, desc, value, order, index: this.boostArray.length }));
       } else {
-        this.boostArray[bCheck.index] = _boost.normalizeBoost({ id, name, desc, value, order, index: this.boostArray.length });
+        this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
       }
     } else {
       const boostObj = arg1;
       const bCheck = this.bGet(boostObj.id);
       if (!bCheck) {
-        this.boostArray.push(_boost.normalizeBoost(boostObj));
+        this.boostArray.push(new boostObject(boostObj));
       } else {
-        this.boostArray[bCheck.index] = _boost.normalizeBoost(boostObj);
+        this.boostArray[bCheck.index] = new boostObject(boostObj);
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
-   *
    * @param boostsArray - boost objects to set or update.
    */
   bSetArray(boostsArray) {
     for (let i = 0; i < boostsArray.length; i++) {
       const bCheck = this.bGet(boostsArray[i].id);
       if (!bCheck) {
-        this.boostArray = this.boostArray.concat(_boost.normalizeBoost(boostsArray[i]));
+        this.boostArray = this.boostArray.concat(new boostObject(boostsArray[i]));
       } else {
         console.log(i);
-        this.boostArray[bCheck.index] = _boost.normalizeBoost(boostsArray[i]);
+        this.boostArray[bCheck.index] = new boostObject(boostsArray[i]);
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @param boostsArray - boost objects to set or update.
    * @deprecated Use bSetArray instead.
    */
   bSetAdvanced(...boostsArray) {
@@ -4274,7 +4253,6 @@ var boost = class _boost {
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
-   *
    * @param base - The base effect value to calculate with.
    * @returns The calculated effect after applying boosts.
    */
@@ -4299,8 +4277,6 @@ var upgradeData = class {
 var currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
-   *
-   * @constructor
    */
   constructor() {
     this.value = E(0);
@@ -4310,7 +4286,6 @@ var currency = class {
 };
 var currencyStatic = class {
   /**
-   * @constructor
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param defaultVal - The default value of the currency.
    * @param defaultBoost - The default boost of the currency.
@@ -4325,6 +4300,7 @@ var currencyStatic = class {
   }
   /**
    * The current value of the currency.
+   * @returns The current value of the currency.
    */
   get value() {
     return this.pointer.value;
@@ -4356,9 +4332,8 @@ var currencyStatic = class {
   // }
   /**
    * The new currency value after applying the boost.
-   * @type {E}
-   * @param {number|E} [dt=1000] Deltatime
-   * @returns {E}
+   * @param dt Deltatime
+   * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
     this.value = this.value.add(
@@ -4369,6 +4344,7 @@ var currencyStatic = class {
   /**
    * Adds an upgrade to the upgrades array.
    * @param upgrades1 Upgrade to add
+   * @returns The upgrade object.
    */
   pointerAddUpgrade(upgrades1) {
     const upgrades2 = new upgradeData(upgrades1);
@@ -4398,7 +4374,6 @@ var currencyStatic = class {
   }
   /**
    * Creates or updates upgrades
-   *
    * @param upgrades - An array of upgrade objects.
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    */
@@ -4436,7 +4411,6 @@ var currencyStatic = class {
    * Calculates the cost and how many upgrades you can buy
    *
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   *
    * @param id - Index or ID of the upgrade
    * @param target - How many to buy
    * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
@@ -4495,14 +4469,11 @@ var currencyStatic = class {
   }
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
-   *
    * @param id - The ID or position of the upgrade to buy or upgrade.
    * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
    * @param target - The target level or quantity to reach for the upgrade.
    * This represents how many upgrades to buy or upgrade.
-   *
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   *
    */
   buyUpgrade(id, target) {
     const upgrade = this.getUpgrade(id);
@@ -4593,9 +4564,8 @@ var keyManager = class _keyManager {
   }
   /**
    * Checks if a specific key binding is currently being pressed.
-   *
-   * @param {string} name - The name of the key binding to check.
-   * @returns {boolean} True if the key binding is being pressed, otherwise false.
+   * @param name - The name of the key binding to check.
+   * @returns True if the key binding is being pressed, otherwise false.
    */
   isPressing(name) {
     for (let i = 0; i < this.binds.length; i++) {
@@ -4608,10 +4578,9 @@ var keyManager = class _keyManager {
   }
   /**
    * Adds or updates a key binding.
-   *
-   * @param {string} name - The name of the key binding.
-   * @param {string} key - The key associated with the binding.
-   * @param {function} [fn] - The function executed when the binding is pressed
+   * @param name - The name of the key binding.
+   * @param key - The key associated with the binding.
+   * @param [fn] - The function executed when the binding is pressed
    * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
    */
   addKey(name, key, fn) {
@@ -4632,8 +4601,7 @@ var keyManager = class _keyManager {
   }
   /**
    * Adds or updates multiple key bindings.
-   *
-   * @param {KeyBinding[]} keysToAdd - An array of key binding objects.
+   * @param keysToAdd - An array of key binding objects.
    * @example
    * addKeys([
    *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
@@ -4686,12 +4654,10 @@ var eventManager = class _eventManager {
   }
   /**
    * Adds a new event to the event system.
-   *
    * @param name - The name of the event.
    * @param type - The type of the event, either "interval" or "timeout".
    * @param delay - The delay in milliseconds before the event triggers.
    * @param callbackFn - The callback function to execute when the event triggers.
-   *
    * @example
    * const myEventManger = new eventManager();
    * // Add an interval event that executes every 2 seconds.
@@ -6250,7 +6216,6 @@ function plainToInstance(cls, plain, options) {
 var dataManager = class {
   /**
    * Creates a new instance of the game class.
-   * @constructor
    * @param gameRef - A function that returns the game instance.
    */
   constructor(gameRef) {
@@ -6261,9 +6226,19 @@ var dataManager = class {
     this.normalData = gameRef.data;
     this.gameData = gameRef.data;
   }
+  /**
+   * Compresses the given game data to a base64-encoded string.
+   * @param data The game data to be compressed. Defaults to the current game data.
+   * @returns The compressed game data as a base64-encoded string.
+   */
   compileData(data = this.gameData) {
     return import_lz_string.default.compressToBase64(JSON.stringify(instanceToPlain(data)));
   }
+  /**
+   * Decompiles the data stored in localStorage and returns the corresponding object.
+   * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
+   * @returns The decompiled object, or null if the data is empty or invalid.
+   */
   decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     return data ? plainToInstance(gameData, JSON.parse(import_lz_string.default.decompressFromBase64(data))) : null;
   }
@@ -6326,8 +6301,8 @@ var dataManager = class {
     console.log(loadedData = processObject(loadedData));
     function deepMerge(source, target) {
       for (const key in source) {
-        if (source.hasOwnProperty(key)) {
-          if (!target.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          if (!Object.prototype.hasOwnProperty.call(target, key)) {
             target[key] = source[key];
           } else if (typeof source[key] === "object" && typeof target[key] === "object") {
             deepMerge(source[key], target[key]);
@@ -6343,12 +6318,13 @@ var dataManager = class {
 var gameCurrency = class {
   /**
    * Creates a new instance of the game class.
-   * @param currencyPointer A function that returns the current currency value.
-   * @param static A function that returns the static data for the game.
+   * @param currencyPointer - A function that returns the current currency value.
+   * @param staticPointer - A function that returns the static data for the game.
+   * @param gamePointer A pointer to the game instance.
    */
   constructor(currencyPointer, staticPointer, gamePointer) {
-    this.data = currencyPointer;
-    this.static = staticPointer;
+    this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+    this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
     this.game = gamePointer;
   }
   // get value (): E {
@@ -6367,10 +6343,18 @@ var gameCurrency = class {
 
 // src/game/resetLayer.ts
 var gameReset = class {
+  /**
+   * Creates a new instance of the game reset.
+   * @param currenciesToReset The currencies to reset.
+   * @param extender The extender for the game reset.
+   */
   constructor(currenciesToReset, extender) {
     this.currenciesToReset = currenciesToReset;
     this.extender = extender;
   }
+  /**
+   * Resets the game.
+   */
   reset() {
     this.currenciesToReset.forEach((currency2) => {
       currency2.static.reset();
@@ -6420,7 +6404,6 @@ var game2 = class _game {
   }
   /**
    * Creates a new instance of the game class.
-   * @constructor
    * @param config - The configuration object for the game.
    */
   constructor(config) {
@@ -6473,6 +6456,7 @@ var game2 = class _game {
   /**
    * Creates a new game reset object with the specified currencies to reset.
    * @param currenciesToReset - The currencies to reset.
+   * @param extender - An optional object to extend the game reset object with.
    * @returns The newly created game reset object.
    */
   addReset(currenciesToReset, extender) {

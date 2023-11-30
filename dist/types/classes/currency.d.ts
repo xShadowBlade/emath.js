@@ -57,12 +57,13 @@ declare class upgradeStatic implements upgrade {
     effect: (level?: E, context?: any) => any;
     protected data: upgradeData;
     /**
-     * @constructor
      * @param init - The upgrade object to initialize.
+     * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
     constructor(init: upgradeInit, dataPointer: (() => upgradeData) | upgradeData);
     /**
      * The current level of the upgrade.
+     * @returns The current level of the upgrade.
      */
     get level(): E;
     set level(n: ESource);
@@ -70,7 +71,6 @@ declare class upgradeStatic implements upgrade {
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
- * @class
  */
 declare class currency {
     /**
@@ -87,16 +87,12 @@ declare class currency {
     boost: boost;
     /**
      * Constructs a new currency object with an initial value of 0.
-     *
-     * @constructor
      */
     constructor();
 }
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- *
- * @class
  */
 declare class currencyStatic {
     /**
@@ -114,7 +110,6 @@ declare class currencyStatic {
     protected defaultVal: E;
     protected defaultBoost: E;
     /**
-     * @constructor
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param defaultVal - The default value of the currency.
      * @param defaultBoost - The default boost of the currency.
@@ -122,6 +117,7 @@ declare class currencyStatic {
     constructor(pointer?: currency | (() => currency), defaultVal?: ESource, defaultBoost?: ESource);
     /**
      * The current value of the currency.
+     * @returns The current value of the currency.
      */
     get value(): E;
     set value(value: E);
@@ -133,14 +129,14 @@ declare class currencyStatic {
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
     /**
      * The new currency value after applying the boost.
-     * @type {E}
-     * @param {number|E} [dt=1000] Deltatime
-     * @returns {E}
+     * @param dt Deltatime
+     * @returns The new currency value after applying the boost.
      */
     gain(dt?: ESource): E;
     /**
      * Adds an upgrade to the upgrades array.
      * @param upgrades1 Upgrade to add
+     * @returns The upgrade object.
      */
     private pointerAddUpgrade;
     /**
@@ -151,7 +147,6 @@ declare class currencyStatic {
     getUpgrade(id?: string | number): upgradeStatic | null;
     /**
      * Creates or updates upgrades
-     *
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
@@ -160,7 +155,6 @@ declare class currencyStatic {
      * Calculates the cost and how many upgrades you can buy
      *
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     *
      * @param id - Index or ID of the upgrade
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
@@ -169,14 +163,11 @@ declare class currencyStatic {
     calculateUpgrade(id: string | number, target: E, el?: boolean): [amount: E, cost: E];
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
-     *
      * @param id - The ID or position of the upgrade to buy or upgrade.
      * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
      * @param target - The target level or quantity to reach for the upgrade.
      * This represents how many upgrades to buy or upgrade.
-     *
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-     *
      */
     buyUpgrade(id: string | number, target: ESource): boolean;
 }

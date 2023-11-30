@@ -1,3 +1,6 @@
+/**
+ * @file Declares the game currency class.
+ */
 import { currency, currencyStatic } from "../classes/currency";
 import type { game } from "./game";
 /**
@@ -10,9 +13,10 @@ declare class gameCurrency {
     game?: game;
     /**
      * Creates a new instance of the game class.
-     * @param currencyPointer A function that returns the current currency value.
-     * @param static A function that returns the static data for the game.
+     * @param currencyPointer - A function that returns the current currency value.
+     * @param staticPointer - A function that returns the static data for the game.
+     * @param gamePointer A pointer to the game instance.
      */
-    constructor(currencyPointer: currency, staticPointer: currencyStatic, gamePointer?: game);
+    constructor(currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer?: game);
 }
 export { gameCurrency };

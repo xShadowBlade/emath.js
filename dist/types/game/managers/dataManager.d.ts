@@ -1,3 +1,7 @@
+/**
+ * @file Declares classes and functions for managing game data.
+ * Ex. Saving, loading, exporting, etc.
+ */
 import { game } from "../game";
 import "reflect-metadata";
 /**
@@ -9,11 +13,20 @@ declare class dataManager {
     private gameRef;
     /**
      * Creates a new instance of the game class.
-     * @constructor
      * @param gameRef - A function that returns the game instance.
      */
     constructor(gameRef: game);
+    /**
+     * Compresses the given game data to a base64-encoded string.
+     * @param data The game data to be compressed. Defaults to the current game data.
+     * @returns The compressed game data as a base64-encoded string.
+     */
     private compileData;
+    /**
+     * Decompiles the data stored in localStorage and returns the corresponding object.
+     * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
+     * @returns The decompiled object, or null if the data is empty or invalid.
+     */
     private decompileData;
     /**
      * Resets the game data to its initial state and saves it.

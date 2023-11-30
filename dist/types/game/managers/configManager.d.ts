@@ -1,4 +1,7 @@
 /**
+ * @file Declares classes for managing configuration objects.
+ */
+/**
  * Represents a configuration object.
  */
 declare class configManager<T> {

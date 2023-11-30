@@ -3,7 +3,3 @@ export * from "./classes/boost";
 export * from "./classes/currency";
 export * from "./classes/attribute";
 export * from "./classes/grid";
-export * from "./classes/utility/eString";
-export * from "./classes/utility/eArray";
-export * from "./classes/utility/eObject";
-export * from "./classes/utility/obb";

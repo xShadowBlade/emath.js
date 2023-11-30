@@ -81,8 +81,8 @@ class upgradeStatic implements upgrade {
     protected data: upgradeData;
 
     /**
-     * @constructor
      * @param init - The upgrade object to initialize.
+     * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
     constructor (init: upgradeInit, dataPointer: (() => upgradeData) | upgradeData) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
@@ -97,6 +97,7 @@ class upgradeStatic implements upgrade {
 
     /**
      * The current level of the upgrade.
+     * @returns The current level of the upgrade.
      */
     get level (): E {
         return this.data.level;
@@ -109,7 +110,6 @@ class upgradeStatic implements upgrade {
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
- * @class
  */
 class currency {
     /**
@@ -129,8 +129,6 @@ class currency {
 
     /**
      * Constructs a new currency object with an initial value of 0.
-     *
-     * @constructor
      */
     constructor () {
         this.value = E(0);
@@ -142,8 +140,6 @@ class currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- *
- * @class
  */
 class currencyStatic {
     /**
@@ -165,7 +161,6 @@ class currencyStatic {
     protected defaultBoost: E;
 
     /**
-     * @constructor
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param defaultVal - The default value of the currency.
      * @param defaultBoost - The default boost of the currency.
@@ -183,6 +178,7 @@ class currencyStatic {
 
     /**
      * The current value of the currency.
+     * @returns The current value of the currency.
      */
     get value (): E {
         return this.pointer.value;
@@ -214,9 +210,8 @@ class currencyStatic {
 
     /**
      * The new currency value after applying the boost.
-     * @type {E}
-     * @param {number|E} [dt=1000] Deltatime
-     * @returns {E}
+     * @param dt Deltatime
+     * @returns The new currency value after applying the boost.
      */
     public gain (dt: ESource = 1000): E {
         this.value = this.value.add(
@@ -228,6 +223,7 @@ class currencyStatic {
     /**
      * Adds an upgrade to the upgrades array.
      * @param upgrades1 Upgrade to add
+     * @returns The upgrade object.
      */
     private pointerAddUpgrade (upgrades1: upgradeInit): upgradeInit {
         // If level exists, add it else default to 1
@@ -261,7 +257,6 @@ class currencyStatic {
 
     /**
      * Creates or updates upgrades
-     *
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
@@ -299,7 +294,6 @@ class currencyStatic {
      * Calculates the cost and how many upgrades you can buy
      *
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     *
      * @param id - Index or ID of the upgrade
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
@@ -310,7 +304,6 @@ class currencyStatic {
 
         /**
          * Calculates the sum of 'f(n)' from 0 to 'b'.
-         *
          * @param f - The function 'f(n)' to calculate the sum.
          * @param b - The upper limit for the sum.
          * @returns The calculated sum of 'f(n)'.
@@ -325,9 +318,9 @@ class currencyStatic {
         // Binary Search
         /**
          * Finds the highest value of 'b' for which the sum of 'f(n)' from 0 to 'b' is less than or equal to 'a'.
-         *
          * @param f - The function 'f(n)' to calculate the sum.
          * @param a - The target sum value to compare against.
+         * @param el1 - ie Endless: Flag to exclude the sum calculation and only perform binary search.
          * @returns The highest 'b' value for which the sum is less than or equal to 'a'.
          */
         function findHighestB (f: (n: E) => E, a: E, el1: boolean = el): [E, E] {
@@ -393,14 +386,11 @@ class currencyStatic {
 
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
-     *
      * @param id - The ID or position of the upgrade to buy or upgrade.
      * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
      * @param target - The target level or quantity to reach for the upgrade.
      * This represents how many upgrades to buy or upgrade.
-     *
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-     *
      */
     public buyUpgrade (id: string | number, target: ESource): boolean {
         const upgrade = this.getUpgrade(id);

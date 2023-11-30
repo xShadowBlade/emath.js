@@ -1,3 +1,7 @@
+/**
+ * @file Declares classes and functions for managing game data.
+ * Ex. Saving, loading, exporting, etc.
+ */
 import { game, gameData } from "../game";
 import LZString from "lz-string";
 import { E } from "../../eMath";
@@ -17,7 +21,6 @@ class dataManager {
 
     /**
      * Creates a new instance of the game class.
-     * @constructor
      * @param gameRef - A function that returns the game instance.
      */
     constructor (gameRef: game) {
@@ -29,10 +32,20 @@ class dataManager {
         this.gameData = gameRef.data;
     }
 
+    /**
+     * Compresses the given game data to a base64-encoded string.
+     * @param data The game data to be compressed. Defaults to the current game data.
+     * @returns The compressed game data as a base64-encoded string.
+     */
     private compileData (data: gameData = this.gameData): string {
         return LZString.compressToBase64(JSON.stringify(instanceToPlain(data)));
     }
 
+    /**
+     * Decompiles the data stored in localStorage and returns the corresponding object.
+     * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
+     * @returns The decompiled object, or null if the data is empty or invalid.
+     */
     private decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): object | null {
         return data ? plainToInstance(gameData, JSON.parse(LZString.decompressFromBase64(data))) : null;
     }
@@ -56,7 +69,7 @@ class dataManager {
         // } // check if data exists
         /**
          * IMPORTANT: FIX LATER
-        */
+         */
         // this.gameData.playtime.timeLastPlayed = E(Date.now());
         localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
     };
@@ -73,24 +86,15 @@ class dataManager {
         // Ask if user wants to download
 
         if (prompt("Download save data?:", content) != null) {
-            // Step 2: Create a Blob
             const blob = new Blob([content], { type: "text/plain" });
 
-            // Step 3: Create an anchor element
             const downloadLink = document.createElement("a");
-
-            // Step 4: Set attributes
             downloadLink.href = URL.createObjectURL(blob);
             downloadLink.download = `${this.gameRef.config.name.id}-data.txt`; // Specify the file name
             downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`; // Text shown on the link
 
-            // Step 5: Append to the DOM
             document.body.appendChild(downloadLink);
-
-            // Step 6: Programmatically trigger click event
             downloadLink.click();
-
-            // Clean up: Remove the link from the DOM after the download
             document.body.removeChild(downloadLink);
         }
     };
@@ -142,10 +146,8 @@ class dataManager {
         // Add new / updated properties
         function deepMerge (source: any, target: any) {
             for (const key in source) {
-                // eslint-disable-next-line no-prototype-builtins
-                if (source.hasOwnProperty(key)) {
-                    // eslint-disable-next-line no-prototype-builtins
-                    if (!target.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    if (!Object.prototype.hasOwnProperty.call(target, key)) {
                         target[key] = source[key];
                     } else if (
                         typeof source[key] === "object" &&

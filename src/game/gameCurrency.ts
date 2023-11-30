@@ -1,3 +1,7 @@
+/**
+ * @file Declares the game currency class.
+ */
+
 import { E } from "../eMath";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute } from "../classes/attribute";
@@ -15,14 +19,14 @@ class gameCurrency {
 
     /**
      * Creates a new instance of the game class.
-     * @param currencyPointer A function that returns the current currency value.
-     * @param static A function that returns the static data for the game.
+     * @param currencyPointer - A function that returns the current currency value.
+     * @param staticPointer - A function that returns the static data for the game.
+     * @param gamePointer A pointer to the game instance.
      */
-    constructor (currencyPointer: currency, staticPointer: currencyStatic, gamePointer?: game) {
-        this.data = currencyPointer;
-        this.static = staticPointer;
+    constructor (currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer?: game) {
+        this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+        this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 
-        
         this.game = gamePointer;
     }
 

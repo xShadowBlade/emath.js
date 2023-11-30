@@ -1,8 +1,11 @@
+/**
+ * @file Declares the boost class and other helper classes and interfaces.
+ */
 import { E, ESource } from "../../src/eMath";
 /**
  * An object representing a boost.
  */
-interface boostsObject {
+interface boostsObjectInit {
     /**
      * The ID of the boost.
      */
@@ -15,11 +18,6 @@ interface boostsObject {
      * An optional description of the boost.
      */
     desc?: string;
-    /**
-     * @deprecated
-     * The type of the boost.
-     */
-    type?: "add" | "mul" | "pow" | "tetr" | "pent";
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
@@ -35,71 +33,46 @@ interface boostsObject {
      */
     index?: number;
 }
-type boostArrayObject = ({
-    index: number;
+declare class boostObject implements boostsObjectInit {
+    id: string;
+    name: string;
+    desc: string;
+    value: (input: E) => E;
     order: number;
-} & boostsObject);
+    index: number;
+    constructor(init: boostsObjectInit);
+}
 /**
  * Represents a boost manager that applies various effects to a base value.
- *
- * @class
- * @param {number|E} baseEffect - The base effect value to which boosts are applied.
- * @param {...Object} boosts - An array of boost objects to initialize with.
- * @example
- * const myboost = new Game.classes.boost(100, {
- *   id: "reallyCoolboost124",
- *   name: "buff this",
- *   desc: "really cool lol",
- *   type: "add",
- *   value: E(124),
- * });
  */
 declare class boost {
     /**
      * An array of boost objects.
      */
-    boostArray: boostArrayObject[];
+    boostArray: boostObject[];
     /**
      * The base effect value.
      */
     baseEffect: E;
     /**
-     * Normalizes the given boosts object to a boost array object.
-     * @param boosts - The boosts object to normalize.
-     * @param index - The index to use for the boost array object.
-     * @returns The normalized boost array object.
-     */
-    private static normalizeBoost;
-    /**
-     * Normalizes an array of boosts to a standardized format.
-     * @param boosts - The array of boosts to normalize.
-     * @returns An array of normalized boosts.
-     */
-    private static normalizeBoostArray;
-    /**
      * Constructs a new boost manager.
-     *
-     * @constructor
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: ESource, boosts?: boostsObject | boostsObject[]);
+    constructor(baseEffect?: ESource, boosts?: boostsObjectInit | boostsObjectInit[]);
     /**
      * Gets a boost object by its ID.
-     *
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    bGet(id: string): boostArrayObject | null;
+    bGet(id: string | number): boostObject | null;
     /**
      * Removes a boost by its ID.
-     *
      * @param id - The ID of the boost to remove.
      */
     bRemove(id: string): void;
     /**
      * Sets or updates a boost with the given parameters.
-     *
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
@@ -109,27 +82,25 @@ declare class boost {
     bSet(id: string, name: string, desc: string, value: () => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
-     *
      * @param boostObj - The boost object containing the parameters.
      */
-    bSet(boostObj: boostsObject): void;
+    bSet(boostObj: boostsObjectInit): void;
     /**
      * Sets or updates multiple boosts with advanced parameters.
-     *
      * @param boostsArray - boost objects to set or update.
      */
-    bSetArray(boostsArray: boostsObject[]): void;
+    bSetArray(boostsArray: boostsObjectInit[]): void;
     /**
      * Sets or updates multiple boosts with advanced parameters.
+     * @param boostsArray - boost objects to set or update.
      * @deprecated Use bSetArray instead.
      */
-    bSetAdvanced(...boostsArray: boostsObject[]): void;
+    bSetAdvanced(...boostsArray: boostsObjectInit[]): void;
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
-     *
      * @param base - The base effect value to calculate with.
      * @returns The calculated effect after applying boosts.
      */
     calculate(base?: ESource): E;
 }
-export { boost };
+export { boost, boostObject };

@@ -1,3 +1,6 @@
+/**
+ * @file Declares the main game class.
+ */
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";
@@ -50,7 +53,6 @@ declare class game {
     protected tickers: ((dt: number) => void)[];
     /**
      * Creates a new instance of the game class.
-     * @constructor
      * @param config - The configuration object for the game.
      */
     constructor(config?: gameConfigOptions);
@@ -69,6 +71,7 @@ declare class game {
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.
+     * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
     addReset(currenciesToReset: gameCurrency[], extender?: gameReset): gameReset;

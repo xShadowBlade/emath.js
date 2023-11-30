@@ -1,13 +1,6 @@
-/*
-Handling of:
-Loop Events
-Saving/loading
-*/
 /**
- * Event system for managing intervals and timeouts.
- * @namespace
+ * @file Declares classes for managing the event loop
  */
-
 import { E } from "../../eMath";
 import { configManager, RequiredDeep } from "./configManager";
 
@@ -87,12 +80,10 @@ class eventManager {
 
     /**
      * Adds a new event to the event system.
-     *
      * @param name - The name of the event.
      * @param type - The type of the event, either "interval" or "timeout".
      * @param delay - The delay in milliseconds before the event triggers.
      * @param callbackFn - The callback function to execute when the event triggers.
-     *
      * @example
      * const myEventManger = new eventManager();
      * // Add an interval event that executes every 2 seconds.

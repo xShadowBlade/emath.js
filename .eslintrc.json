@@ -1,5 +1,9 @@
 {
-	"extends": ["eslint:recommended", "prettier"],
+	"extends": [
+        "eslint:recommended",
+        "prettier",
+        "plugin:jsdoc/recommended-typescript"
+    ],
 	"env": {
 		"node": true,
 		"browser": true,
@@ -9,7 +13,10 @@
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
-	"plugins": ["@typescript-eslint"],
+	"plugins": [
+        "@typescript-eslint",
+        "jsdoc"
+    ],
 	"parser": "@typescript-eslint/parser",
 	"rules": {
 		"arrow-spacing": ["warn", { "before": true, "after": true }],
@@ -44,6 +51,10 @@
 		"space-infix-ops": "warn",
 		"space-unary-ops": "warn",
 		"spaced-comment": "warn",
-		"yoda": "warn"
+		"yoda": "warn",
+
+        "jsdoc/require-param-type": "off",
+        "jsdoc/require-returns-type": "off",
+        "jsdoc/require-file-overview": 1
 	  }
 }
