@@ -16,6 +16,7 @@ interface gameConfigOptions {
     settings?: {
         framerate?: number;
     };
+    initIntervalBasedManagers?: boolean;
 }
 declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
 declare class gameStatic {

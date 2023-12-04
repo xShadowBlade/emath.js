@@ -518,6 +518,15 @@ __export(pixiGame_exports, {
 });
 module.exports = __toCommonJS(pixiGame_exports);
 
+// src/pixiGame/hookPixiGame.ts
+function hookPixiGame() {
+  if (!(typeof process !== "object" && typeof window !== "undefined")) {
+    return;
+  }
+  console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
+  return;
+}
+
 // src/E/lru-cache.ts
 var LRUCache = class {
   /**
@@ -4529,25 +4538,35 @@ var configManager = class {
 };
 
 // src/game/managers/keyManager.ts
+var keyManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30,
+  pixiApp: void 0
+};
 var keyManager = class _keyManager {
   static {
-    this.configManager = new configManager({
-      autoAddInterval: true,
-      fps: 30
-    });
+    this.configManager = new configManager(keyManagerDefaultConfig);
   }
   constructor(config) {
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
     this.config = _keyManager.configManager.parse(config);
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        for (const ticker of this.tickers) {
-          ticker(1e3 / fps);
-        }
-      }, 1e3 / fps);
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add((dt) => {
+          for (const ticker of this.tickers) {
+            ticker(dt);
+          }
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          for (const ticker of this.tickers) {
+            ticker(1e3 / fps);
+          }
+        }, 1e3 / fps);
+      }
     }
     if (typeof document === "undefined") {
       return;
@@ -4618,7 +4637,8 @@ var keyManager = class _keyManager {
 // src/game/managers/eventManager.ts
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
-  fps: 30
+  fps: 30,
+  pixiApp: void 0
 };
 var eventManager = class _eventManager {
   static {
@@ -4627,11 +4647,17 @@ var eventManager = class _eventManager {
   constructor(config) {
     this.config = _eventManager.configManager.parse(config);
     this.events = [];
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        this.tickerFunction();
-      }, 1e3 / fps);
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add(() => {
+          this.tickerFunction();
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          this.tickerFunction();
+        }, 1e3 / fps);
+      }
     }
   }
   tickerFunction() {
@@ -6349,11 +6375,11 @@ var gameReset = class {
    * @param extender The extender for the game reset.
    */
   constructor(currenciesToReset, extender) {
-    this.currenciesToReset = currenciesToReset;
+    this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = extender;
   }
   /**
-   * Resets the game.
+   * Resets a currency.
    */
   reset() {
     this.currenciesToReset.forEach((currency2) => {
@@ -6374,7 +6400,8 @@ var gameDefaultConfig = {
   },
   settings: {
     framerate: 30
-  }
+  },
+  initIntervalBasedManagers: true
 };
 var gameStatic = class {
   constructor(staticData) {
@@ -6412,15 +6439,14 @@ var game2 = class _game {
     this.static = new gameStatic();
     this.dataManager = new dataManager(this);
     this.keyManager = new keyManager({
-      autoAddInterval: true,
+      autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
     this.eventManager = new eventManager({
-      autoAddInterval: true,
+      autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
     this.tickers = [];
-    this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
   }
   /**
    * Adds a new currency section to the game.
@@ -6432,8 +6458,8 @@ var game2 = class _game {
       currency: new currency()
     });
     this.static.set(name, {
-      currency: new currencyStatic(() => this.data.get(name)),
-      attributes: {}
+      currency: new currencyStatic(() => this.data.get(name))
+      // attributes: {},
     });
     const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
     return classInstance;
@@ -6464,43 +6490,6 @@ var game2 = class _game {
     return reset;
   }
 };
-
-// src/game/hookGame.ts
-function hookGame() {
-  if (!(typeof process !== "object" && typeof window !== "undefined")) {
-    return;
-  }
-  if (!window["eMath"]) {
-    console.error("eMath.js/game: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");
-  }
-  window["eMath"].game = game2;
-  window["eMath"].managers = {
-    /**
-     * @deprecated Use `import { keyManager } from "emath.js/game"` instead.
-     */
-    keyManager,
-    /**
-     * @deprecated Use `import { eventManager } from "emath.js/game"` instead.
-     */
-    eventManager,
-    /**
-     * @deprecated Use `import { dataManager } from "emath.js/game"` instead.
-     */
-    dataManager
-  };
-}
-
-// src/pixiGame/loadPIXI.ts
-var PIXI = __toESM(require("pixi.js"));
-function loadPIXI() {
-  if (!(typeof process !== "object" && typeof window !== "undefined")) {
-    return PIXI;
-  }
-  if (!window["PIXI"]) {
-    console.error("eMath.js/pixiGame: PIXI.js is not loaded. See https://pixijs.com for instructions.");
-  }
-  return window.PIXI;
-}
 
 // src/pixiGame/pixi-intersects.js
 var Intersects = /* @__PURE__ */ function() {
@@ -6972,12 +6961,11 @@ var Intersects = /* @__PURE__ */ function() {
 var pixi_intersects_default = Intersects;
 
 // src/pixiGame/sprite.ts
-var PIXI2 = loadPIXI();
 var sprite = class {
   /**
    * Constructs a new game sprite.
-   *
    * @constructor
+   * @param gameRef - The game reference.
    * @param spr - The PIXI sprite to create the game sprite from.
    * @param collisionShape - The type of collision shape to use for the sprite.
    * Default: "Rectangle"
@@ -7031,41 +7019,46 @@ var sprite = class {
 };
 
 // src/pixiGame/pixiGame.ts
-var PIXI3 = loadPIXI();
-var { Application } = PIXI3;
+var import_pixi = require("pixi.js");
 var pixiGameDefaultConfig = {
   ...gameDefaultConfig,
-  setupCamera: false,
-  camera: {
-    // x: 0,
-    // y: 0,
-    smoothDamp: 0.15
+  initIntervalBasedManagers: false,
+  pixi: {
+    app: {
+      // @ts-ignore
+      background: 0,
+      // @ts-ignore
+      resizeTo: window
+    }
   }
 };
 var pixiGame = class _pixiGame extends game2 {
   constructor(config) {
-    super();
+    super(config);
     this.config = _pixiGame.configManager.parse(config);
-    const app = new Application({
-      // @ts-ignore
-      background: 0,
-      resizeTo: window
-    });
-    app.stage.eventMode = "static";
-    document.body.appendChild(app.view);
-    window.addEventListener("resize", () => {
-      const newWidth = window.innerWidth;
-      const newHeight = window.innerHeight;
-      app.renderer.resize(newWidth, newHeight);
-    });
+    let app;
+    if (this.config.pixi.app instanceof import_pixi.Application) {
+      app = this.config.pixi.app;
+    } else {
+      app = new import_pixi.Application(this.config.pixi.app);
+      app.stage.eventMode = "static";
+      document.body.appendChild(app.view);
+    }
     this.PIXI = {
       app,
       camera: {
         x: 0,
-        y: 0,
-        smoothDamp: this.config.camera.smoothDamp
+        y: 0
       }
     };
+    this.keyManager = new keyManager({
+      autoAddInterval: false,
+      pixiApp: this.PIXI.app
+    });
+    this.eventManager = new eventManager({
+      autoAddInterval: false,
+      pixiApp: this.PIXI.app
+    });
   }
   static {
     this.configManager = new configManager(pixiGameDefaultConfig);
@@ -7074,23 +7067,6 @@ var pixiGame = class _pixiGame extends game2 {
     return new sprite(this, spriteToAdd, collisionShape);
   }
 };
-
-// src/pixiGame/hookPixiGame.ts
-function hookPixiGame() {
-  if (!(typeof process !== "object" && typeof window !== "undefined")) {
-    return;
-  }
-  if (!window["eMath"]) {
-    console.error("eMath.js/pixiGame: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");
-  }
-  if (!window["PIXI"]) {
-    console.error("eMath.js/pixiGame: PIXI.js is not loaded. See https://pixijs.com for instructions.");
-  }
-  hookGame();
-  delete window["eMath"].game;
-  window["eMath"].pixiGame = pixiGame;
-  window["eMath"].classes.sprite = sprite;
-}
 
 // src/pixiGame/index.ts
 hookPixiGame();

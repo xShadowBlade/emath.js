@@ -4,7 +4,7 @@
 
 import { E } from "../eMath";
 import { currency, currencyStatic } from "../classes/currency";
-import { attribute } from "../classes/attribute";
+// import { attribute } from "../classes/attribute";
 import type { game } from "./game";
 
 /**

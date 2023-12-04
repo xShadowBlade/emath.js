@@ -20,6 +20,7 @@ export function hookGame () {
     }
     if (!(window as any)["eMath"]) {
         console.error("eMath.js/game: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");
+        return;
     }
     // (window as any)["eMath"] = eMath;
     /**

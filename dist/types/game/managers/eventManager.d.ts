@@ -2,7 +2,7 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../eMath";
-import { RequiredDeep } from "./configManager";
+import type { Application } from "pixi.js";
 interface eventManagerConfig {
     /**
      * Whether or not to automatically add an interval
@@ -15,11 +15,15 @@ interface eventManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
+    /**
+     * The PIXI application to use for the interval, if you want to use it instead of an interval.
+     */
+    pixiApp?: Application;
 }
 declare class eventManager {
     private events;
     private static configManager;
-    config: RequiredDeep<eventManagerConfig>;
+    config: eventManagerConfig;
     constructor(config?: eventManagerConfig);
     private tickerFunction;
     /**

@@ -14,29 +14,6 @@ import { gameReset } from "./resetLayer";
 
 import { configManager, RequiredDeep } from "./managers/configManager";
 
-// type gameType = {
-//     data: {
-//         playtime: { // in milliseconds
-//             tActive: currency,
-//             tPassive: currency,
-//             timewarp: E,
-//             active: currency,
-//             passive: currency,
-//             points: currency,
-//             timeLastPlayed: E,
-//         };
-//         chronos: {
-//             currency: currency,
-//             lastReward: E,
-//         }
-//     };
-//     static: {
-//         chronos: {
-//             currency: currencyStatic,
-//         }
-//     };
-// };
-
 interface gameConfigOptions {
 	mode?: "development" | "production";
 	name: {
@@ -46,6 +23,7 @@ interface gameConfigOptions {
     settings?: {
         framerate?: number;
     }
+    initIntervalBasedManagers?: boolean;
 }
 
 const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
@@ -57,6 +35,7 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
     settings: {
         framerate: 30,
     },
+    initIntervalBasedManagers: true,
 };
 
 class gameStatic {
@@ -129,15 +108,15 @@ class game {
         this.static = new gameStatic();
         this.dataManager = new dataManager(this);
         this.keyManager = new keyManager({
-            autoAddInterval: true,
+            autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
         this.eventManager = new eventManager({
-            autoAddInterval: true,
+            autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
         this.tickers = [];
-        this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
+        // this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
     }
 
     /**
@@ -151,7 +130,7 @@ class game {
         });
         this.static.set(name, {
             currency: new currencyStatic(() => this.data.get(name)),
-            attributes: {},
+            // attributes: {},
         });
 
         const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);

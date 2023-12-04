@@ -1,6 +1,7 @@
 /**
  * @file Declares classes for managing key bindings.
  */
+import type { Application } from "pixi.js";
 interface KeyBinding {
     name: string;
     key: string;
@@ -18,6 +19,10 @@ interface keyManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
+    /**
+     * The PIXI application to use for the interval, if you want to use it instead of an interval.
+     */
+    pixiApp?: Application;
 }
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.

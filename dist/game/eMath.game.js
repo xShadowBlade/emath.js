@@ -4535,25 +4535,35 @@ var configManager = class {
 };
 
 // src/game/managers/keyManager.ts
+var keyManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30,
+  pixiApp: void 0
+};
 var keyManager = class _keyManager {
   static {
-    this.configManager = new configManager({
-      autoAddInterval: true,
-      fps: 30
-    });
+    this.configManager = new configManager(keyManagerDefaultConfig);
   }
   constructor(config) {
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
     this.config = _keyManager.configManager.parse(config);
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        for (const ticker of this.tickers) {
-          ticker(1e3 / fps);
-        }
-      }, 1e3 / fps);
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add((dt) => {
+          for (const ticker of this.tickers) {
+            ticker(dt);
+          }
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          for (const ticker of this.tickers) {
+            ticker(1e3 / fps);
+          }
+        }, 1e3 / fps);
+      }
     }
     if (typeof document === "undefined") {
       return;
@@ -4624,7 +4634,8 @@ var keyManager = class _keyManager {
 // src/game/managers/eventManager.ts
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
-  fps: 30
+  fps: 30,
+  pixiApp: void 0
 };
 var eventManager = class _eventManager {
   static {
@@ -4633,11 +4644,17 @@ var eventManager = class _eventManager {
   constructor(config) {
     this.config = _eventManager.configManager.parse(config);
     this.events = [];
-    if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-      const fps = this.config.fps ? this.config.fps : 30;
-      setInterval(() => {
-        this.tickerFunction();
-      }, 1e3 / fps);
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add(() => {
+          this.tickerFunction();
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          this.tickerFunction();
+        }, 1e3 / fps);
+      }
     }
   }
   tickerFunction() {
@@ -6355,11 +6372,11 @@ var gameReset = class {
    * @param extender The extender for the game reset.
    */
   constructor(currenciesToReset, extender) {
-    this.currenciesToReset = currenciesToReset;
+    this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = extender;
   }
   /**
-   * Resets the game.
+   * Resets a currency.
    */
   reset() {
     this.currenciesToReset.forEach((currency2) => {
@@ -6380,7 +6397,8 @@ var gameDefaultConfig = {
   },
   settings: {
     framerate: 30
-  }
+  },
+  initIntervalBasedManagers: true
 };
 var gameStatic = class {
   constructor(staticData) {
@@ -6418,15 +6436,14 @@ var game2 = class _game {
     this.static = new gameStatic();
     this.dataManager = new dataManager(this);
     this.keyManager = new keyManager({
-      autoAddInterval: true,
+      autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
     this.eventManager = new eventManager({
-      autoAddInterval: true,
+      autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
     this.tickers = [];
-    this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
   }
   /**
    * Adds a new currency section to the game.
@@ -6438,8 +6455,8 @@ var game2 = class _game {
       currency: new currency()
     });
     this.static.set(name, {
-      currency: new currencyStatic(() => this.data.get(name)),
-      attributes: {}
+      currency: new currencyStatic(() => this.data.get(name))
+      // attributes: {},
     });
     const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
     return classInstance;
@@ -6478,6 +6495,7 @@ function hookGame() {
   }
   if (!window["eMath"]) {
     console.error("eMath.js/game: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");
+    return;
   }
   window["eMath"].game = game2;
   window["eMath"].managers = {

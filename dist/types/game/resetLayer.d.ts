@@ -16,9 +16,9 @@ declare class gameReset {
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset.
      */
-    constructor(currenciesToReset: gameCurrency[], extender?: gameReset);
+    constructor(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset);
     /**
-     * Resets the game.
+     * Resets a currency.
      */
     reset(): void;
 }

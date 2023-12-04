@@ -18,8 +18,8 @@
     },
     "unpkg": "./dist/main/eMath.min.js",
     "scripts": {
-        "build": "concurrently \"node bin/build/umd.js\" \"tsc --emitDeclarationOnly -outdir dist/types\"",
-        "build-main": "node bin/build/umd.js",
+        "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
+        "build-main": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "lint": "eslint src/**/*.ts test/**/*.ts",
         "test": "ts-mocha test/**/*.test.ts"

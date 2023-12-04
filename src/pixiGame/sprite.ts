@@ -12,8 +12,6 @@ import { loadPIXI } from "./loadPIXI.js";
 import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
-
-const PIXI = loadPIXI();
 class sprite {
     public sprite: Sprite | Graphics;
     public x: number;
@@ -25,8 +23,8 @@ class sprite {
 
     /**
      * Constructs a new game sprite.
-     *
      * @constructor
+     * @param gameRef - The game reference.
      * @param spr - The PIXI sprite to create the game sprite from.
      * @param collisionShape - The type of collision shape to use for the sprite.
      * Default: "Rectangle"
@@ -38,7 +36,7 @@ class sprite {
         this.x = this.sprite.x; // absolute position
         this.y = this.sprite.y;
         this.collisionShape = collisionShape;
-        // @ts-expect-error
+        // @ts-ignore
         this.intersects = new Intersects[this.collisionShape](this.sprite);
 
         // Offset by camera

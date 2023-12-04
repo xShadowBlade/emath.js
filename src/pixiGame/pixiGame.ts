@@ -1,47 +1,32 @@
 import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
 import { configManager, RequiredDeep } from "game/managers/configManager";
 import { sprite } from "./sprite";
+import { keyManager } from "../game/managers/keyManager";
+import { eventManager } from "../game/managers/eventManager";
 
-import { loadPIXI } from "./loadPIXI";
-
-// import { Application } from "pixi.js";
 import type { Graphics, Sprite } from "pixi.js";
+import { Application } from "pixi.js";
 
-const PIXI = loadPIXI();
-const { Application } = PIXI;
+// import { loadPIXI } from "./loadPIXI";
+// const PIXI = loadPIXI();
+// const { Application } = PIXI;
 
 interface pixiGameConfig extends gameConfigOptions {
-    /**
-     * Whether or not to setup a 2d camera system.
-     * Defaults to `false`
-     */
-    setupCamera?: boolean,
-
-    camera?: {
-        // /**
-        //  * The X position of the camera. Defaults to `0`.
-        //  */
-        // x?: number,
-
-        // /**
-        //  * The Y position of the camera. Defaults to `0`.
-        //  */
-        // y?: number,
-
-        /**
-         * The smooth damp multiplier of the camera. Defaults to `0.15`.
-         */
-        smoothDamp?: number,
+    pixi?: {
+        app?: ConstructorParameters<typeof Application> | InstanceType<typeof Application>;
     }
 }
 
 const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
     ...gameDefaultConfig,
-    setupCamera: false,
-    camera: {
-        // x: 0,
-        // y: 0,
-        smoothDamp: 0.15,
+    initIntervalBasedManagers: false,
+    pixi: {
+        app: {
+            // @ts-ignore
+            background: 0x000000,
+            // @ts-ignore
+            resizeTo: window,
+        },
     },
 };
 
@@ -54,48 +39,51 @@ class pixiGame extends game {
         app: InstanceType<typeof Application>,
         camera: {
             x: number,
-            y: number,
-            smoothDamp: number,
+            y: number
         },
     };
 
     constructor (config?: pixiGameConfig) {
-        super();
+        super(config);
         this.config = pixiGame.configManager.parse(config);
 
         // Setup PIXI
-        const app = new Application({
+        let app: InstanceType<typeof Application>;
+
+        if (this.config.pixi.app instanceof Application) {
+            app = this.config.pixi.app;
+        } else {
             // @ts-ignore
-            background: 0x000000,
-            resizeTo: window,
-        });
+            app = new Application(this.config.pixi.app);
 
-        // @ts-ignore
-        app.stage.eventMode = "static";
-        // @ts-ignore
-        document.body.appendChild(app.view);
-        // console.log("PIXI Setup complete.");
-        // globalThis.__PIXI_APP__ = papp;
-        window.addEventListener("resize", () => {
-            // Update the background's size to match the new window size
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
+            // @ts-ignore
+            app.stage.eventMode = "static";
+            // @ts-ignore
+            document.body.appendChild(app.view);
+            // window.addEventListener("resize", () => {
+            //     // Update the background's size to match the new window size
+            //     const newWidth = window.innerWidth;
+            //     const newHeight = window.innerHeight;
 
-            // Resize the renderer
-            app.renderer.resize(newWidth, newHeight);
-        });
+            //     // Resize the renderer
+            //     app.renderer.resize(newWidth, newHeight);
+            // });
+        }
         this.PIXI = {
             app,
             camera: {
                 x: 0,
                 y: 0,
-                smoothDamp: this.config.camera.smoothDamp,
             },
         };
-        // Setup 2d camera
-        // if (this.config.setupCamera) {
-            
-        // }
+        this.keyManager = new keyManager({
+            autoAddInterval: false,
+            pixiApp: this.PIXI.app,
+        });
+        this.eventManager = new eventManager({
+            autoAddInterval: false,
+            pixiApp: this.PIXI.app,
+        });
     }
 
     public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle"): sprite {

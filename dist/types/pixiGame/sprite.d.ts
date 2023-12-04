@@ -17,8 +17,8 @@ declare class sprite {
     private gameRef;
     /**
      * Constructs a new game sprite.
-     *
      * @constructor
+     * @param gameRef - The game reference.
      * @param spr - The PIXI sprite to create the game sprite from.
      * @param collisionShape - The type of collision shape to use for the sprite.
      * Default: "Rectangle"

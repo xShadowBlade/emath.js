@@ -2,18 +2,10 @@ import { game, gameConfigOptions } from "../game/game";
 import { configManager, RequiredDeep } from "game/managers/configManager";
 import { sprite } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
-declare const Application: typeof import("pixi.js").Application;
+import { Application } from "pixi.js";
 interface pixiGameConfig extends gameConfigOptions {
-    /**
-     * Whether or not to setup a 2d camera system.
-     * Defaults to `false`
-     */
-    setupCamera?: boolean;
-    camera?: {
-        /**
-         * The smooth damp multiplier of the camera. Defaults to `0.15`.
-         */
-        smoothDamp?: number;
+    pixi?: {
+        app?: ConstructorParameters<typeof Application> | InstanceType<typeof Application>;
     };
 }
 declare class pixiGame extends game {
@@ -24,7 +16,6 @@ declare class pixiGame extends game {
         camera: {
             x: number;
             y: number;
-            smoothDamp: number;
         };
     };
     constructor(config?: pixiGameConfig);

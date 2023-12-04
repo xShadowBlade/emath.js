@@ -3,6 +3,7 @@
  */
 
 import { configManager, RequiredDeep } from "./configManager";
+import type { Application } from "pixi.js";
 
 interface KeyBinding {
     name: string;
@@ -23,7 +24,18 @@ interface keyManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
+
+    /**
+     * The PIXI application to use for the interval, if you want to use it instead of an interval.
+     */
+    pixiApp?: Application;
 }
+
+const keyManagerDefaultConfig: keyManagerConfig = {
+    autoAddInterval: true,
+    fps: 30,
+    pixiApp: undefined,
+};
 
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.
@@ -31,10 +43,7 @@ interface keyManagerConfig {
 class keyManager {
     private keysPressed: string[];
     private config: keyManagerConfig;
-    private static configManager = new configManager({
-        autoAddInterval: true,
-        fps: 30,
-    } as RequiredDeep<keyManagerConfig>);
+    private static configManager = new configManager(keyManagerDefaultConfig);
 
     private tickers: ((dt: number) => void)[];
 
@@ -47,13 +56,21 @@ class keyManager {
 
         this.config = keyManager.configManager.parse(config);
 
-        if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-            const fps = this.config.fps ? this.config.fps : 30;
-            setInterval(() => {
-                for (const ticker of this.tickers) {
-                    ticker(1000 / fps);
-                }
-            }, 1000 / fps);
+        if (this.config.autoAddInterval) {
+            if (this.config.pixiApp) {
+                this.config.pixiApp.ticker.add((dt) => {
+                    for (const ticker of this.tickers) {
+                        ticker(dt);
+                    }
+                });
+            } else {
+                const fps = this.config.fps ? this.config.fps : 30;
+                setInterval(() => {
+                    for (const ticker of this.tickers) {
+                        ticker(1000 / fps);
+                    }
+                }, 1000 / fps);
+            }
         }
 
         // Key event listeners

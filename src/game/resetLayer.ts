@@ -23,13 +23,13 @@ class gameReset {
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset.
      */
-    constructor (currenciesToReset: gameCurrency[], extender?: gameReset) {
-        this.currenciesToReset = currenciesToReset;
+    constructor (currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset) {
+        this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
         this.extender = extender;
     }
 
     /**
-     * Resets the game.
+     * Resets a currency.
      */
     public reset (): void {
         this.currenciesToReset.forEach((currency) => {

@@ -3,6 +3,7 @@
  */
 import { E } from "../../eMath";
 import { configManager, RequiredDeep } from "./configManager";
+import type { Application } from "pixi.js";
 
 interface Event {
     name: string;
@@ -32,27 +33,39 @@ interface eventManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
+
+    /**
+     * The PIXI application to use for the interval, if you want to use it instead of an interval.
+     */
+    pixiApp?: Application;
 }
 
-const eventManagerDefaultConfig: RequiredDeep<eventManagerConfig> = {
+const eventManagerDefaultConfig: eventManagerConfig = {
     autoAddInterval: true,
     fps: 30,
+    pixiApp: undefined,
 };
 
 class eventManager {
     private events: (intervalEvent | timeoutEvent)[];
 
     private static configManager = new configManager(eventManagerDefaultConfig);
-    public config: RequiredDeep<eventManagerConfig>;
+    public config: eventManagerConfig;
 
     constructor (config?: eventManagerConfig) {
         this.config = eventManager.configManager.parse(config);
         this.events = [];
-        if (this.config.autoAddInterval ? this.config.autoAddInterval : true) {
-            const fps = this.config.fps ? this.config.fps : 30;
-            setInterval(() => {
-                this.tickerFunction();
-            }, 1000 / fps);
+        if (this.config.autoAddInterval) {
+            if (this.config.pixiApp) {
+                this.config.pixiApp.ticker.add(() => {
+                    this.tickerFunction();
+                });
+            } else {
+                const fps = this.config.fps ? this.config.fps : 30;
+                setInterval(() => {
+                    this.tickerFunction();
+                }, 1000 / fps);
+            }
         }
     }
 
