@@ -200,13 +200,6 @@ class currencyStatic {
             });
         };
     }
-    // public reset ({
-    //     resetCurrency = true,
-    //     resetUpgradeAmount = true,
-    // }): void
-    // public reset (...params): void {
-    //     // Function implementation
-    // }
 
     /**
      * The new currency value after applying the boost.

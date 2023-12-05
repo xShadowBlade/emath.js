@@ -77,11 +77,11 @@ class pixiGame extends game {
             },
         };
         this.keyManager = new keyManager({
-            autoAddInterval: false,
+            autoAddInterval: true,
             pixiApp: this.PIXI.app,
         });
         this.eventManager = new eventManager({
-            autoAddInterval: false,
+            autoAddInterval: true,
             pixiApp: this.PIXI.app,
         });
     }

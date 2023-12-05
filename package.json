@@ -4,16 +4,16 @@
     "description": "A math library for incremental games based on break_eternity.js",
     "exports": {
         ".": {
-            "default": "./dist/main/eMath.js",
-            "types": "./dist/types/index.d.ts"
+            "types": "./dist/types/index.d.ts",
+            "default": "./dist/main/eMath.js"
         },
         "./game": {
-            "default": "./dist/game/eMath.game.js",
-            "types": "./dist/types/game/index.d.ts"
+            "types": "./dist/types/game/index.d.ts",
+            "default": "./dist/game/eMath.game.js"
         },
         "./pixiGame": {
-            "default": "./dist/pixiGame/eMath.pixiGame.js",
-            "types": "./dist/types/pixiGame/index.d.ts"
+            "types": "./dist/types/pixiGame/index.d.ts",
+            "default": "./dist/pixiGame/eMath.pixiGame.js"
         }
     },
     "unpkg": "./dist/main/eMath.min.js",

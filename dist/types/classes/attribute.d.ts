@@ -1,31 +1,45 @@
-import { E, ESource } from "../../src/eMath";
-import { boost } from "../../src/classes/boost";
+import { E, ESource } from "../eMath";
+import { boost } from "../classes/boost";
 /**
- * Represents a static attribute in the game.
+ * Represents an attribute in the game.
+ * @deprecated Use {@link attributeStatic} instead.
  */
 declare class attribute {
-    /**
-     * The inital value of the attribute.
-     */
-    initial: E;
     /**
      * The current value of the attribute.
      */
     value: E;
     /**
-     * A boost object that affects the attribute.
-     */
-    boost: boost;
-    /**
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
     constructor(initial: ESource);
-    /**
-     * Updates the value of the attribute based on the provided effect function and initial value.
-     * @param effect - The effect function to apply to the attribute.
-     * @returns The updated value of the attribute after applying the effect.
-     */
-    update(effect?: Function): E;
 }
-export { attribute };
+/**
+ * Represents a static attribute, which is number effected by boosts.
+ */
+declare class attributeStatic {
+    protected pointer: attribute;
+    initial: E;
+    boost?: boost;
+    /**
+     * Constructs a new instance of the Attribute class.
+     * @param pointer - A function or an instance of the attribute class.
+     * @param initial - The initial value of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute.
+     */
+    constructor(pointer: (() => attribute) | attribute, useBoost?: boolean, initial?: ESource);
+    /**
+     * Gets the value of the attribute, and also updates the value stored.
+     * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+     * @returns The calculated value of the attribute.
+     */
+    get value(): E;
+    /**
+     * Sets the value of the attribute.
+     * NOTE: This setter should not be used when boost is enabled.
+     * @param value - The value to set the attribute to.
+     */
+    set value(value: E);
+}
+export { attribute, attributeStatic };

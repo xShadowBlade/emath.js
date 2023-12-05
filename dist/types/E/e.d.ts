@@ -424,6 +424,7 @@ declare class Decimal {
     * @returns {Decimal} - The DecimalClone value after applying the soft cap.
     */
     softcap(start: DecimalSource, power: number, mode: string): Decimal;
+    static softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal;
     /**
     * Scales a currency value using a specified scaling function.
     *
@@ -433,7 +434,8 @@ declare class Decimal {
     * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
     * @returns {Decimal} - The scaled currency value.
     */
-    scale(s: DecimalSource, p: DecimalSource, mode: string, rev?: boolean): Decimal;
+    scale(s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    static scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
     /**
      * Formats the E instance with a specified accuracy and maximum decimal places.
      *
@@ -455,6 +457,7 @@ declare class Decimal {
      * @returns {string} A string representing the formatted E value.
      */
     formatST(acc?: number, max?: number, type?: string): string;
+    static formatST(value: DecimalSource, acc?: number, max?: number, type?: string): string;
     /**
      * Formats the gain rate using the E instance.
      *
@@ -471,6 +474,7 @@ declare class Decimal {
      * console.log(formatted); // should return "(+12/sec)"
      */
     formatGain(gain: DecimalSource): string;
+    static formatGain(value: DecimalSource, gain: DecimalSource): string;
     /**
      * Converts the E instance to a Roman numeral representation.
      *
@@ -481,5 +485,6 @@ declare class Decimal {
      * or the original E instance if it is greater than or equal to 5000.
      */
     toRoman(max: DecimalSource): string | Decimal;
+    static toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
 }
 export default Decimal;

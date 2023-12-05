@@ -2,14 +2,15 @@
  * @file Declares the main game class.
  */
 
-import { E } from "../eMath";
+import { E, ESource } from "../eMath";
 import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
-import { attribute } from "../classes/attribute";
+import { attribute, attributeStatic } from "../classes/attribute";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";
 import { gameCurrency } from "./gameCurrency";
+import { gameAttribute } from "./gameAttribute";
 import { gameReset } from "./resetLayer";
 
 import { configManager, RequiredDeep } from "./managers/configManager";
@@ -120,7 +121,7 @@ class game {
     }
 
     /**
-     * Adds a new currency section to the game.
+     * Adds a new currency section to the game. {@link gameCurrency}
      * @param name - The name of the currency section.
      * @returns A new instance of the gameCurrency class.
      */
@@ -129,7 +130,7 @@ class game {
             currency: new currency(),
         });
         this.static.set(name, {
-            currency: new currencyStatic(() => this.data.get(name)),
+            currency: new currencyStatic(this.data.get(name)),
             // attributes: {},
         });
 
@@ -151,8 +152,23 @@ class game {
         // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
         currencies.forEach((currencyName) => {
             this.data.get(name)[currencyName] = new currency();
-            this.static.get(name)[currencyName] = new currencyStatic(() => this.data.get(name)[currencyName]);
+            this.static.get(name)[currencyName] = new currencyStatic(this.data.get(name)[currencyName]);
         });
+    }
+
+    /**
+     * Adds a new attribute to the game. {@link gameAttribute} is the class.
+     * @param name - The name of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute.
+     * @param initial - The initial value of the attribute.
+     * @returns The newly created attribute.
+     */
+    public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
+        this.data.set(name, new attribute(initial));
+        this.static.set(name, new attributeStatic(this.data.get(name), useBoost, initial));
+
+        const classInstance = new gameAttribute(this.data.get(name), this.static.get(name), this);
+        return classInstance;
     }
 
     /**
@@ -167,4 +183,4 @@ class game {
     }
 }
 
-export { game, gameCurrency, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };

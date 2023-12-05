@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../../src/eMath";
+import { E, ESource } from "../eMath";
 /**
  * An object representing a boost.
  */
@@ -65,35 +65,65 @@ declare class boost {
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    bGet(id: string | number): boostObject | null;
+    getBoost(id: string | number): boostObject | null;
+    /**
+     * @alias {@link boost.getBoost}
+     * @deprecated Use getBoost instead.
+     */
+    bGet: (id: string | number) => boostObject | null;
     /**
      * Removes a boost by its ID.
      * @param id - The ID of the boost to remove.
      */
-    bRemove(id: string): void;
+    removeBoost(id: string): void;
+    /**
+     * @alias {@link boost.removeBoost}
+     * @deprecated Use removeBoost instead.
+     */
+    bRemove: (id: string) => void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
      * @param value - The value of the boost (function).
-     * @param order - The order of the boost (higher order are go first)
+     * @param order - The order of the boost (higher order go first)
      */
-    bSet(id: string, name: string, desc: string, value: () => E, order?: number): void;
+    setBoost(id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
      */
-    bSet(boostObj: boostsObjectInit): void;
+    setBoost(boostObj: boostsObjectInit | boostsObjectInit[]): void;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    bSet: {
+        (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
+        (boostObj: boostsObjectInit | boostsObjectInit[]): void;
+    };
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    addBoost: {
+        (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
+        (boostObj: boostsObjectInit | boostsObjectInit[]): void;
+    };
     /**
      * Sets or updates multiple boosts with advanced parameters.
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
      * @param boostsArray - boost objects to set or update.
      */
-    bSetArray(boostsArray: boostsObjectInit[]): void;
+    bSetArray(boostsArray: boostsObjectInit | boostsObjectInit[]): void;
     /**
      * Sets or updates multiple boosts with advanced parameters.
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
      * @param boostsArray - boost objects to set or update.
-     * @deprecated Use bSetArray instead.
+     * @deprecated Use setBoost instead.
      */
     bSetAdvanced(...boostsArray: boostsObjectInit[]): void;
     /**
@@ -103,4 +133,4 @@ declare class boost {
      */
     calculate(base?: ESource): E;
 }
-export { boost, boostObject };
+export { boost, boostObject, boostsObjectInit };

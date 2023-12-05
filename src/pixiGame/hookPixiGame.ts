@@ -8,7 +8,13 @@ export function hookPixiGame () {
         // Environment is not a browser.
         return;
     }
-    console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
+    // @ts-ignore
+    if (typeof process! !== "object") {
+        // Environment is not a browser AND is not node.
+        console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
+        return;
+    }
+    // Environment is node.
     return;
     // if (!(window as any)["eMath"]) {
     //     console.error("eMath.js/pixiGame: eMath.js is not loaded. See https://github.com/xShadowBlade/emath.js for instructions. \n This requirement might be removed in the future.");

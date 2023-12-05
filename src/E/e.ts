@@ -3,6 +3,7 @@
 /* eslint-disable no-loss-of-precision */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-lonely-if */
+/* eslint-disable */
 
 import { LRUCache } from "./lru-cache";
 
@@ -3285,8 +3286,6 @@ class Decimal {
     */
     public static format (e: DecimalSource, acc: number = 2, max: number = 9): string { return format(new Decimal(e), acc, max); }
 
-
-    // === //
     /**
      * Creates a clone of the E instance.
      *
@@ -3358,6 +3357,9 @@ class Decimal {
         }
         return x;
     }
+    public static softcap (value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal {
+        return new Decimal(value).softcap(start, power, mode);
+    }
 
     /**
     * Scales a currency value using a specified scaling function.
@@ -3368,7 +3370,7 @@ class Decimal {
     * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
     * @returns {Decimal} - The scaled currency value.
     */
-    public scale (s: DecimalSource, p: DecimalSource, mode: string, rev: boolean = false): Decimal {
+    public scale (s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): Decimal {
         s = new Decimal(s);
         p = new Decimal(p);
         let x = this.clone();
@@ -3377,6 +3379,9 @@ class Decimal {
             if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p, x.sub(s)).mul(s);
         }
         return x;
+    }
+    public static scale (value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): Decimal {
+        return new Decimal(value).scale(s, p, mode, rev);
     }
 
     /**
@@ -3401,6 +3406,7 @@ class Decimal {
      * @returns {string} A string representing the formatted E value.
      */
     public formatST (acc: number = 2, max: number = 9, type: string = "st"): string { return format(this.clone(), acc, max, type); }
+    public static formatST (value: DecimalSource, acc: number = 2, max: number = 9, type: string = "st"): string { return format(new Decimal(value), acc, max, type); }
 
     /**
      * Formats the gain rate using the E instance.
@@ -3418,6 +3424,7 @@ class Decimal {
      * console.log(formatted); // should return "(+12/sec)"
      */
     public formatGain (gain: DecimalSource): string { return formatGain(this.clone(), gain); }
+    public static formatGain (value: DecimalSource, gain: DecimalSource): string { return formatGain(new Decimal(value), gain); }
 
     /**
      * Converts the E instance to a Roman numeral representation.
@@ -3450,6 +3457,9 @@ class Decimal {
         } else {
             return "";
         }
+    }
+    public static toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
+        return new Decimal(value).toRoman(max);
     }
 }
 
@@ -3983,6 +3993,7 @@ const formats = {...FORMATS, ...{
 }};
 
 Decimal.formats = formats;
+/* END FORMATS */
 
 export default Decimal;
 

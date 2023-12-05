@@ -523,7 +523,10 @@ function hookPixiGame() {
   if (!(typeof process !== "object" && typeof window !== "undefined")) {
     return;
   }
-  console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
+  if (typeof process !== "object") {
+    console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
+    return;
+  }
   return;
 }
 
@@ -3348,7 +3351,6 @@ var Decimal = class _Decimal {
   static format(e, acc = 2, max = 9) {
     return format(new _Decimal(e), acc, max);
   }
-  // === //
   /**
    * Creates a clone of the E instance.
    *
@@ -3415,6 +3417,9 @@ var Decimal = class _Decimal {
     }
     return x;
   }
+  static softcap(value, start, power, mode) {
+    return new _Decimal(value).softcap(start, power, mode);
+  }
   /**
   * Scales a currency value using a specified scaling function.
   *
@@ -3435,6 +3440,9 @@ var Decimal = class _Decimal {
         x = rev ? x.div(s).max(1).log(p).add(s) : _Decimal.pow(p, x.sub(s)).mul(s);
     }
     return x;
+  }
+  static scale(value, s, p, mode, rev = false) {
+    return new _Decimal(value).scale(s, p, mode, rev);
   }
   /**
    * Formats the E instance with a specified accuracy and maximum decimal places.
@@ -3461,6 +3469,9 @@ var Decimal = class _Decimal {
   formatST(acc = 2, max = 9, type = "st") {
     return format(this.clone(), acc, max, type);
   }
+  static formatST(value, acc = 2, max = 9, type = "st") {
+    return format(new _Decimal(value), acc, max, type);
+  }
   /**
    * Formats the gain rate using the E instance.
    *
@@ -3478,6 +3489,9 @@ var Decimal = class _Decimal {
    */
   formatGain(gain) {
     return formatGain(this.clone(), gain);
+  }
+  static formatGain(value, gain) {
+    return formatGain(new _Decimal(value), gain);
   }
   /**
    * Converts the E instance to a Roman numeral representation.
@@ -3536,6 +3550,9 @@ var Decimal = class _Decimal {
     } else {
       return "";
     }
+  }
+  static toRoman(value, max) {
+    return new _Decimal(value).toRoman(max);
   }
 };
 var ST_NAMES = [
@@ -4180,6 +4197,26 @@ var boost = class {
    * @param boosts - An array of boost objects to initialize with.
    */
   constructor(baseEffect, boosts) {
+    /**
+     * @alias {@link boost.getBoost}
+     * @deprecated Use getBoost instead.
+     */
+    this.bGet = this.getBoost;
+    /**
+     * @alias {@link boost.removeBoost}
+     * @deprecated Use removeBoost instead.
+     */
+    this.bRemove = this.removeBoost;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    this.bSet = this.setBoost;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    this.addBoost = this.setBoost;
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
     this.baseEffect = E(baseEffect ?? 1);
     this.boostArray = [];
@@ -4194,7 +4231,7 @@ var boost = class {
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
-  bGet(id) {
+  getBoost(id) {
     let output = null;
     for (let i = 0; i < this.boostArray.length; i++) {
       if (id === i || id == this.boostArray[i].id) {
@@ -4208,18 +4245,18 @@ var boost = class {
    * Removes a boost by its ID.
    * @param id - The ID of the boost to remove.
    */
-  bRemove(id) {
+  removeBoost(id) {
     const bCheck = this.bGet(id);
     if (bCheck) {
       delete this.boostArray[bCheck.index];
     }
   }
-  bSet(arg1, arg2, arg3, arg4, arg5) {
+  setBoost(arg1, arg2, arg3, arg4, arg5) {
     if (typeof arg1 === "string") {
       const id = arg1;
-      const name = arg2 || "";
-      const desc = arg3 || "";
-      const value = arg4 || (() => E(0));
+      const name = arg2 ?? "";
+      const desc = arg3 ?? "";
+      const value = arg4 ?? (() => E(0));
       const order = arg5;
       const bCheck = this.bGet(id);
       if (!bCheck) {
@@ -4228,37 +4265,35 @@ var boost = class {
         this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
       }
     } else {
-      const boostObj = arg1;
-      const bCheck = this.bGet(boostObj.id);
-      if (!bCheck) {
-        this.boostArray.push(new boostObject(boostObj));
-      } else {
-        this.boostArray[bCheck.index] = new boostObject(boostObj);
+      arg1 = Array.isArray(arg1) ? arg1 : [arg1];
+      for (let i = 0; i < arg1.length; i++) {
+        const bCheck = this.bGet(arg1[i].id);
+        if (!bCheck) {
+          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+        } else {
+          this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+        }
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @alias {@link boost.setBoost}
+   * @deprecated Use setBoost instead.
    * @param boostsArray - boost objects to set or update.
    */
   bSetArray(boostsArray) {
-    for (let i = 0; i < boostsArray.length; i++) {
-      const bCheck = this.bGet(boostsArray[i].id);
-      if (!bCheck) {
-        this.boostArray = this.boostArray.concat(new boostObject(boostsArray[i]));
-      } else {
-        console.log(i);
-        this.boostArray[bCheck.index] = new boostObject(boostsArray[i]);
-      }
-    }
+    this.setBoost(boostsArray);
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @alias {@link boost.setBoost}
+   * @deprecated Use setBoost instead.
    * @param boostsArray - boost objects to set or update.
-   * @deprecated Use bSetArray instead.
+   * @deprecated Use setBoost instead.
    */
   bSetAdvanced(...boostsArray) {
-    this.bSetArray(boostsArray);
+    this.setBoost(boostsArray);
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
@@ -4332,13 +4367,6 @@ var currencyStatic = class {
     }
     ;
   }
-  // public reset ({
-  //     resetCurrency = true,
-  //     resetUpgradeAmount = true,
-  // }): void
-  // public reset (...params): void {
-  //     // Function implementation
-  // }
   /**
    * The new currency value after applying the boost.
    * @param dt Deltatime
@@ -4503,6 +4531,52 @@ var currencyStatic = class {
       upgrade.effect(upgrade.level, upgrade);
     }
     return true;
+  }
+};
+
+// src/classes/attribute.ts
+var attribute = class {
+  /**
+   * Constructs a static attribute with an initial effect.
+   * @param initial - The inital value of the attribute.
+   */
+  constructor(initial) {
+    this.value = E(initial);
+  }
+};
+var attributeStatic = class {
+  /**
+   * Constructs a new instance of the Attribute class.
+   * @param pointer - A function or an instance of the attribute class.
+   * @param initial - The initial value of the attribute.
+   * @param useBoost - Indicates whether to use boost for the attribute.
+   */
+  constructor(pointer, useBoost = true, initial = 0) {
+    this.initial = E(initial);
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
+    this.boost = new boost(this.initial);
+  }
+  /**
+   * Gets the value of the attribute, and also updates the value stored.
+   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+   * @returns The calculated value of the attribute.
+   */
+  get value() {
+    if (this.boost) {
+      this.pointer.value = this.boost.calculate();
+    }
+    return this.pointer.value;
+  }
+  /**
+   * Sets the value of the attribute.
+   * NOTE: This setter should not be used when boost is enabled.
+   * @param value - The value to set the attribute to.
+   */
+  set value(value) {
+    if (this.boost) {
+      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+    }
+    this.pointer.value = value;
   }
 };
 
@@ -6353,18 +6427,43 @@ var gameCurrency = class {
     this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
     this.game = gamePointer;
   }
-  // get value (): E {
-  //     return this.data.value;
-  // }
   /**
-   * Adds an attribute with the given name and value to the game's static pointer.
-   * @param name - The name of the attribute to add.
-   * @param value - The value of the attribute to add.
-   * @returns The newly created attribute.
+   * Gets the value of the game currency.
+   * @returns The value of the game currency.
    */
-  // public addAttribute (name: string, value: E): attribute {
-  //     return this.static.attributes[name] = new attribute(value);
-  // }
+  get value() {
+    return this.data.value;
+  }
+};
+
+// src/game/gameAttribute.ts
+var gameAttribute = class {
+  /**
+   * Creates a new instance of the attribute class.
+   * @param attributePointer - A function that returns the current attribute value.
+   * @param staticPointer - A function that returns the static data for the attribute.
+   * @param gamePointer A pointer to the game instance.
+   */
+  constructor(attributePointer, staticPointer, gamePointer) {
+    this.data = typeof attributePointer === "function" ? attributePointer() : attributePointer;
+    this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
+    this.game = gamePointer;
+  }
+  /**
+   * Gets the value of the attribute.
+   * @returns The value of the attribute.
+   */
+  get value() {
+    return this.static.value;
+  }
+  /**
+   * Sets the value of the attribute.
+   * NOTE: This setter should not be used when boost is enabled.
+   * @param value - The value to set the attribute to.
+   */
+  set value(value) {
+    this.data.value = value;
+  }
 };
 
 // src/game/resetLayer.ts
@@ -6449,7 +6548,7 @@ var game2 = class _game {
     this.tickers = [];
   }
   /**
-   * Adds a new currency section to the game.
+   * Adds a new currency section to the game. {@link gameCurrency}
    * @param name - The name of the currency section.
    * @returns A new instance of the gameCurrency class.
    */
@@ -6458,7 +6557,7 @@ var game2 = class _game {
       currency: new currency()
     });
     this.static.set(name, {
-      currency: new currencyStatic(() => this.data.get(name))
+      currency: new currencyStatic(this.data.get(name))
       // attributes: {},
     });
     const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
@@ -6476,8 +6575,21 @@ var game2 = class _game {
     });
     currencies.forEach((currencyName) => {
       this.data.get(name)[currencyName] = new currency();
-      this.static.get(name)[currencyName] = new currencyStatic(() => this.data.get(name)[currencyName]);
+      this.static.get(name)[currencyName] = new currencyStatic(this.data.get(name)[currencyName]);
     });
+  }
+  /**
+   * Adds a new attribute to the game. {@link gameAttribute} is the class.
+   * @param name - The name of the attribute.
+   * @param useBoost - Indicates whether to use boost for the attribute.
+   * @param initial - The initial value of the attribute.
+   * @returns The newly created attribute.
+   */
+  addAttribute(name, useBoost = true, initial = 0) {
+    this.data.set(name, new attribute(initial));
+    this.static.set(name, new attributeStatic(this.data.get(name), useBoost, initial));
+    const classInstance = new gameAttribute(this.data.get(name), this.static.get(name), this);
+    return classInstance;
   }
   /**
    * Creates a new game reset object with the specified currencies to reset.
@@ -7052,11 +7164,11 @@ var pixiGame = class _pixiGame extends game2 {
       }
     };
     this.keyManager = new keyManager({
-      autoAddInterval: false,
+      autoAddInterval: true,
       pixiApp: this.PIXI.app
     });
     this.eventManager = new eventManager({
-      autoAddInterval: false,
+      autoAddInterval: true,
       pixiApp: this.PIXI.app
     });
   }

@@ -1,10 +1,12 @@
 /**
  * @file Declares the main game class.
  */
+import { ESource } from "../eMath";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";
 import { gameCurrency } from "./gameCurrency";
+import { gameAttribute } from "./gameAttribute";
 import { gameReset } from "./resetLayer";
 import { configManager, RequiredDeep } from "./managers/configManager";
 interface gameConfigOptions {
@@ -58,7 +60,7 @@ declare class game {
      */
     constructor(config?: gameConfigOptions);
     /**
-     * Adds a new currency section to the game.
+     * Adds a new currency section to the game. {@link gameCurrency}
      * @param name - The name of the currency section.
      * @returns A new instance of the gameCurrency class.
      */
@@ -70,6 +72,14 @@ declare class game {
      */
     addCurrencyGroup(name: string, currencies: string[]): void;
     /**
+     * Adds a new attribute to the game. {@link gameAttribute} is the class.
+     * @param name - The name of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute.
+     * @param initial - The initial value of the attribute.
+     * @returns The newly created attribute.
+     */
+    addAttribute(name: string, useBoost?: boolean, initial?: ESource): gameAttribute;
+    /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.
      * @param extender - An optional object to extend the game reset object with.
@@ -77,4 +87,4 @@ declare class game {
      */
     addReset(currenciesToReset: gameCurrency[], extender?: gameReset): gameReset;
 }
-export { game, gameCurrency, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };

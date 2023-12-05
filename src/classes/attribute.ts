@@ -1,51 +1,70 @@
-"use strict";
-import { E, ESource } from "../../src/eMath";
-import { boost } from "../../src/classes/boost";
+import { E, ESource } from "../eMath";
+import { boost } from "../classes/boost";
 
 /**
- * Represents a static attribute in the game.
+ * Represents an attribute in the game.
+ * @deprecated Use {@link attributeStatic} instead.
  */
 class attribute {
-    /**
-     * The inital value of the attribute.
-     */
-    public initial: E;
-
     /**
      * The current value of the attribute.
      */
     public value: E;
 
     /**
-     * A boost object that affects the attribute.
-     */
-    public boost: boost;
-
-    /**
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
     constructor (initial: ESource) {
-        this.initial = E(initial);
         this.value = E(initial);
-        this.boost = new boost(1);
-    }
-
-    /**
-     * Updates the value of the attribute based on the provided effect function and initial value.
-     * @param effect - The effect function to apply to the attribute.
-     * @returns The updated value of the attribute after applying the effect.
-     */
-    public update (effect?: Function): E {
-        // Execute the provided effect function
-        if (effect) effect();
-
-        // Calculate and set the new value using the initial value and boost factor
-        this.value = this.boost.calculate(this.initial);
-
-        // Return the updated attribute value
-        return this.value;
     }
 }
 
-export { attribute };
+/**
+ * Represents a static attribute, which is number effected by boosts.
+ */
+class attributeStatic {
+    protected pointer: attribute;
+
+    public initial: E;
+    public boost?: boost;
+
+    /**
+     * Constructs a new instance of the Attribute class.
+     * @param pointer - A function or an instance of the attribute class.
+     * @param initial - The initial value of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute.
+     */
+    constructor (pointer: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
+        this.initial = E(initial);
+
+        this.pointer = typeof pointer === "function" ? pointer() : pointer;
+        this.boost = new boost(this.initial);
+    }
+
+    /**
+     * Gets the value of the attribute, and also updates the value stored.
+     * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+     * @returns The calculated value of the attribute.
+     */
+    get value (): E {
+        if (this.boost) {
+            this.pointer.value = this.boost.calculate();
+        }
+        return this.pointer.value;
+    }
+
+    /**
+     * Sets the value of the attribute.
+     * NOTE: This setter should not be used when boost is enabled.
+     * @param value - The value to set the attribute to.
+     */
+    set value (value: E) {
+        if (this.boost) {
+            throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+        }
+        this.pointer.value = value;
+    }
+}
+
+export { attribute, attributeStatic };

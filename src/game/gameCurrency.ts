@@ -8,7 +8,7 @@ import { currency, currencyStatic } from "../classes/currency";
 import type { game } from "./game";
 
 /**
- * Represents a game currency.
+ * Represents a game currency. {@link currency} is the data class and {@link currencyStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
  */
 class gameCurrency {
@@ -30,19 +30,13 @@ class gameCurrency {
         this.game = gamePointer;
     }
 
-    // get value (): E {
-    //     return this.data.value;
-    // }
-
     /**
-     * Adds an attribute with the given name and value to the game's static pointer.
-     * @param name - The name of the attribute to add.
-     * @param value - The value of the attribute to add.
-     * @returns The newly created attribute.
+     * Gets the value of the game currency.
+     * @returns The value of the game currency.
      */
-    // public addAttribute (name: string, value: E): attribute {
-    //     return this.static.attributes[name] = new attribute(value);
-    // }
+    get value (): E {
+        return this.data.value;
+    }
 }
 
 class gameCurrencyGroup {

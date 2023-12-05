@@ -6,7 +6,6 @@ import { EString } from "./classes/utility/eString";
 
 // @ts-ignore
 const E: {
-	/* eslint-disable no-unused-vars */
 	(x?: DecimalSource): Decimal;
 
     readonly dZero: Decimal;
@@ -163,8 +162,11 @@ const E: {
     critical_section(base: number, height: number, grid: number[][], linear?: boolean): number;
 
     smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
-    format(e: DecimalSource, acc?: number, max?: number): string;
-	/* eslint-enable */
+    format(e: DecimalSource, acc?: number, max?: number): string;softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal;
+    scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    formatST(value: DecimalSource, acc?: number, max?: number, type?: string): string;
+    formatGain(value: DecimalSource, gain: DecimalSource): string;
+    toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
 } = (x?: DecimalSource) => new Decimal(x);
 
 // Copy properties from Decimal to E

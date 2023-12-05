@@ -35,6 +35,7 @@ var src_exports = {};
 __export(src_exports, {
   E: () => E,
   attribute: () => attribute,
+  attributeStatic: () => attributeStatic,
   boost: () => boost,
   boostObject: () => boostObject,
   currency: () => currency,
@@ -2866,7 +2867,6 @@ var Decimal = class _Decimal {
   static format(e, acc = 2, max = 9) {
     return format(new _Decimal(e), acc, max);
   }
-  // === //
   /**
    * Creates a clone of the E instance.
    *
@@ -2933,6 +2933,9 @@ var Decimal = class _Decimal {
     }
     return x;
   }
+  static softcap(value, start, power, mode) {
+    return new _Decimal(value).softcap(start, power, mode);
+  }
   /**
   * Scales a currency value using a specified scaling function.
   *
@@ -2953,6 +2956,9 @@ var Decimal = class _Decimal {
         x = rev ? x.div(s).max(1).log(p).add(s) : _Decimal.pow(p, x.sub(s)).mul(s);
     }
     return x;
+  }
+  static scale(value, s, p, mode, rev = false) {
+    return new _Decimal(value).scale(s, p, mode, rev);
   }
   /**
    * Formats the E instance with a specified accuracy and maximum decimal places.
@@ -2979,6 +2985,9 @@ var Decimal = class _Decimal {
   formatST(acc = 2, max = 9, type = "st") {
     return format(this.clone(), acc, max, type);
   }
+  static formatST(value, acc = 2, max = 9, type = "st") {
+    return format(new _Decimal(value), acc, max, type);
+  }
   /**
    * Formats the gain rate using the E instance.
    *
@@ -2996,6 +3005,9 @@ var Decimal = class _Decimal {
    */
   formatGain(gain) {
     return formatGain(this.clone(), gain);
+  }
+  static formatGain(value, gain) {
+    return formatGain(new _Decimal(value), gain);
   }
   /**
    * Converts the E instance to a Roman numeral representation.
@@ -3054,6 +3066,9 @@ var Decimal = class _Decimal {
     } else {
       return "";
     }
+  }
+  static toRoman(value, max) {
+    return new _Decimal(value).toRoman(max);
   }
 };
 var ST_NAMES = [
@@ -3858,6 +3873,26 @@ var boost = class {
    * @param boosts - An array of boost objects to initialize with.
    */
   constructor(baseEffect, boosts) {
+    /**
+     * @alias {@link boost.getBoost}
+     * @deprecated Use getBoost instead.
+     */
+    this.bGet = this.getBoost;
+    /**
+     * @alias {@link boost.removeBoost}
+     * @deprecated Use removeBoost instead.
+     */
+    this.bRemove = this.removeBoost;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    this.bSet = this.setBoost;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    this.addBoost = this.setBoost;
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
     this.baseEffect = E(baseEffect ?? 1);
     this.boostArray = [];
@@ -3872,7 +3907,7 @@ var boost = class {
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
-  bGet(id) {
+  getBoost(id) {
     let output = null;
     for (let i = 0; i < this.boostArray.length; i++) {
       if (id === i || id == this.boostArray[i].id) {
@@ -3886,18 +3921,18 @@ var boost = class {
    * Removes a boost by its ID.
    * @param id - The ID of the boost to remove.
    */
-  bRemove(id) {
+  removeBoost(id) {
     const bCheck = this.bGet(id);
     if (bCheck) {
       delete this.boostArray[bCheck.index];
     }
   }
-  bSet(arg1, arg2, arg3, arg4, arg5) {
+  setBoost(arg1, arg2, arg3, arg4, arg5) {
     if (typeof arg1 === "string") {
       const id = arg1;
-      const name = arg2 || "";
-      const desc = arg3 || "";
-      const value = arg4 || (() => E(0));
+      const name = arg2 ?? "";
+      const desc = arg3 ?? "";
+      const value = arg4 ?? (() => E(0));
       const order = arg5;
       const bCheck = this.bGet(id);
       if (!bCheck) {
@@ -3906,37 +3941,35 @@ var boost = class {
         this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
       }
     } else {
-      const boostObj = arg1;
-      const bCheck = this.bGet(boostObj.id);
-      if (!bCheck) {
-        this.boostArray.push(new boostObject(boostObj));
-      } else {
-        this.boostArray[bCheck.index] = new boostObject(boostObj);
+      arg1 = Array.isArray(arg1) ? arg1 : [arg1];
+      for (let i = 0; i < arg1.length; i++) {
+        const bCheck = this.bGet(arg1[i].id);
+        if (!bCheck) {
+          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+        } else {
+          this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+        }
       }
     }
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @alias {@link boost.setBoost}
+   * @deprecated Use setBoost instead.
    * @param boostsArray - boost objects to set or update.
    */
   bSetArray(boostsArray) {
-    for (let i = 0; i < boostsArray.length; i++) {
-      const bCheck = this.bGet(boostsArray[i].id);
-      if (!bCheck) {
-        this.boostArray = this.boostArray.concat(new boostObject(boostsArray[i]));
-      } else {
-        console.log(i);
-        this.boostArray[bCheck.index] = new boostObject(boostsArray[i]);
-      }
-    }
+    this.setBoost(boostsArray);
   }
   /**
    * Sets or updates multiple boosts with advanced parameters.
+   * @alias {@link boost.setBoost}
+   * @deprecated Use setBoost instead.
    * @param boostsArray - boost objects to set or update.
-   * @deprecated Use bSetArray instead.
+   * @deprecated Use setBoost instead.
    */
   bSetAdvanced(...boostsArray) {
-    this.bSetArray(boostsArray);
+    this.setBoost(boostsArray);
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
@@ -4010,13 +4043,6 @@ var currencyStatic = class {
     }
     ;
   }
-  // public reset ({
-  //     resetCurrency = true,
-  //     resetUpgradeAmount = true,
-  // }): void
-  // public reset (...params): void {
-  //     // Function implementation
-  // }
   /**
    * The new currency value after applying the boost.
    * @param dt Deltatime
@@ -4191,20 +4217,42 @@ var attribute = class {
    * @param initial - The inital value of the attribute.
    */
   constructor(initial) {
-    this.initial = E(initial);
     this.value = E(initial);
-    this.boost = new boost(1);
+  }
+};
+var attributeStatic = class {
+  /**
+   * Constructs a new instance of the Attribute class.
+   * @param pointer - A function or an instance of the attribute class.
+   * @param initial - The initial value of the attribute.
+   * @param useBoost - Indicates whether to use boost for the attribute.
+   */
+  constructor(pointer, useBoost = true, initial = 0) {
+    this.initial = E(initial);
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
+    this.boost = new boost(this.initial);
   }
   /**
-   * Updates the value of the attribute based on the provided effect function and initial value.
-   * @param effect - The effect function to apply to the attribute.
-   * @returns The updated value of the attribute after applying the effect.
+   * Gets the value of the attribute, and also updates the value stored.
+   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+   * @returns The calculated value of the attribute.
    */
-  update(effect) {
-    if (effect)
-      effect();
-    this.value = this.boost.calculate(this.initial);
-    return this.value;
+  get value() {
+    if (this.boost) {
+      this.pointer.value = this.boost.calculate();
+    }
+    return this.pointer.value;
+  }
+  /**
+   * Sets the value of the attribute.
+   * NOTE: This setter should not be used when boost is enabled.
+   * @param value - The value to set the attribute to.
+   */
+  set value(value) {
+    if (this.boost) {
+      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+    }
+    this.pointer.value = value;
   }
 };
 

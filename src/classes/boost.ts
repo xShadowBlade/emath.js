@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../../src/eMath";
+import { E, ESource } from "../eMath";
 /**
  * An object representing a boost.
  */
@@ -88,7 +88,7 @@ class boost {
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    public bGet (id: string | number): boostObject | null {
+    public getBoost (id: string | number): boostObject | null {
         let output: boostObject | null = null;
         for (let i = 0; i < this.boostArray.length; i++) {
             // if (i === this.boostArray.length) break;
@@ -99,17 +99,27 @@ class boost {
         }
         return output;
     }
+    /**
+     * @alias {@link boost.getBoost}
+     * @deprecated Use getBoost instead.
+     */
+    public bGet = this.getBoost;
 
     /**
      * Removes a boost by its ID.
      * @param id - The ID of the boost to remove.
      */
-    public bRemove (id: string): void {
+    public removeBoost (id: string): void {
         const bCheck = this.bGet(id);
         if (bCheck) {
             delete this.boostArray[bCheck.index];
         }
     }
+    /**
+     * @alias {@link boost.removeBoost}
+     * @deprecated Use removeBoost instead.
+     */
+    public bRemove = this.removeBoost;
 
     /**
      * Sets or updates a boost with the given parameters.
@@ -117,21 +127,22 @@ class boost {
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
      * @param value - The value of the boost (function).
-     * @param order - The order of the boost (higher order are go first)
+     * @param order - The order of the boost (higher order go first)
      */
-    public bSet (id: string, name: string, desc: string, value: () => E, order?: number): void;
+    public setBoost (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
 
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
      */
-    public bSet (boostObj: boostsObjectInit): void;
-    public bSet (arg1: string | boostsObjectInit, arg2?: string, arg3?: string, arg4?: () => E, arg5?: number): void {
+    public setBoost (boostObj: boostsObjectInit | boostsObjectInit[]): void;
+    public setBoost (arg1: string | (boostsObjectInit | boostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
         if (typeof arg1 === "string") {
+            // Basic set using parameters
             const id = arg1;
-            const name = arg2 || "";
-            const desc = arg3 || "";
-            const value = arg4 || (() => E(0));
+            const name = arg2 ?? "";
+            const desc = arg3 ?? "";
+            const value = arg4 ?? (() => E(0));
             const order = arg5;
             const bCheck = this.bGet(id);
 
@@ -141,39 +152,47 @@ class boost {
                 this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
             }
         } else {
-            const boostObj = arg1;
-            const bCheck = this.bGet(boostObj.id);
-
-            if (!bCheck) {
-                this.boostArray.push(new boostObject(boostObj));
-            } else {
-                this.boostArray[bCheck.index] = new boostObject(boostObj);
+            // Advanced set using boost object
+            arg1 = Array.isArray(arg1) ? arg1 : [arg1];
+            for (let i = 0; i < arg1.length; i++) {
+                const bCheck = this.bGet(arg1[i].id);
+                if (!bCheck) {
+                    this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+                } else {
+                    this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+                }
             }
         }
+    }
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    public bSet = this.setBoost;
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    public addBoost = this.setBoost;
+
+    /**
+     * Sets or updates multiple boosts with advanced parameters.
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     * @param boostsArray - boost objects to set or update.
+     */
+    public bSetArray (boostsArray: boostsObjectInit | boostsObjectInit[]): void {
+        this.setBoost(boostsArray);
     }
 
     /**
      * Sets or updates multiple boosts with advanced parameters.
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
      * @param boostsArray - boost objects to set or update.
+     * @deprecated Use setBoost instead.
      */
-    public bSetArray (boostsArray: boostsObjectInit[]): void {
-        for (let i = 0; i < boostsArray.length; i++) {
-            const bCheck = this.bGet(boostsArray[i].id);
-            if (!bCheck) {
-                this.boostArray = this.boostArray.concat(new boostObject(boostsArray[i]));
-            } else {
-                console.log(i);
-                this.boostArray[bCheck.index] = new boostObject(boostsArray[i]);
-            }
-        }
-    }
-
-    /**
-     * Sets or updates multiple boosts with advanced parameters.
-     * @param boostsArray - boost objects to set or update.
-     * @deprecated Use bSetArray instead.
-     */
-    public bSetAdvanced (...boostsArray: boostsObjectInit[]): void { this.bSetArray(boostsArray); };
+    public bSetAdvanced (...boostsArray: boostsObjectInit[]): void { this.setBoost(boostsArray); };
 
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
@@ -183,6 +202,7 @@ class boost {
     public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);
         const boosts = this.boostArray;
+        // Sort boosts by order from lowest to highest
         boosts.sort((a: boostObject, b: boostObject) => a.order - b.order);
         for (let i = 0; i < boosts.length; i++) {
             output = boosts[i].value(output);
@@ -191,4 +211,4 @@ class boost {
     }
 }
 
-export { boost, boostObject };
+export { boost, boostObject, boostsObjectInit };
