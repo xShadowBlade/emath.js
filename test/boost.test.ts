@@ -1,7 +1,4 @@
-/* global describe it beforeEach */
 import { E, boost } from "../src/index";
-
-// @ts-ignore
 import assert from "assert";
 
 describe("boost", () => {

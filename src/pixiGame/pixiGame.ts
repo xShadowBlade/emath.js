@@ -22,9 +22,8 @@ const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
     initIntervalBasedManagers: false,
     pixi: {
         app: {
-            // @ts-ignore
             background: 0x000000,
-            // @ts-ignore
+            // @ts-expect-error - PIXI types are wrong
             resizeTo: window,
         },
     },
@@ -53,13 +52,13 @@ class pixiGame extends game {
         if (this.config.pixi.app instanceof Application) {
             app = this.config.pixi.app;
         } else {
-            // @ts-ignore
+            // @ts-expect-error - PIXI types are wrong
             app = new Application(this.config.pixi.app);
 
-            // @ts-ignore
             app.stage.eventMode = "static";
-            // @ts-ignore
+            // @ts-expect-error - Node document type is wrong
             document.body.appendChild(app.view);
+            // TODO: Fix this
             // window.addEventListener("resize", () => {
             //     // Update the background's size to match the new window size
             //     const newWidth = window.innerWidth;

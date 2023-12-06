@@ -16,12 +16,6 @@ interface upgradeInit {
     name?: string,
 
     /**
-     * The cost of the first upgrade.
-     * @deprecated Use `costScaling` function instead.
-     */
-    cost?: E,
-
-    /**
      * The cost of upgrades at a certain level.
      */
     costScaling: (level: E) => E,
@@ -33,8 +27,10 @@ interface upgradeInit {
 
     /**
      * The effect of the upgrade.
+     * @param level - The current level of the upgrade.
+     * @param context - The upgrade object.
      */
-    effect: (level?: E, context?: any) => any,
+    effect: (level: E, context: upgradeStatic) => void,
 
     // Below are types that are automatically added
     /**
@@ -51,33 +47,21 @@ interface upgrade extends Omit<upgradeInit, "level"> {
 }
 
 interface upgradeDataInterface {
-    id?: string | number,
-    // name?: string,
-    // cost?: E,
-    // costScaling: (level: E) => E,
-    // maxLevel: E,
-    // effect: (level?: E, context?: any) => any,
-    level?: E
+    id: string | number,
+    level: E
 }
 
 class upgradeData implements upgradeDataInterface {
-    id?: string | number;
-    level: E;
+    public id; level;
 
     constructor (init: upgradeInit) {
-        this.id = init.id;
+        this.id = init.id ?? -1;
         this.level = init.level ? E(init.level) : E(1);
     }
 }
 
 class upgradeStatic implements upgrade {
-    public id?: string | number;
-    public name?: string;
-    public cost?: E;
-    public costScaling: (level: E) => E;
-    public maxLevel: E;
-    public effect: (level?: E, context?: any) => any;
-
+    public id?; name?; costScaling; maxLevel; effect;
     protected data: upgradeData;
 
     /**
@@ -89,7 +73,6 @@ class upgradeStatic implements upgrade {
         this.data = data;
         this.id = init.id;
         this.name = init.name;
-        this.cost = init.cost;
         this.costScaling = init.costScaling;
         this.maxLevel = init.maxLevel;
         this.effect = init.effect;
@@ -265,17 +248,16 @@ class currencyStatic {
                 const upgrade = this.getUpgrade(upgrades[i].id);
                 if (upgrade === null) continue;
                 upgrade.name = upgrades[i].name ?? upgrade.name;
-                upgrade.cost = upgrades[i].cost ?? upgrade.cost;
                 upgrade.costScaling = upgrades[i].costScaling ?? upgrade.costScaling;
                 upgrade.maxLevel = upgrades[i].maxLevel ?? upgrade.maxLevel;
                 upgrade.effect = upgrades[i].effect ?? upgrade.effect;
-                if (runEffectInstantly) upgrade.effect(upgrade.level);
+                if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
             } else {
                 // Create upgrade
                 this.pointerAddUpgrade(upgrades[i]);
                 const upgrade = this.getUpgrade(upgrades[i].id);
                 if (upgrade === null) continue;
-                if (runEffectInstantly) upgrade.effect(upgrade.level);
+                if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
                 upgradesDefault.push(upgrade);
             }
         }

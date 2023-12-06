@@ -1,7 +1,4 @@
-/* global describe it beforeEach */
 import { grid, gridCell } from "../src/index";
-
-// @ts-ignore
 import assert from "assert";
 
 describe("grid", () => {

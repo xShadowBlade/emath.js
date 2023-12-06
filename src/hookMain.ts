@@ -97,7 +97,7 @@ const eMathHook = { ...eMathE, ...{
  * Attach eMath to the window object
  */
 function hookMain () {
-    // @ts-ignore
+    // @ts-expect-error - node types are wrong
     if (typeof process! !== "object" && typeof window! !== "undefined") {
         (window as any)["eMath"] = eMathHook;
     }

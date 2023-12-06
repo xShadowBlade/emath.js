@@ -13,11 +13,6 @@ interface upgradeInit {
      */
     name?: string;
     /**
-     * The cost of the first upgrade.
-     * @deprecated Use `costScaling` function instead.
-     */
-    cost?: E;
-    /**
      * The cost of upgrades at a certain level.
      */
     costScaling: (level: E) => E;
@@ -27,8 +22,10 @@ interface upgradeInit {
     maxLevel: E;
     /**
      * The effect of the upgrade.
+     * @param level - The current level of the upgrade.
+     * @param context - The upgrade object.
      */
-    effect: (level?: E, context?: any) => any;
+    effect: (level: E, context: upgradeStatic) => any;
     /**
      * The current level of the upgrade. Automatically added.
      */
@@ -40,21 +37,20 @@ interface upgradeInit {
 interface upgrade extends Omit<upgradeInit, "level"> {
 }
 interface upgradeDataInterface {
-    id?: string | number;
-    level?: E;
+    id: string | number;
+    level: E;
 }
 declare class upgradeData implements upgradeDataInterface {
-    id?: string | number;
-    level: E;
+    id: string | number;
+    level: import("../E/e").default;
     constructor(init: upgradeInit);
 }
 declare class upgradeStatic implements upgrade {
-    id?: string | number;
-    name?: string;
-    cost?: E;
-    costScaling: (level: E) => E;
-    maxLevel: E;
-    effect: (level?: E, context?: any) => any;
+    id?: string | number | undefined;
+    name?: string | undefined;
+    costScaling: (level: import("../E/e").default) => import("../E/e").default;
+    maxLevel: import("../E/e").default;
+    effect: (level: import("../E/e").default, context: upgradeStatic) => any;
     protected data: upgradeData;
     /**
      * @param init - The upgrade object to initialize.

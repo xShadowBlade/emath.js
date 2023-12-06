@@ -3,7 +3,7 @@ class EString extends String {
     constructor (value?: string) {
         super(value);
     }
-    public forEach = function (this: String, callbackfn: (value: string) => void): void {
+    public forEach = function (this: string, callbackfn: (value: string) => void): void {
         for (let i = 0; i < this.length; i++) {
             callbackfn(this[i]);
         }

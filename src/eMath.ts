@@ -1,10 +1,7 @@
-/* eslint-disable no-unused-vars */
-"use strict";
-
 import Decimal, { DecimalSource, CompareResult } from "./E/e";
 import { EString } from "./classes/utility/eString";
 
-// @ts-ignore
+// @ts-expect-error Declared as a function, but adds properties later
 const E: {
 	(x?: DecimalSource): Decimal;
 
@@ -193,6 +190,9 @@ const eMath = {
         let unclosedB = 0; // []
         let unclosedCB = 0; // {}
 
+        /**
+         *
+         */
         function check () {
             const read = object[searchIndex + offset];
             if (object[searchIndex + offset - 1] != "\\") {
@@ -263,6 +263,8 @@ const eMath = {
     randomNumber: (min: number, max: number, round?: boolean): number => !(round != undefined && !round) ? Math.round((Math.random() * (max > min ? max - min : min - max)) + (max > min ? min : max)) : (Math.random() * (max > min ? max - min : min - max)) + (max > min ? min : max), // rounds by default, can disable
 
     /**
+     * @param times
+     * @param type
      * @deprecated dont ever use this
      */
     randomString64: (times: number, type: boolean) => {

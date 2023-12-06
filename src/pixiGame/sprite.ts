@@ -23,7 +23,6 @@ class sprite {
 
     /**
      * Constructs a new game sprite.
-     * @constructor
      * @param gameRef - The game reference.
      * @param spr - The PIXI sprite to create the game sprite from.
      * @param collisionShape - The type of collision shape to use for the sprite.
@@ -36,7 +35,7 @@ class sprite {
         this.x = this.sprite.x; // absolute position
         this.y = this.sprite.y;
         this.collisionShape = collisionShape;
-        // @ts-ignore
+        // @ts-expect-error - collisionShape is a string, but we want to use it as a type
         this.intersects = new Intersects[this.collisionShape](this.sprite);
 
         // Offset by camera
@@ -49,12 +48,11 @@ class sprite {
 
     /**
      * Checks if this sprite collides with another sprite.
-     *
      * @param other - The other sprite to check for collision with.
      * @returns True if a collision occurs, otherwise false.
      */
     public collides (other: this): boolean {
-        // @ts-expect-error
+        // @ts-expect-error - collisionShape is a string, but we want to use it as a type
         return this.intersects[`collides${other.collisionShape}`](other.intersects);
     }
 
@@ -70,7 +68,7 @@ class sprite {
             if (index !== -1) {
                 parent.splice(index, 1);
             }
-            // @ts-expect-error
+            // @ts-expect-error - collisionShape is a string, but we want to use it as a type
         } else if (typeof parent == "object") delete this;
     }
 

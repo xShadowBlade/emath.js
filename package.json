@@ -22,6 +22,7 @@
         "build-main": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "lint": "eslint src/**/*.ts test/**/*.ts",
+        "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts",
         "test": "ts-mocha test/**/*.test.ts"
     },
     "repository": {

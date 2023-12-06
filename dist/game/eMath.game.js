@@ -4309,7 +4309,7 @@ var boost = class {
 // src/classes/currency.ts
 var upgradeData = class {
   constructor(init) {
-    this.id = init.id;
+    this.id = init.id ?? -1;
     this.level = init.level ? E(init.level) : E(1);
   }
 };
@@ -4421,19 +4421,18 @@ var currencyStatic = class {
         if (upgrade === null)
           continue;
         upgrade.name = upgrades[i].name ?? upgrade.name;
-        upgrade.cost = upgrades[i].cost ?? upgrade.cost;
         upgrade.costScaling = upgrades[i].costScaling ?? upgrade.costScaling;
         upgrade.maxLevel = upgrades[i].maxLevel ?? upgrade.maxLevel;
         upgrade.effect = upgrades[i].effect ?? upgrade.effect;
         if (runEffectInstantly)
-          upgrade.effect(upgrade.level);
+          upgrade.effect(upgrade.level, upgrade);
       } else {
         this.pointerAddUpgrade(upgrades[i]);
         const upgrade = this.getUpgrade(upgrades[i].id);
         if (upgrade === null)
           continue;
         if (runEffectInstantly)
-          upgrade.effect(upgrade.level);
+          upgrade.effect(upgrade.level, upgrade);
         upgradesDefault.push(upgrade);
       }
     }

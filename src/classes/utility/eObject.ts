@@ -14,6 +14,9 @@ class EObject extends Object {
         let unclosedB = 0; // []
         let unclosedCB = 0; // {}
 
+        /**
+         *
+         */
         function check () {
             const read = object[searchIndex + offset];
             if (object[searchIndex + offset - 1] != "\\") {

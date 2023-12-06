@@ -119,6 +119,10 @@ class dataManager {
         // }
 
         // Recursive function to process object properties
+        /**
+         *
+         * @param obj
+         */
         function processObject (obj: any) {
             for (const prop in obj) {
                 if (typeof obj[prop] === "string") {
@@ -144,6 +148,11 @@ class dataManager {
         console.log((loadedData = processObject(loadedData)));
 
         // Add new / updated properties
+        /**
+         *
+         * @param source
+         * @param target
+         */
         function deepMerge (source: any, target: any) {
             for (const key in source) {
                 if (Object.prototype.hasOwnProperty.call(source, key)) {

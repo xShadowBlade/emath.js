@@ -26,8 +26,16 @@ class attribute {
 class attributeStatic {
     protected pointer: attribute;
 
+    /**
+     * The initial value of the attribute.
+     */
     public initial: E;
-    public boost?: boost;
+
+    /**
+     * The boost of the attribute.
+     * NOTE: This will not be used if the boost is disabled.
+     */
+    public boost: boost;
 
     /**
      * Constructs a new instance of the Attribute class.
@@ -47,7 +55,7 @@ class attributeStatic {
      * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
      * @returns The calculated value of the attribute.
      */
-    get value (): E {
+    public get value (): E {
         if (this.boost) {
             this.pointer.value = this.boost.calculate();
         }
@@ -59,12 +67,14 @@ class attributeStatic {
      * NOTE: This setter should not be used when boost is enabled.
      * @param value - The value to set the attribute to.
      */
-    set value (value: E) {
+    public set value (value: E) {
         if (this.boost) {
             throw new Error("Cannot set value of attributeStatic when boost is enabled.");
         }
         this.pointer.value = value;
     }
+
+
 }
 
 export { attribute, attributeStatic };

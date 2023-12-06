@@ -48,7 +48,7 @@ class gameAttribute {
 }
 
 class gameAttributeGroup {
-    
+
 }
 
 export { gameAttribute };

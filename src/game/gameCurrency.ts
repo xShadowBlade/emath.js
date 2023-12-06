@@ -40,7 +40,7 @@ class gameCurrency {
 }
 
 class gameCurrencyGroup {
-    
+
 }
 
 export { gameCurrency };

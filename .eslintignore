@@ -1,5 +1,6 @@
 dist/
 bin/build/umdPlugin.js
+src/E/
 
 # Logs
 logs
