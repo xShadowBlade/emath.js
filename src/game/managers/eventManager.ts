@@ -1,21 +1,21 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import { E } from "../../eMath";
+import { E } from "../../eMain";
 import { configManager, RequiredDeep } from "./configManager";
 import type { Application } from "pixi.js";
 
 interface Event {
     name: string;
     type: "interval" | "timeout";
-    delay: E;
+    delay: number;
     callbackFn: () => void;
-    timeCreated: E;
+    timeCreated: number;
 }
 
 interface intervalEvent extends Event {
     type: "interval";
-    intervalLast: E;
+    intervalLast: number;
 }
 
 interface timeoutEvent extends Event {}
@@ -70,19 +70,19 @@ class eventManager {
     }
 
     private tickerFunction () {
-        const currentTime = E(Date.now());
+        const currentTime = Date.now();
         for (let i = 0; i < this.events.length; i++) {
             const event = this.events[i];
 
             if (event.type === "interval") {
                 // If interval
-                if (((currentTime.sub(((event as intervalEvent)).intervalLast)).gte(event.delay))) {
+                if (currentTime - (event as intervalEvent).intervalLast >= event.delay) {
                     event.callbackFn();
                     (event as intervalEvent).intervalLast = currentTime;
                 }
             } else if (event.type === "timeout") {
                 // If timeout
-                if (((currentTime.sub(event.timeCreated)).gte(event.delay))) {
+                if (currentTime - event.timeCreated >= event.delay) {
                     event.callbackFn();
                     this.events.splice(i, 1);
                     i--;
@@ -115,10 +115,10 @@ class eventManager {
             const event: intervalEvent = {
                 name,
                 type,
-                delay: E(delay),
+                delay: typeof delay === "number" ? delay : delay.toNumber(),
                 callbackFn,
-                timeCreated: E(Date.now()),
-                intervalLast: E(Date.now()),
+                timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
+                intervalLast: typeof delay === "number" ? Date.now() : delay.toNumber(),
             };
             return event;
         // eslint-disable-next-line no-unreachable
@@ -128,9 +128,9 @@ class eventManager {
             const event: timeoutEvent = {
                 name,
                 type,
-                delay: E(delay),
+                delay: typeof delay === "number" ? delay : delay.toNumber(),
                 callbackFn,
-                timeCreated: E(Date.now()),
+                timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
             };
 
             return event;

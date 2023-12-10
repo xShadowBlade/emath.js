@@ -1,4 +1,4 @@
-import { eMath } from "../../eMath";
+import { eMath } from "./eMath";
 
 class EArray extends Array {
     constructor (value?: any) {

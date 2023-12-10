@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../eMath";
+import { E, ESource } from "../eMain";
 /**
  * An object representing a boost.
  */

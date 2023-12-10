@@ -523,7 +523,7 @@ function hookPixiGame() {
   if (!(typeof process !== "object" && typeof window !== "undefined")) {
     return;
   }
-  if (typeof process !== "object") {
+  if (typeof process !== "undefined") {
     console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
     return;
   }
@@ -4172,7 +4172,7 @@ var formats = { ...FORMATS, ...{
 Decimal.formats = formats;
 var e_default = Decimal;
 
-// src/eMath.ts
+// src/eMain.ts
 var E = (x) => new e_default(x);
 Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(class {
 }).includes(b)).forEach((prop) => {
@@ -4734,16 +4734,16 @@ var eventManager = class _eventManager {
     }
   }
   tickerFunction() {
-    const currentTime = E(Date.now());
+    const currentTime = Date.now();
     for (let i = 0; i < this.events.length; i++) {
       const event = this.events[i];
       if (event.type === "interval") {
-        if (currentTime.sub(event.intervalLast).gte(event.delay)) {
+        if (currentTime - event.intervalLast >= event.delay) {
           event.callbackFn();
           event.intervalLast = currentTime;
         }
       } else if (event.type === "timeout") {
-        if (currentTime.sub(event.timeCreated).gte(event.delay)) {
+        if (currentTime - event.timeCreated >= event.delay) {
           event.callbackFn();
           this.events.splice(i, 1);
           i--;
@@ -4777,10 +4777,10 @@ var eventManager = class _eventManager {
             const event = {
               name,
               type,
-              delay: E(delay),
+              delay: typeof delay === "number" ? delay : delay.toNumber(),
               callbackFn,
-              timeCreated: E(Date.now()),
-              intervalLast: E(Date.now())
+              timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
+              intervalLast: typeof delay === "number" ? Date.now() : delay.toNumber()
             };
             return event;
           }
@@ -4791,9 +4791,9 @@ var eventManager = class _eventManager {
           const event = {
             name,
             type,
-            delay: E(delay),
+            delay: typeof delay === "number" ? delay : delay.toNumber(),
             callbackFn,
-            timeCreated: E(Date.now())
+            timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber()
           };
           return event;
         }
@@ -6559,7 +6559,7 @@ var game2 = class _game {
       currency: new currencyStatic(this.data.get(name))
       // attributes: {},
     });
-    const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
+    const classInstance = new gameCurrency(this.data.get(name).currency, this.static.get(name).currency, this);
     return classInstance;
   }
   /**
@@ -7075,7 +7075,6 @@ var pixi_intersects_default = Intersects;
 var sprite = class {
   /**
    * Constructs a new game sprite.
-   * @constructor
    * @param gameRef - The game reference.
    * @param spr - The PIXI sprite to create the game sprite from.
    * @param collisionShape - The type of collision shape to use for the sprite.
@@ -7097,7 +7096,6 @@ var sprite = class {
   }
   /**
    * Checks if this sprite collides with another sprite.
-   *
    * @param other - The other sprite to check for collision with.
    * @returns True if a collision occurs, otherwise false.
    */
@@ -7136,9 +7134,8 @@ var pixiGameDefaultConfig = {
   initIntervalBasedManagers: false,
   pixi: {
     app: {
-      // @ts-ignore
       background: 0,
-      // @ts-ignore
+      // @ts-expect-error - PIXI types are wrong
       resizeTo: window
     }
   }

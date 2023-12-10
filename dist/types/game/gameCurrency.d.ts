@@ -1,7 +1,7 @@
 /**
  * @file Declares the game currency class.
  */
-import { E } from "../eMath";
+import { E } from "../eMain";
 import { currency, currencyStatic } from "../classes/currency";
 import type { game } from "./game";
 /**

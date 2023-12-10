@@ -2,7 +2,7 @@
  * @file Declares the main game class.
  */
 
-import { E, ESource } from "../eMath";
+import { E, ESource } from "../eMain";
 import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute, attributeStatic } from "../classes/attribute";
@@ -134,7 +134,7 @@ class game {
             // attributes: {},
         });
 
-        const classInstance = new gameCurrency(this.data.get(name), this.static.get(name), this);
+        const classInstance = new gameCurrency(this.data.get(name).currency, this.static.get(name).currency, this);
         return classInstance;
     }
 

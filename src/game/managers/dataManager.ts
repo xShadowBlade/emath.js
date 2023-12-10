@@ -4,7 +4,7 @@
  */
 import { game, gameData } from "../game";
 import LZString from "lz-string";
-import { E } from "../../eMath";
+import { E } from "../../eMain";
 
 // Saver
 import "reflect-metadata";

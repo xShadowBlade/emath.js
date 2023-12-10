@@ -1,7 +1,7 @@
 /**
  * @file Declares the main game class.
  */
-import { ESource } from "../eMath";
+import { ESource } from "../eMain";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";

@@ -1,4 +1,4 @@
-import { E, ESource } from "../eMath";
+import { E, ESource } from "../eMain";
 import { boost } from "../classes/boost";
 /**
  * Represents an attribute in the game.
@@ -20,8 +20,15 @@ declare class attribute {
  */
 declare class attributeStatic {
     protected pointer: attribute;
+    /**
+     * The initial value of the attribute.
+     */
     initial: E;
-    boost?: boost;
+    /**
+     * The boost of the attribute.
+     * NOTE: This will not be used if the boost is disabled.
+     */
+    boost: boost;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class.

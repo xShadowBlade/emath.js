@@ -1,4 +1,4 @@
-import { E, ESource } from "../eMath";
+import { E, ESource } from "../eMain";
 import { boost } from "./boost";
 /**
  * Interface for initializing an upgrade.
@@ -25,7 +25,7 @@ interface upgradeInit {
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect: (level: E, context: upgradeStatic) => any;
+    effect: (level: E, context: upgradeStatic) => void;
     /**
      * The current level of the upgrade. Automatically added.
      */
@@ -50,7 +50,7 @@ declare class upgradeStatic implements upgrade {
     name?: string | undefined;
     costScaling: (level: import("../E/e").default) => import("../E/e").default;
     maxLevel: import("../E/e").default;
-    effect: (level: import("../E/e").default, context: upgradeStatic) => any;
+    effect: (level: import("../E/e").default, context: upgradeStatic) => void;
     protected data: upgradeData;
     /**
      * @param init - The upgrade object to initialize.

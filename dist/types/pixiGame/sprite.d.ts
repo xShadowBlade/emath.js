@@ -17,7 +17,6 @@ declare class sprite {
     private gameRef;
     /**
      * Constructs a new game sprite.
-     * @constructor
      * @param gameRef - The game reference.
      * @param spr - The PIXI sprite to create the game sprite from.
      * @param collisionShape - The type of collision shape to use for the sprite.
@@ -28,7 +27,6 @@ declare class sprite {
     private tickerFn;
     /**
      * Checks if this sprite collides with another sprite.
-     *
      * @param other - The other sprite to check for collision with.
      * @returns True if a collision occurs, otherwise false.
      */

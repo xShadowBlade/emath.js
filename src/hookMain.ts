@@ -1,13 +1,14 @@
-import { eMath as eMathE, E } from "./eMath";
+import { eMath as eMathE } from "./utility/eMath";
+import { E } from "./eMain";
 import { boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
 import { attribute } from "./classes/attribute";
 import { grid, gridCell } from "./classes/grid";
 
-import { EString } from "./classes/utility/eString";
-import { obb } from "./classes/utility/obb";
-import { EArray } from "./classes/utility/eArray";
-import { EObject } from "./classes/utility/eObject";
+import { EString } from "./utility/eString";
+import { obb } from "./utility/obb";
+import { EArray } from "./utility/eArray";
+import { EObject } from "./utility/eObject";
 
 // import { game } from "./game/game";
 // import { keyManager } from "./game/managers/keyManager";

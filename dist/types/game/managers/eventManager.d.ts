@@ -1,7 +1,7 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import { E } from "../../eMath";
+import { E } from "../../eMain";
 import type { Application } from "pixi.js";
 interface eventManagerConfig {
     /**

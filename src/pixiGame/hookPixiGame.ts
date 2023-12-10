@@ -12,7 +12,7 @@ export function hookPixiGame () {
         return;
     }
     // @ts-expect-error - node types are wrong
-    if (typeof process! !== "object") {
+    if (typeof process! !== "undefined") {
         // Environment is not a browser AND is not node.
         console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
         return;

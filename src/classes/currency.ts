@@ -1,4 +1,4 @@
-import { E, ESource } from "../eMath";
+import { E, ESource } from "../eMain";
 import { boost } from "./boost";
 
 /**
