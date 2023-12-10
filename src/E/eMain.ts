@@ -1,4 +1,4 @@
-import Decimal, { DecimalSource, CompareResult } from "./E/e";
+import Decimal, { DecimalSource, CompareResult } from "./e";
 
 // @ts-expect-error Declared as a function, but adds properties later
 const E: {

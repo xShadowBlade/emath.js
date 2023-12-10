@@ -2,7 +2,7 @@
  * @file Declares the main game class.
  */
 
-import { E, ESource } from "../eMain";
+import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute, attributeStatic } from "../classes/attribute";

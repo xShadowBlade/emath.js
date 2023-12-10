@@ -1,4 +1,4 @@
-import { E, ESource } from "../eMain";
+import { E, ESource } from "../E/eMain";
 import { boost } from "./boost";
 
 /**

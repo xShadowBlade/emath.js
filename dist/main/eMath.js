@@ -45,170 +45,6 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 
-// src/utility/eString.ts
-var EString = class extends String {
-  constructor(value) {
-    super(value);
-    this.forEach = function(callbackfn) {
-      for (let i = 0; i < this.length; i++) {
-        callbackfn(this[i]);
-      }
-    };
-    this.forEachAdvanced = function(callbackfn, start, end) {
-      for (let i = start < 0 ? 0 : start; i < (end > this.length ? this.length : end < start ? this.length : end); i++) {
-        callbackfn({
-          value: this[i],
-          index: i
-        });
-      }
-    };
-    this.toNumber = function() {
-      let output = "";
-      for (let i = 0; i < this.length; i++) {
-        output += this.charCodeAt(i).toString();
-      }
-      return parseInt(output);
-    };
-    this.toArray = function() {
-      const output = [];
-      for (let i = 0; i < this.length; i++) {
-        output.push(this[i]);
-      }
-      return output;
-    };
-    this.before = function(index) {
-      let output = "";
-      this.forEachAdvanced(function(char) {
-        output += char.value;
-      }, 0, index);
-      return output;
-    };
-    this.after = function(index) {
-      let output = "";
-      this.forEachAdvanced(function(char) {
-        output += char.value;
-      }, index, -1);
-      return output;
-    };
-    this.customSplit = function(index) {
-      const output = [];
-      output.push(this.before(index));
-      output.push(this.after(index));
-      return output;
-    };
-    this.random = function(qty) {
-      const random = (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max);
-      let output = "";
-      if (qty > 0) {
-        for (let i = 0; i < qty; i++) {
-          output += this.charAt(random(0, this.length));
-        }
-      } else {
-        output = this.charAt(random(0, this.length));
-      }
-      return output;
-    };
-  }
-};
-
-// src/utility/eMath.ts
-var eMath = {
-  getFast: function(object, id) {
-    object = JSON.stringify(object);
-    const length = id.toString().replace(/\\/g, "").length;
-    const searchIndex = object.search(id);
-    let output = "";
-    let offset = length + 2;
-    let unclosedQdb = 0;
-    let unclosedQsb = 0;
-    let unclosedQib = 0;
-    let unclosedB = 0;
-    let unclosedCB = 0;
-    function check() {
-      const read = object[searchIndex + offset];
-      if (object[searchIndex + offset - 1] != "\\") {
-        switch (read) {
-          case '"':
-            if (unclosedQdb == 0) {
-              unclosedQdb = 1;
-            } else {
-              unclosedQdb = 0;
-            }
-            break;
-          case "'":
-            if (unclosedQsb == 0) {
-              unclosedQsb = 1;
-            } else {
-              unclosedQsb = 0;
-            }
-            break;
-          case "`":
-            if (unclosedQib == 0) {
-              unclosedQib = 1;
-            } else {
-              unclosedQib = 0;
-            }
-            break;
-          case "[":
-            unclosedB++;
-            break;
-          case "]":
-            unclosedB--;
-            break;
-          case "{":
-            unclosedCB++;
-            break;
-          case "}":
-            unclosedCB--;
-            break;
-        }
-      }
-      output += read;
-      offset++;
-    }
-    check();
-    while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
-      check();
-    }
-    return JSON.parse(output);
-  },
-  get: function(object, id) {
-    try {
-      for (let i = 0; i < Object.keys(object).length; i++) {
-        if (Object.keys(object)[i] == "sign")
-          break;
-        if (Object.keys(object)[i] == id) {
-          return object[Object.keys(object)[i]];
-        } else if (typeof object[Object.keys(object)[i]] == "object") {
-          const output = this.get(object[Object.keys(object)[i]], id);
-          if (output != null)
-            return output;
-        } else {
-          continue;
-        }
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  },
-  randomNumber: (min, max, round) => !(round != void 0 && !round) ? Math.round(Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max)) : Math.random() * (max > min ? max - min : min - max) + (max > min ? min : max),
-  // rounds by default, can disable
-  /**
-   * @param times
-   * @param type
-   * @deprecated dont ever use this
-   */
-  randomString64: (times, type) => {
-    let output = (Math.random() * 1232311).toString();
-    for (let i = 0; i < times; i++) {
-      output = btoa(output) + btoa(btoa(Math.random().toString()));
-    }
-    return type ? output.length : output;
-  },
-  randomString: (length) => new EString("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~").random(length).toString()
-};
-
 // src/E/lru-cache.ts
 var LRUCache = class {
   /**
@@ -4441,208 +4277,56 @@ var grid = class {
   }
 };
 
-// src/utility/obb.ts
-var obb = class {
-  constructor(array, methods) {
-    for (const x of array) {
-      if (!x["name"] || !x["value"]) {
-        break;
-      }
-      this[x["name"]] = x["value"];
-      if (methods != void 0) {
-        for (const y of methods) {
-          if (!y["name"] || !y["value"]) {
-            break;
-          }
-          if (!this[x["name"]][y["name"]])
-            this[x["name"]][y["name"]] = y["value"];
-        }
-      }
-      delete this[x["name"]]["name"];
-      delete this[x["name"]]["value"];
-    }
-  }
-};
-
-// src/utility/eArray.ts
-var EArray = class extends Array {
-  constructor(value) {
-    super(value);
-  }
-  random(qty) {
-    let output = "";
-    if (qty > 0) {
-      for (let i = 0; i < qty; i++) {
-        output += this[eMath.randomNumber(0, this.length)];
-      }
-    } else {
-      output = this[eMath.randomNumber(0, this.length)];
-    }
-    return output;
-  }
-};
-
-// src/utility/eObject.ts
-var EObject = class _EObject extends Object {
-  constructor(value) {
-    super(value);
-  }
-  static getFast(object, id) {
-    object = JSON.stringify(object);
-    const length = id.toString().replace(/\\/g, "").length;
-    const searchIndex = object.search(id);
-    let output = "";
-    let offset = length + 2;
-    let unclosedQdb = 0;
-    let unclosedQsb = 0;
-    let unclosedQib = 0;
-    let unclosedB = 0;
-    let unclosedCB = 0;
-    function check() {
-      const read = object[searchIndex + offset];
-      if (object[searchIndex + offset - 1] != "\\") {
-        switch (read) {
-          case '"':
-            if (unclosedQdb == 0) {
-              unclosedQdb = 1;
-            } else {
-              unclosedQdb = 0;
-            }
-            break;
-          case "'":
-            if (unclosedQsb == 0) {
-              unclosedQsb = 1;
-            } else {
-              unclosedQsb = 0;
-            }
-            break;
-          case "`":
-            if (unclosedQib == 0) {
-              unclosedQib = 1;
-            } else {
-              unclosedQib = 0;
-            }
-            break;
-          case "[":
-            unclosedB++;
-            break;
-          case "]":
-            unclosedB--;
-            break;
-          case "{":
-            unclosedCB++;
-            break;
-          case "}":
-            unclosedCB--;
-            break;
-        }
-      }
-      output += read;
-      offset++;
-    }
-    check();
-    while (unclosedQdb + unclosedQsb + unclosedQib + unclosedB + unclosedCB != 0) {
-      check();
-    }
-    return JSON.parse(output);
-  }
-  getFast(id) {
-    return _EObject.getFast(this, id);
-  }
-  static get(object, id) {
-    try {
-      for (let i = 0; i < Object.keys(object).length; i++) {
-        if (Object.keys(object)[i] == "sign")
-          break;
-        if (Object.keys(object)[i] == id) {
-          return object[Object.keys(object)[i]];
-        } else if (typeof object[Object.keys(object)[i]] == "object") {
-          const output = _EObject.get(object[Object.keys(object)[i]], id);
-          if (output != null)
-            return output;
-        } else {
-          continue;
-        }
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-  get(id) {
-    return _EObject.get(this, id);
-  }
-};
-
 // src/hookMain.ts
 var eMathHook = {
-  ...eMath,
-  ...{
+  /**
+   * @deprecated Use `import { E } from "emath.js"` instead.
+   */
+  E,
+  classes: {
     /**
-     * @deprecated Use `import { E } from "emath.js"` instead.
+     * @deprecated Use `import { boost } from "emath.js"` instead.
      */
-    E,
-    classes: {
-      /**
-       * @deprecated Use `import { boost } from "emath.js"` instead.
-       */
-      boost,
-      /**
-       * @deprecated Use `import { currency } from "emath.js"` instead.
-       */
-      currency,
-      /**
-       * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-       */
-      currencyStatic,
-      /**
-       * @deprecated Use `import { attribute } from "emath.js"` instead.
-       */
-      attribute,
-      /**
-       * @deprecated Use `import { grid } from "emath.js"` instead.
-       */
-      grid,
-      /**
-       * @deprecated Use `import { gridCell } from "emath.js"` instead.
-       */
-      gridCell,
-      /**
-       * @deprecated Use `import { EString } from "emath.js"` instead.
-       */
-      EString,
-      /**
-       * @deprecated Use `import { EArray } from "emath.js"` instead.
-       */
-      EArray,
-      /**
-       * @deprecated Use `import { EObject } from "emath.js"` instead.
-       */
-      EObject,
-      /**
-       * @deprecated Use `import { obb } from "emath.js"` instead.
-       */
-      obb
-    }
-    // /**
-    //  * @deprecated Use `import { game } from "emath.js"` instead.
-    //  */
-    // game,
-    // managers: {
-    //     /**
-    //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
-    //      */
-    //     keyManager,
-    //     /**
-    //      * @deprecated Use `import { eventManager } from "emath.js"` instead.
-    //      */
-    //     eventManager,
-    //     /**
-    //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
-    //      */
-    //     dataManager,
-    // },
+    boost,
+    /**
+     * @deprecated Use `import { currency } from "emath.js"` instead.
+     */
+    currency,
+    /**
+     * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
+     */
+    currencyStatic,
+    /**
+     * @deprecated Use `import { attribute } from "emath.js"` instead.
+     */
+    attribute,
+    /**
+     * @deprecated Use `import { grid } from "emath.js"` instead.
+     */
+    grid,
+    /**
+     * @deprecated Use `import { gridCell } from "emath.js"` instead.
+     */
+    gridCell
   }
+  // /**
+  //  * @deprecated Use `import { game } from "emath.js"` instead.
+  //  */
+  // game,
+  // managers: {
+  //     /**
+  //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
+  //      */
+  //     keyManager,
+  //     /**
+  //      * @deprecated Use `import { eventManager } from "emath.js"` instead.
+  //      */
+  //     eventManager,
+  //     /**
+  //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
+  //      */
+  //     dataManager,
+  // },
 };
 function hookMain() {
   if (typeof process !== "object" && typeof window !== "undefined") {

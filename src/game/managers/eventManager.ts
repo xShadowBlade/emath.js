@@ -1,7 +1,7 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import { E } from "../../eMain";
+import { E } from "../../E/eMain";
 import { configManager, RequiredDeep } from "./configManager";
 import type { Application } from "pixi.js";
 
