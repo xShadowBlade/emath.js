@@ -13,7 +13,6 @@ import { dataManager } from "./managers/dataManager";
  * Hooks the game to the window object.
  */
 export function hookGame () {
-    // @ts-expect-error - node types are wrong
     if (!(typeof process! !== "object" && typeof window! !== "undefined")) {
         // Environment is not a browser.
         return;

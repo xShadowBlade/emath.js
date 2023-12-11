@@ -186,7 +186,7 @@ class currencyStatic {
 
     /**
      * The new currency value after applying the boost.
-     * @param dt Deltatime
+     * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
      * @returns The new currency value after applying the boost.
      */
     public gain (dt: ESource = 1000): E {
@@ -232,7 +232,7 @@ class currencyStatic {
     }
 
     /**
-     * Creates or updates upgrades
+     * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
@@ -242,27 +242,29 @@ class currencyStatic {
         // Adds standard
         const upgradesDefault: upgradeStatic[] = [];
         for (let i = 0; i < upgrades.length; i++) {
-            if (!upgrades[i].id) upgrades[i].id = i;
-            if (this.getUpgrade(upgrades[i].id)) {
-                // Update upgrade
-                const upgrade = this.getUpgrade(upgrades[i].id);
-                if (upgrade === null) continue;
-                upgrade.name = upgrades[i].name ?? upgrade.name;
-                upgrade.costScaling = upgrades[i].costScaling ?? upgrade.costScaling;
-                upgrade.maxLevel = upgrades[i].maxLevel ?? upgrade.maxLevel;
-                upgrade.effect = upgrades[i].effect ?? upgrade.effect;
-                if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
-            } else {
-                // Create upgrade
-                this.pointerAddUpgrade(upgrades[i]);
-                const upgrade = this.getUpgrade(upgrades[i].id);
-                if (upgrade === null) continue;
-                if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
-                upgradesDefault.push(upgrade);
-            }
+            if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
+            this.pointerAddUpgrade(upgrades[i]);
+            const upgrade = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+            if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
+            upgradesDefault.push(upgrade);
         }
 
         this.upgrades = this.upgrades.concat(upgradesDefault);
+    }
+
+    /**
+     * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
+     * @param id - The id of the upgrade to update.
+     * @param upgrade - The upgrade object to update.
+     */
+    public updateUpgrade (id: string | number, upgrade: upgradeInit): void {
+        const upgrade1 = this.getUpgrade(id);
+        if (upgrade1 === null) return;
+
+        upgrade1.name = upgrade.name ?? upgrade1.name;
+        upgrade1.costScaling = upgrade.costScaling ?? upgrade1.costScaling;
+        upgrade1.maxLevel = upgrade.maxLevel ?? upgrade1.maxLevel;
+        upgrade1.effect = upgrade.effect ?? upgrade1.effect;
     }
 
     /**
@@ -416,4 +418,4 @@ class currencyStatic {
     }
 }
 
-export { currency, currencyStatic };
+export { currency, currencyStatic, upgradeInit, upgrade, upgradeStatic };

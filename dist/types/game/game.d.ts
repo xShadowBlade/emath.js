@@ -1,7 +1,7 @@
 /**
  * @file Declares the main game class.
  */
-import { ESource } from "../eMain";
+import { ESource } from "../E/eMain";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";
@@ -22,13 +22,17 @@ interface gameConfigOptions {
 }
 declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
 declare class gameStatic {
-    staticData: any;
+    staticData: {
+        [key: string]: any;
+    };
     constructor(staticData?: any);
     set(name: string, value: any): void;
     get(name: string): any;
 }
 declare class gameData {
-    data: any;
+    data: {
+        [key: string]: any;
+    };
     constructor(data?: any);
     set(name: string, value: any): void;
     get(name: string): any;

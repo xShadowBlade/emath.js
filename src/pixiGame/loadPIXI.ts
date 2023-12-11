@@ -5,7 +5,6 @@ import * as PIXI from "pixi.js";
  * @returns The PIXI namespace.
  */
 export function loadPIXI (): typeof PIXI {
-    // @ts-expect-error - node types are wrong
     if (!(typeof process! !== "object" && typeof window! !== "undefined")) {
         // Environment is not a browser.
         return PIXI;

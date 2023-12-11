@@ -31,6 +31,7 @@ class gameAttribute {
 
     /**
      * Gets the value of the attribute.
+     * NOTE: This getter is sometimes inaccurate.
      * @returns The value of the attribute.
      */
     get value (): E {

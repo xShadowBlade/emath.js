@@ -117,8 +117,8 @@ class eventManager {
                 type,
                 delay: typeof delay === "number" ? delay : delay.toNumber(),
                 callbackFn,
-                timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
-                intervalLast: typeof delay === "number" ? Date.now() : delay.toNumber(),
+                timeCreated: Date.now(),
+                intervalLast: Date.now(),
             };
             return event;
         // eslint-disable-next-line no-unreachable
@@ -130,7 +130,7 @@ class eventManager {
                 type,
                 delay: typeof delay === "number" ? delay : delay.toNumber(),
                 callbackFn,
-                timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
+                timeCreated: Date.now(),
             };
 
             return event;
@@ -138,15 +138,5 @@ class eventManager {
         }})());
     };
 };
-
-// Game.PIXI.app.ticker.add(function (dt: number) {
-//     Game["data"].playtime.timewarp = E(); // reset timewarp
-
-//     Game["static"].playtime.tActive.gain(dt);
-//     Game["static"].playtime.tPassive.gain(dt);
-//     Game["static"].playtime.active.gain(dt);
-//     Game["static"].playtime.passive.gain(dt);
-//     Game["static"].playtime.points.gain(dt);
-// });
 
 export { eventManager };

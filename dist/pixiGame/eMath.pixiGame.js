@@ -4172,7 +4172,7 @@ var formats = { ...FORMATS, ...{
 Decimal.formats = formats;
 var e_default = Decimal;
 
-// src/eMain.ts
+// src/E/eMain.ts
 var E = (x) => new e_default(x);
 Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(class {
 }).includes(b)).forEach((prop) => {
@@ -4318,6 +4318,31 @@ var upgradeData = class {
     this.level = init.level ? E(init.level) : E(1);
   }
 };
+var upgradeStatic = class {
+  /**
+   * @param init - The upgrade object to initialize.
+   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+   */
+  constructor(init, dataPointer) {
+    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+    this.data = data;
+    this.id = init.id;
+    this.name = init.name;
+    this.costScaling = init.costScaling;
+    this.maxLevel = init.maxLevel;
+    this.effect = init.effect;
+  }
+  /**
+   * The current level of the upgrade.
+   * @returns The current level of the upgrade.
+   */
+  get level() {
+    return this.data.level;
+  }
+  set level(n) {
+    this.data.level = E(n);
+  }
+};
 var currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
@@ -4361,15 +4386,15 @@ var currencyStatic = class {
     if (resetCurrency)
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
-      this.upgrades.forEach((upgrade) => {
-        upgrade.level = E(0);
+      this.upgrades.forEach((upgrade2) => {
+        upgrade2.level = E(0);
       });
     }
     ;
   }
   /**
    * The new currency value after applying the boost.
-   * @param dt Deltatime
+   * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
    * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
@@ -4394,23 +4419,23 @@ var currencyStatic = class {
    * @returns The upgrade object if found, otherwise null.
    */
   getUpgrade(id) {
-    let upgrade = null;
+    let upgrade2 = null;
     if (id === void 0) {
       return null;
     } else if (typeof id == "number") {
-      upgrade = this.upgrades[id];
+      upgrade2 = this.upgrades[id];
     } else if (typeof id == "string") {
       for (let i = 0; i < this.upgrades.length; i++) {
         if (this.upgrades[i].id === id) {
-          upgrade = this.upgrades[i];
+          upgrade2 = this.upgrades[i];
           break;
         }
       }
     }
-    return upgrade;
+    return upgrade2;
   }
   /**
-   * Creates or updates upgrades
+   * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
    * @param upgrades - An array of upgrade objects.
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    */
@@ -4420,28 +4445,28 @@ var currencyStatic = class {
     const upgradesDefault = [];
     for (let i = 0; i < upgrades.length; i++) {
       if (!upgrades[i].id)
-        upgrades[i].id = i;
-      if (this.getUpgrade(upgrades[i].id)) {
-        const upgrade = this.getUpgrade(upgrades[i].id);
-        if (upgrade === null)
-          continue;
-        upgrade.name = upgrades[i].name ?? upgrade.name;
-        upgrade.costScaling = upgrades[i].costScaling ?? upgrade.costScaling;
-        upgrade.maxLevel = upgrades[i].maxLevel ?? upgrade.maxLevel;
-        upgrade.effect = upgrades[i].effect ?? upgrade.effect;
-        if (runEffectInstantly)
-          upgrade.effect(upgrade.level, upgrade);
-      } else {
-        this.pointerAddUpgrade(upgrades[i]);
-        const upgrade = this.getUpgrade(upgrades[i].id);
-        if (upgrade === null)
-          continue;
-        if (runEffectInstantly)
-          upgrade.effect(upgrade.level, upgrade);
-        upgradesDefault.push(upgrade);
-      }
+        upgrades[i].id = this.upgrades.length + i;
+      this.pointerAddUpgrade(upgrades[i]);
+      const upgrade2 = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+      if (runEffectInstantly)
+        upgrade2.effect(upgrade2.level, upgrade2);
+      upgradesDefault.push(upgrade2);
     }
     this.upgrades = this.upgrades.concat(upgradesDefault);
+  }
+  /**
+   * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
+   * @param id - The id of the upgrade to update.
+   * @param upgrade - The upgrade object to update.
+   */
+  updateUpgrade(id, upgrade2) {
+    const upgrade1 = this.getUpgrade(id);
+    if (upgrade1 === null)
+      return;
+    upgrade1.name = upgrade2.name ?? upgrade1.name;
+    upgrade1.costScaling = upgrade2.costScaling ?? upgrade1.costScaling;
+    upgrade1.maxLevel = upgrade2.maxLevel ?? upgrade1.maxLevel;
+    upgrade1.effect = upgrade2.effect ?? upgrade1.effect;
   }
   /**
    * Calculates the cost and how many upgrades you can buy
@@ -4495,11 +4520,11 @@ var currencyStatic = class {
         return [result, result.gt(0) ? f(result) : E(0)];
       }
     }
-    const upgrade = this.getUpgrade(id);
-    if (upgrade === null)
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null)
       return [E(0), E(0)];
     return findHighestB(
-      (level) => upgrade.costScaling(upgrade.level.add(level)),
+      (level) => upgrade2.costScaling(upgrade2.level.add(level)),
       this.value
     );
   }
@@ -4512,11 +4537,11 @@ var currencyStatic = class {
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    */
   buyUpgrade(id, target) {
-    const upgrade = this.getUpgrade(id);
-    if (upgrade === null)
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null)
       return false;
     target = E(target);
-    target = upgrade.level.add(target).lte(upgrade.maxLevel) ? target : upgrade.maxLevel.sub(upgrade.level);
+    target = upgrade2.level.add(target).lte(upgrade2.maxLevel) ? target : upgrade2.maxLevel.sub(upgrade2.level);
     const maxAffordableQuantity = this.calculateUpgrade(
       id,
       target
@@ -4525,9 +4550,9 @@ var currencyStatic = class {
       return false;
     }
     this.value = this.value.sub(maxAffordableQuantity[1]);
-    upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
-    if (typeof upgrade.effect === "function") {
-      upgrade.effect(upgrade.level, upgrade);
+    upgrade2.level = upgrade2.level.add(maxAffordableQuantity[0]);
+    if (typeof upgrade2.effect === "function") {
+      upgrade2.effect(upgrade2.level, upgrade2);
     }
     return true;
   }
@@ -4779,8 +4804,8 @@ var eventManager = class _eventManager {
               type,
               delay: typeof delay === "number" ? delay : delay.toNumber(),
               callbackFn,
-              timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber(),
-              intervalLast: typeof delay === "number" ? Date.now() : delay.toNumber()
+              timeCreated: Date.now(),
+              intervalLast: Date.now()
             };
             return event;
           }
@@ -4793,7 +4818,7 @@ var eventManager = class _eventManager {
             type,
             delay: typeof delay === "number" ? delay : delay.toNumber(),
             callbackFn,
-            timeCreated: typeof delay === "number" ? Date.now() : delay.toNumber()
+            timeCreated: Date.now()
           };
           return event;
         }
@@ -6450,6 +6475,7 @@ var gameAttribute = class {
   }
   /**
    * Gets the value of the attribute.
+   * NOTE: This getter is sometimes inaccurate.
    * @returns The value of the attribute.
    */
   get value() {
@@ -6556,7 +6582,7 @@ var game2 = class _game {
       currency: new currency()
     });
     this.static.set(name, {
-      currency: new currencyStatic(this.data.get(name))
+      currency: new currencyStatic(this.data.get(name).currency)
       // attributes: {},
     });
     const classInstance = new gameCurrency(this.data.get(name).currency, this.static.get(name).currency, this);

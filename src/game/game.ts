@@ -40,7 +40,9 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
 };
 
 class gameStatic {
-    public staticData: any;
+    public staticData: {
+        [key: string]: any;
+    };
 
     constructor (staticData?: any) {
         this.staticData = staticData ? staticData : {};
@@ -56,7 +58,9 @@ class gameStatic {
 }
 
 class gameData {
-    public data: any;
+    public data: {
+        [key: string]: any;
+    };
 
     constructor (data?: any) {
         this.data = data ? data : {};
@@ -130,7 +134,7 @@ class game {
             currency: new currency(),
         });
         this.static.set(name, {
-            currency: new currencyStatic(this.data.get(name)),
+            currency: new currencyStatic(this.data.get(name).currency),
             // attributes: {},
         });
 

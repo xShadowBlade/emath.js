@@ -1,7 +1,7 @@
 /**
  * @file Declares the game currency class.
  */
-import { E } from "../eMain";
+import { E } from "../E/eMain";
 import { attribute, attributeStatic } from "../classes/attribute";
 import type { game } from "./game";
 /**
@@ -21,6 +21,7 @@ declare class gameAttribute {
     constructor(attributePointer: (() => attribute) | attribute, staticPointer: (() => attributeStatic) | attributeStatic, gamePointer?: game);
     /**
      * Gets the value of the attribute.
+     * NOTE: This getter is sometimes inaccurate.
      * @returns The value of the attribute.
      */
     get value(): E;

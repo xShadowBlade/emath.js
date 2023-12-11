@@ -1,4 +1,4 @@
-import { E, ESource } from "../eMain";
+import { E, ESource } from "../E/eMain";
 import { boost } from "./boost";
 /**
  * Interface for initializing an upgrade.
@@ -125,7 +125,7 @@ declare class currencyStatic {
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
     /**
      * The new currency value after applying the boost.
-     * @param dt Deltatime
+     * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
      * @returns The new currency value after applying the boost.
      */
     gain(dt?: ESource): E;
@@ -142,11 +142,17 @@ declare class currencyStatic {
      */
     getUpgrade(id?: string | number): upgradeStatic | null;
     /**
-     * Creates or updates upgrades
+     * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
     addUpgrade(upgrades: upgradeInit | upgradeInit[], runEffectInstantly?: boolean): void;
+    /**
+     * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
+     * @param id - The id of the upgrade to update.
+     * @param upgrade - The upgrade object to update.
+     */
+    updateUpgrade(id: string | number, upgrade: upgradeInit): void;
     /**
      * Calculates the cost and how many upgrades you can buy
      *
@@ -167,4 +173,4 @@ declare class currencyStatic {
      */
     buyUpgrade(id: string | number, target: ESource): boolean;
 }
-export { currency, currencyStatic };
+export { currency, currencyStatic, upgradeInit, upgrade, upgradeStatic };
