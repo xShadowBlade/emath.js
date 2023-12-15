@@ -3914,9 +3914,8 @@ var currencyStatic = class {
    * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
-    this.value = this.value.add(
-      this.boost.calculate().mul(E(dt).div(1e3))
-    );
+    console.log(this.boost.calculate(), E(dt).div(1e3), this.boost.calculate().mul(E(dt).div(1e3)));
+    this.value = this.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
     return this.value;
   }
   /**

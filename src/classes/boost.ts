@@ -142,7 +142,7 @@ class boost {
             const id = arg1;
             const name = arg2 ?? "";
             const desc = arg3 ?? "";
-            const value = arg4 ?? (() => E(0));
+            const value = arg4 ?? ((e) => e);
             const order = arg5;
             const bCheck = this.bGet(id);
 
