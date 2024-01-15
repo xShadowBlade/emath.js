@@ -3772,7 +3772,7 @@ var boost = class {
       const id = arg1;
       const name = arg2 ?? "";
       const desc = arg3 ?? "";
-      const value = arg4 ?? (() => E(0));
+      const value = arg4 ?? ((e) => e);
       const order = arg5;
       const bCheck = this.bGet(id);
       if (!bCheck) {
@@ -3914,7 +3914,6 @@ var currencyStatic = class {
    * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
-    console.log(this.boost.calculate(), E(dt).div(1e3), this.boost.calculate().mul(E(dt).div(1e3)));
     this.value = this.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
     return this.value;
   }

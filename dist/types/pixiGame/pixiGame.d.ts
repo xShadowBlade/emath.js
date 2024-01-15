@@ -2,10 +2,10 @@ import { game, gameConfigOptions } from "../game/game";
 import { configManager, RequiredDeep } from "game/managers/configManager";
 import { sprite } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
-import { Application } from "pixi.js";
+import type { Application } from "pixi.js";
 interface pixiGameConfig extends gameConfigOptions {
     pixi?: {
-        app?: ConstructorParameters<typeof Application> | InstanceType<typeof Application>;
+        app: InstanceType<typeof Application> | null;
     };
 }
 declare class pixiGame extends game {

@@ -89,6 +89,6 @@ declare class game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    addReset(currenciesToReset: gameCurrency[], extender?: gameReset): gameReset;
+    addReset(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset;
 }
 export { game, gameCurrency, gameAttribute, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };

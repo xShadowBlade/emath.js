@@ -181,7 +181,7 @@ class game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    public addReset (currenciesToReset: gameCurrency[], extender?: gameReset): gameReset {
+    public addReset (currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset {
         const reset = new gameReset(currenciesToReset, extender);
         return reset;
     }

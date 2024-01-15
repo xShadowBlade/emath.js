@@ -5,7 +5,7 @@ import { keyManager } from "../game/managers/keyManager";
 import { eventManager } from "../game/managers/eventManager";
 
 import type { Graphics, Sprite } from "pixi.js";
-import { Application } from "pixi.js";
+import type { Application } from "pixi.js";
 
 // import { loadPIXI } from "./loadPIXI";
 // const PIXI = loadPIXI();
@@ -13,7 +13,7 @@ import { Application } from "pixi.js";
 
 interface pixiGameConfig extends gameConfigOptions {
     pixi?: {
-        app?: ConstructorParameters<typeof Application> | InstanceType<typeof Application>;
+        app: InstanceType<typeof Application> | null;
     }
 }
 
@@ -21,11 +21,7 @@ const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
     ...gameDefaultConfig,
     initIntervalBasedManagers: false,
     pixi: {
-        app: {
-            background: 0x000000,
-            // @ts-expect-error - PIXI types are wrong
-            resizeTo: window,
-        },
+        app: null,
     },
 };
 
@@ -47,27 +43,29 @@ class pixiGame extends game {
         this.config = pixiGame.configManager.parse(config);
 
         // Setup PIXI
-        let app: InstanceType<typeof Application>;
+        if (!this.config.pixi.app) throw new Error(`No PIXI app was provided in config: ${JSON.stringify(this.config)}`);
+        // @ts-expect-error - PIXI types are wrong
+        const app = this.config.pixi.app as InstanceType<typeof Application>;
 
-        if (this.config.pixi.app instanceof Application) {
-            app = this.config.pixi.app;
-        } else {
-            // @ts-expect-error - PIXI types are wrong
-            app = new Application(this.config.pixi.app);
+        // if (this.config.pixi.app instanceof Application) {
+        //     app = this.config.pixi.app;
+        // } else {
+        //     // @ts-expect-error - PIXI types are wrong
+        //     app = new Application(this.config.pixi.app);
 
-            app.stage.eventMode = "static";
-            // @ts-expect-error - Node document type is wrong
-            document.body.appendChild(app.view);
-            // TODO: Fix this
-            // window.addEventListener("resize", () => {
-            //     // Update the background's size to match the new window size
-            //     const newWidth = window.innerWidth;
-            //     const newHeight = window.innerHeight;
+        //     app.stage.eventMode = "static";
+        //     // @ts-expect-error - Node document type is wrong
+        //     document.body.appendChild(app.view);
+        //     // TODO: Fix this
+        //     // window.addEventListener("resize", () => {
+        //     //     // Update the background's size to match the new window size
+        //     //     const newWidth = window.innerWidth;
+        //     //     const newHeight = window.innerHeight;
 
-            //     // Resize the renderer
-            //     app.renderer.resize(newWidth, newHeight);
-            // });
-        }
+        //     //     // Resize the renderer
+        //     //     app.renderer.resize(newWidth, newHeight);
+        //     // });
+        // }
         this.PIXI = {
             app,
             camera: {
