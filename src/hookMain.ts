@@ -8,7 +8,7 @@ import { grid, gridCell } from "./classes/grid";
 // import { keyManager } from "./game/managers/keyManager";
 // import { eventManager } from "./game/main";
 // import { dataManager } from "./game/managers/dataManager";
-const eMathHook = {
+const eMathWeb = {
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
      */
@@ -72,8 +72,8 @@ const eMathHook = {
  */
 function hookMain () {
     if (typeof process! !== "object" && typeof window! !== "undefined") {
-        (window as any)["eMath"] = eMathHook;
+        (window as any)["eMath"] = eMathWeb;
     }
 }
 export { hookMain };
-// export type { eMathHook };
+export type { eMathWeb };

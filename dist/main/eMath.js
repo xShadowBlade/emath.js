@@ -4302,7 +4302,7 @@ var grid = class {
 };
 
 // src/hookMain.ts
-var eMathHook = {
+var eMathWeb = {
   /**
    * @deprecated Use `import { E } from "emath.js"` instead.
    */
@@ -4354,7 +4354,7 @@ var eMathHook = {
 };
 function hookMain() {
   if (typeof process !== "object" && typeof window !== "undefined") {
-    window["eMath"] = eMathHook;
+    window["eMath"] = eMathWeb;
   }
 }
 

@@ -3,11 +3,21 @@
  */
 
 import { game } from "./game";
+import type { eMathWeb } from "../hookMain";
 import { keyManager } from "./managers/keyManager";
 import { eventManager } from "./managers/eventManager";
 import { dataManager } from "./managers/dataManager";
 
 // import type { eMathHook } from "../hookMain";
+
+const eMathGameWeb = {...(window as any)["eMath"] as typeof eMathWeb,
+    game,
+    managers: {
+        keyManager,
+        eventManager,
+        dataManager,
+    },
+};
 
 /**
  * Hooks the game to the window object.
@@ -25,21 +35,15 @@ export function hookGame () {
     /**
      * @deprecated Use `import { game } from "emath.js/game"` instead.
      */
-    (window as any)["eMath"].game = game;
-    (window as any)["eMath"].managers = {
-        /**
-         * @deprecated Use `import { keyManager } from "emath.js/game"` instead.
-         */
-        keyManager,
-
-        /**
-         * @deprecated Use `import { eventManager } from "emath.js/game"` instead.
-         */
-        eventManager,
-
-        /**
-         * @deprecated Use `import { dataManager } from "emath.js/game"` instead.
-         */
-        dataManager,
-    };
+    (window as any)["eMath"] = eMathGameWeb;
 }
+
+// jsdoc is weird
+export type eMathGameWeb = typeof eMathWeb & {
+    game: game,
+    managers: {
+        keyManager: keyManager,
+        eventManager: eventManager,
+        dataManager: dataManager,
+    },
+};

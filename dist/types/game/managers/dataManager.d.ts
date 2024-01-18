@@ -2,14 +2,27 @@
  * @file Declares classes and functions for managing game data.
  * Ex. Saving, loading, exporting, etc.
  */
-import { game } from "../game";
+import type { game } from "../game";
 import "reflect-metadata";
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  */
 declare class dataManager {
-    private normalData;
-    private gameData;
+    /**
+     * Game data in its initial state.
+     */
+    private normalData?;
+    /**
+     * The current game data.
+     */
+    private data;
+    /**
+     * The static game data.
+     */
+    private static;
+    /**
+     * A reference to the game instance.
+     */
     private gameRef;
     /**
      * Creates a new instance of the game class.
@@ -17,59 +30,80 @@ declare class dataManager {
      */
     constructor(gameRef: game);
     /**
+     * Sets the data for the given key.
+     * @param key - The key to set the data for.
+     * @param value - The value to set the data to.
+     * @returns - The value that was set.
+     */
+    setData<t>(key: string, value: t): t;
+    /**
+     * Gets the data for the given key.
+     * @param key - The key to get the data for.
+     * @returns - The data for the given key.
+     */
+    getData(key: string): any;
+    /**
+     * Sets the static data for the given key.
+     * @param key - The key to set the static data for.
+     * @param value - The value to set the static data to.
+     * @returns - The value that was set.
+     */
+    setStatic<t>(key: string, value: t): t;
+    /**
+     * Gets the static data for the given key.
+     * @param key - The key to get the static data for.
+     * @returns - The static data for the given key.
+     */
+    getStatic(key: string): any;
+    /**
+     * Initializes / sets data that is unmodified by the player.
+     * This is used to merge the loaded data with the default data.
+     * It should be called before you load data.
+     */
+    init(): void;
+    /**
+     * Compiles the given game data to a tuple containing the compressed game data and a hash.
+     * @param data The game data to be compressed. Defaults to the current game data.
+     * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
+     */
+    private compileDataRaw;
+    /**
      * Compresses the given game data to a base64-encoded string.
      * @param data The game data to be compressed. Defaults to the current game data.
-     * @returns The compressed game data as a base64-encoded string.
+     * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    private compileData;
+    compileData(data?: Record<string, any>): string;
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    private decompileData;
+    decompileData(data?: string | null): [string, object] | null;
+    /**
+     * Validates the given data.
+     * @param data - [hash, data] The data to validate.
+     * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
+     */
+    validateData(data: [string, object]): boolean;
     /**
      * Resets the game data to its initial state and saves it.
-     * @param reload - Whether to reload the page after resetting the data. Defaults to false.
+     * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
      */
     resetData(reload?: boolean): void;
     /**
      * Saves the game data to local storage.
+     * If you dont want to save to local storage, use {@link compileData} instead.
      */
     saveData(): void;
     /**
-     * Compiles the game data and prompts the user to download it as a text file.
+     * Compiles the game data and prompts the user to download it as a text file. (optional)
+     * @param download - Whether to download the file automatically. Defaults to `true`. If set to `false`, this is kinda useless lol use {@link compileData} instead.
      */
-    exportData(): void;
+    exportData(download?: boolean): void;
     /**
      * Loads game data and processes it.
+     * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
      */
-    loadData(): void;
+    loadData(dataToLoad?: [string, object] | null): void;
 }
-/**
- * Function to convert a class or and object to a string that can be used to recreate the class when loaded.
- * @param class - The class to convert to a string.
- * Classes are converted to strings using the following format:
- * ```<EMATHJSONCLASS>${class.name}/${// All nonstatic properties of the class in an object}```
- * @deprecated I should stop trying to reinvent the wheel.
- * @example
-class myClass {
-    static af: number = 23;
-    static ab () { return 232 };
-
-    asd: number;
-    constructor (asd) {
-        this.asd = asd;
-    }
-}
-
-const a = new myClass(232);
-
-classToJsonString(a); // `a/{"asd": 232}`
- */
-/**
- * Function to convert a string created by classToJsonString() back into a class.
- * @param string - The string to convert to a class.
- * @deprecated I should stop trying to reinvent the wheel.
- */
 export { dataManager };

@@ -21,32 +21,15 @@ interface gameConfigOptions {
     initIntervalBasedManagers?: boolean;
 }
 declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
-declare class gameStatic {
-    staticData: {
-        [key: string]: any;
-    };
-    constructor(staticData?: any);
-    set(name: string, value: any): void;
-    get(name: string): any;
-}
-declare class gameData {
-    data: {
-        [key: string]: any;
-    };
-    constructor(data?: any);
-    set(name: string, value: any): void;
-    get(name: string): any;
-}
 /**
  * Represents a game instance.
  */
 declare class game {
     protected static configManager: configManager<RequiredDeep<gameConfigOptions>>;
     config: typeof game.configManager.options;
-    data: gameData;
-    static: gameStatic;
     /**
      * The data manager for the game.
+     * As of v5.0.0, all data is stored here.
      */
     dataManager: dataManager;
     /**
@@ -63,6 +46,10 @@ declare class game {
      * @param config - The configuration object for the game.
      */
     constructor(config?: gameConfigOptions);
+    /**
+     * Initializes the game. Also initializes the data manager.
+     */
+    init(): void;
     /**
      * Adds a new currency section to the game. {@link gameCurrency}
      * @param name - The name of the currency section.
@@ -91,4 +78,4 @@ declare class game {
      */
     addReset(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset;
 }
-export { game, gameCurrency, gameAttribute, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig };

@@ -39,42 +39,41 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
     initIntervalBasedManagers: true,
 };
 
-class gameStatic {
-    public staticData: {
-        [key: string]: any;
-    };
+// class gameStatic {
+//     public staticData: {
+//         [key: string]: any;
+//     };
 
-    constructor (staticData?: any) {
-        this.staticData = staticData ? staticData : {};
-    }
+//     constructor (staticData?: any) {
+//         this.staticData = staticData ? staticData : {};
+//     }
 
-    public set (name: string, value: any): void {
-        this.staticData[name] = value;
-    }
+//     public set (name: string, value: any): void {
+//         this.staticData[name] = value;
+//     }
 
-    public get (name: string): any {
-        return this.staticData[name];
-    }
-}
+//     public get (name: string): any {
+//         return this.staticData[name];
+//     }
+// }
 
-class gameData {
-    public data: {
-        [key: string]: any;
-    };
+// class gameData {
+//     public data: {
+//         [key: string]: any;
+//     };
 
-    constructor (data?: any) {
-        this.data = data ? data : {};
-    }
+//     constructor (data?: any) {
+//         this.data = data ? data : {};
+//     }
 
-    public set (name: string, value: any): void {
-        this.data[name] = value;
-    }
+//     public set (name: string, value: any): void {
+//         this.data[name] = value;
+//     }
 
-    public get (name: string): any {
-        return this.data[name];
-    }
-
-}
+//     public get (name: string): any {
+//         return this.data[name];
+//     }
+// }
 
 /**
  * Represents a game instance.
@@ -83,11 +82,12 @@ class game {
     protected static configManager = new configManager(gameDefaultConfig);
     public config: typeof game.configManager.options;
 
-    public data: gameData;
-    public static: gameStatic;
+    // public data: gameData;
+    // public static: gameStatic;
 
     /**
      * The data manager for the game.
+     * As of v5.0.0, all data is stored here.
      */
     public dataManager: dataManager;
 
@@ -109,9 +109,9 @@ class game {
      */
     constructor (config?: gameConfigOptions) {
         this.config = game.configManager.parse(config);
-        this.data = new gameData();
-        this.static = new gameStatic();
-        this.dataManager = new dataManager(this);
+        // this.data = new gameData();
+        // this.static = new gameStatic();
+        this.dataManager = new dataManager(this); // Init separately
         this.keyManager = new keyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
@@ -121,7 +121,13 @@ class game {
             fps: this.config.settings.framerate,
         });
         this.tickers = [];
-        // this.addCurrencyGroup("playtime", ["tActive", "tPassive", "active", "passive", "points"]);
+    }
+
+    /**
+     * Initializes the game. Also initializes the data manager.
+     */
+    public init (): void {
+        this.dataManager.init();
     }
 
     /**
@@ -130,15 +136,15 @@ class game {
      * @returns A new instance of the gameCurrency class.
      */
     public addCurrency (name: string): gameCurrency {
-        this.data.set(name, {
+        this.dataManager.setData(name, {
             currency: new currency(),
         });
-        this.static.set(name, {
-            currency: new currencyStatic(this.data.get(name).currency),
+        this.dataManager.setStatic(name, {
+            currency: new currencyStatic(this.dataManager.getData(name).currency),
             // attributes: {},
         });
 
-        const classInstance = new gameCurrency(this.data.get(name).currency, this.static.get(name).currency, this);
+        const classInstance = new gameCurrency(this.dataManager.getData(name).currency, this.dataManager.getStatic(name).currency, this);
         return classInstance;
     }
 
@@ -148,15 +154,15 @@ class game {
      * @param currencies - An array of currency names to add to the group.
      */
     public addCurrencyGroup (name: string, currencies: string[]): void {
-        this.data.set(name, {});
-        this.static.set(name, {
+        this.dataManager.setData(name, {});
+        this.dataManager.setStatic(name, {
             attributes: {},
         });
 
         // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
         currencies.forEach((currencyName) => {
-            this.data.get(name)[currencyName] = new currency();
-            this.static.get(name)[currencyName] = new currencyStatic(this.data.get(name)[currencyName]);
+            this.dataManager.getData(name)[currencyName] = new currency();
+            this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
         });
     }
 
@@ -168,10 +174,10 @@ class game {
      * @returns The newly created attribute.
      */
     public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
-        this.data.set(name, new attribute(initial));
-        this.static.set(name, new attributeStatic(this.data.get(name), useBoost, initial));
+        this.dataManager.setData(name, new attribute(initial));
+        this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
 
-        const classInstance = new gameAttribute(this.data.get(name), this.static.get(name), this);
+        const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
         return classInstance;
     }
 
@@ -187,4 +193,4 @@ class game {
     }
 }
 
-export { game, gameCurrency, gameAttribute, gameStatic, gameData, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig };

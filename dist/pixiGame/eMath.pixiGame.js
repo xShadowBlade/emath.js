@@ -6616,31 +6616,120 @@ var classTransformer = new ClassTransformer();
 function instanceToPlain(object, options) {
   return classTransformer.instanceToPlain(object, options);
 }
-function plainToInstance(cls, plain, options) {
-  return classTransformer.plainToInstance(cls, plain, options);
-}
 
 // src/game/managers/dataManager.ts
+function md5(_) {
+  var $ = "0123456789abcdef";
+  function n(_2) {
+    var n2, r2 = "";
+    for (n2 = 0; n2 <= 3; n2++)
+      r2 += $.charAt(_2 >> 8 * n2 + 4 & 15) + $.charAt(_2 >> 8 * n2 & 15);
+    return r2;
+  }
+  function r(_2, $2) {
+    var n2 = (65535 & _2) + (65535 & $2);
+    return (_2 >> 16) + ($2 >> 16) + (n2 >> 16) << 16 | 65535 & n2;
+  }
+  function t(_2, $2, n2, t2, u2, e2) {
+    var f2, o2;
+    return r((f2 = r(r($2, _2), r(t2, e2)), f2 << (o2 = u2) | f2 >>> 32 - o2), n2);
+  }
+  function u(_2, $2, n2, r2, u2, e2, f2) {
+    return t($2 & n2 | ~$2 & r2, _2, $2, u2, e2, f2);
+  }
+  function e(_2, $2, n2, r2, u2, e2, f2) {
+    return t($2 & r2 | n2 & ~r2, _2, $2, u2, e2, f2);
+  }
+  function f(_2, $2, n2, r2, u2, e2, f2) {
+    return t($2 ^ n2 ^ r2, _2, $2, u2, e2, f2);
+  }
+  function o(_2, $2, n2, r2, u2, e2, f2) {
+    return t(n2 ^ ($2 | ~r2), _2, $2, u2, e2, f2);
+  }
+  var F, c, a, i, h, v = function _2($2) {
+    var n2, r2 = ($2.length + 8 >> 6) + 1, t2 = Array(16 * r2);
+    for (n2 = 0; n2 < 16 * r2; n2++)
+      t2[n2] = 0;
+    for (n2 = 0; n2 < $2.length; n2++)
+      t2[n2 >> 2] |= $2.charCodeAt(n2) << n2 % 4 * 8;
+    return t2[n2 >> 2] |= 128 << n2 % 4 * 8, t2[16 * r2 - 2] = 8 * $2.length, t2;
+  }("" + _), x = 1732584193, g = -271733879, l = -1732584194, d = 271733878;
+  for (F = 0; F < v.length; F += 16)
+    c = x, a = g, i = l, h = d, x = u(x, g, l, d, v[F + 0], 7, -680876936), d = u(d, x, g, l, v[F + 1], 12, -389564586), l = u(l, d, x, g, v[F + 2], 17, 606105819), g = u(g, l, d, x, v[F + 3], 22, -1044525330), x = u(x, g, l, d, v[F + 4], 7, -176418897), d = u(d, x, g, l, v[F + 5], 12, 1200080426), l = u(l, d, x, g, v[F + 6], 17, -1473231341), g = u(g, l, d, x, v[F + 7], 22, -45705983), x = u(x, g, l, d, v[F + 8], 7, 1770035416), d = u(d, x, g, l, v[F + 9], 12, -1958414417), l = u(l, d, x, g, v[F + 10], 17, -42063), g = u(g, l, d, x, v[F + 11], 22, -1990404162), x = u(x, g, l, d, v[F + 12], 7, 1804603682), d = u(d, x, g, l, v[F + 13], 12, -40341101), l = u(l, d, x, g, v[F + 14], 17, -1502002290), g = u(g, l, d, x, v[F + 15], 22, 1236535329), x = e(x, g, l, d, v[F + 1], 5, -165796510), d = e(d, x, g, l, v[F + 6], 9, -1069501632), l = e(l, d, x, g, v[F + 11], 14, 643717713), g = e(g, l, d, x, v[F + 0], 20, -373897302), x = e(x, g, l, d, v[F + 5], 5, -701558691), d = e(d, x, g, l, v[F + 10], 9, 38016083), l = e(l, d, x, g, v[F + 15], 14, -660478335), g = e(g, l, d, x, v[F + 4], 20, -405537848), x = e(x, g, l, d, v[F + 9], 5, 568446438), d = e(d, x, g, l, v[F + 14], 9, -1019803690), l = e(l, d, x, g, v[F + 3], 14, -187363961), g = e(g, l, d, x, v[F + 8], 20, 1163531501), x = e(x, g, l, d, v[F + 13], 5, -1444681467), d = e(d, x, g, l, v[F + 2], 9, -51403784), l = e(l, d, x, g, v[F + 7], 14, 1735328473), g = e(g, l, d, x, v[F + 12], 20, -1926607734), x = f(x, g, l, d, v[F + 5], 4, -378558), d = f(d, x, g, l, v[F + 8], 11, -2022574463), l = f(l, d, x, g, v[F + 11], 16, 1839030562), g = f(g, l, d, x, v[F + 14], 23, -35309556), x = f(x, g, l, d, v[F + 1], 4, -1530992060), d = f(d, x, g, l, v[F + 4], 11, 1272893353), l = f(l, d, x, g, v[F + 7], 16, -155497632), g = f(g, l, d, x, v[F + 10], 23, -1094730640), x = f(x, g, l, d, v[F + 13], 4, 681279174), d = f(d, x, g, l, v[F + 0], 11, -358537222), l = f(l, d, x, g, v[F + 3], 16, -722521979), g = f(g, l, d, x, v[F + 6], 23, 76029189), x = f(x, g, l, d, v[F + 9], 4, -640364487), d = f(d, x, g, l, v[F + 12], 11, -421815835), l = f(l, d, x, g, v[F + 15], 16, 530742520), g = f(g, l, d, x, v[F + 2], 23, -995338651), x = o(x, g, l, d, v[F + 0], 6, -198630844), d = o(d, x, g, l, v[F + 7], 10, 1126891415), l = o(l, d, x, g, v[F + 14], 15, -1416354905), g = o(g, l, d, x, v[F + 5], 21, -57434055), x = o(x, g, l, d, v[F + 12], 6, 1700485571), d = o(d, x, g, l, v[F + 3], 10, -1894986606), l = o(l, d, x, g, v[F + 10], 15, -1051523), g = o(g, l, d, x, v[F + 1], 21, -2054922799), x = o(x, g, l, d, v[F + 8], 6, 1873313359), d = o(d, x, g, l, v[F + 15], 10, -30611744), l = o(l, d, x, g, v[F + 6], 15, -1560198380), g = o(g, l, d, x, v[F + 13], 21, 1309151649), x = o(x, g, l, d, v[F + 4], 6, -145523070), d = o(d, x, g, l, v[F + 11], 10, -1120210379), l = o(l, d, x, g, v[F + 2], 15, 718787259), g = o(g, l, d, x, v[F + 9], 21, -343485551), x = r(x, c), g = r(g, a), l = r(l, i), d = r(d, h);
+  return n(x) + n(g) + n(l) + n(d);
+}
 var dataManager = class {
   /**
    * Creates a new instance of the game class.
    * @param gameRef - A function that returns the game instance.
    */
   constructor(gameRef) {
-    if (typeof window === "undefined") {
-      throw new Error("dataManager cannot be run on serverside");
-    }
     this.gameRef = gameRef;
-    this.normalData = gameRef.data;
-    this.gameData = gameRef.data;
+    this.data = {};
+    this.static = {};
+  }
+  /**
+   * Sets the data for the given key.
+   * @param key - The key to set the data for.
+   * @param value - The value to set the data to.
+   * @returns - The value that was set.
+   */
+  setData(key, value) {
+    if (typeof this.data[key] === "undefined" && this.normalData) {
+      console.warn("After initializing data, you should not add new properties to data.");
+    }
+    return this.data[key] = value;
+  }
+  /**
+   * Gets the data for the given key.
+   * @param key - The key to get the data for.
+   * @returns - The data for the given key.
+   */
+  getData(key) {
+    return this.data[key];
+  }
+  /**
+   * Sets the static data for the given key.
+   * @param key - The key to set the static data for.
+   * @param value - The value to set the static data to.
+   * @returns - The value that was set.
+   */
+  setStatic(key, value) {
+    return this.static[key] = value;
+  }
+  /**
+   * Gets the static data for the given key.
+   * @param key - The key to get the static data for.
+   * @returns - The static data for the given key.
+   */
+  getStatic(key) {
+    return this.static[key];
+  }
+  /**
+   * Initializes / sets data that is unmodified by the player.
+   * This is used to merge the loaded data with the default data.
+   * It should be called before you load data.
+   */
+  init() {
+    this.normalData = this.data;
+  }
+  /**
+   * Compiles the given game data to a tuple containing the compressed game data and a hash.
+   * @param data The game data to be compressed. Defaults to the current game data.
+   * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
+   */
+  compileDataRaw(data = this.data) {
+    const gameDataString = instanceToPlain(data);
+    const hasedData = md5(JSON.stringify(gameDataString));
+    return [hasedData, gameDataString];
   }
   /**
    * Compresses the given game data to a base64-encoded string.
    * @param data The game data to be compressed. Defaults to the current game data.
-   * @returns The compressed game data as a base64-encoded string.
+   * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
    */
-  compileData(data = this.gameData) {
-    return import_lz_string.default.compressToBase64(JSON.stringify(instanceToPlain(data)));
+  compileData(data = this.data) {
+    return import_lz_string.default.compressToBase64(JSON.stringify(this.compileDataRaw(data)));
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
@@ -6648,30 +6737,49 @@ var dataManager = class {
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
   decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
-    return data ? plainToInstance(gameData, JSON.parse(import_lz_string.default.decompressFromBase64(data))) : null;
+    if (!data)
+      return null;
+    const parsedData = JSON.parse(import_lz_string.default.decompressFromBase64(data));
+    return parsedData;
+  }
+  /**
+   * Validates the given data.
+   * @param data - [hash, data] The data to validate.
+   * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
+   */
+  validateData(data) {
+    const [hashSave, gameDataToValidate] = data;
+    const hashCheck = md5(JSON.stringify(instanceToPlain(gameDataToValidate)));
+    return hashSave === hashCheck;
   }
   /**
    * Resets the game data to its initial state and saves it.
-   * @param reload - Whether to reload the page after resetting the data. Defaults to false.
+   * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
    */
   resetData(reload = false) {
-    this.gameRef.data = this.normalData;
+    if (!this.normalData) {
+      throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+      return;
+    }
+    this.data = this.normalData;
     this.saveData();
     if (reload)
       window.location.reload();
   }
   /**
    * Saves the game data to local storage.
+   * If you dont want to save to local storage, use {@link compileData} instead.
    */
   saveData() {
     localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
   }
   /**
-   * Compiles the game data and prompts the user to download it as a text file.
+   * Compiles the game data and prompts the user to download it as a text file. (optional)
+   * @param download - Whether to download the file automatically. Defaults to `true`. If set to `false`, this is kinda useless lol use {@link compileData} instead.
    */
-  exportData() {
+  exportData(download = true) {
     const content = this.compileData();
-    if (prompt("Download save data?:", content) != null) {
+    if (download && prompt("Download save data?:", content) != null) {
       const blob = new Blob([content], { type: "text/plain" });
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
@@ -6684,41 +6792,30 @@ var dataManager = class {
   }
   /**
    * Loads game data and processes it.
+   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
    */
-  loadData() {
-    if (!this.gameData) {
+  loadData(dataToLoad = this.decompileData()) {
+    if (!this.normalData) {
+      throw new Error("dataManager.loadData(): You must call init() before writing to data.");
+    }
+    if (!dataToLoad) {
       return;
     }
-    function processObject(obj) {
-      for (const prop in obj) {
-        if (typeof obj[prop] === "string") {
-          try {
-            const processedValue = E(obj[prop]);
-            obj[prop] = processedValue;
-          } catch (error) {
-            console.error(`Error processing value: ${obj[prop]}`);
-          }
-        } else if (typeof obj[prop] === "object" && obj[prop] !== null) {
-          processObject(obj[prop]);
-        }
-      }
-      return obj;
-    }
-    let loadedData = this.decompileData();
+    const [, loadedData] = dataToLoad;
     console.log(loadedData);
-    console.log(loadedData = processObject(loadedData));
     function deepMerge(source, target) {
+      let out = target;
       for (const key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          if (!Object.prototype.hasOwnProperty.call(target, key)) {
-            target[key] = source[key];
-          } else if (typeof source[key] === "object" && typeof target[key] === "object") {
-            deepMerge(source[key], target[key]);
-          }
+        if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+          out[key] = source[key];
+        } else if (typeof source[key] === "object" && typeof target[key] === "object") {
+          out = deepMerge(source[key], target[key]);
         }
       }
+      return out;
     }
-    console.log(deepMerge(this.normalData, loadedData));
+    const loadedDataProcessed = deepMerge(this.normalData, loadedData);
+    console.log("Loaded data: ", loadedDataProcessed);
   }
 };
 
@@ -6811,29 +6908,7 @@ var gameDefaultConfig = {
   },
   initIntervalBasedManagers: true
 };
-var gameStatic = class {
-  constructor(staticData) {
-    this.staticData = staticData ? staticData : {};
-  }
-  set(name, value) {
-    this.staticData[name] = value;
-  }
-  get(name) {
-    return this.staticData[name];
-  }
-};
-var gameData = class {
-  constructor(data) {
-    this.data = data ? data : {};
-  }
-  set(name, value) {
-    this.data[name] = value;
-  }
-  get(name) {
-    return this.data[name];
-  }
-};
-var game2 = class _game {
+var game = class _game {
   static {
     this.configManager = new configManager(gameDefaultConfig);
   }
@@ -6843,8 +6918,6 @@ var game2 = class _game {
    */
   constructor(config) {
     this.config = _game.configManager.parse(config);
-    this.data = new gameData();
-    this.static = new gameStatic();
     this.dataManager = new dataManager(this);
     this.keyManager = new keyManager({
       autoAddInterval: this.config.initIntervalBasedManagers,
@@ -6857,19 +6930,25 @@ var game2 = class _game {
     this.tickers = [];
   }
   /**
+   * Initializes the game. Also initializes the data manager.
+   */
+  init() {
+    this.dataManager.init();
+  }
+  /**
    * Adds a new currency section to the game. {@link gameCurrency}
    * @param name - The name of the currency section.
    * @returns A new instance of the gameCurrency class.
    */
   addCurrency(name) {
-    this.data.set(name, {
+    this.dataManager.setData(name, {
       currency: new currency()
     });
-    this.static.set(name, {
-      currency: new currencyStatic(this.data.get(name).currency)
+    this.dataManager.setStatic(name, {
+      currency: new currencyStatic(this.dataManager.getData(name).currency)
       // attributes: {},
     });
-    const classInstance = new gameCurrency(this.data.get(name).currency, this.static.get(name).currency, this);
+    const classInstance = new gameCurrency(this.dataManager.getData(name).currency, this.dataManager.getStatic(name).currency, this);
     return classInstance;
   }
   /**
@@ -6878,13 +6957,13 @@ var game2 = class _game {
    * @param currencies - An array of currency names to add to the group.
    */
   addCurrencyGroup(name, currencies) {
-    this.data.set(name, {});
-    this.static.set(name, {
+    this.dataManager.setData(name, {});
+    this.dataManager.setStatic(name, {
       attributes: {}
     });
     currencies.forEach((currencyName) => {
-      this.data.get(name)[currencyName] = new currency();
-      this.static.get(name)[currencyName] = new currencyStatic(this.data.get(name)[currencyName]);
+      this.dataManager.getData(name)[currencyName] = new currency();
+      this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
     });
   }
   /**
@@ -6895,9 +6974,9 @@ var game2 = class _game {
    * @returns The newly created attribute.
    */
   addAttribute(name, useBoost = true, initial = 0) {
-    this.data.set(name, new attribute(initial));
-    this.static.set(name, new attributeStatic(this.data.get(name), useBoost, initial));
-    const classInstance = new gameAttribute(this.data.get(name), this.static.get(name), this);
+    this.dataManager.setData(name, new attribute(initial));
+    this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
+    const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
     return classInstance;
   }
   /**
@@ -7445,7 +7524,7 @@ var pixiGameDefaultConfig = {
     app: null
   }
 };
-var pixiGame = class _pixiGame extends game2 {
+var pixiGame = class _pixiGame extends game {
   static {
     this.configManager = new configManager(pixiGameDefaultConfig);
   }
