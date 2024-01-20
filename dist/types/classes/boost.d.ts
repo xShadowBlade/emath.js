@@ -13,7 +13,7 @@ interface boostsObjectInit {
     /**
      * The name of the boost.
      */
-    name: string;
+    name?: string;
     /**
      * An optional description of the boost.
      */
@@ -30,6 +30,7 @@ interface boostsObjectInit {
     order?: number;
     /**
      * The index of the boost.
+     * @deprecated Don't use this.
      */
     index?: number;
 }
@@ -39,7 +40,6 @@ declare class boostObject implements boostsObjectInit {
     desc: string;
     value: (input: E) => E;
     order: number;
-    index: number;
     constructor(init: boostsObjectInit);
 }
 /**
@@ -61,26 +61,25 @@ declare class boost {
      */
     constructor(baseEffect?: ESource, boosts?: boostsObjectInit | boostsObjectInit[]);
     /**
+     * Gets all boosts with the given ID.
+     * @param id - A string or regular expression to match the ID of the boosts.
+     * @param i - Whether to return the index of the boosts as well.
+     * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
+     */
+    getBoosts(id: string | RegExp): boostObject[];
+    getBoosts(id: string | RegExp, index: boolean): [boostObject[], number[]];
+    /**
      * Gets a boost object by its ID.
+     * @deprecated Use {@link boost.getBoosts} instead.
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    getBoost(id: string | number): boostObject | null;
+    getBoost(id: string): boostObject | null;
     /**
-     * @alias {@link boost.getBoost}
-     * @deprecated Use getBoost instead.
-     */
-    bGet: (id: string | number) => boostObject | null;
-    /**
-     * Removes a boost by its ID.
+     * Removes a boost by its ID. Only removes the first instance of the id.
      * @param id - The ID of the boost to remove.
      */
     removeBoost(id: string): void;
-    /**
-     * @alias {@link boost.removeBoost}
-     * @deprecated Use removeBoost instead.
-     */
-    bRemove: (id: string) => void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param id - The ID of the boost.
@@ -99,33 +98,10 @@ declare class boost {
      * @alias {@link boost.setBoost}
      * @deprecated Use setBoost instead.
      */
-    bSet: {
-        (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
-        (boostObj: boostsObjectInit | boostsObjectInit[]): void;
-    };
-    /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     */
     addBoost: {
         (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
         (boostObj: boostsObjectInit | boostsObjectInit[]): void;
     };
-    /**
-     * Sets or updates multiple boosts with advanced parameters.
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     * @param boostsArray - boost objects to set or update.
-     */
-    bSetArray(boostsArray: boostsObjectInit | boostsObjectInit[]): void;
-    /**
-     * Sets or updates multiple boosts with advanced parameters.
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     * @param boostsArray - boost objects to set or update.
-     * @deprecated Use setBoost instead.
-     */
-    bSetAdvanced(...boostsArray: boostsObjectInit[]): void;
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
      * @param base - The base effect value to calculate with.

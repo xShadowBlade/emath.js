@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { boost } from "./boost";
 
@@ -98,16 +99,22 @@ class currency {
     /**
      * The current value of the currency.
      */
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Type(() => E)
     public value: E;
 
     /**
      * An array that represents upgrades and their levels.
      */
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Type(() => upgradeData)
     public upgrades: upgradeData[];
 
     /**
      * A boost object that affects the currency gain.
      */
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Type(() => boost)
     public boost: boost;
 
     /**

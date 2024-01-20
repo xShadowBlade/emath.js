@@ -3,7 +3,6 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import type { game } from "../game";
-import "reflect-metadata";
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  */
@@ -100,6 +99,7 @@ declare class dataManager {
      * @param download - Whether to download the file automatically. Defaults to `true`. If set to `false`, this is kinda useless lol use {@link compileData} instead.
      */
     exportData(download?: boolean): void;
+    parseData(dataToParse?: [string, object] | null): object | null;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.

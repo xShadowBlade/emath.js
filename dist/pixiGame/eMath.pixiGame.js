@@ -510,1087 +510,6 @@ var require_lz_string = __commonJS({
   }
 });
 
-// node_modules/reflect-metadata/Reflect.js
-var require_Reflect = __commonJS({
-  "node_modules/reflect-metadata/Reflect.js"() {
-    var Reflect2;
-    (function(Reflect3) {
-      (function(factory) {
-        var root = typeof globalThis === "object" ? globalThis : typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : sloppyModeThis();
-        var exporter = makeExporter(Reflect3);
-        if (typeof root.Reflect !== "undefined") {
-          exporter = makeExporter(root.Reflect, exporter);
-        }
-        factory(exporter, root);
-        if (typeof root.Reflect === "undefined") {
-          root.Reflect = Reflect3;
-        }
-        function makeExporter(target, previous) {
-          return function(key, value) {
-            Object.defineProperty(target, key, { configurable: true, writable: true, value });
-            if (previous)
-              previous(key, value);
-          };
-        }
-        function functionThis() {
-          try {
-            return Function("return this;")();
-          } catch (_) {
-          }
-        }
-        function indirectEvalThis() {
-          try {
-            return (void 0, eval)("(function() { return this; })()");
-          } catch (_) {
-          }
-        }
-        function sloppyModeThis() {
-          return functionThis() || indirectEvalThis();
-        }
-      })(function(exporter, root) {
-        var hasOwn = Object.prototype.hasOwnProperty;
-        var supportsSymbol = typeof Symbol === "function";
-        var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
-        var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
-        var supportsCreate = typeof Object.create === "function";
-        var supportsProto = { __proto__: [] } instanceof Array;
-        var downLevel = !supportsCreate && !supportsProto;
-        var HashMap = {
-          // create an object in dictionary mode (a.k.a. "slow" mode in v8)
-          create: supportsCreate ? function() {
-            return MakeDictionary(/* @__PURE__ */ Object.create(null));
-          } : supportsProto ? function() {
-            return MakeDictionary({ __proto__: null });
-          } : function() {
-            return MakeDictionary({});
-          },
-          has: downLevel ? function(map, key) {
-            return hasOwn.call(map, key);
-          } : function(map, key) {
-            return key in map;
-          },
-          get: downLevel ? function(map, key) {
-            return hasOwn.call(map, key) ? map[key] : void 0;
-          } : function(map, key) {
-            return map[key];
-          }
-        };
-        var functionPrototype = Object.getPrototypeOf(Function);
-        var _Map = typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
-        var _Set = typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
-        var _WeakMap = typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
-        var registrySymbol = supportsSymbol ? Symbol.for("@reflect-metadata:registry") : void 0;
-        var metadataRegistry = GetOrCreateMetadataRegistry();
-        var metadataProvider = CreateMetadataProvider(metadataRegistry);
-        function decorate(decorators, target, propertyKey, attributes) {
-          if (!IsUndefined(propertyKey)) {
-            if (!IsArray(decorators))
-              throw new TypeError();
-            if (!IsObject(target))
-              throw new TypeError();
-            if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
-              throw new TypeError();
-            if (IsNull(attributes))
-              attributes = void 0;
-            propertyKey = ToPropertyKey(propertyKey);
-            return DecorateProperty(decorators, target, propertyKey, attributes);
-          } else {
-            if (!IsArray(decorators))
-              throw new TypeError();
-            if (!IsConstructor(target))
-              throw new TypeError();
-            return DecorateConstructor(decorators, target);
-          }
-        }
-        exporter("decorate", decorate);
-        function metadata(metadataKey, metadataValue) {
-          function decorator(target, propertyKey) {
-            if (!IsObject(target))
-              throw new TypeError();
-            if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
-              throw new TypeError();
-            OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
-          }
-          return decorator;
-        }
-        exporter("metadata", metadata);
-        function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
-        }
-        exporter("defineMetadata", defineMetadata);
-        function hasMetadata(metadataKey, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryHasMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("hasMetadata", hasMetadata);
-        function hasOwnMetadata(metadataKey, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("hasOwnMetadata", hasOwnMetadata);
-        function getMetadata(metadataKey, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryGetMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("getMetadata", getMetadata);
-        function getOwnMetadata(metadataKey, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("getOwnMetadata", getOwnMetadata);
-        function getMetadataKeys(target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryMetadataKeys(target, propertyKey);
-        }
-        exporter("getMetadataKeys", getMetadataKeys);
-        function getOwnMetadataKeys(target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          return OrdinaryOwnMetadataKeys(target, propertyKey);
-        }
-        exporter("getOwnMetadataKeys", getOwnMetadataKeys);
-        function deleteMetadata(metadataKey, target, propertyKey) {
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          if (!IsObject(target))
-            throw new TypeError();
-          if (!IsUndefined(propertyKey))
-            propertyKey = ToPropertyKey(propertyKey);
-          var provider = GetMetadataProvider(
-            target,
-            propertyKey,
-            /*Create*/
-            false
-          );
-          if (IsUndefined(provider))
-            return false;
-          return provider.OrdinaryDeleteMetadata(metadataKey, target, propertyKey);
-        }
-        exporter("deleteMetadata", deleteMetadata);
-        function DecorateConstructor(decorators, target) {
-          for (var i = decorators.length - 1; i >= 0; --i) {
-            var decorator = decorators[i];
-            var decorated = decorator(target);
-            if (!IsUndefined(decorated) && !IsNull(decorated)) {
-              if (!IsConstructor(decorated))
-                throw new TypeError();
-              target = decorated;
-            }
-          }
-          return target;
-        }
-        function DecorateProperty(decorators, target, propertyKey, descriptor) {
-          for (var i = decorators.length - 1; i >= 0; --i) {
-            var decorator = decorators[i];
-            var decorated = decorator(target, propertyKey, descriptor);
-            if (!IsUndefined(decorated) && !IsNull(decorated)) {
-              if (!IsObject(decorated))
-                throw new TypeError();
-              descriptor = decorated;
-            }
-          }
-          return descriptor;
-        }
-        function OrdinaryHasMetadata(MetadataKey, O, P) {
-          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-          if (hasOwn2)
-            return true;
-          var parent = OrdinaryGetPrototypeOf(O);
-          if (!IsNull(parent))
-            return OrdinaryHasMetadata(MetadataKey, parent, P);
-          return false;
-        }
-        function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
-          var provider = GetMetadataProvider(
-            O,
-            P,
-            /*Create*/
-            false
-          );
-          if (IsUndefined(provider))
-            return false;
-          return ToBoolean(provider.OrdinaryHasOwnMetadata(MetadataKey, O, P));
-        }
-        function OrdinaryGetMetadata(MetadataKey, O, P) {
-          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
-          if (hasOwn2)
-            return OrdinaryGetOwnMetadata(MetadataKey, O, P);
-          var parent = OrdinaryGetPrototypeOf(O);
-          if (!IsNull(parent))
-            return OrdinaryGetMetadata(MetadataKey, parent, P);
-          return void 0;
-        }
-        function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
-          var provider = GetMetadataProvider(
-            O,
-            P,
-            /*Create*/
-            false
-          );
-          if (IsUndefined(provider))
-            return;
-          return provider.OrdinaryGetOwnMetadata(MetadataKey, O, P);
-        }
-        function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
-          var provider = GetMetadataProvider(
-            O,
-            P,
-            /*Create*/
-            true
-          );
-          provider.OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P);
-        }
-        function OrdinaryMetadataKeys(O, P) {
-          var ownKeys = OrdinaryOwnMetadataKeys(O, P);
-          var parent = OrdinaryGetPrototypeOf(O);
-          if (parent === null)
-            return ownKeys;
-          var parentKeys = OrdinaryMetadataKeys(parent, P);
-          if (parentKeys.length <= 0)
-            return ownKeys;
-          if (ownKeys.length <= 0)
-            return parentKeys;
-          var set = new _Set();
-          var keys = [];
-          for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
-            var key = ownKeys_1[_i];
-            var hasKey = set.has(key);
-            if (!hasKey) {
-              set.add(key);
-              keys.push(key);
-            }
-          }
-          for (var _a = 0, parentKeys_1 = parentKeys; _a < parentKeys_1.length; _a++) {
-            var key = parentKeys_1[_a];
-            var hasKey = set.has(key);
-            if (!hasKey) {
-              set.add(key);
-              keys.push(key);
-            }
-          }
-          return keys;
-        }
-        function OrdinaryOwnMetadataKeys(O, P) {
-          var provider = GetMetadataProvider(
-            O,
-            P,
-            /*create*/
-            false
-          );
-          if (!provider) {
-            return [];
-          }
-          return provider.OrdinaryOwnMetadataKeys(O, P);
-        }
-        function Type(x) {
-          if (x === null)
-            return 1;
-          switch (typeof x) {
-            case "undefined":
-              return 0;
-            case "boolean":
-              return 2;
-            case "string":
-              return 3;
-            case "symbol":
-              return 4;
-            case "number":
-              return 5;
-            case "object":
-              return x === null ? 1 : 6;
-            default:
-              return 6;
-          }
-        }
-        function IsUndefined(x) {
-          return x === void 0;
-        }
-        function IsNull(x) {
-          return x === null;
-        }
-        function IsSymbol(x) {
-          return typeof x === "symbol";
-        }
-        function IsObject(x) {
-          return typeof x === "object" ? x !== null : typeof x === "function";
-        }
-        function ToPrimitive(input, PreferredType) {
-          switch (Type(input)) {
-            case 0:
-              return input;
-            case 1:
-              return input;
-            case 2:
-              return input;
-            case 3:
-              return input;
-            case 4:
-              return input;
-            case 5:
-              return input;
-          }
-          var hint = PreferredType === 3 ? "string" : PreferredType === 5 ? "number" : "default";
-          var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
-          if (exoticToPrim !== void 0) {
-            var result = exoticToPrim.call(input, hint);
-            if (IsObject(result))
-              throw new TypeError();
-            return result;
-          }
-          return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
-        }
-        function OrdinaryToPrimitive(O, hint) {
-          if (hint === "string") {
-            var toString_1 = O.toString;
-            if (IsCallable(toString_1)) {
-              var result = toString_1.call(O);
-              if (!IsObject(result))
-                return result;
-            }
-            var valueOf = O.valueOf;
-            if (IsCallable(valueOf)) {
-              var result = valueOf.call(O);
-              if (!IsObject(result))
-                return result;
-            }
-          } else {
-            var valueOf = O.valueOf;
-            if (IsCallable(valueOf)) {
-              var result = valueOf.call(O);
-              if (!IsObject(result))
-                return result;
-            }
-            var toString_2 = O.toString;
-            if (IsCallable(toString_2)) {
-              var result = toString_2.call(O);
-              if (!IsObject(result))
-                return result;
-            }
-          }
-          throw new TypeError();
-        }
-        function ToBoolean(argument) {
-          return !!argument;
-        }
-        function ToString(argument) {
-          return "" + argument;
-        }
-        function ToPropertyKey(argument) {
-          var key = ToPrimitive(
-            argument,
-            3
-            /* String */
-          );
-          if (IsSymbol(key))
-            return key;
-          return ToString(key);
-        }
-        function IsArray(argument) {
-          return Array.isArray ? Array.isArray(argument) : argument instanceof Object ? argument instanceof Array : Object.prototype.toString.call(argument) === "[object Array]";
-        }
-        function IsCallable(argument) {
-          return typeof argument === "function";
-        }
-        function IsConstructor(argument) {
-          return typeof argument === "function";
-        }
-        function IsPropertyKey(argument) {
-          switch (Type(argument)) {
-            case 3:
-              return true;
-            case 4:
-              return true;
-            default:
-              return false;
-          }
-        }
-        function SameValueZero(x, y) {
-          return x === y || x !== x && y !== y;
-        }
-        function GetMethod(V, P) {
-          var func = V[P];
-          if (func === void 0 || func === null)
-            return void 0;
-          if (!IsCallable(func))
-            throw new TypeError();
-          return func;
-        }
-        function GetIterator(obj) {
-          var method = GetMethod(obj, iteratorSymbol);
-          if (!IsCallable(method))
-            throw new TypeError();
-          var iterator = method.call(obj);
-          if (!IsObject(iterator))
-            throw new TypeError();
-          return iterator;
-        }
-        function IteratorValue(iterResult) {
-          return iterResult.value;
-        }
-        function IteratorStep(iterator) {
-          var result = iterator.next();
-          return result.done ? false : result;
-        }
-        function IteratorClose(iterator) {
-          var f = iterator["return"];
-          if (f)
-            f.call(iterator);
-        }
-        function OrdinaryGetPrototypeOf(O) {
-          var proto = Object.getPrototypeOf(O);
-          if (typeof O !== "function" || O === functionPrototype)
-            return proto;
-          if (proto !== functionPrototype)
-            return proto;
-          var prototype = O.prototype;
-          var prototypeProto = prototype && Object.getPrototypeOf(prototype);
-          if (prototypeProto == null || prototypeProto === Object.prototype)
-            return proto;
-          var constructor = prototypeProto.constructor;
-          if (typeof constructor !== "function")
-            return proto;
-          if (constructor === O)
-            return proto;
-          return constructor;
-        }
-        function CreateMetadataRegistry() {
-          var fallback;
-          if (!IsUndefined(registrySymbol) && typeof root.Reflect !== "undefined" && !(registrySymbol in root.Reflect) && typeof root.Reflect.defineMetadata === "function") {
-            fallback = CreateFallbackProvider(root.Reflect);
-          }
-          var first;
-          var second;
-          var rest;
-          var targetProviderMap = new _WeakMap();
-          var registry = {
-            registerProvider,
-            getProvider,
-            setProvider
-          };
-          return registry;
-          function registerProvider(provider) {
-            if (!Object.isExtensible(registry)) {
-              throw new Error("Cannot add provider to a frozen registry.");
-            }
-            switch (true) {
-              case fallback === provider:
-                break;
-              case IsUndefined(first):
-                first = provider;
-                break;
-              case first === provider:
-                break;
-              case IsUndefined(second):
-                second = provider;
-                break;
-              case second === provider:
-                break;
-              default:
-                if (rest === void 0)
-                  rest = new _Set();
-                rest.add(provider);
-                break;
-            }
-          }
-          function getProviderNoCache(O, P) {
-            if (!IsUndefined(first)) {
-              if (first.isProviderFor(O, P))
-                return first;
-              if (!IsUndefined(second)) {
-                if (second.isProviderFor(O, P))
-                  return first;
-                if (!IsUndefined(rest)) {
-                  var iterator = GetIterator(rest);
-                  while (true) {
-                    var next = IteratorStep(iterator);
-                    if (!next) {
-                      return void 0;
-                    }
-                    var provider = IteratorValue(next);
-                    if (provider.isProviderFor(O, P)) {
-                      IteratorClose(iterator);
-                      return provider;
-                    }
-                  }
-                }
-              }
-            }
-            if (!IsUndefined(fallback) && fallback.isProviderFor(O, P)) {
-              return fallback;
-            }
-            return void 0;
-          }
-          function getProvider(O, P) {
-            var providerMap = targetProviderMap.get(O);
-            var provider;
-            if (!IsUndefined(providerMap)) {
-              provider = providerMap.get(P);
-            }
-            if (!IsUndefined(provider)) {
-              return provider;
-            }
-            provider = getProviderNoCache(O, P);
-            if (!IsUndefined(provider)) {
-              if (IsUndefined(providerMap)) {
-                providerMap = new _Map();
-                targetProviderMap.set(O, providerMap);
-              }
-              providerMap.set(P, provider);
-            }
-            return provider;
-          }
-          function hasProvider(provider) {
-            if (IsUndefined(provider))
-              throw new TypeError();
-            return first === provider || second === provider || !IsUndefined(rest) && rest.has(provider);
-          }
-          function setProvider(O, P, provider) {
-            if (!hasProvider(provider)) {
-              throw new Error("Metadata provider not registered.");
-            }
-            var existingProvider = getProvider(O, P);
-            if (existingProvider !== provider) {
-              if (!IsUndefined(existingProvider)) {
-                return false;
-              }
-              var providerMap = targetProviderMap.get(O);
-              if (IsUndefined(providerMap)) {
-                providerMap = new _Map();
-                targetProviderMap.set(O, providerMap);
-              }
-              providerMap.set(P, provider);
-            }
-            return true;
-          }
-        }
-        function GetOrCreateMetadataRegistry() {
-          var metadataRegistry2;
-          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
-            metadataRegistry2 = root.Reflect[registrySymbol];
-          }
-          if (IsUndefined(metadataRegistry2)) {
-            metadataRegistry2 = CreateMetadataRegistry();
-          }
-          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
-            Object.defineProperty(root.Reflect, registrySymbol, {
-              enumerable: false,
-              configurable: false,
-              writable: false,
-              value: metadataRegistry2
-            });
-          }
-          return metadataRegistry2;
-        }
-        function CreateMetadataProvider(registry) {
-          var metadata2 = new _WeakMap();
-          var provider = {
-            isProviderFor: function(O, P) {
-              var targetMetadata = metadata2.get(O);
-              if (IsUndefined(targetMetadata))
-                return false;
-              return targetMetadata.has(P);
-            },
-            OrdinaryDefineOwnMetadata: OrdinaryDefineOwnMetadata2,
-            OrdinaryHasOwnMetadata: OrdinaryHasOwnMetadata2,
-            OrdinaryGetOwnMetadata: OrdinaryGetOwnMetadata2,
-            OrdinaryOwnMetadataKeys: OrdinaryOwnMetadataKeys2,
-            OrdinaryDeleteMetadata
-          };
-          metadataRegistry.registerProvider(provider);
-          return provider;
-          function GetOrCreateMetadataMap(O, P, Create) {
-            var targetMetadata = metadata2.get(O);
-            var createdTargetMetadata = false;
-            if (IsUndefined(targetMetadata)) {
-              if (!Create)
-                return void 0;
-              targetMetadata = new _Map();
-              metadata2.set(O, targetMetadata);
-              createdTargetMetadata = true;
-            }
-            var metadataMap = targetMetadata.get(P);
-            if (IsUndefined(metadataMap)) {
-              if (!Create)
-                return void 0;
-              metadataMap = new _Map();
-              targetMetadata.set(P, metadataMap);
-              if (!registry.setProvider(O, P, provider)) {
-                targetMetadata.delete(P);
-                if (createdTargetMetadata) {
-                  metadata2.delete(O);
-                }
-                throw new Error("Wrong provider for target.");
-              }
-            }
-            return metadataMap;
-          }
-          function OrdinaryHasOwnMetadata2(MetadataKey, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(
-              O,
-              P,
-              /*Create*/
-              false
-            );
-            if (IsUndefined(metadataMap))
-              return false;
-            return ToBoolean(metadataMap.has(MetadataKey));
-          }
-          function OrdinaryGetOwnMetadata2(MetadataKey, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(
-              O,
-              P,
-              /*Create*/
-              false
-            );
-            if (IsUndefined(metadataMap))
-              return void 0;
-            return metadataMap.get(MetadataKey);
-          }
-          function OrdinaryDefineOwnMetadata2(MetadataKey, MetadataValue, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(
-              O,
-              P,
-              /*Create*/
-              true
-            );
-            metadataMap.set(MetadataKey, MetadataValue);
-          }
-          function OrdinaryOwnMetadataKeys2(O, P) {
-            var keys = [];
-            var metadataMap = GetOrCreateMetadataMap(
-              O,
-              P,
-              /*Create*/
-              false
-            );
-            if (IsUndefined(metadataMap))
-              return keys;
-            var keysObj = metadataMap.keys();
-            var iterator = GetIterator(keysObj);
-            var k = 0;
-            while (true) {
-              var next = IteratorStep(iterator);
-              if (!next) {
-                keys.length = k;
-                return keys;
-              }
-              var nextValue = IteratorValue(next);
-              try {
-                keys[k] = nextValue;
-              } catch (e) {
-                try {
-                  IteratorClose(iterator);
-                } finally {
-                  throw e;
-                }
-              }
-              k++;
-            }
-          }
-          function OrdinaryDeleteMetadata(MetadataKey, O, P) {
-            var metadataMap = GetOrCreateMetadataMap(
-              O,
-              P,
-              /*Create*/
-              false
-            );
-            if (IsUndefined(metadataMap))
-              return false;
-            if (!metadataMap.delete(MetadataKey))
-              return false;
-            if (metadataMap.size === 0) {
-              var targetMetadata = metadata2.get(O);
-              if (!IsUndefined(targetMetadata)) {
-                targetMetadata.delete(P);
-                if (targetMetadata.size === 0) {
-                  metadata2.delete(targetMetadata);
-                }
-              }
-            }
-            return true;
-          }
-        }
-        function CreateFallbackProvider(reflect) {
-          var defineMetadata2 = reflect.defineMetadata, hasOwnMetadata2 = reflect.hasOwnMetadata, getOwnMetadata2 = reflect.getOwnMetadata, getOwnMetadataKeys2 = reflect.getOwnMetadataKeys, deleteMetadata2 = reflect.deleteMetadata;
-          var metadataOwner = new _WeakMap();
-          var provider = {
-            isProviderFor: function(O, P) {
-              var metadataPropertySet = metadataOwner.get(O);
-              if (!IsUndefined(metadataPropertySet)) {
-                return metadataPropertySet.has(P);
-              }
-              if (getOwnMetadataKeys2(O, P).length) {
-                if (IsUndefined(metadataPropertySet)) {
-                  metadataPropertySet = new _Set();
-                  metadataOwner.set(O, metadataPropertySet);
-                }
-                metadataPropertySet.add(P);
-                return true;
-              }
-              return false;
-            },
-            OrdinaryDefineOwnMetadata: defineMetadata2,
-            OrdinaryHasOwnMetadata: hasOwnMetadata2,
-            OrdinaryGetOwnMetadata: getOwnMetadata2,
-            OrdinaryOwnMetadataKeys: getOwnMetadataKeys2,
-            OrdinaryDeleteMetadata: deleteMetadata2
-          };
-          return provider;
-        }
-        function GetMetadataProvider(O, P, Create) {
-          var registeredProvider = metadataRegistry.getProvider(O, P);
-          if (!IsUndefined(registeredProvider)) {
-            return registeredProvider;
-          }
-          if (Create) {
-            if (metadataRegistry.setProvider(O, P, metadataProvider)) {
-              return metadataProvider;
-            }
-            throw new Error("Illegal state.");
-          }
-          return void 0;
-        }
-        function CreateMapPolyfill() {
-          var cacheSentinel = {};
-          var arraySentinel = [];
-          var MapIterator = (
-            /** @class */
-            function() {
-              function MapIterator2(keys, values, selector) {
-                this._index = 0;
-                this._keys = keys;
-                this._values = values;
-                this._selector = selector;
-              }
-              MapIterator2.prototype["@@iterator"] = function() {
-                return this;
-              };
-              MapIterator2.prototype[iteratorSymbol] = function() {
-                return this;
-              };
-              MapIterator2.prototype.next = function() {
-                var index = this._index;
-                if (index >= 0 && index < this._keys.length) {
-                  var result = this._selector(this._keys[index], this._values[index]);
-                  if (index + 1 >= this._keys.length) {
-                    this._index = -1;
-                    this._keys = arraySentinel;
-                    this._values = arraySentinel;
-                  } else {
-                    this._index++;
-                  }
-                  return { value: result, done: false };
-                }
-                return { value: void 0, done: true };
-              };
-              MapIterator2.prototype.throw = function(error) {
-                if (this._index >= 0) {
-                  this._index = -1;
-                  this._keys = arraySentinel;
-                  this._values = arraySentinel;
-                }
-                throw error;
-              };
-              MapIterator2.prototype.return = function(value) {
-                if (this._index >= 0) {
-                  this._index = -1;
-                  this._keys = arraySentinel;
-                  this._values = arraySentinel;
-                }
-                return { value, done: true };
-              };
-              return MapIterator2;
-            }()
-          );
-          var Map2 = (
-            /** @class */
-            function() {
-              function Map3() {
-                this._keys = [];
-                this._values = [];
-                this._cacheKey = cacheSentinel;
-                this._cacheIndex = -2;
-              }
-              Object.defineProperty(Map3.prototype, "size", {
-                get: function() {
-                  return this._keys.length;
-                },
-                enumerable: true,
-                configurable: true
-              });
-              Map3.prototype.has = function(key) {
-                return this._find(
-                  key,
-                  /*insert*/
-                  false
-                ) >= 0;
-              };
-              Map3.prototype.get = function(key) {
-                var index = this._find(
-                  key,
-                  /*insert*/
-                  false
-                );
-                return index >= 0 ? this._values[index] : void 0;
-              };
-              Map3.prototype.set = function(key, value) {
-                var index = this._find(
-                  key,
-                  /*insert*/
-                  true
-                );
-                this._values[index] = value;
-                return this;
-              };
-              Map3.prototype.delete = function(key) {
-                var index = this._find(
-                  key,
-                  /*insert*/
-                  false
-                );
-                if (index >= 0) {
-                  var size = this._keys.length;
-                  for (var i = index + 1; i < size; i++) {
-                    this._keys[i - 1] = this._keys[i];
-                    this._values[i - 1] = this._values[i];
-                  }
-                  this._keys.length--;
-                  this._values.length--;
-                  if (SameValueZero(key, this._cacheKey)) {
-                    this._cacheKey = cacheSentinel;
-                    this._cacheIndex = -2;
-                  }
-                  return true;
-                }
-                return false;
-              };
-              Map3.prototype.clear = function() {
-                this._keys.length = 0;
-                this._values.length = 0;
-                this._cacheKey = cacheSentinel;
-                this._cacheIndex = -2;
-              };
-              Map3.prototype.keys = function() {
-                return new MapIterator(this._keys, this._values, getKey);
-              };
-              Map3.prototype.values = function() {
-                return new MapIterator(this._keys, this._values, getValue);
-              };
-              Map3.prototype.entries = function() {
-                return new MapIterator(this._keys, this._values, getEntry);
-              };
-              Map3.prototype["@@iterator"] = function() {
-                return this.entries();
-              };
-              Map3.prototype[iteratorSymbol] = function() {
-                return this.entries();
-              };
-              Map3.prototype._find = function(key, insert) {
-                if (!SameValueZero(this._cacheKey, key)) {
-                  this._cacheIndex = -1;
-                  for (var i = 0; i < this._keys.length; i++) {
-                    if (SameValueZero(this._keys[i], key)) {
-                      this._cacheIndex = i;
-                      break;
-                    }
-                  }
-                }
-                if (this._cacheIndex < 0 && insert) {
-                  this._cacheIndex = this._keys.length;
-                  this._keys.push(key);
-                  this._values.push(void 0);
-                }
-                return this._cacheIndex;
-              };
-              return Map3;
-            }()
-          );
-          return Map2;
-          function getKey(key, _) {
-            return key;
-          }
-          function getValue(_, value) {
-            return value;
-          }
-          function getEntry(key, value) {
-            return [key, value];
-          }
-        }
-        function CreateSetPolyfill() {
-          var Set2 = (
-            /** @class */
-            function() {
-              function Set3() {
-                this._map = new _Map();
-              }
-              Object.defineProperty(Set3.prototype, "size", {
-                get: function() {
-                  return this._map.size;
-                },
-                enumerable: true,
-                configurable: true
-              });
-              Set3.prototype.has = function(value) {
-                return this._map.has(value);
-              };
-              Set3.prototype.add = function(value) {
-                return this._map.set(value, value), this;
-              };
-              Set3.prototype.delete = function(value) {
-                return this._map.delete(value);
-              };
-              Set3.prototype.clear = function() {
-                this._map.clear();
-              };
-              Set3.prototype.keys = function() {
-                return this._map.keys();
-              };
-              Set3.prototype.values = function() {
-                return this._map.keys();
-              };
-              Set3.prototype.entries = function() {
-                return this._map.entries();
-              };
-              Set3.prototype["@@iterator"] = function() {
-                return this.keys();
-              };
-              Set3.prototype[iteratorSymbol] = function() {
-                return this.keys();
-              };
-              return Set3;
-            }()
-          );
-          return Set2;
-        }
-        function CreateWeakMapPolyfill() {
-          var UUID_SIZE = 16;
-          var keys = HashMap.create();
-          var rootKey = CreateUniqueKey();
-          return (
-            /** @class */
-            function() {
-              function WeakMap2() {
-                this._key = CreateUniqueKey();
-              }
-              WeakMap2.prototype.has = function(target) {
-                var table = GetOrCreateWeakMapTable(
-                  target,
-                  /*create*/
-                  false
-                );
-                return table !== void 0 ? HashMap.has(table, this._key) : false;
-              };
-              WeakMap2.prototype.get = function(target) {
-                var table = GetOrCreateWeakMapTable(
-                  target,
-                  /*create*/
-                  false
-                );
-                return table !== void 0 ? HashMap.get(table, this._key) : void 0;
-              };
-              WeakMap2.prototype.set = function(target, value) {
-                var table = GetOrCreateWeakMapTable(
-                  target,
-                  /*create*/
-                  true
-                );
-                table[this._key] = value;
-                return this;
-              };
-              WeakMap2.prototype.delete = function(target) {
-                var table = GetOrCreateWeakMapTable(
-                  target,
-                  /*create*/
-                  false
-                );
-                return table !== void 0 ? delete table[this._key] : false;
-              };
-              WeakMap2.prototype.clear = function() {
-                this._key = CreateUniqueKey();
-              };
-              return WeakMap2;
-            }()
-          );
-          function CreateUniqueKey() {
-            var key;
-            do
-              key = "@@WeakMap@@" + CreateUUID();
-            while (HashMap.has(keys, key));
-            keys[key] = true;
-            return key;
-          }
-          function GetOrCreateWeakMapTable(target, create) {
-            if (!hasOwn.call(target, rootKey)) {
-              if (!create)
-                return void 0;
-              Object.defineProperty(target, rootKey, { value: HashMap.create() });
-            }
-            return target[rootKey];
-          }
-          function FillRandomBytes(buffer, size) {
-            for (var i = 0; i < size; ++i)
-              buffer[i] = Math.random() * 255 | 0;
-            return buffer;
-          }
-          function GenRandomBytes(size) {
-            if (typeof Uint8Array === "function") {
-              if (typeof crypto !== "undefined")
-                return crypto.getRandomValues(new Uint8Array(size));
-              if (typeof msCrypto !== "undefined")
-                return msCrypto.getRandomValues(new Uint8Array(size));
-              return FillRandomBytes(new Uint8Array(size), size);
-            }
-            return FillRandomBytes(new Array(size), size);
-          }
-          function CreateUUID() {
-            var data = GenRandomBytes(UUID_SIZE);
-            data[6] = data[6] & 79 | 64;
-            data[8] = data[8] & 191 | 128;
-            var result = "";
-            for (var offset = 0; offset < UUID_SIZE; ++offset) {
-              var byte = data[offset];
-              if (offset === 4 || offset === 6 || offset === 8)
-                result += "-";
-              if (byte < 16)
-                result += "0";
-              result += byte.toString(16).toLowerCase();
-            }
-            return result;
-          }
-        }
-        function MakeDictionary(obj) {
-          obj.__ = void 0;
-          delete obj.__;
-          return obj;
-        }
-      });
-    })(Reflect2 || (Reflect2 = {}));
-  }
-});
-
 // src/pixiGame/index.ts
 var pixiGame_exports = {};
 __export(pixiGame_exports, {
@@ -1609,6 +528,747 @@ function hookPixiGame() {
     return;
   }
   return;
+}
+
+// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
+var TransformationType;
+(function(TransformationType2) {
+  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
+  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
+  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
+})(TransformationType || (TransformationType = {}));
+
+// node_modules/class-transformer/esm5/MetadataStorage.js
+var MetadataStorage = (
+  /** @class */
+  function() {
+    function MetadataStorage2() {
+      this._typeMetadatas = /* @__PURE__ */ new Map();
+      this._transformMetadatas = /* @__PURE__ */ new Map();
+      this._exposeMetadatas = /* @__PURE__ */ new Map();
+      this._excludeMetadatas = /* @__PURE__ */ new Map();
+      this._ancestorsMap = /* @__PURE__ */ new Map();
+    }
+    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
+      if (!this._typeMetadatas.has(metadata.target)) {
+        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
+      if (!this._transformMetadatas.has(metadata.target)) {
+        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
+        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
+      }
+      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
+    };
+    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
+      if (!this._exposeMetadatas.has(metadata.target)) {
+        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
+      if (!this._excludeMetadatas.has(metadata.target)) {
+        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
+      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      });
+    };
+    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._excludeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._exposeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
+      return this.getExposedMetadatas(target).find(function(metadata) {
+        return metadata.options && metadata.options.name === name;
+      });
+    };
+    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._typeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.getStrategy = function(target) {
+      var excludeMap = this._excludeMetadatas.get(target);
+      var exclude = excludeMap && excludeMap.get(void 0);
+      var exposeMap = this._exposeMetadatas.get(target);
+      var expose = exposeMap && exposeMap.get(void 0);
+      if (exclude && expose || !exclude && !expose)
+        return "none";
+      return exclude ? "excludeAll" : "exposeAll";
+    };
+    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
+      return this.getMetadata(this._exposeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
+      return this.getMetadata(this._excludeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
+      return this.getExposedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
+      return this.getExcludedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.clear = function() {
+      this._typeMetadatas.clear();
+      this._exposeMetadatas.clear();
+      this._excludeMetadatas.clear();
+      this._ancestorsMap.clear();
+    };
+    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
+          return meta.propertyName !== void 0;
+        });
+      }
+      var metadataFromAncestors = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
+            return meta.propertyName !== void 0;
+          });
+          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
+        }
+      }
+      return metadataFromAncestors.concat(metadataFromTarget || []);
+    };
+    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      if (metadataFromTargetMap) {
+        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
+        if (metadataFromTarget) {
+          return metadataFromTarget;
+        }
+      }
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var ancestorResult = ancestorMetadataMap.get(propertyName);
+          if (ancestorResult) {
+            return ancestorResult;
+          }
+        }
+      }
+      return void 0;
+    };
+    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = metadataFromTargetMap.get(propertyName);
+      }
+      var metadataFromAncestorsTarget = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          if (ancestorMetadataMap.has(propertyName)) {
+            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
+          }
+        }
+      }
+      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
+    };
+    MetadataStorage2.prototype.getAncestors = function(target) {
+      if (!target)
+        return [];
+      if (!this._ancestorsMap.has(target)) {
+        var ancestors = [];
+        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
+          ancestors.push(baseClass);
+        }
+        this._ancestorsMap.set(target, ancestors);
+      }
+      return this._ancestorsMap.get(target);
+    };
+    return MetadataStorage2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/storage.js
+var defaultMetadataStorage = new MetadataStorage();
+
+// node_modules/class-transformer/esm5/utils/get-global.util.js
+function getGlobal() {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
+  if (typeof window !== "undefined") {
+    return window;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+}
+
+// node_modules/class-transformer/esm5/utils/is-promise.util.js
+function isPromise(p) {
+  return p !== null && typeof p === "object" && typeof p.then === "function";
+}
+
+// node_modules/class-transformer/esm5/TransformOperationExecutor.js
+var __spreadArray = function(to, from, pack) {
+  if (pack || arguments.length === 2)
+    for (var i = 0, l = from.length, ar; i < l; i++) {
+      if (ar || !(i in from)) {
+        if (!ar)
+          ar = Array.prototype.slice.call(from, 0, i);
+        ar[i] = from[i];
+      }
+    }
+  return to.concat(ar || Array.prototype.slice.call(from));
+};
+function instantiateArrayType(arrayType) {
+  var array = new arrayType();
+  if (!(array instanceof Set) && !("push" in array)) {
+    return [];
+  }
+  return array;
+}
+var TransformOperationExecutor = (
+  /** @class */
+  function() {
+    function TransformOperationExecutor2(transformationType, options) {
+      this.transformationType = transformationType;
+      this.options = options;
+      this.recursionStack = /* @__PURE__ */ new Set();
+    }
+    TransformOperationExecutor2.prototype.transform = function(source, value, targetType, arrayType, isMap, level) {
+      var _this = this;
+      if (level === void 0) {
+        level = 0;
+      }
+      if (Array.isArray(value) || value instanceof Set) {
+        var newValue_1 = arrayType && this.transformationType === TransformationType.PLAIN_TO_CLASS ? instantiateArrayType(arrayType) : [];
+        value.forEach(function(subValue, index) {
+          var subSource = source ? source[index] : void 0;
+          if (!_this.options.enableCircularCheck || !_this.isCircular(subValue)) {
+            var realTargetType = void 0;
+            if (typeof targetType !== "function" && targetType && targetType.options && targetType.options.discriminator && targetType.options.discriminator.property && targetType.options.discriminator.subTypes) {
+              if (_this.transformationType === TransformationType.PLAIN_TO_CLASS) {
+                realTargetType = targetType.options.discriminator.subTypes.find(function(subType) {
+                  return subType.name === subValue[targetType.options.discriminator.property];
+                });
+                var options = { newObject: newValue_1, object: subValue, property: void 0 };
+                var newType = targetType.typeFunction(options);
+                realTargetType === void 0 ? realTargetType = newType : realTargetType = realTargetType.value;
+                if (!targetType.options.keepDiscriminatorProperty)
+                  delete subValue[targetType.options.discriminator.property];
+              }
+              if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
+                realTargetType = subValue.constructor;
+              }
+              if (_this.transformationType === TransformationType.CLASS_TO_PLAIN) {
+                subValue[targetType.options.discriminator.property] = targetType.options.discriminator.subTypes.find(function(subType) {
+                  return subType.value === subValue.constructor;
+                }).name;
+              }
+            } else {
+              realTargetType = targetType;
+            }
+            var value_1 = _this.transform(subSource, subValue, realTargetType, void 0, subValue instanceof Map, level + 1);
+            if (newValue_1 instanceof Set) {
+              newValue_1.add(value_1);
+            } else {
+              newValue_1.push(value_1);
+            }
+          } else if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
+            if (newValue_1 instanceof Set) {
+              newValue_1.add(subValue);
+            } else {
+              newValue_1.push(subValue);
+            }
+          }
+        });
+        return newValue_1;
+      } else if (targetType === String && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return String(value);
+      } else if (targetType === Number && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Number(value);
+      } else if (targetType === Boolean && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Boolean(value);
+      } else if ((targetType === Date || value instanceof Date) && !isMap) {
+        if (value instanceof Date) {
+          return new Date(value.valueOf());
+        }
+        if (value === null || value === void 0)
+          return value;
+        return new Date(value);
+      } else if (!!getGlobal().Buffer && (targetType === Buffer || value instanceof Buffer) && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Buffer.from(value);
+      } else if (isPromise(value) && !isMap) {
+        return new Promise(function(resolve, reject) {
+          value.then(function(data) {
+            return resolve(_this.transform(void 0, data, targetType, void 0, void 0, level + 1));
+          }, reject);
+        });
+      } else if (!isMap && value !== null && typeof value === "object" && typeof value.then === "function") {
+        return value;
+      } else if (typeof value === "object" && value !== null) {
+        if (!targetType && value.constructor !== Object)
+          if (!Array.isArray(value) && value.constructor === Array) {
+          } else {
+            targetType = value.constructor;
+          }
+        if (!targetType && source)
+          targetType = source.constructor;
+        if (this.options.enableCircularCheck) {
+          this.recursionStack.add(value);
+        }
+        var keys = this.getKeys(targetType, value, isMap);
+        var newValue = source ? source : {};
+        if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
+          if (isMap) {
+            newValue = /* @__PURE__ */ new Map();
+          } else if (targetType) {
+            newValue = new targetType();
+          } else {
+            newValue = {};
+          }
+        }
+        var _loop_1 = function(key2) {
+          if (key2 === "__proto__" || key2 === "constructor") {
+            return "continue";
+          }
+          var valueKey = key2;
+          var newValueKey = key2, propertyName = key2;
+          if (!this_1.options.ignoreDecorators && targetType) {
+            if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+              var exposeMetadata = defaultMetadataStorage.findExposeMetadataByCustomName(targetType, key2);
+              if (exposeMetadata) {
+                propertyName = exposeMetadata.propertyName;
+                newValueKey = exposeMetadata.propertyName;
+              }
+            } else if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN || this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+              var exposeMetadata = defaultMetadataStorage.findExposeMetadata(targetType, key2);
+              if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
+                newValueKey = exposeMetadata.options.name;
+              }
+            }
+          }
+          var subValue = void 0;
+          if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+            subValue = value[valueKey];
+          } else {
+            if (value instanceof Map) {
+              subValue = value.get(valueKey);
+            } else if (value[valueKey] instanceof Function) {
+              subValue = value[valueKey]();
+            } else {
+              subValue = value[valueKey];
+            }
+          }
+          var type = void 0, isSubValueMap = subValue instanceof Map;
+          if (targetType && isMap) {
+            type = targetType;
+          } else if (targetType) {
+            var metadata_1 = defaultMetadataStorage.findTypeMetadata(targetType, propertyName);
+            if (metadata_1) {
+              var options = { newObject: newValue, object: value, property: propertyName };
+              var newType = metadata_1.typeFunction ? metadata_1.typeFunction(options) : metadata_1.reflectedType;
+              if (metadata_1.options && metadata_1.options.discriminator && metadata_1.options.discriminator.property && metadata_1.options.discriminator.subTypes) {
+                if (!(value[valueKey] instanceof Array)) {
+                  if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+                    type = metadata_1.options.discriminator.subTypes.find(function(subType) {
+                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
+                        return subType.name === subValue[metadata_1.options.discriminator.property];
+                      }
+                    });
+                    type === void 0 ? type = newType : type = type.value;
+                    if (!metadata_1.options.keepDiscriminatorProperty) {
+                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
+                        delete subValue[metadata_1.options.discriminator.property];
+                      }
+                    }
+                  }
+                  if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+                    type = subValue.constructor;
+                  }
+                  if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
+                    if (subValue) {
+                      subValue[metadata_1.options.discriminator.property] = metadata_1.options.discriminator.subTypes.find(function(subType) {
+                        return subType.value === subValue.constructor;
+                      }).name;
+                    }
+                  }
+                } else {
+                  type = metadata_1;
+                }
+              } else {
+                type = newType;
+              }
+              isSubValueMap = isSubValueMap || metadata_1.reflectedType === Map;
+            } else if (this_1.options.targetMaps) {
+              this_1.options.targetMaps.filter(function(map) {
+                return map.target === targetType && !!map.properties[propertyName];
+              }).forEach(function(map) {
+                return type = map.properties[propertyName];
+              });
+            } else if (this_1.options.enableImplicitConversion && this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+              var reflectedType = Reflect.getMetadata("design:type", targetType.prototype, propertyName);
+              if (reflectedType) {
+                type = reflectedType;
+              }
+            }
+          }
+          var arrayType_1 = Array.isArray(value[valueKey]) ? this_1.getReflectedType(targetType, propertyName) : void 0;
+          var subSource = source ? source[valueKey] : void 0;
+          if (newValue.constructor.prototype) {
+            var descriptor = Object.getOwnPropertyDescriptor(newValue.constructor.prototype, newValueKey);
+            if ((this_1.transformationType === TransformationType.PLAIN_TO_CLASS || this_1.transformationType === TransformationType.CLASS_TO_CLASS) && // eslint-disable-next-line @typescript-eslint/unbound-method
+            (descriptor && !descriptor.set || newValue[newValueKey] instanceof Function))
+              return "continue";
+          }
+          if (!this_1.options.enableCircularCheck || !this_1.isCircular(subValue)) {
+            var transformKey = this_1.transformationType === TransformationType.PLAIN_TO_CLASS ? newValueKey : key2;
+            var finalValue = void 0;
+            if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
+              finalValue = value[transformKey];
+              finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
+              finalValue = value[transformKey] === finalValue ? subValue : finalValue;
+              finalValue = this_1.transform(subSource, finalValue, type, arrayType_1, isSubValueMap, level + 1);
+            } else {
+              if (subValue === void 0 && this_1.options.exposeDefaultValues) {
+                finalValue = newValue[newValueKey];
+              } else {
+                finalValue = this_1.transform(subSource, subValue, type, arrayType_1, isSubValueMap, level + 1);
+                finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
+              }
+            }
+            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
+              if (newValue instanceof Map) {
+                newValue.set(newValueKey, finalValue);
+              } else {
+                newValue[newValueKey] = finalValue;
+              }
+            }
+          } else if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+            var finalValue = subValue;
+            finalValue = this_1.applyCustomTransformations(finalValue, targetType, key2, value, this_1.transformationType);
+            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
+              if (newValue instanceof Map) {
+                newValue.set(newValueKey, finalValue);
+              } else {
+                newValue[newValueKey] = finalValue;
+              }
+            }
+          }
+        };
+        var this_1 = this;
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+          var key = keys_1[_i];
+          _loop_1(key);
+        }
+        if (this.options.enableCircularCheck) {
+          this.recursionStack.delete(value);
+        }
+        return newValue;
+      } else {
+        return value;
+      }
+    };
+    TransformOperationExecutor2.prototype.applyCustomTransformations = function(value, target, key, obj, transformationType) {
+      var _this = this;
+      var metadatas = defaultMetadataStorage.findTransformMetadatas(target, key, this.transformationType);
+      if (this.options.version !== void 0) {
+        metadatas = metadatas.filter(function(metadata) {
+          if (!metadata.options)
+            return true;
+          return _this.checkVersion(metadata.options.since, metadata.options.until);
+        });
+      }
+      if (this.options.groups && this.options.groups.length) {
+        metadatas = metadatas.filter(function(metadata) {
+          if (!metadata.options)
+            return true;
+          return _this.checkGroups(metadata.options.groups);
+        });
+      } else {
+        metadatas = metadatas.filter(function(metadata) {
+          return !metadata.options || !metadata.options.groups || !metadata.options.groups.length;
+        });
+      }
+      metadatas.forEach(function(metadata) {
+        value = metadata.transformFn({ value, key, obj, type: transformationType, options: _this.options });
+      });
+      return value;
+    };
+    TransformOperationExecutor2.prototype.isCircular = function(object) {
+      return this.recursionStack.has(object);
+    };
+    TransformOperationExecutor2.prototype.getReflectedType = function(target, propertyName) {
+      if (!target)
+        return void 0;
+      var meta = defaultMetadataStorage.findTypeMetadata(target, propertyName);
+      return meta ? meta.reflectedType : void 0;
+    };
+    TransformOperationExecutor2.prototype.getKeys = function(target, object, isMap) {
+      var _this = this;
+      var strategy = defaultMetadataStorage.getStrategy(target);
+      if (strategy === "none")
+        strategy = this.options.strategy || "exposeAll";
+      var keys = [];
+      if (strategy === "exposeAll" || isMap) {
+        if (object instanceof Map) {
+          keys = Array.from(object.keys());
+        } else {
+          keys = Object.keys(object);
+        }
+      }
+      if (isMap) {
+        return keys;
+      }
+      if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
+        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
+        var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
+        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
+      }
+      if (!this.options.ignoreDecorators && target) {
+        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
+        if (this.transformationType === TransformationType.PLAIN_TO_CLASS) {
+          exposedProperties = exposedProperties.map(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
+              return exposeMetadata.options.name;
+            }
+            return key;
+          });
+        }
+        if (this.options.excludeExtraneousValues) {
+          keys = exposedProperties;
+        } else {
+          keys = keys.concat(exposedProperties);
+        }
+        var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
+        if (excludedProperties_1.length > 0) {
+          keys = keys.filter(function(key) {
+            return !excludedProperties_1.includes(key);
+          });
+        }
+        if (this.options.version !== void 0) {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (!exposeMetadata || !exposeMetadata.options)
+              return true;
+            return _this.checkVersion(exposeMetadata.options.since, exposeMetadata.options.until);
+          });
+        }
+        if (this.options.groups && this.options.groups.length) {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (!exposeMetadata || !exposeMetadata.options)
+              return true;
+            return _this.checkGroups(exposeMetadata.options.groups);
+          });
+        } else {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
+          });
+        }
+      }
+      if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
+        keys = keys.filter(function(key) {
+          return _this.options.excludePrefixes.every(function(prefix) {
+            return key.substr(0, prefix.length) !== prefix;
+          });
+        });
+      }
+      keys = keys.filter(function(key, index, self2) {
+        return self2.indexOf(key) === index;
+      });
+      return keys;
+    };
+    TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
+      var decision = true;
+      if (decision && since)
+        decision = this.options.version >= since;
+      if (decision && until)
+        decision = this.options.version < until;
+      return decision;
+    };
+    TransformOperationExecutor2.prototype.checkGroups = function(groups) {
+      if (!groups)
+        return true;
+      return this.options.groups.some(function(optionGroup) {
+        return groups.includes(optionGroup);
+      });
+    };
+    return TransformOperationExecutor2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/constants/default-options.constant.js
+var defaultOptions = {
+  enableCircularCheck: false,
+  enableImplicitConversion: false,
+  excludeExtraneousValues: false,
+  excludePrefixes: void 0,
+  exposeDefaultValues: false,
+  exposeUnsetFields: true,
+  groups: void 0,
+  ignoreDecorators: false,
+  strategy: void 0,
+  targetMaps: void 0,
+  version: void 0
+};
+
+// node_modules/class-transformer/esm5/ClassTransformer.js
+var __assign = function() {
+  __assign = Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s)
+        if (Object.prototype.hasOwnProperty.call(s, p))
+          t[p] = s[p];
+    }
+    return t;
+  };
+  return __assign.apply(this, arguments);
+};
+var ClassTransformer = (
+  /** @class */
+  function() {
+    function ClassTransformer2() {
+    }
+    ClassTransformer2.prototype.instanceToPlain = function(object, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.classToPlainFromExist = function(object, plainObject, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(plainObject, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.plainToInstance = function(cls, plain, options) {
+      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, plain, cls, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.plainToClassFromExist = function(clsObject, plain, options) {
+      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(clsObject, plain, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.instanceToInstance = function(object, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.classToClassFromExist = function(object, fromObject, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(fromObject, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.serialize = function(object, options) {
+      return JSON.stringify(this.instanceToPlain(object, options));
+    };
+    ClassTransformer2.prototype.deserialize = function(cls, json, options) {
+      var jsonObject = JSON.parse(json);
+      return this.plainToInstance(cls, jsonObject, options);
+    };
+    ClassTransformer2.prototype.deserializeArray = function(cls, json, options) {
+      var jsonObject = JSON.parse(json);
+      return this.plainToInstance(cls, jsonObject, options);
+    };
+    return ClassTransformer2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/decorators/expose.decorator.js
+function Expose(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(object, propertyName) {
+    defaultMetadataStorage.addExposeMetadata({
+      target: object instanceof Function ? object : object.constructor,
+      propertyName,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/decorators/type.decorator.js
+function Type(typeFunction, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(target, propertyName) {
+    var reflectedType = Reflect.getMetadata("design:type", target, propertyName);
+    defaultMetadataStorage.addTypeMetadata({
+      target: target.constructor,
+      propertyName,
+      reflectedType,
+      typeFunction,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/index.js
+var classTransformer = new ClassTransformer();
+function instanceToPlain(object, options) {
+  return classTransformer.instanceToPlain(object, options);
+}
+function plainToInstance(cls, plain, options) {
+  return classTransformer.plainToInstance(cls, plain, options);
 }
 
 // src/E/lru-cache.ts
@@ -5262,13 +4922,13 @@ Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(
 
 // src/classes/boost.ts
 var boostObject = class {
+  // public index: number;
   constructor(init) {
     this.id = init.id;
-    this.name = init.name;
+    this.name = init.name ?? "";
     this.desc = init.desc ?? "";
     this.value = init.value;
     this.order = init.order ?? 99;
-    this.index = init.index ?? -1;
   }
 };
 var boost = class {
@@ -5277,29 +4937,14 @@ var boost = class {
    * @param baseEffect - The base effect value to which boosts are applied.
    * @param boosts - An array of boost objects to initialize with.
    */
-  constructor(baseEffect, boosts) {
-    /**
-     * @alias {@link boost.getBoost}
-     * @deprecated Use getBoost instead.
-     */
-    this.bGet = this.getBoost;
-    /**
-     * @alias {@link boost.removeBoost}
-     * @deprecated Use removeBoost instead.
-     */
-    this.bRemove = this.removeBoost;
-    /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     */
-    this.bSet = this.setBoost;
+  constructor(baseEffect = 1, boosts) {
     /**
      * @alias {@link boost.setBoost}
      * @deprecated Use setBoost instead.
      */
     this.addBoost = this.setBoost;
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    this.baseEffect = E(baseEffect ?? 1);
+    this.baseEffect = E(baseEffect);
     this.boostArray = [];
     if (boosts) {
       boosts.forEach((boostObj) => {
@@ -5307,74 +4952,64 @@ var boost = class {
       });
     }
   }
+  getBoosts(id, index) {
+    const boostList = [];
+    const indexList = [];
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
+        boostList.push(this.boostArray[i]);
+        indexList.push(i);
+      }
+    }
+    return index ? [boostList, indexList] : boostList;
+  }
   /**
    * Gets a boost object by its ID.
+   * @deprecated Use {@link boost.getBoosts} instead.
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
   getBoost(id) {
-    let output = null;
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (id === i || id == this.boostArray[i].id) {
-        output = this.boostArray[i];
-        output["index"] = i;
-      }
-    }
-    return output;
+    return this.getBoosts(id)[0] ?? null;
   }
   /**
-   * Removes a boost by its ID.
+   * Removes a boost by its ID. Only removes the first instance of the id.
    * @param id - The ID of the boost to remove.
    */
   removeBoost(id) {
-    const bCheck = this.bGet(id);
-    if (bCheck) {
-      delete this.boostArray[bCheck.index];
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (id === this.boostArray[i].id) {
+        this.boostArray.splice(i, 1);
+        break;
+      }
     }
   }
   setBoost(arg1, arg2, arg3, arg4, arg5) {
+    if (!arg1)
+      return;
     if (typeof arg1 === "string") {
       const id = arg1;
       const name = arg2 ?? "";
       const desc = arg3 ?? "";
       const value = arg4 ?? ((e) => e);
       const order = arg5;
-      const bCheck = this.bGet(id);
-      if (!bCheck) {
-        this.boostArray.push(new boostObject({ id, name, desc, value, order, index: this.boostArray.length }));
+      const bCheck = this.getBoosts(id, true);
+      if (!bCheck[0][0]) {
+        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
       } else {
-        this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
+        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
       for (let i = 0; i < arg1.length; i++) {
-        const bCheck = this.bGet(arg1[i].id);
-        if (!bCheck) {
+        const bCheck = this.getBoosts(arg1[i].id, true);
+        if (!bCheck[0][0]) {
           this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
         } else {
-          this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
         }
       }
     }
-  }
-  /**
-   * Sets or updates multiple boosts with advanced parameters.
-   * @alias {@link boost.setBoost}
-   * @deprecated Use setBoost instead.
-   * @param boostsArray - boost objects to set or update.
-   */
-  bSetArray(boostsArray) {
-    this.setBoost(boostsArray);
-  }
-  /**
-   * Sets or updates multiple boosts with advanced parameters.
-   * @alias {@link boost.setBoost}
-   * @deprecated Use setBoost instead.
-   * @param boostsArray - boost objects to set or update.
-   * @deprecated Use setBoost instead.
-   */
-  bSetAdvanced(...boostsArray) {
-    this.setBoost(boostsArray);
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
@@ -5908,716 +5543,6 @@ var eventManager = class _eventManager {
 
 // src/game/managers/dataManager.ts
 var import_lz_string = __toESM(require_lz_string());
-var import_reflect_metadata = __toESM(require_Reflect());
-
-// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
-var TransformationType;
-(function(TransformationType2) {
-  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
-  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
-  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
-})(TransformationType || (TransformationType = {}));
-
-// node_modules/class-transformer/esm5/MetadataStorage.js
-var MetadataStorage = (
-  /** @class */
-  function() {
-    function MetadataStorage2() {
-      this._typeMetadatas = /* @__PURE__ */ new Map();
-      this._transformMetadatas = /* @__PURE__ */ new Map();
-      this._exposeMetadatas = /* @__PURE__ */ new Map();
-      this._excludeMetadatas = /* @__PURE__ */ new Map();
-      this._ancestorsMap = /* @__PURE__ */ new Map();
-    }
-    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
-      if (!this._typeMetadatas.has(metadata.target)) {
-        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
-      if (!this._transformMetadatas.has(metadata.target)) {
-        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
-        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
-      }
-      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
-    };
-    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
-      if (!this._exposeMetadatas.has(metadata.target)) {
-        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
-      if (!this._excludeMetadatas.has(metadata.target)) {
-        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
-      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      });
-    };
-    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._excludeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._exposeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
-      return this.getExposedMetadatas(target).find(function(metadata) {
-        return metadata.options && metadata.options.name === name;
-      });
-    };
-    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._typeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.getStrategy = function(target) {
-      var excludeMap = this._excludeMetadatas.get(target);
-      var exclude = excludeMap && excludeMap.get(void 0);
-      var exposeMap = this._exposeMetadatas.get(target);
-      var expose = exposeMap && exposeMap.get(void 0);
-      if (exclude && expose || !exclude && !expose)
-        return "none";
-      return exclude ? "excludeAll" : "exposeAll";
-    };
-    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
-      return this.getMetadata(this._exposeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
-      return this.getMetadata(this._excludeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
-      return this.getExposedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
-      return this.getExcludedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.clear = function() {
-      this._typeMetadatas.clear();
-      this._exposeMetadatas.clear();
-      this._excludeMetadatas.clear();
-      this._ancestorsMap.clear();
-    };
-    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
-          return meta.propertyName !== void 0;
-        });
-      }
-      var metadataFromAncestors = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
-            return meta.propertyName !== void 0;
-          });
-          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
-        }
-      }
-      return metadataFromAncestors.concat(metadataFromTarget || []);
-    };
-    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      if (metadataFromTargetMap) {
-        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
-        if (metadataFromTarget) {
-          return metadataFromTarget;
-        }
-      }
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var ancestorResult = ancestorMetadataMap.get(propertyName);
-          if (ancestorResult) {
-            return ancestorResult;
-          }
-        }
-      }
-      return void 0;
-    };
-    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = metadataFromTargetMap.get(propertyName);
-      }
-      var metadataFromAncestorsTarget = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          if (ancestorMetadataMap.has(propertyName)) {
-            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
-          }
-        }
-      }
-      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
-    };
-    MetadataStorage2.prototype.getAncestors = function(target) {
-      if (!target)
-        return [];
-      if (!this._ancestorsMap.has(target)) {
-        var ancestors = [];
-        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
-          ancestors.push(baseClass);
-        }
-        this._ancestorsMap.set(target, ancestors);
-      }
-      return this._ancestorsMap.get(target);
-    };
-    return MetadataStorage2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/storage.js
-var defaultMetadataStorage = new MetadataStorage();
-
-// node_modules/class-transformer/esm5/utils/get-global.util.js
-function getGlobal() {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
-  }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-}
-
-// node_modules/class-transformer/esm5/utils/is-promise.util.js
-function isPromise(p) {
-  return p !== null && typeof p === "object" && typeof p.then === "function";
-}
-
-// node_modules/class-transformer/esm5/TransformOperationExecutor.js
-var __spreadArray = function(to, from, pack) {
-  if (pack || arguments.length === 2)
-    for (var i = 0, l = from.length, ar; i < l; i++) {
-      if (ar || !(i in from)) {
-        if (!ar)
-          ar = Array.prototype.slice.call(from, 0, i);
-        ar[i] = from[i];
-      }
-    }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
-function instantiateArrayType(arrayType) {
-  var array = new arrayType();
-  if (!(array instanceof Set) && !("push" in array)) {
-    return [];
-  }
-  return array;
-}
-var TransformOperationExecutor = (
-  /** @class */
-  function() {
-    function TransformOperationExecutor2(transformationType, options) {
-      this.transformationType = transformationType;
-      this.options = options;
-      this.recursionStack = /* @__PURE__ */ new Set();
-    }
-    TransformOperationExecutor2.prototype.transform = function(source, value, targetType, arrayType, isMap, level) {
-      var _this = this;
-      if (level === void 0) {
-        level = 0;
-      }
-      if (Array.isArray(value) || value instanceof Set) {
-        var newValue_1 = arrayType && this.transformationType === TransformationType.PLAIN_TO_CLASS ? instantiateArrayType(arrayType) : [];
-        value.forEach(function(subValue, index) {
-          var subSource = source ? source[index] : void 0;
-          if (!_this.options.enableCircularCheck || !_this.isCircular(subValue)) {
-            var realTargetType = void 0;
-            if (typeof targetType !== "function" && targetType && targetType.options && targetType.options.discriminator && targetType.options.discriminator.property && targetType.options.discriminator.subTypes) {
-              if (_this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                realTargetType = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.name === subValue[targetType.options.discriminator.property];
-                });
-                var options = { newObject: newValue_1, object: subValue, property: void 0 };
-                var newType = targetType.typeFunction(options);
-                realTargetType === void 0 ? realTargetType = newType : realTargetType = realTargetType.value;
-                if (!targetType.options.keepDiscriminatorProperty)
-                  delete subValue[targetType.options.discriminator.property];
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-                realTargetType = subValue.constructor;
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                subValue[targetType.options.discriminator.property] = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.value === subValue.constructor;
-                }).name;
-              }
-            } else {
-              realTargetType = targetType;
-            }
-            var value_1 = _this.transform(subSource, subValue, realTargetType, void 0, subValue instanceof Map, level + 1);
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(value_1);
-            } else {
-              newValue_1.push(value_1);
-            }
-          } else if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(subValue);
-            } else {
-              newValue_1.push(subValue);
-            }
-          }
-        });
-        return newValue_1;
-      } else if (targetType === String && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return String(value);
-      } else if (targetType === Number && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Number(value);
-      } else if (targetType === Boolean && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Boolean(value);
-      } else if ((targetType === Date || value instanceof Date) && !isMap) {
-        if (value instanceof Date) {
-          return new Date(value.valueOf());
-        }
-        if (value === null || value === void 0)
-          return value;
-        return new Date(value);
-      } else if (!!getGlobal().Buffer && (targetType === Buffer || value instanceof Buffer) && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Buffer.from(value);
-      } else if (isPromise(value) && !isMap) {
-        return new Promise(function(resolve, reject) {
-          value.then(function(data) {
-            return resolve(_this.transform(void 0, data, targetType, void 0, void 0, level + 1));
-          }, reject);
-        });
-      } else if (!isMap && value !== null && typeof value === "object" && typeof value.then === "function") {
-        return value;
-      } else if (typeof value === "object" && value !== null) {
-        if (!targetType && value.constructor !== Object)
-          if (!Array.isArray(value) && value.constructor === Array) {
-          } else {
-            targetType = value.constructor;
-          }
-        if (!targetType && source)
-          targetType = source.constructor;
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.add(value);
-        }
-        var keys = this.getKeys(targetType, value, isMap);
-        var newValue = source ? source : {};
-        if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
-          if (isMap) {
-            newValue = /* @__PURE__ */ new Map();
-          } else if (targetType) {
-            newValue = new targetType();
-          } else {
-            newValue = {};
-          }
-        }
-        var _loop_1 = function(key2) {
-          if (key2 === "__proto__" || key2 === "constructor") {
-            return "continue";
-          }
-          var valueKey = key2;
-          var newValueKey = key2, propertyName = key2;
-          if (!this_1.options.ignoreDecorators && targetType) {
-            if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadataByCustomName(targetType, key2);
-              if (exposeMetadata) {
-                propertyName = exposeMetadata.propertyName;
-                newValueKey = exposeMetadata.propertyName;
-              }
-            } else if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN || this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadata(targetType, key2);
-              if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-                newValueKey = exposeMetadata.options.name;
-              }
-            }
-          }
-          var subValue = void 0;
-          if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-            subValue = value[valueKey];
-          } else {
-            if (value instanceof Map) {
-              subValue = value.get(valueKey);
-            } else if (value[valueKey] instanceof Function) {
-              subValue = value[valueKey]();
-            } else {
-              subValue = value[valueKey];
-            }
-          }
-          var type = void 0, isSubValueMap = subValue instanceof Map;
-          if (targetType && isMap) {
-            type = targetType;
-          } else if (targetType) {
-            var metadata_1 = defaultMetadataStorage.findTypeMetadata(targetType, propertyName);
-            if (metadata_1) {
-              var options = { newObject: newValue, object: value, property: propertyName };
-              var newType = metadata_1.typeFunction ? metadata_1.typeFunction(options) : metadata_1.reflectedType;
-              if (metadata_1.options && metadata_1.options.discriminator && metadata_1.options.discriminator.property && metadata_1.options.discriminator.subTypes) {
-                if (!(value[valueKey] instanceof Array)) {
-                  if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                    type = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        return subType.name === subValue[metadata_1.options.discriminator.property];
-                      }
-                    });
-                    type === void 0 ? type = newType : type = type.value;
-                    if (!metadata_1.options.keepDiscriminatorProperty) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        delete subValue[metadata_1.options.discriminator.property];
-                      }
-                    }
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-                    type = subValue.constructor;
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                    if (subValue) {
-                      subValue[metadata_1.options.discriminator.property] = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                        return subType.value === subValue.constructor;
-                      }).name;
-                    }
-                  }
-                } else {
-                  type = metadata_1;
-                }
-              } else {
-                type = newType;
-              }
-              isSubValueMap = isSubValueMap || metadata_1.reflectedType === Map;
-            } else if (this_1.options.targetMaps) {
-              this_1.options.targetMaps.filter(function(map) {
-                return map.target === targetType && !!map.properties[propertyName];
-              }).forEach(function(map) {
-                return type = map.properties[propertyName];
-              });
-            } else if (this_1.options.enableImplicitConversion && this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var reflectedType = Reflect.getMetadata("design:type", targetType.prototype, propertyName);
-              if (reflectedType) {
-                type = reflectedType;
-              }
-            }
-          }
-          var arrayType_1 = Array.isArray(value[valueKey]) ? this_1.getReflectedType(targetType, propertyName) : void 0;
-          var subSource = source ? source[valueKey] : void 0;
-          if (newValue.constructor.prototype) {
-            var descriptor = Object.getOwnPropertyDescriptor(newValue.constructor.prototype, newValueKey);
-            if ((this_1.transformationType === TransformationType.PLAIN_TO_CLASS || this_1.transformationType === TransformationType.CLASS_TO_CLASS) && // eslint-disable-next-line @typescript-eslint/unbound-method
-            (descriptor && !descriptor.set || newValue[newValueKey] instanceof Function))
-              return "continue";
-          }
-          if (!this_1.options.enableCircularCheck || !this_1.isCircular(subValue)) {
-            var transformKey = this_1.transformationType === TransformationType.PLAIN_TO_CLASS ? newValueKey : key2;
-            var finalValue = void 0;
-            if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-              finalValue = value[transformKey];
-              finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              finalValue = value[transformKey] === finalValue ? subValue : finalValue;
-              finalValue = this_1.transform(subSource, finalValue, type, arrayType_1, isSubValueMap, level + 1);
-            } else {
-              if (subValue === void 0 && this_1.options.exposeDefaultValues) {
-                finalValue = newValue[newValueKey];
-              } else {
-                finalValue = this_1.transform(subSource, subValue, type, arrayType_1, isSubValueMap, level + 1);
-                finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              }
-            }
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          } else if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-            var finalValue = subValue;
-            finalValue = this_1.applyCustomTransformations(finalValue, targetType, key2, value, this_1.transformationType);
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          }
-        };
-        var this_1 = this;
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-          var key = keys_1[_i];
-          _loop_1(key);
-        }
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.delete(value);
-        }
-        return newValue;
-      } else {
-        return value;
-      }
-    };
-    TransformOperationExecutor2.prototype.applyCustomTransformations = function(value, target, key, obj, transformationType) {
-      var _this = this;
-      var metadatas = defaultMetadataStorage.findTransformMetadatas(target, key, this.transformationType);
-      if (this.options.version !== void 0) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkVersion(metadata.options.since, metadata.options.until);
-        });
-      }
-      if (this.options.groups && this.options.groups.length) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkGroups(metadata.options.groups);
-        });
-      } else {
-        metadatas = metadatas.filter(function(metadata) {
-          return !metadata.options || !metadata.options.groups || !metadata.options.groups.length;
-        });
-      }
-      metadatas.forEach(function(metadata) {
-        value = metadata.transformFn({ value, key, obj, type: transformationType, options: _this.options });
-      });
-      return value;
-    };
-    TransformOperationExecutor2.prototype.isCircular = function(object) {
-      return this.recursionStack.has(object);
-    };
-    TransformOperationExecutor2.prototype.getReflectedType = function(target, propertyName) {
-      if (!target)
-        return void 0;
-      var meta = defaultMetadataStorage.findTypeMetadata(target, propertyName);
-      return meta ? meta.reflectedType : void 0;
-    };
-    TransformOperationExecutor2.prototype.getKeys = function(target, object, isMap) {
-      var _this = this;
-      var strategy = defaultMetadataStorage.getStrategy(target);
-      if (strategy === "none")
-        strategy = this.options.strategy || "exposeAll";
-      var keys = [];
-      if (strategy === "exposeAll" || isMap) {
-        if (object instanceof Map) {
-          keys = Array.from(object.keys());
-        } else {
-          keys = Object.keys(object);
-        }
-      }
-      if (isMap) {
-        return keys;
-      }
-      if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
-      }
-      if (!this.options.ignoreDecorators && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        if (this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-          exposedProperties = exposedProperties.map(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-              return exposeMetadata.options.name;
-            }
-            return key;
-          });
-        }
-        if (this.options.excludeExtraneousValues) {
-          keys = exposedProperties;
-        } else {
-          keys = keys.concat(exposedProperties);
-        }
-        var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        if (excludedProperties_1.length > 0) {
-          keys = keys.filter(function(key) {
-            return !excludedProperties_1.includes(key);
-          });
-        }
-        if (this.options.version !== void 0) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkVersion(exposeMetadata.options.since, exposeMetadata.options.until);
-          });
-        }
-        if (this.options.groups && this.options.groups.length) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkGroups(exposeMetadata.options.groups);
-          });
-        } else {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
-          });
-        }
-      }
-      if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
-        keys = keys.filter(function(key) {
-          return _this.options.excludePrefixes.every(function(prefix) {
-            return key.substr(0, prefix.length) !== prefix;
-          });
-        });
-      }
-      keys = keys.filter(function(key, index, self2) {
-        return self2.indexOf(key) === index;
-      });
-      return keys;
-    };
-    TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
-      var decision = true;
-      if (decision && since)
-        decision = this.options.version >= since;
-      if (decision && until)
-        decision = this.options.version < until;
-      return decision;
-    };
-    TransformOperationExecutor2.prototype.checkGroups = function(groups) {
-      if (!groups)
-        return true;
-      return this.options.groups.some(function(optionGroup) {
-        return groups.includes(optionGroup);
-      });
-    };
-    return TransformOperationExecutor2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/constants/default-options.constant.js
-var defaultOptions = {
-  enableCircularCheck: false,
-  enableImplicitConversion: false,
-  excludeExtraneousValues: false,
-  excludePrefixes: void 0,
-  exposeDefaultValues: false,
-  exposeUnsetFields: true,
-  groups: void 0,
-  ignoreDecorators: false,
-  strategy: void 0,
-  targetMaps: void 0,
-  version: void 0
-};
-
-// node_modules/class-transformer/esm5/ClassTransformer.js
-var __assign = function() {
-  __assign = Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-      s = arguments[i];
-      for (var p in s)
-        if (Object.prototype.hasOwnProperty.call(s, p))
-          t[p] = s[p];
-    }
-    return t;
-  };
-  return __assign.apply(this, arguments);
-};
-var ClassTransformer = (
-  /** @class */
-  function() {
-    function ClassTransformer2() {
-    }
-    ClassTransformer2.prototype.instanceToPlain = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToPlainFromExist = function(object, plainObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(plainObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToInstance = function(cls, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, plain, cls, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToClassFromExist = function(clsObject, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(clsObject, plain, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.instanceToInstance = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToClassFromExist = function(object, fromObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(fromObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.serialize = function(object, options) {
-      return JSON.stringify(this.instanceToPlain(object, options));
-    };
-    ClassTransformer2.prototype.deserialize = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    ClassTransformer2.prototype.deserializeArray = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    return ClassTransformer2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/index.js
-var classTransformer = new ClassTransformer();
-function instanceToPlain(object, options) {
-  return classTransformer.instanceToPlain(object, options);
-}
-
-// src/game/managers/dataManager.ts
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -6790,32 +5715,78 @@ var dataManager = class {
       document.body.removeChild(downloadLink);
     }
   }
-  /**
-   * Loads game data and processes it.
-   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
-   */
-  loadData(dataToLoad = this.decompileData()) {
+  parseData(dataToParse = this.decompileData()) {
     if (!this.normalData) {
       throw new Error("dataManager.loadData(): You must call init() before writing to data.");
     }
-    if (!dataToLoad) {
-      return;
+    if (!dataToParse) {
+      return null;
     }
-    const [, loadedData] = dataToLoad;
-    console.log(loadedData);
+    const [, loadedData] = dataToParse;
+    function isPlainObject(obj) {
+      return typeof obj === "object" && obj.constructor === Object;
+    }
     function deepMerge(source, target) {
       let out = target;
       for (const key in source) {
         if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
           out[key] = source[key];
-        } else if (typeof source[key] === "object" && typeof target[key] === "object") {
-          out = deepMerge(source[key], target[key]);
+        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
+          out[key] = deepMerge(source[key], target[key]);
         }
       }
       return out;
     }
-    const loadedDataProcessed = deepMerge(this.normalData, loadedData);
-    console.log("Loaded data: ", loadedDataProcessed);
+    let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+    console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
+    const templateClasses = [
+      {
+        class: currency
+      },
+      {
+        class: boost
+      },
+      {
+        class: e_default
+      }
+    ];
+    for (const templateClass of templateClasses) {
+      templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
+    }
+    console.log("Temp", templateClasses);
+    function compareArrays(arr1, arr2) {
+      return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+    }
+    function plainToInstanceRecursive(plain) {
+      const out = plain;
+      for (const key in plain) {
+        if (!(plain[key] instanceof Object && plain[key].constructor === Object))
+          continue;
+        if (!(() => {
+          for (const templateClass of templateClasses) {
+            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClass.properties)) {
+              out[key] = plainToInstance(templateClass.class, out[key]);
+              return true;
+            }
+          }
+          return false;
+        })()) {
+          out[key] = plainToInstanceRecursive(plain[key]);
+        }
+      }
+      return out;
+    }
+    loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+    return loadedDataProcessed;
+  }
+  /**
+   * Loads game data and processes it.
+   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
+   */
+  loadData(dataToLoad = this.decompileData()) {
+    const parsedData = this.parseData(dataToLoad);
+    if (!parsedData)
+      return;
   }
 };
 
@@ -7557,24 +6528,6 @@ var pixiGame = class _pixiGame extends game {
 
 // src/pixiGame/index.ts
 hookPixiGame();
-/*! Bundled license information:
-
-reflect-metadata/Reflect.js:
-  (*! *****************************************************************************
-  Copyright (C) Microsoft. All rights reserved.
-  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-  this file except in compliance with the License. You may obtain a copy of the
-  License at http://www.apache.org/licenses/LICENSE-2.0
-  
-  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-  MERCHANTABLITY OR NON-INFRINGEMENT.
-  
-  See the Apache Version 2.0 License for specific language governing permissions
-  and limitations under the License.
-  ***************************************************************************** *)
-*/
 if (typeof module.exports == "object" && typeof exports == "object") {
     var __cp = (to, from, except, desc) => {
       if ((from && typeof from === "object") || typeof from === "function") {

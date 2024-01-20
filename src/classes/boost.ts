@@ -2,6 +2,7 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
+import { Type, Expose } from "class-transformer";
 /**
  * An object representing a boost.
  */
@@ -13,7 +14,7 @@ interface boostsObjectInit {
     /**
      * The name of the boost.
      */
-    name: string,
+    name?: string,
     /**
      * An optional description of the boost.
      */
@@ -30,6 +31,7 @@ interface boostsObjectInit {
     order?: number,
     /**
      * The index of the boost.
+     * @deprecated Don't use this.
      */
     index?: number,
 }
@@ -38,17 +40,19 @@ class boostObject implements boostsObjectInit {
     public id: string;
     public name: string;
     public desc: string;
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Expose({ name: "value" })
     public value: (input: E) => E;
     public order: number;
-    public index: number;
+    // public index: number;
 
     constructor (init: boostsObjectInit) {
         this.id = init.id;
-        this.name = init.name;
+        this.name = init.name ?? "";
         this.desc = init.desc ?? "";
         this.value = init.value;
         this.order = init.order ?? 99;
-        this.index = init.index ?? -1;
+        // this.index = init.index ?? -1;
     }
 }
 
@@ -59,11 +63,15 @@ class boost {
     /**
      * An array of boost objects.
      */
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Type(() => boostObject)
     public boostArray: boostObject[];
 
     /**
      * The base effect value.
      */
+    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    @Type(() => E)
     public baseEffect: E;
 
     /**
@@ -71,9 +79,9 @@ class boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect?: ESource, boosts?: boostsObjectInit | boostsObjectInit[]) {
+    constructor (baseEffect: ESource = 1, boosts?: boostsObjectInit | boostsObjectInit[]) {
         boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
-        this.baseEffect = E(baseEffect ?? 1);
+        this.baseEffect = E(baseEffect);
         this.boostArray = [];
         // this.boostArray = new boostObjectArray(boosts);
         if (boosts) {
@@ -84,42 +92,51 @@ class boost {
     }
 
     /**
+     * Gets all boosts with the given ID.
+     * @param id - A string or regular expression to match the ID of the boosts.
+     * @param i - Whether to return the index of the boosts as well.
+     * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
+     */
+    public getBoosts (id: string | RegExp): boostObject[];
+    public getBoosts (id: string | RegExp, index: boolean): [boostObject[], number[]];
+    public getBoosts (id: string | RegExp, index?: boolean): boostObject[] | [boostObject[], number[]] {
+        const boostList: boostObject[] = [];
+        const indexList: number[] = [];
+        for (let i = 0; i < this.boostArray.length; i++) {
+            // if (i === this.boostArray.length) break;
+            if (
+                (typeof id === "string" && id === this.boostArray[i].id) ||
+                (id instanceof RegExp && id.test(this.boostArray[i].id))
+            ) {
+                boostList.push(this.boostArray[i]);
+                indexList.push(i);
+            }
+        }
+        return index ? [boostList, indexList] : boostList;
+    }
+
+    /**
      * Gets a boost object by its ID.
+     * @deprecated Use {@link boost.getBoosts} instead.
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    public getBoost (id: string | number): boostObject | null {
-        let output: boostObject | null = null;
-        for (let i = 0; i < this.boostArray.length; i++) {
-            // if (i === this.boostArray.length) break;
-            if (id === i || id == this.boostArray[i].id) {
-                output = this.boostArray[i];
-                output["index"] = i;
-            }
-        }
-        return output;
+    public getBoost (id: string): boostObject | null {
+        return this.getBoosts(id)[0] ?? null;
     }
-    /**
-     * @alias {@link boost.getBoost}
-     * @deprecated Use getBoost instead.
-     */
-    public bGet = this.getBoost;
 
     /**
-     * Removes a boost by its ID.
+     * Removes a boost by its ID. Only removes the first instance of the id.
      * @param id - The ID of the boost to remove.
      */
     public removeBoost (id: string): void {
-        const bCheck = this.bGet(id);
-        if (bCheck) {
-            delete this.boostArray[bCheck.index];
+        for (let i = 0; i < this.boostArray.length; i++) {
+            if (id === this.boostArray[i].id) {
+                this.boostArray.splice(i, 1);
+                break;
+            }
         }
     }
-    /**
-     * @alias {@link boost.removeBoost}
-     * @deprecated Use removeBoost instead.
-     */
-    public bRemove = this.removeBoost;
 
     /**
      * Sets or updates a boost with the given parameters.
@@ -137,6 +154,7 @@ class boost {
      */
     public setBoost (boostObj: boostsObjectInit | boostsObjectInit[]): void;
     public setBoost (arg1: string | (boostsObjectInit | boostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
+        if (!arg1) return; // class-transformer bug
         if (typeof arg1 === "string") {
             // Basic set using parameters
             const id = arg1;
@@ -144,22 +162,22 @@ class boost {
             const desc = arg3 ?? "";
             const value = arg4 ?? ((e) => e);
             const order = arg5;
-            const bCheck = this.bGet(id);
+            const bCheck = this.getBoosts(id, true);
 
-            if (!bCheck) {
-                this.boostArray.push(new boostObject({ id, name, desc, value, order, index: this.boostArray.length }));
+            if (!bCheck[0][0]) {
+                this.boostArray.push(new boostObject({ id, name, desc, value, order }));
             } else {
-                this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
+                this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
             }
         } else {
             // Advanced set using boost object
             arg1 = Array.isArray(arg1) ? arg1 : [arg1];
             for (let i = 0; i < arg1.length; i++) {
-                const bCheck = this.bGet(arg1[i].id);
-                if (!bCheck) {
+                const bCheck = this.getBoosts(arg1[i].id, true);
+                if (!bCheck[0][0]) {
                     this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
                 } else {
-                    this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+                    this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
                 }
             }
         }
@@ -168,31 +186,7 @@ class boost {
      * @alias {@link boost.setBoost}
      * @deprecated Use setBoost instead.
      */
-    public bSet = this.setBoost;
-    /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     */
     public addBoost = this.setBoost;
-
-    /**
-     * Sets or updates multiple boosts with advanced parameters.
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     * @param boostsArray - boost objects to set or update.
-     */
-    public bSetArray (boostsArray: boostsObjectInit | boostsObjectInit[]): void {
-        this.setBoost(boostsArray);
-    }
-
-    /**
-     * Sets or updates multiple boosts with advanced parameters.
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     * @param boostsArray - boost objects to set or update.
-     * @deprecated Use setBoost instead.
-     */
-    public bSetAdvanced (...boostsArray: boostsObjectInit[]): void { this.setBoost(boostsArray); };
 
     /**
      * Calculates the cumulative effect of all boosts on the base effect.

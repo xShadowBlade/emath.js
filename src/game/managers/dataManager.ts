@@ -7,8 +7,14 @@ import type { game } from "../game";
 import LZString from "lz-string";
 
 // Saver
-import "reflect-metadata";
 import { instanceToPlain, plainToInstance } from "class-transformer";
+
+// Recursive plain to class
+import { currency } from "../../classes/currency";
+import { boost } from "../../classes/boost";
+// import { E } from "index";
+import Decimal from "E/e";
+
 
 // Save validation
 /**
@@ -202,20 +208,25 @@ class dataManager {
         }
     };
 
-    /**
-     * Loads game data and processes it.
-     * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
-     */
-    public loadData (dataToLoad = this.decompileData()): void {
+    public parseData (dataToParse = this.decompileData()): object | null {
         if (!this.normalData) {
             throw new Error("dataManager.loadData(): You must call init() before writing to data.");
         }
-        if (!dataToLoad) {
-            return;
+        if (!dataToParse) {
+            return null;
         }
-        const [, loadedData] = dataToLoad;
-        console.log(loadedData);
-        // console.log((loadedData = processObject(loadedData)));
+        const [, loadedData] = dataToParse;
+        // console.log(loadedData);
+
+        /**
+         * Checks if the given object is a plain object.
+         * @param obj - The object to check.
+         * @returns Whether the object is a plain object.
+         */
+        function isPlainObject (obj: any): boolean {
+            return typeof obj === "object" && obj.constructor === Object;
+        }
+
         /**
          * Add new / updated properties
          * @param source - The source object to reference if a property is missing.
@@ -228,17 +239,90 @@ class dataManager {
                 if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
                     // If the property is missing from the target, add it
                     (out as any)[key] = (source as any)[key];
-                } else if (typeof (source as any)[key] === "object" && typeof (target as any)[key] === "object") {
+                } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
                     // Recursive
-                    out = deepMerge((source as any)[key], (target as any)[key]);
+                    (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
                 }
             }
             return out;
         }
-        // console.log(deepMerge(this.normalDataRecord, loadedData));
-        // const loadedDataProcessed = plainToInstance(gameData, deepMerge(this.normalData, loadedData));
-        const loadedDataProcessed = deepMerge(this.normalData, loadedData);
-        console.log("Loaded data: ", loadedDataProcessed);
+        let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+        console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
+
+        // Convert plain object to class instance (recursive)
+        const templateClasses = [
+            {
+                class: currency,
+            },
+            {
+                class: boost,
+            },
+            {
+                class: Decimal,
+            }
+        ] as {
+            class: any;
+            properties: string[];
+        }[];
+
+        for (const templateClass of templateClasses) {
+            templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
+        }
+
+        console.log("Temp", templateClasses);
+
+        /**
+         * Compares two arrays in any order. If they have the same elements, returns true.
+         * @param arr1 - The first array.
+         * @param arr2 - The second array.
+         * @returns Whether the arrays are the same.
+         */
+        function compareArrays (arr1: any[], arr2: any[]): boolean {
+            return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+        }
+
+        /**
+         * Converts a plain object to a class instance.
+         * @param plain - The plain object to convert.
+         * @returns The converted class instance.
+         */
+        function plainToInstanceRecursive (plain: object): object {
+            const out: object = plain;
+            for (const key in plain) {
+                // console.log(key);
+                // If it's not an object, skip it
+                if (!((plain as any)[key] instanceof Object && (plain as any)[key].constructor === Object)) continue;
+                // If it matches a template class, convert it
+                if (!((): boolean => {
+                    for (const templateClass of templateClasses) {
+                        if (compareArrays(Object.getOwnPropertyNames((plain as any)[key]), templateClass.properties)) {
+                            (out as any)[key] = plainToInstance(templateClass.class, (out as any)[key]);
+                            // Return true if it matches a template class
+                            return true;
+                        }
+                    }
+                    // Return false if it doesn't match a template class
+                    return false;
+                })()) {
+                    (out as any)[key] = plainToInstanceRecursive((plain as any)[key]);
+                }
+            }
+            return out;
+        }
+
+        loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+        // console.log("Converted data: ", loadedDataProcessed);
+        return loadedDataProcessed;
+    }
+
+    /**
+     * Loads game data and processes it.
+     * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
+     */
+    public loadData (dataToLoad = this.decompileData()): void {
+        const parsedData = this.parseData(dataToLoad);
+        if (!parsedData) return;
+        // this.data = parsedData; // TODO: Fix this
     };
 }
 

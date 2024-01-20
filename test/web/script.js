@@ -3,6 +3,8 @@
 /** @type {import("../../dist/types/game/hookGame").eMathGameWeb} */
 const { E } = eMath;
 /** @type {import("../../dist/types/game/hookGame").eMathGameWeb} */
+const { boost, currencyStatic } = eMath.classes;
+/** @type {import("../../dist/types/game/hookGame").eMathGameWeb} */
 const { game } = eMath;
 
 const myGame = new game();
@@ -24,7 +26,14 @@ dataManager.setData("test", {
     },
     "testFunction": () => "test", // should not be saved?
     "testE": E("123.45"),
+    "testBoost": new boost(),
+    // "testCurrency": new currencyStatic(),
 });
+
+dataManager.setData("test2E", E("123.45"));
+
+myGame.addCurrency("testCurrency");
+
 dataManager.init();
 
 console.group("Data collection");
@@ -34,7 +43,9 @@ console.log(dataManager.getData("test").testNumber);
 console.groupEnd();
 
 console.group("Saving");
-let save = dataManager.compileData();
+const save = dataManager.compileData();
 console.log("Compile", dataManager.compileDataRaw(), save);
-console.log("Decompile", dataManager.decompileData(save));
+const decompiledData = dataManager.decompileData(save);
+console.log("Decompile", decompiledData);
+console.log("Load", dataManager.parseData(decompiledData));
 console.groupEnd();

@@ -43,473 +43,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// node_modules/lz-string/libs/lz-string.js
-var require_lz_string = __commonJS({
-  "node_modules/lz-string/libs/lz-string.js"(exports, module2) {
-    var LZString2 = function() {
-      var f = String.fromCharCode;
-      var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-      var baseReverseDic = {};
-      function getBaseValue(alphabet, character) {
-        if (!baseReverseDic[alphabet]) {
-          baseReverseDic[alphabet] = {};
-          for (var i = 0; i < alphabet.length; i++) {
-            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
-          }
-        }
-        return baseReverseDic[alphabet][character];
-      }
-      var LZString3 = {
-        compressToBase64: function(input) {
-          if (input == null)
-            return "";
-          var res = LZString3._compress(input, 6, function(a) {
-            return keyStrBase64.charAt(a);
-          });
-          switch (res.length % 4) {
-            default:
-            case 0:
-              return res;
-            case 1:
-              return res + "===";
-            case 2:
-              return res + "==";
-            case 3:
-              return res + "=";
-          }
-        },
-        decompressFromBase64: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          return LZString3._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrBase64, input.charAt(index));
-          });
-        },
-        compressToUTF16: function(input) {
-          if (input == null)
-            return "";
-          return LZString3._compress(input, 15, function(a) {
-            return f(a + 32);
-          }) + " ";
-        },
-        decompressFromUTF16: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString3._decompress(compressed.length, 16384, function(index) {
-            return compressed.charCodeAt(index) - 32;
-          });
-        },
-        //compress into uint8array (UCS-2 big endian format)
-        compressToUint8Array: function(uncompressed) {
-          var compressed = LZString3.compress(uncompressed);
-          var buf = new Uint8Array(compressed.length * 2);
-          for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
-            var current_value = compressed.charCodeAt(i);
-            buf[i * 2] = current_value >>> 8;
-            buf[i * 2 + 1] = current_value % 256;
-          }
-          return buf;
-        },
-        //decompress from uint8array (UCS-2 big endian format)
-        decompressFromUint8Array: function(compressed) {
-          if (compressed === null || compressed === void 0) {
-            return LZString3.decompress(compressed);
-          } else {
-            var buf = new Array(compressed.length / 2);
-            for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
-              buf[i] = compressed[i * 2] * 256 + compressed[i * 2 + 1];
-            }
-            var result = [];
-            buf.forEach(function(c) {
-              result.push(f(c));
-            });
-            return LZString3.decompress(result.join(""));
-          }
-        },
-        //compress into a string that is already URI encoded
-        compressToEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          return LZString3._compress(input, 6, function(a) {
-            return keyStrUriSafe.charAt(a);
-          });
-        },
-        //decompress from an output of compressToEncodedURIComponent
-        decompressFromEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          input = input.replace(/ /g, "+");
-          return LZString3._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrUriSafe, input.charAt(index));
-          });
-        },
-        compress: function(uncompressed) {
-          return LZString3._compress(uncompressed, 16, function(a) {
-            return f(a);
-          });
-        },
-        _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
-          if (uncompressed == null)
-            return "";
-          var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-          for (ii = 0; ii < uncompressed.length; ii += 1) {
-            context_c = uncompressed.charAt(ii);
-            if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-              context_dictionary[context_c] = context_dictSize++;
-              context_dictionaryToCreate[context_c] = true;
-            }
-            context_wc = context_w + context_c;
-            if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-              context_w = context_wc;
-            } else {
-              if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-                if (context_w.charCodeAt(0) < 256) {
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 8; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                } else {
-                  value = 1;
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1 | value;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = 0;
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 16; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                }
-                context_enlargeIn--;
-                if (context_enlargeIn == 0) {
-                  context_enlargeIn = Math.pow(2, context_numBits);
-                  context_numBits++;
-                }
-                delete context_dictionaryToCreate[context_w];
-              } else {
-                value = context_dictionary[context_w];
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              context_dictionary[context_wc] = context_dictSize++;
-              context_w = String(context_c);
-            }
-          }
-          if (context_w !== "") {
-            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-              if (context_w.charCodeAt(0) < 256) {
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 8; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              } else {
-                value = 1;
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = 0;
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 16; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              delete context_dictionaryToCreate[context_w];
-            } else {
-              value = context_dictionary[context_w];
-              for (i = 0; i < context_numBits; i++) {
-                context_data_val = context_data_val << 1 | value & 1;
-                if (context_data_position == bitsPerChar - 1) {
-                  context_data_position = 0;
-                  context_data.push(getCharFromInt(context_data_val));
-                  context_data_val = 0;
-                } else {
-                  context_data_position++;
-                }
-                value = value >> 1;
-              }
-            }
-            context_enlargeIn--;
-            if (context_enlargeIn == 0) {
-              context_enlargeIn = Math.pow(2, context_numBits);
-              context_numBits++;
-            }
-          }
-          value = 2;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-          while (true) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data.push(getCharFromInt(context_data_val));
-              break;
-            } else
-              context_data_position++;
-          }
-          return context_data.join("");
-        },
-        decompress: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString3._decompress(compressed.length, 32768, function(index) {
-            return compressed.charCodeAt(index);
-          });
-        },
-        _decompress: function(length, resetValue, getNextValue) {
-          var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c, data = { val: getNextValue(0), position: resetValue, index: 1 };
-          for (i = 0; i < 3; i += 1) {
-            dictionary[i] = i;
-          }
-          bits = 0;
-          maxpower = Math.pow(2, 2);
-          power = 1;
-          while (power != maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = resetValue;
-              data.val = getNextValue(data.index++);
-            }
-            bits |= (resb > 0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-          switch (next = bits) {
-            case 0:
-              bits = 0;
-              maxpower = Math.pow(2, 8);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 1:
-              bits = 0;
-              maxpower = Math.pow(2, 16);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 2:
-              return "";
-          }
-          dictionary[3] = c;
-          w = c;
-          result.push(c);
-          while (true) {
-            if (data.index > length) {
-              return "";
-            }
-            bits = 0;
-            maxpower = Math.pow(2, numBits);
-            power = 1;
-            while (power != maxpower) {
-              resb = data.val & data.position;
-              data.position >>= 1;
-              if (data.position == 0) {
-                data.position = resetValue;
-                data.val = getNextValue(data.index++);
-              }
-              bits |= (resb > 0 ? 1 : 0) * power;
-              power <<= 1;
-            }
-            switch (c = bits) {
-              case 0:
-                bits = 0;
-                maxpower = Math.pow(2, 8);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 1:
-                bits = 0;
-                maxpower = Math.pow(2, 16);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 2:
-                return result.join("");
-            }
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-            if (dictionary[c]) {
-              entry = dictionary[c];
-            } else {
-              if (c === dictSize) {
-                entry = w + w.charAt(0);
-              } else {
-                return null;
-              }
-            }
-            result.push(entry);
-            dictionary[dictSize++] = w + entry.charAt(0);
-            enlargeIn--;
-            w = entry;
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-          }
-        }
-      };
-      return LZString3;
-    }();
-    if (typeof define === "function" && define.amd) {
-      define(function() {
-        return LZString2;
-      });
-    } else if (typeof module2 !== "undefined" && module2 != null) {
-      module2.exports = LZString2;
-    } else if (typeof angular !== "undefined" && angular != null) {
-      angular.module("LZString", []).factory("LZString", function() {
-        return LZString2;
-      });
-    }
-  }
-});
-
 // node_modules/reflect-metadata/Reflect.js
 var require_Reflect = __commonJS({
   "node_modules/reflect-metadata/Reflect.js"() {
@@ -805,7 +338,7 @@ var require_Reflect = __commonJS({
           }
           return provider.OrdinaryOwnMetadataKeys(O, P);
         }
-        function Type(x) {
+        function Type2(x) {
           if (x === null)
             return 1;
           switch (typeof x) {
@@ -838,7 +371,7 @@ var require_Reflect = __commonJS({
           return typeof x === "object" ? x !== null : typeof x === "function";
         }
         function ToPrimitive(input, PreferredType) {
-          switch (Type(input)) {
+          switch (Type2(input)) {
             case 0:
               return input;
             case 1:
@@ -918,7 +451,7 @@ var require_Reflect = __commonJS({
           return typeof argument === "function";
         }
         function IsPropertyKey(argument) {
-          switch (Type(argument)) {
+          switch (Type2(argument)) {
             case 3:
               return true;
             case 4:
@@ -1591,6 +1124,473 @@ var require_Reflect = __commonJS({
   }
 });
 
+// node_modules/lz-string/libs/lz-string.js
+var require_lz_string = __commonJS({
+  "node_modules/lz-string/libs/lz-string.js"(exports, module2) {
+    var LZString2 = function() {
+      var f = String.fromCharCode;
+      var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+      var baseReverseDic = {};
+      function getBaseValue(alphabet, character) {
+        if (!baseReverseDic[alphabet]) {
+          baseReverseDic[alphabet] = {};
+          for (var i = 0; i < alphabet.length; i++) {
+            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+          }
+        }
+        return baseReverseDic[alphabet][character];
+      }
+      var LZString3 = {
+        compressToBase64: function(input) {
+          if (input == null)
+            return "";
+          var res = LZString3._compress(input, 6, function(a) {
+            return keyStrBase64.charAt(a);
+          });
+          switch (res.length % 4) {
+            default:
+            case 0:
+              return res;
+            case 1:
+              return res + "===";
+            case 2:
+              return res + "==";
+            case 3:
+              return res + "=";
+          }
+        },
+        decompressFromBase64: function(input) {
+          if (input == null)
+            return "";
+          if (input == "")
+            return null;
+          return LZString3._decompress(input.length, 32, function(index) {
+            return getBaseValue(keyStrBase64, input.charAt(index));
+          });
+        },
+        compressToUTF16: function(input) {
+          if (input == null)
+            return "";
+          return LZString3._compress(input, 15, function(a) {
+            return f(a + 32);
+          }) + " ";
+        },
+        decompressFromUTF16: function(compressed) {
+          if (compressed == null)
+            return "";
+          if (compressed == "")
+            return null;
+          return LZString3._decompress(compressed.length, 16384, function(index) {
+            return compressed.charCodeAt(index) - 32;
+          });
+        },
+        //compress into uint8array (UCS-2 big endian format)
+        compressToUint8Array: function(uncompressed) {
+          var compressed = LZString3.compress(uncompressed);
+          var buf = new Uint8Array(compressed.length * 2);
+          for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
+            var current_value = compressed.charCodeAt(i);
+            buf[i * 2] = current_value >>> 8;
+            buf[i * 2 + 1] = current_value % 256;
+          }
+          return buf;
+        },
+        //decompress from uint8array (UCS-2 big endian format)
+        decompressFromUint8Array: function(compressed) {
+          if (compressed === null || compressed === void 0) {
+            return LZString3.decompress(compressed);
+          } else {
+            var buf = new Array(compressed.length / 2);
+            for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
+              buf[i] = compressed[i * 2] * 256 + compressed[i * 2 + 1];
+            }
+            var result = [];
+            buf.forEach(function(c) {
+              result.push(f(c));
+            });
+            return LZString3.decompress(result.join(""));
+          }
+        },
+        //compress into a string that is already URI encoded
+        compressToEncodedURIComponent: function(input) {
+          if (input == null)
+            return "";
+          return LZString3._compress(input, 6, function(a) {
+            return keyStrUriSafe.charAt(a);
+          });
+        },
+        //decompress from an output of compressToEncodedURIComponent
+        decompressFromEncodedURIComponent: function(input) {
+          if (input == null)
+            return "";
+          if (input == "")
+            return null;
+          input = input.replace(/ /g, "+");
+          return LZString3._decompress(input.length, 32, function(index) {
+            return getBaseValue(keyStrUriSafe, input.charAt(index));
+          });
+        },
+        compress: function(uncompressed) {
+          return LZString3._compress(uncompressed, 16, function(a) {
+            return f(a);
+          });
+        },
+        _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
+          if (uncompressed == null)
+            return "";
+          var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
+          for (ii = 0; ii < uncompressed.length; ii += 1) {
+            context_c = uncompressed.charAt(ii);
+            if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
+              context_dictionary[context_c] = context_dictSize++;
+              context_dictionaryToCreate[context_c] = true;
+            }
+            context_wc = context_w + context_c;
+            if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
+              context_w = context_wc;
+            } else {
+              if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+                if (context_w.charCodeAt(0) < 256) {
+                  for (i = 0; i < context_numBits; i++) {
+                    context_data_val = context_data_val << 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                  }
+                  value = context_w.charCodeAt(0);
+                  for (i = 0; i < 8; i++) {
+                    context_data_val = context_data_val << 1 | value & 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = value >> 1;
+                  }
+                } else {
+                  value = 1;
+                  for (i = 0; i < context_numBits; i++) {
+                    context_data_val = context_data_val << 1 | value;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = 0;
+                  }
+                  value = context_w.charCodeAt(0);
+                  for (i = 0; i < 16; i++) {
+                    context_data_val = context_data_val << 1 | value & 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = value >> 1;
+                  }
+                }
+                context_enlargeIn--;
+                if (context_enlargeIn == 0) {
+                  context_enlargeIn = Math.pow(2, context_numBits);
+                  context_numBits++;
+                }
+                delete context_dictionaryToCreate[context_w];
+              } else {
+                value = context_dictionary[context_w];
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              }
+              context_enlargeIn--;
+              if (context_enlargeIn == 0) {
+                context_enlargeIn = Math.pow(2, context_numBits);
+                context_numBits++;
+              }
+              context_dictionary[context_wc] = context_dictSize++;
+              context_w = String(context_c);
+            }
+          }
+          if (context_w !== "") {
+            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+              if (context_w.charCodeAt(0) < 256) {
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 8; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              } else {
+                value = 1;
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1 | value;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = 0;
+                }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 16; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              }
+              context_enlargeIn--;
+              if (context_enlargeIn == 0) {
+                context_enlargeIn = Math.pow(2, context_numBits);
+                context_numBits++;
+              }
+              delete context_dictionaryToCreate[context_w];
+            } else {
+              value = context_dictionary[context_w];
+              for (i = 0; i < context_numBits; i++) {
+                context_data_val = context_data_val << 1 | value & 1;
+                if (context_data_position == bitsPerChar - 1) {
+                  context_data_position = 0;
+                  context_data.push(getCharFromInt(context_data_val));
+                  context_data_val = 0;
+                } else {
+                  context_data_position++;
+                }
+                value = value >> 1;
+              }
+            }
+            context_enlargeIn--;
+            if (context_enlargeIn == 0) {
+              context_enlargeIn = Math.pow(2, context_numBits);
+              context_numBits++;
+            }
+          }
+          value = 2;
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+          while (true) {
+            context_data_val = context_data_val << 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data.push(getCharFromInt(context_data_val));
+              break;
+            } else
+              context_data_position++;
+          }
+          return context_data.join("");
+        },
+        decompress: function(compressed) {
+          if (compressed == null)
+            return "";
+          if (compressed == "")
+            return null;
+          return LZString3._decompress(compressed.length, 32768, function(index) {
+            return compressed.charCodeAt(index);
+          });
+        },
+        _decompress: function(length, resetValue, getNextValue) {
+          var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c, data = { val: getNextValue(0), position: resetValue, index: 1 };
+          for (i = 0; i < 3; i += 1) {
+            dictionary[i] = i;
+          }
+          bits = 0;
+          maxpower = Math.pow(2, 2);
+          power = 1;
+          while (power != maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb > 0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+          switch (next = bits) {
+            case 0:
+              bits = 0;
+              maxpower = Math.pow(2, 8);
+              power = 1;
+              while (power != maxpower) {
+                resb = data.val & data.position;
+                data.position >>= 1;
+                if (data.position == 0) {
+                  data.position = resetValue;
+                  data.val = getNextValue(data.index++);
+                }
+                bits |= (resb > 0 ? 1 : 0) * power;
+                power <<= 1;
+              }
+              c = f(bits);
+              break;
+            case 1:
+              bits = 0;
+              maxpower = Math.pow(2, 16);
+              power = 1;
+              while (power != maxpower) {
+                resb = data.val & data.position;
+                data.position >>= 1;
+                if (data.position == 0) {
+                  data.position = resetValue;
+                  data.val = getNextValue(data.index++);
+                }
+                bits |= (resb > 0 ? 1 : 0) * power;
+                power <<= 1;
+              }
+              c = f(bits);
+              break;
+            case 2:
+              return "";
+          }
+          dictionary[3] = c;
+          w = c;
+          result.push(c);
+          while (true) {
+            if (data.index > length) {
+              return "";
+            }
+            bits = 0;
+            maxpower = Math.pow(2, numBits);
+            power = 1;
+            while (power != maxpower) {
+              resb = data.val & data.position;
+              data.position >>= 1;
+              if (data.position == 0) {
+                data.position = resetValue;
+                data.val = getNextValue(data.index++);
+              }
+              bits |= (resb > 0 ? 1 : 0) * power;
+              power <<= 1;
+            }
+            switch (c = bits) {
+              case 0:
+                bits = 0;
+                maxpower = Math.pow(2, 8);
+                power = 1;
+                while (power != maxpower) {
+                  resb = data.val & data.position;
+                  data.position >>= 1;
+                  if (data.position == 0) {
+                    data.position = resetValue;
+                    data.val = getNextValue(data.index++);
+                  }
+                  bits |= (resb > 0 ? 1 : 0) * power;
+                  power <<= 1;
+                }
+                dictionary[dictSize++] = f(bits);
+                c = dictSize - 1;
+                enlargeIn--;
+                break;
+              case 1:
+                bits = 0;
+                maxpower = Math.pow(2, 16);
+                power = 1;
+                while (power != maxpower) {
+                  resb = data.val & data.position;
+                  data.position >>= 1;
+                  if (data.position == 0) {
+                    data.position = resetValue;
+                    data.val = getNextValue(data.index++);
+                  }
+                  bits |= (resb > 0 ? 1 : 0) * power;
+                  power <<= 1;
+                }
+                dictionary[dictSize++] = f(bits);
+                c = dictSize - 1;
+                enlargeIn--;
+                break;
+              case 2:
+                return result.join("");
+            }
+            if (enlargeIn == 0) {
+              enlargeIn = Math.pow(2, numBits);
+              numBits++;
+            }
+            if (dictionary[c]) {
+              entry = dictionary[c];
+            } else {
+              if (c === dictSize) {
+                entry = w + w.charAt(0);
+              } else {
+                return null;
+              }
+            }
+            result.push(entry);
+            dictionary[dictSize++] = w + entry.charAt(0);
+            enlargeIn--;
+            w = entry;
+            if (enlargeIn == 0) {
+              enlargeIn = Math.pow(2, numBits);
+              numBits++;
+            }
+          }
+        }
+      };
+      return LZString3;
+    }();
+    if (typeof define === "function" && define.amd) {
+      define(function() {
+        return LZString2;
+      });
+    } else if (typeof module2 !== "undefined" && module2 != null) {
+      module2.exports = LZString2;
+    } else if (typeof angular !== "undefined" && angular != null) {
+      angular.module("LZString", []).factory("LZString", function() {
+        return LZString2;
+      });
+    }
+  }
+});
+
 // src/game/index.ts
 var game_exports = {};
 __export(game_exports, {
@@ -1603,6 +1603,748 @@ __export(game_exports, {
   keyManager: () => keyManager
 });
 module.exports = __toCommonJS(game_exports);
+var import_reflect_metadata = __toESM(require_Reflect());
+
+// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
+var TransformationType;
+(function(TransformationType2) {
+  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
+  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
+  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
+})(TransformationType || (TransformationType = {}));
+
+// node_modules/class-transformer/esm5/MetadataStorage.js
+var MetadataStorage = (
+  /** @class */
+  function() {
+    function MetadataStorage2() {
+      this._typeMetadatas = /* @__PURE__ */ new Map();
+      this._transformMetadatas = /* @__PURE__ */ new Map();
+      this._exposeMetadatas = /* @__PURE__ */ new Map();
+      this._excludeMetadatas = /* @__PURE__ */ new Map();
+      this._ancestorsMap = /* @__PURE__ */ new Map();
+    }
+    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
+      if (!this._typeMetadatas.has(metadata.target)) {
+        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
+      if (!this._transformMetadatas.has(metadata.target)) {
+        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
+        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
+      }
+      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
+    };
+    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
+      if (!this._exposeMetadatas.has(metadata.target)) {
+        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
+      if (!this._excludeMetadatas.has(metadata.target)) {
+        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
+      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      });
+    };
+    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._excludeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._exposeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
+      return this.getExposedMetadatas(target).find(function(metadata) {
+        return metadata.options && metadata.options.name === name;
+      });
+    };
+    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._typeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.getStrategy = function(target) {
+      var excludeMap = this._excludeMetadatas.get(target);
+      var exclude = excludeMap && excludeMap.get(void 0);
+      var exposeMap = this._exposeMetadatas.get(target);
+      var expose = exposeMap && exposeMap.get(void 0);
+      if (exclude && expose || !exclude && !expose)
+        return "none";
+      return exclude ? "excludeAll" : "exposeAll";
+    };
+    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
+      return this.getMetadata(this._exposeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
+      return this.getMetadata(this._excludeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
+      return this.getExposedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
+      return this.getExcludedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.clear = function() {
+      this._typeMetadatas.clear();
+      this._exposeMetadatas.clear();
+      this._excludeMetadatas.clear();
+      this._ancestorsMap.clear();
+    };
+    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
+          return meta.propertyName !== void 0;
+        });
+      }
+      var metadataFromAncestors = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
+            return meta.propertyName !== void 0;
+          });
+          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
+        }
+      }
+      return metadataFromAncestors.concat(metadataFromTarget || []);
+    };
+    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      if (metadataFromTargetMap) {
+        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
+        if (metadataFromTarget) {
+          return metadataFromTarget;
+        }
+      }
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var ancestorResult = ancestorMetadataMap.get(propertyName);
+          if (ancestorResult) {
+            return ancestorResult;
+          }
+        }
+      }
+      return void 0;
+    };
+    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = metadataFromTargetMap.get(propertyName);
+      }
+      var metadataFromAncestorsTarget = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          if (ancestorMetadataMap.has(propertyName)) {
+            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
+          }
+        }
+      }
+      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
+    };
+    MetadataStorage2.prototype.getAncestors = function(target) {
+      if (!target)
+        return [];
+      if (!this._ancestorsMap.has(target)) {
+        var ancestors = [];
+        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
+          ancestors.push(baseClass);
+        }
+        this._ancestorsMap.set(target, ancestors);
+      }
+      return this._ancestorsMap.get(target);
+    };
+    return MetadataStorage2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/storage.js
+var defaultMetadataStorage = new MetadataStorage();
+
+// node_modules/class-transformer/esm5/utils/get-global.util.js
+function getGlobal() {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
+  if (typeof window !== "undefined") {
+    return window;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+}
+
+// node_modules/class-transformer/esm5/utils/is-promise.util.js
+function isPromise(p) {
+  return p !== null && typeof p === "object" && typeof p.then === "function";
+}
+
+// node_modules/class-transformer/esm5/TransformOperationExecutor.js
+var __spreadArray = function(to, from, pack) {
+  if (pack || arguments.length === 2)
+    for (var i = 0, l = from.length, ar; i < l; i++) {
+      if (ar || !(i in from)) {
+        if (!ar)
+          ar = Array.prototype.slice.call(from, 0, i);
+        ar[i] = from[i];
+      }
+    }
+  return to.concat(ar || Array.prototype.slice.call(from));
+};
+function instantiateArrayType(arrayType) {
+  var array = new arrayType();
+  if (!(array instanceof Set) && !("push" in array)) {
+    return [];
+  }
+  return array;
+}
+var TransformOperationExecutor = (
+  /** @class */
+  function() {
+    function TransformOperationExecutor2(transformationType, options) {
+      this.transformationType = transformationType;
+      this.options = options;
+      this.recursionStack = /* @__PURE__ */ new Set();
+    }
+    TransformOperationExecutor2.prototype.transform = function(source, value, targetType, arrayType, isMap, level) {
+      var _this = this;
+      if (level === void 0) {
+        level = 0;
+      }
+      if (Array.isArray(value) || value instanceof Set) {
+        var newValue_1 = arrayType && this.transformationType === TransformationType.PLAIN_TO_CLASS ? instantiateArrayType(arrayType) : [];
+        value.forEach(function(subValue, index) {
+          var subSource = source ? source[index] : void 0;
+          if (!_this.options.enableCircularCheck || !_this.isCircular(subValue)) {
+            var realTargetType = void 0;
+            if (typeof targetType !== "function" && targetType && targetType.options && targetType.options.discriminator && targetType.options.discriminator.property && targetType.options.discriminator.subTypes) {
+              if (_this.transformationType === TransformationType.PLAIN_TO_CLASS) {
+                realTargetType = targetType.options.discriminator.subTypes.find(function(subType) {
+                  return subType.name === subValue[targetType.options.discriminator.property];
+                });
+                var options = { newObject: newValue_1, object: subValue, property: void 0 };
+                var newType = targetType.typeFunction(options);
+                realTargetType === void 0 ? realTargetType = newType : realTargetType = realTargetType.value;
+                if (!targetType.options.keepDiscriminatorProperty)
+                  delete subValue[targetType.options.discriminator.property];
+              }
+              if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
+                realTargetType = subValue.constructor;
+              }
+              if (_this.transformationType === TransformationType.CLASS_TO_PLAIN) {
+                subValue[targetType.options.discriminator.property] = targetType.options.discriminator.subTypes.find(function(subType) {
+                  return subType.value === subValue.constructor;
+                }).name;
+              }
+            } else {
+              realTargetType = targetType;
+            }
+            var value_1 = _this.transform(subSource, subValue, realTargetType, void 0, subValue instanceof Map, level + 1);
+            if (newValue_1 instanceof Set) {
+              newValue_1.add(value_1);
+            } else {
+              newValue_1.push(value_1);
+            }
+          } else if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
+            if (newValue_1 instanceof Set) {
+              newValue_1.add(subValue);
+            } else {
+              newValue_1.push(subValue);
+            }
+          }
+        });
+        return newValue_1;
+      } else if (targetType === String && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return String(value);
+      } else if (targetType === Number && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Number(value);
+      } else if (targetType === Boolean && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Boolean(value);
+      } else if ((targetType === Date || value instanceof Date) && !isMap) {
+        if (value instanceof Date) {
+          return new Date(value.valueOf());
+        }
+        if (value === null || value === void 0)
+          return value;
+        return new Date(value);
+      } else if (!!getGlobal().Buffer && (targetType === Buffer || value instanceof Buffer) && !isMap) {
+        if (value === null || value === void 0)
+          return value;
+        return Buffer.from(value);
+      } else if (isPromise(value) && !isMap) {
+        return new Promise(function(resolve, reject) {
+          value.then(function(data) {
+            return resolve(_this.transform(void 0, data, targetType, void 0, void 0, level + 1));
+          }, reject);
+        });
+      } else if (!isMap && value !== null && typeof value === "object" && typeof value.then === "function") {
+        return value;
+      } else if (typeof value === "object" && value !== null) {
+        if (!targetType && value.constructor !== Object)
+          if (!Array.isArray(value) && value.constructor === Array) {
+          } else {
+            targetType = value.constructor;
+          }
+        if (!targetType && source)
+          targetType = source.constructor;
+        if (this.options.enableCircularCheck) {
+          this.recursionStack.add(value);
+        }
+        var keys = this.getKeys(targetType, value, isMap);
+        var newValue = source ? source : {};
+        if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
+          if (isMap) {
+            newValue = /* @__PURE__ */ new Map();
+          } else if (targetType) {
+            newValue = new targetType();
+          } else {
+            newValue = {};
+          }
+        }
+        var _loop_1 = function(key2) {
+          if (key2 === "__proto__" || key2 === "constructor") {
+            return "continue";
+          }
+          var valueKey = key2;
+          var newValueKey = key2, propertyName = key2;
+          if (!this_1.options.ignoreDecorators && targetType) {
+            if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+              var exposeMetadata = defaultMetadataStorage.findExposeMetadataByCustomName(targetType, key2);
+              if (exposeMetadata) {
+                propertyName = exposeMetadata.propertyName;
+                newValueKey = exposeMetadata.propertyName;
+              }
+            } else if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN || this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+              var exposeMetadata = defaultMetadataStorage.findExposeMetadata(targetType, key2);
+              if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
+                newValueKey = exposeMetadata.options.name;
+              }
+            }
+          }
+          var subValue = void 0;
+          if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+            subValue = value[valueKey];
+          } else {
+            if (value instanceof Map) {
+              subValue = value.get(valueKey);
+            } else if (value[valueKey] instanceof Function) {
+              subValue = value[valueKey]();
+            } else {
+              subValue = value[valueKey];
+            }
+          }
+          var type = void 0, isSubValueMap = subValue instanceof Map;
+          if (targetType && isMap) {
+            type = targetType;
+          } else if (targetType) {
+            var metadata_1 = defaultMetadataStorage.findTypeMetadata(targetType, propertyName);
+            if (metadata_1) {
+              var options = { newObject: newValue, object: value, property: propertyName };
+              var newType = metadata_1.typeFunction ? metadata_1.typeFunction(options) : metadata_1.reflectedType;
+              if (metadata_1.options && metadata_1.options.discriminator && metadata_1.options.discriminator.property && metadata_1.options.discriminator.subTypes) {
+                if (!(value[valueKey] instanceof Array)) {
+                  if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+                    type = metadata_1.options.discriminator.subTypes.find(function(subType) {
+                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
+                        return subType.name === subValue[metadata_1.options.discriminator.property];
+                      }
+                    });
+                    type === void 0 ? type = newType : type = type.value;
+                    if (!metadata_1.options.keepDiscriminatorProperty) {
+                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
+                        delete subValue[metadata_1.options.discriminator.property];
+                      }
+                    }
+                  }
+                  if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+                    type = subValue.constructor;
+                  }
+                  if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
+                    if (subValue) {
+                      subValue[metadata_1.options.discriminator.property] = metadata_1.options.discriminator.subTypes.find(function(subType) {
+                        return subType.value === subValue.constructor;
+                      }).name;
+                    }
+                  }
+                } else {
+                  type = metadata_1;
+                }
+              } else {
+                type = newType;
+              }
+              isSubValueMap = isSubValueMap || metadata_1.reflectedType === Map;
+            } else if (this_1.options.targetMaps) {
+              this_1.options.targetMaps.filter(function(map) {
+                return map.target === targetType && !!map.properties[propertyName];
+              }).forEach(function(map) {
+                return type = map.properties[propertyName];
+              });
+            } else if (this_1.options.enableImplicitConversion && this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
+              var reflectedType = Reflect.getMetadata("design:type", targetType.prototype, propertyName);
+              if (reflectedType) {
+                type = reflectedType;
+              }
+            }
+          }
+          var arrayType_1 = Array.isArray(value[valueKey]) ? this_1.getReflectedType(targetType, propertyName) : void 0;
+          var subSource = source ? source[valueKey] : void 0;
+          if (newValue.constructor.prototype) {
+            var descriptor = Object.getOwnPropertyDescriptor(newValue.constructor.prototype, newValueKey);
+            if ((this_1.transformationType === TransformationType.PLAIN_TO_CLASS || this_1.transformationType === TransformationType.CLASS_TO_CLASS) && // eslint-disable-next-line @typescript-eslint/unbound-method
+            (descriptor && !descriptor.set || newValue[newValueKey] instanceof Function))
+              return "continue";
+          }
+          if (!this_1.options.enableCircularCheck || !this_1.isCircular(subValue)) {
+            var transformKey = this_1.transformationType === TransformationType.PLAIN_TO_CLASS ? newValueKey : key2;
+            var finalValue = void 0;
+            if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
+              finalValue = value[transformKey];
+              finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
+              finalValue = value[transformKey] === finalValue ? subValue : finalValue;
+              finalValue = this_1.transform(subSource, finalValue, type, arrayType_1, isSubValueMap, level + 1);
+            } else {
+              if (subValue === void 0 && this_1.options.exposeDefaultValues) {
+                finalValue = newValue[newValueKey];
+              } else {
+                finalValue = this_1.transform(subSource, subValue, type, arrayType_1, isSubValueMap, level + 1);
+                finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
+              }
+            }
+            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
+              if (newValue instanceof Map) {
+                newValue.set(newValueKey, finalValue);
+              } else {
+                newValue[newValueKey] = finalValue;
+              }
+            }
+          } else if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
+            var finalValue = subValue;
+            finalValue = this_1.applyCustomTransformations(finalValue, targetType, key2, value, this_1.transformationType);
+            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
+              if (newValue instanceof Map) {
+                newValue.set(newValueKey, finalValue);
+              } else {
+                newValue[newValueKey] = finalValue;
+              }
+            }
+          }
+        };
+        var this_1 = this;
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+          var key = keys_1[_i];
+          _loop_1(key);
+        }
+        if (this.options.enableCircularCheck) {
+          this.recursionStack.delete(value);
+        }
+        return newValue;
+      } else {
+        return value;
+      }
+    };
+    TransformOperationExecutor2.prototype.applyCustomTransformations = function(value, target, key, obj, transformationType) {
+      var _this = this;
+      var metadatas = defaultMetadataStorage.findTransformMetadatas(target, key, this.transformationType);
+      if (this.options.version !== void 0) {
+        metadatas = metadatas.filter(function(metadata) {
+          if (!metadata.options)
+            return true;
+          return _this.checkVersion(metadata.options.since, metadata.options.until);
+        });
+      }
+      if (this.options.groups && this.options.groups.length) {
+        metadatas = metadatas.filter(function(metadata) {
+          if (!metadata.options)
+            return true;
+          return _this.checkGroups(metadata.options.groups);
+        });
+      } else {
+        metadatas = metadatas.filter(function(metadata) {
+          return !metadata.options || !metadata.options.groups || !metadata.options.groups.length;
+        });
+      }
+      metadatas.forEach(function(metadata) {
+        value = metadata.transformFn({ value, key, obj, type: transformationType, options: _this.options });
+      });
+      return value;
+    };
+    TransformOperationExecutor2.prototype.isCircular = function(object) {
+      return this.recursionStack.has(object);
+    };
+    TransformOperationExecutor2.prototype.getReflectedType = function(target, propertyName) {
+      if (!target)
+        return void 0;
+      var meta = defaultMetadataStorage.findTypeMetadata(target, propertyName);
+      return meta ? meta.reflectedType : void 0;
+    };
+    TransformOperationExecutor2.prototype.getKeys = function(target, object, isMap) {
+      var _this = this;
+      var strategy = defaultMetadataStorage.getStrategy(target);
+      if (strategy === "none")
+        strategy = this.options.strategy || "exposeAll";
+      var keys = [];
+      if (strategy === "exposeAll" || isMap) {
+        if (object instanceof Map) {
+          keys = Array.from(object.keys());
+        } else {
+          keys = Object.keys(object);
+        }
+      }
+      if (isMap) {
+        return keys;
+      }
+      if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
+        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
+        var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
+        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
+      }
+      if (!this.options.ignoreDecorators && target) {
+        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
+        if (this.transformationType === TransformationType.PLAIN_TO_CLASS) {
+          exposedProperties = exposedProperties.map(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
+              return exposeMetadata.options.name;
+            }
+            return key;
+          });
+        }
+        if (this.options.excludeExtraneousValues) {
+          keys = exposedProperties;
+        } else {
+          keys = keys.concat(exposedProperties);
+        }
+        var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
+        if (excludedProperties_1.length > 0) {
+          keys = keys.filter(function(key) {
+            return !excludedProperties_1.includes(key);
+          });
+        }
+        if (this.options.version !== void 0) {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (!exposeMetadata || !exposeMetadata.options)
+              return true;
+            return _this.checkVersion(exposeMetadata.options.since, exposeMetadata.options.until);
+          });
+        }
+        if (this.options.groups && this.options.groups.length) {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            if (!exposeMetadata || !exposeMetadata.options)
+              return true;
+            return _this.checkGroups(exposeMetadata.options.groups);
+          });
+        } else {
+          keys = keys.filter(function(key) {
+            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
+            return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
+          });
+        }
+      }
+      if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
+        keys = keys.filter(function(key) {
+          return _this.options.excludePrefixes.every(function(prefix) {
+            return key.substr(0, prefix.length) !== prefix;
+          });
+        });
+      }
+      keys = keys.filter(function(key, index, self2) {
+        return self2.indexOf(key) === index;
+      });
+      return keys;
+    };
+    TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
+      var decision = true;
+      if (decision && since)
+        decision = this.options.version >= since;
+      if (decision && until)
+        decision = this.options.version < until;
+      return decision;
+    };
+    TransformOperationExecutor2.prototype.checkGroups = function(groups) {
+      if (!groups)
+        return true;
+      return this.options.groups.some(function(optionGroup) {
+        return groups.includes(optionGroup);
+      });
+    };
+    return TransformOperationExecutor2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/constants/default-options.constant.js
+var defaultOptions = {
+  enableCircularCheck: false,
+  enableImplicitConversion: false,
+  excludeExtraneousValues: false,
+  excludePrefixes: void 0,
+  exposeDefaultValues: false,
+  exposeUnsetFields: true,
+  groups: void 0,
+  ignoreDecorators: false,
+  strategy: void 0,
+  targetMaps: void 0,
+  version: void 0
+};
+
+// node_modules/class-transformer/esm5/ClassTransformer.js
+var __assign = function() {
+  __assign = Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s)
+        if (Object.prototype.hasOwnProperty.call(s, p))
+          t[p] = s[p];
+    }
+    return t;
+  };
+  return __assign.apply(this, arguments);
+};
+var ClassTransformer = (
+  /** @class */
+  function() {
+    function ClassTransformer2() {
+    }
+    ClassTransformer2.prototype.instanceToPlain = function(object, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.classToPlainFromExist = function(object, plainObject, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(plainObject, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.plainToInstance = function(cls, plain, options) {
+      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, plain, cls, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.plainToClassFromExist = function(clsObject, plain, options) {
+      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(clsObject, plain, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.instanceToInstance = function(object, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.classToClassFromExist = function(object, fromObject, options) {
+      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
+      return executor.transform(fromObject, object, void 0, void 0, void 0, void 0);
+    };
+    ClassTransformer2.prototype.serialize = function(object, options) {
+      return JSON.stringify(this.instanceToPlain(object, options));
+    };
+    ClassTransformer2.prototype.deserialize = function(cls, json, options) {
+      var jsonObject = JSON.parse(json);
+      return this.plainToInstance(cls, jsonObject, options);
+    };
+    ClassTransformer2.prototype.deserializeArray = function(cls, json, options) {
+      var jsonObject = JSON.parse(json);
+      return this.plainToInstance(cls, jsonObject, options);
+    };
+    return ClassTransformer2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/decorators/expose.decorator.js
+function Expose(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(object, propertyName) {
+    defaultMetadataStorage.addExposeMetadata({
+      target: object instanceof Function ? object : object.constructor,
+      propertyName,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/decorators/type.decorator.js
+function Type(typeFunction, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(target, propertyName) {
+    var reflectedType = Reflect.getMetadata("design:type", target, propertyName);
+    defaultMetadataStorage.addTypeMetadata({
+      target: target.constructor,
+      propertyName,
+      reflectedType,
+      typeFunction,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/index.js
+var classTransformer = new ClassTransformer();
+function instanceToPlain(object, options) {
+  return classTransformer.instanceToPlain(object, options);
+}
+function plainToInstance(cls, plain, options) {
+  return classTransformer.plainToInstance(cls, plain, options);
+}
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -5255,13 +5997,13 @@ Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(
 
 // src/classes/boost.ts
 var boostObject = class {
+  // public index: number;
   constructor(init) {
     this.id = init.id;
-    this.name = init.name;
+    this.name = init.name ?? "";
     this.desc = init.desc ?? "";
     this.value = init.value;
     this.order = init.order ?? 99;
-    this.index = init.index ?? -1;
   }
 };
 var boost = class {
@@ -5270,29 +6012,14 @@ var boost = class {
    * @param baseEffect - The base effect value to which boosts are applied.
    * @param boosts - An array of boost objects to initialize with.
    */
-  constructor(baseEffect, boosts) {
-    /**
-     * @alias {@link boost.getBoost}
-     * @deprecated Use getBoost instead.
-     */
-    this.bGet = this.getBoost;
-    /**
-     * @alias {@link boost.removeBoost}
-     * @deprecated Use removeBoost instead.
-     */
-    this.bRemove = this.removeBoost;
-    /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     */
-    this.bSet = this.setBoost;
+  constructor(baseEffect = 1, boosts) {
     /**
      * @alias {@link boost.setBoost}
      * @deprecated Use setBoost instead.
      */
     this.addBoost = this.setBoost;
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    this.baseEffect = E(baseEffect ?? 1);
+    this.baseEffect = E(baseEffect);
     this.boostArray = [];
     if (boosts) {
       boosts.forEach((boostObj) => {
@@ -5300,74 +6027,64 @@ var boost = class {
       });
     }
   }
+  getBoosts(id, index) {
+    const boostList = [];
+    const indexList = [];
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
+        boostList.push(this.boostArray[i]);
+        indexList.push(i);
+      }
+    }
+    return index ? [boostList, indexList] : boostList;
+  }
   /**
    * Gets a boost object by its ID.
+   * @deprecated Use {@link boost.getBoosts} instead.
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
   getBoost(id) {
-    let output = null;
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (id === i || id == this.boostArray[i].id) {
-        output = this.boostArray[i];
-        output["index"] = i;
-      }
-    }
-    return output;
+    return this.getBoosts(id)[0] ?? null;
   }
   /**
-   * Removes a boost by its ID.
+   * Removes a boost by its ID. Only removes the first instance of the id.
    * @param id - The ID of the boost to remove.
    */
   removeBoost(id) {
-    const bCheck = this.bGet(id);
-    if (bCheck) {
-      delete this.boostArray[bCheck.index];
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (id === this.boostArray[i].id) {
+        this.boostArray.splice(i, 1);
+        break;
+      }
     }
   }
   setBoost(arg1, arg2, arg3, arg4, arg5) {
+    if (!arg1)
+      return;
     if (typeof arg1 === "string") {
       const id = arg1;
       const name = arg2 ?? "";
       const desc = arg3 ?? "";
       const value = arg4 ?? ((e) => e);
       const order = arg5;
-      const bCheck = this.bGet(id);
-      if (!bCheck) {
-        this.boostArray.push(new boostObject({ id, name, desc, value, order, index: this.boostArray.length }));
+      const bCheck = this.getBoosts(id, true);
+      if (!bCheck[0][0]) {
+        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
       } else {
-        this.boostArray[bCheck.index] = new boostObject({ id, name, desc, value, order, index: this.boostArray.length });
+        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
       for (let i = 0; i < arg1.length; i++) {
-        const bCheck = this.bGet(arg1[i].id);
-        if (!bCheck) {
+        const bCheck = this.getBoosts(arg1[i].id, true);
+        if (!bCheck[0][0]) {
           this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
         } else {
-          this.boostArray[bCheck.index] = new boostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
         }
       }
     }
-  }
-  /**
-   * Sets or updates multiple boosts with advanced parameters.
-   * @alias {@link boost.setBoost}
-   * @deprecated Use setBoost instead.
-   * @param boostsArray - boost objects to set or update.
-   */
-  bSetArray(boostsArray) {
-    this.setBoost(boostsArray);
-  }
-  /**
-   * Sets or updates multiple boosts with advanced parameters.
-   * @alias {@link boost.setBoost}
-   * @deprecated Use setBoost instead.
-   * @param boostsArray - boost objects to set or update.
-   * @deprecated Use setBoost instead.
-   */
-  bSetAdvanced(...boostsArray) {
-    this.setBoost(boostsArray);
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
@@ -5901,716 +6618,6 @@ var eventManager = class _eventManager {
 
 // src/game/managers/dataManager.ts
 var import_lz_string = __toESM(require_lz_string());
-var import_reflect_metadata = __toESM(require_Reflect());
-
-// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
-var TransformationType;
-(function(TransformationType2) {
-  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
-  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
-  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
-})(TransformationType || (TransformationType = {}));
-
-// node_modules/class-transformer/esm5/MetadataStorage.js
-var MetadataStorage = (
-  /** @class */
-  function() {
-    function MetadataStorage2() {
-      this._typeMetadatas = /* @__PURE__ */ new Map();
-      this._transformMetadatas = /* @__PURE__ */ new Map();
-      this._exposeMetadatas = /* @__PURE__ */ new Map();
-      this._excludeMetadatas = /* @__PURE__ */ new Map();
-      this._ancestorsMap = /* @__PURE__ */ new Map();
-    }
-    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
-      if (!this._typeMetadatas.has(metadata.target)) {
-        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
-      if (!this._transformMetadatas.has(metadata.target)) {
-        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
-        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
-      }
-      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
-    };
-    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
-      if (!this._exposeMetadatas.has(metadata.target)) {
-        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
-      if (!this._excludeMetadatas.has(metadata.target)) {
-        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
-      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      });
-    };
-    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._excludeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._exposeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
-      return this.getExposedMetadatas(target).find(function(metadata) {
-        return metadata.options && metadata.options.name === name;
-      });
-    };
-    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._typeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.getStrategy = function(target) {
-      var excludeMap = this._excludeMetadatas.get(target);
-      var exclude = excludeMap && excludeMap.get(void 0);
-      var exposeMap = this._exposeMetadatas.get(target);
-      var expose = exposeMap && exposeMap.get(void 0);
-      if (exclude && expose || !exclude && !expose)
-        return "none";
-      return exclude ? "excludeAll" : "exposeAll";
-    };
-    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
-      return this.getMetadata(this._exposeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
-      return this.getMetadata(this._excludeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
-      return this.getExposedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
-      return this.getExcludedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.clear = function() {
-      this._typeMetadatas.clear();
-      this._exposeMetadatas.clear();
-      this._excludeMetadatas.clear();
-      this._ancestorsMap.clear();
-    };
-    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
-          return meta.propertyName !== void 0;
-        });
-      }
-      var metadataFromAncestors = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
-            return meta.propertyName !== void 0;
-          });
-          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
-        }
-      }
-      return metadataFromAncestors.concat(metadataFromTarget || []);
-    };
-    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      if (metadataFromTargetMap) {
-        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
-        if (metadataFromTarget) {
-          return metadataFromTarget;
-        }
-      }
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var ancestorResult = ancestorMetadataMap.get(propertyName);
-          if (ancestorResult) {
-            return ancestorResult;
-          }
-        }
-      }
-      return void 0;
-    };
-    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = metadataFromTargetMap.get(propertyName);
-      }
-      var metadataFromAncestorsTarget = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          if (ancestorMetadataMap.has(propertyName)) {
-            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
-          }
-        }
-      }
-      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
-    };
-    MetadataStorage2.prototype.getAncestors = function(target) {
-      if (!target)
-        return [];
-      if (!this._ancestorsMap.has(target)) {
-        var ancestors = [];
-        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
-          ancestors.push(baseClass);
-        }
-        this._ancestorsMap.set(target, ancestors);
-      }
-      return this._ancestorsMap.get(target);
-    };
-    return MetadataStorage2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/storage.js
-var defaultMetadataStorage = new MetadataStorage();
-
-// node_modules/class-transformer/esm5/utils/get-global.util.js
-function getGlobal() {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
-  }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-}
-
-// node_modules/class-transformer/esm5/utils/is-promise.util.js
-function isPromise(p) {
-  return p !== null && typeof p === "object" && typeof p.then === "function";
-}
-
-// node_modules/class-transformer/esm5/TransformOperationExecutor.js
-var __spreadArray = function(to, from, pack) {
-  if (pack || arguments.length === 2)
-    for (var i = 0, l = from.length, ar; i < l; i++) {
-      if (ar || !(i in from)) {
-        if (!ar)
-          ar = Array.prototype.slice.call(from, 0, i);
-        ar[i] = from[i];
-      }
-    }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
-function instantiateArrayType(arrayType) {
-  var array = new arrayType();
-  if (!(array instanceof Set) && !("push" in array)) {
-    return [];
-  }
-  return array;
-}
-var TransformOperationExecutor = (
-  /** @class */
-  function() {
-    function TransformOperationExecutor2(transformationType, options) {
-      this.transformationType = transformationType;
-      this.options = options;
-      this.recursionStack = /* @__PURE__ */ new Set();
-    }
-    TransformOperationExecutor2.prototype.transform = function(source, value, targetType, arrayType, isMap, level) {
-      var _this = this;
-      if (level === void 0) {
-        level = 0;
-      }
-      if (Array.isArray(value) || value instanceof Set) {
-        var newValue_1 = arrayType && this.transformationType === TransformationType.PLAIN_TO_CLASS ? instantiateArrayType(arrayType) : [];
-        value.forEach(function(subValue, index) {
-          var subSource = source ? source[index] : void 0;
-          if (!_this.options.enableCircularCheck || !_this.isCircular(subValue)) {
-            var realTargetType = void 0;
-            if (typeof targetType !== "function" && targetType && targetType.options && targetType.options.discriminator && targetType.options.discriminator.property && targetType.options.discriminator.subTypes) {
-              if (_this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                realTargetType = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.name === subValue[targetType.options.discriminator.property];
-                });
-                var options = { newObject: newValue_1, object: subValue, property: void 0 };
-                var newType = targetType.typeFunction(options);
-                realTargetType === void 0 ? realTargetType = newType : realTargetType = realTargetType.value;
-                if (!targetType.options.keepDiscriminatorProperty)
-                  delete subValue[targetType.options.discriminator.property];
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-                realTargetType = subValue.constructor;
-              }
-              if (_this.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                subValue[targetType.options.discriminator.property] = targetType.options.discriminator.subTypes.find(function(subType) {
-                  return subType.value === subValue.constructor;
-                }).name;
-              }
-            } else {
-              realTargetType = targetType;
-            }
-            var value_1 = _this.transform(subSource, subValue, realTargetType, void 0, subValue instanceof Map, level + 1);
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(value_1);
-            } else {
-              newValue_1.push(value_1);
-            }
-          } else if (_this.transformationType === TransformationType.CLASS_TO_CLASS) {
-            if (newValue_1 instanceof Set) {
-              newValue_1.add(subValue);
-            } else {
-              newValue_1.push(subValue);
-            }
-          }
-        });
-        return newValue_1;
-      } else if (targetType === String && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return String(value);
-      } else if (targetType === Number && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Number(value);
-      } else if (targetType === Boolean && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Boolean(value);
-      } else if ((targetType === Date || value instanceof Date) && !isMap) {
-        if (value instanceof Date) {
-          return new Date(value.valueOf());
-        }
-        if (value === null || value === void 0)
-          return value;
-        return new Date(value);
-      } else if (!!getGlobal().Buffer && (targetType === Buffer || value instanceof Buffer) && !isMap) {
-        if (value === null || value === void 0)
-          return value;
-        return Buffer.from(value);
-      } else if (isPromise(value) && !isMap) {
-        return new Promise(function(resolve, reject) {
-          value.then(function(data) {
-            return resolve(_this.transform(void 0, data, targetType, void 0, void 0, level + 1));
-          }, reject);
-        });
-      } else if (!isMap && value !== null && typeof value === "object" && typeof value.then === "function") {
-        return value;
-      } else if (typeof value === "object" && value !== null) {
-        if (!targetType && value.constructor !== Object)
-          if (!Array.isArray(value) && value.constructor === Array) {
-          } else {
-            targetType = value.constructor;
-          }
-        if (!targetType && source)
-          targetType = source.constructor;
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.add(value);
-        }
-        var keys = this.getKeys(targetType, value, isMap);
-        var newValue = source ? source : {};
-        if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
-          if (isMap) {
-            newValue = /* @__PURE__ */ new Map();
-          } else if (targetType) {
-            newValue = new targetType();
-          } else {
-            newValue = {};
-          }
-        }
-        var _loop_1 = function(key2) {
-          if (key2 === "__proto__" || key2 === "constructor") {
-            return "continue";
-          }
-          var valueKey = key2;
-          var newValueKey = key2, propertyName = key2;
-          if (!this_1.options.ignoreDecorators && targetType) {
-            if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadataByCustomName(targetType, key2);
-              if (exposeMetadata) {
-                propertyName = exposeMetadata.propertyName;
-                newValueKey = exposeMetadata.propertyName;
-              }
-            } else if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN || this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-              var exposeMetadata = defaultMetadataStorage.findExposeMetadata(targetType, key2);
-              if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-                newValueKey = exposeMetadata.options.name;
-              }
-            }
-          }
-          var subValue = void 0;
-          if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-            subValue = value[valueKey];
-          } else {
-            if (value instanceof Map) {
-              subValue = value.get(valueKey);
-            } else if (value[valueKey] instanceof Function) {
-              subValue = value[valueKey]();
-            } else {
-              subValue = value[valueKey];
-            }
-          }
-          var type = void 0, isSubValueMap = subValue instanceof Map;
-          if (targetType && isMap) {
-            type = targetType;
-          } else if (targetType) {
-            var metadata_1 = defaultMetadataStorage.findTypeMetadata(targetType, propertyName);
-            if (metadata_1) {
-              var options = { newObject: newValue, object: value, property: propertyName };
-              var newType = metadata_1.typeFunction ? metadata_1.typeFunction(options) : metadata_1.reflectedType;
-              if (metadata_1.options && metadata_1.options.discriminator && metadata_1.options.discriminator.property && metadata_1.options.discriminator.subTypes) {
-                if (!(value[valueKey] instanceof Array)) {
-                  if (this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-                    type = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        return subType.name === subValue[metadata_1.options.discriminator.property];
-                      }
-                    });
-                    type === void 0 ? type = newType : type = type.value;
-                    if (!metadata_1.options.keepDiscriminatorProperty) {
-                      if (subValue && subValue instanceof Object && metadata_1.options.discriminator.property in subValue) {
-                        delete subValue[metadata_1.options.discriminator.property];
-                      }
-                    }
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-                    type = subValue.constructor;
-                  }
-                  if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-                    if (subValue) {
-                      subValue[metadata_1.options.discriminator.property] = metadata_1.options.discriminator.subTypes.find(function(subType) {
-                        return subType.value === subValue.constructor;
-                      }).name;
-                    }
-                  }
-                } else {
-                  type = metadata_1;
-                }
-              } else {
-                type = newType;
-              }
-              isSubValueMap = isSubValueMap || metadata_1.reflectedType === Map;
-            } else if (this_1.options.targetMaps) {
-              this_1.options.targetMaps.filter(function(map) {
-                return map.target === targetType && !!map.properties[propertyName];
-              }).forEach(function(map) {
-                return type = map.properties[propertyName];
-              });
-            } else if (this_1.options.enableImplicitConversion && this_1.transformationType === TransformationType.PLAIN_TO_CLASS) {
-              var reflectedType = Reflect.getMetadata("design:type", targetType.prototype, propertyName);
-              if (reflectedType) {
-                type = reflectedType;
-              }
-            }
-          }
-          var arrayType_1 = Array.isArray(value[valueKey]) ? this_1.getReflectedType(targetType, propertyName) : void 0;
-          var subSource = source ? source[valueKey] : void 0;
-          if (newValue.constructor.prototype) {
-            var descriptor = Object.getOwnPropertyDescriptor(newValue.constructor.prototype, newValueKey);
-            if ((this_1.transformationType === TransformationType.PLAIN_TO_CLASS || this_1.transformationType === TransformationType.CLASS_TO_CLASS) && // eslint-disable-next-line @typescript-eslint/unbound-method
-            (descriptor && !descriptor.set || newValue[newValueKey] instanceof Function))
-              return "continue";
-          }
-          if (!this_1.options.enableCircularCheck || !this_1.isCircular(subValue)) {
-            var transformKey = this_1.transformationType === TransformationType.PLAIN_TO_CLASS ? newValueKey : key2;
-            var finalValue = void 0;
-            if (this_1.transformationType === TransformationType.CLASS_TO_PLAIN) {
-              finalValue = value[transformKey];
-              finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              finalValue = value[transformKey] === finalValue ? subValue : finalValue;
-              finalValue = this_1.transform(subSource, finalValue, type, arrayType_1, isSubValueMap, level + 1);
-            } else {
-              if (subValue === void 0 && this_1.options.exposeDefaultValues) {
-                finalValue = newValue[newValueKey];
-              } else {
-                finalValue = this_1.transform(subSource, subValue, type, arrayType_1, isSubValueMap, level + 1);
-                finalValue = this_1.applyCustomTransformations(finalValue, targetType, transformKey, value, this_1.transformationType);
-              }
-            }
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          } else if (this_1.transformationType === TransformationType.CLASS_TO_CLASS) {
-            var finalValue = subValue;
-            finalValue = this_1.applyCustomTransformations(finalValue, targetType, key2, value, this_1.transformationType);
-            if (finalValue !== void 0 || this_1.options.exposeUnsetFields) {
-              if (newValue instanceof Map) {
-                newValue.set(newValueKey, finalValue);
-              } else {
-                newValue[newValueKey] = finalValue;
-              }
-            }
-          }
-        };
-        var this_1 = this;
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-          var key = keys_1[_i];
-          _loop_1(key);
-        }
-        if (this.options.enableCircularCheck) {
-          this.recursionStack.delete(value);
-        }
-        return newValue;
-      } else {
-        return value;
-      }
-    };
-    TransformOperationExecutor2.prototype.applyCustomTransformations = function(value, target, key, obj, transformationType) {
-      var _this = this;
-      var metadatas = defaultMetadataStorage.findTransformMetadatas(target, key, this.transformationType);
-      if (this.options.version !== void 0) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkVersion(metadata.options.since, metadata.options.until);
-        });
-      }
-      if (this.options.groups && this.options.groups.length) {
-        metadatas = metadatas.filter(function(metadata) {
-          if (!metadata.options)
-            return true;
-          return _this.checkGroups(metadata.options.groups);
-        });
-      } else {
-        metadatas = metadatas.filter(function(metadata) {
-          return !metadata.options || !metadata.options.groups || !metadata.options.groups.length;
-        });
-      }
-      metadatas.forEach(function(metadata) {
-        value = metadata.transformFn({ value, key, obj, type: transformationType, options: _this.options });
-      });
-      return value;
-    };
-    TransformOperationExecutor2.prototype.isCircular = function(object) {
-      return this.recursionStack.has(object);
-    };
-    TransformOperationExecutor2.prototype.getReflectedType = function(target, propertyName) {
-      if (!target)
-        return void 0;
-      var meta = defaultMetadataStorage.findTypeMetadata(target, propertyName);
-      return meta ? meta.reflectedType : void 0;
-    };
-    TransformOperationExecutor2.prototype.getKeys = function(target, object, isMap) {
-      var _this = this;
-      var strategy = defaultMetadataStorage.getStrategy(target);
-      if (strategy === "none")
-        strategy = this.options.strategy || "exposeAll";
-      var keys = [];
-      if (strategy === "exposeAll" || isMap) {
-        if (object instanceof Map) {
-          keys = Array.from(object.keys());
-        } else {
-          keys = Object.keys(object);
-        }
-      }
-      if (isMap) {
-        return keys;
-      }
-      if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
-      }
-      if (!this.options.ignoreDecorators && target) {
-        var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
-        if (this.transformationType === TransformationType.PLAIN_TO_CLASS) {
-          exposedProperties = exposedProperties.map(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (exposeMetadata && exposeMetadata.options && exposeMetadata.options.name) {
-              return exposeMetadata.options.name;
-            }
-            return key;
-          });
-        }
-        if (this.options.excludeExtraneousValues) {
-          keys = exposedProperties;
-        } else {
-          keys = keys.concat(exposedProperties);
-        }
-        var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        if (excludedProperties_1.length > 0) {
-          keys = keys.filter(function(key) {
-            return !excludedProperties_1.includes(key);
-          });
-        }
-        if (this.options.version !== void 0) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkVersion(exposeMetadata.options.since, exposeMetadata.options.until);
-          });
-        }
-        if (this.options.groups && this.options.groups.length) {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            if (!exposeMetadata || !exposeMetadata.options)
-              return true;
-            return _this.checkGroups(exposeMetadata.options.groups);
-          });
-        } else {
-          keys = keys.filter(function(key) {
-            var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
-            return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
-          });
-        }
-      }
-      if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
-        keys = keys.filter(function(key) {
-          return _this.options.excludePrefixes.every(function(prefix) {
-            return key.substr(0, prefix.length) !== prefix;
-          });
-        });
-      }
-      keys = keys.filter(function(key, index, self2) {
-        return self2.indexOf(key) === index;
-      });
-      return keys;
-    };
-    TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
-      var decision = true;
-      if (decision && since)
-        decision = this.options.version >= since;
-      if (decision && until)
-        decision = this.options.version < until;
-      return decision;
-    };
-    TransformOperationExecutor2.prototype.checkGroups = function(groups) {
-      if (!groups)
-        return true;
-      return this.options.groups.some(function(optionGroup) {
-        return groups.includes(optionGroup);
-      });
-    };
-    return TransformOperationExecutor2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/constants/default-options.constant.js
-var defaultOptions = {
-  enableCircularCheck: false,
-  enableImplicitConversion: false,
-  excludeExtraneousValues: false,
-  excludePrefixes: void 0,
-  exposeDefaultValues: false,
-  exposeUnsetFields: true,
-  groups: void 0,
-  ignoreDecorators: false,
-  strategy: void 0,
-  targetMaps: void 0,
-  version: void 0
-};
-
-// node_modules/class-transformer/esm5/ClassTransformer.js
-var __assign = function() {
-  __assign = Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-      s = arguments[i];
-      for (var p in s)
-        if (Object.prototype.hasOwnProperty.call(s, p))
-          t[p] = s[p];
-    }
-    return t;
-  };
-  return __assign.apply(this, arguments);
-};
-var ClassTransformer = (
-  /** @class */
-  function() {
-    function ClassTransformer2() {
-    }
-    ClassTransformer2.prototype.instanceToPlain = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToPlainFromExist = function(object, plainObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_PLAIN, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(plainObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToInstance = function(cls, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, plain, cls, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.plainToClassFromExist = function(clsObject, plain, options) {
-      var executor = new TransformOperationExecutor(TransformationType.PLAIN_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(clsObject, plain, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.instanceToInstance = function(object, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(void 0, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.classToClassFromExist = function(object, fromObject, options) {
-      var executor = new TransformOperationExecutor(TransformationType.CLASS_TO_CLASS, __assign(__assign({}, defaultOptions), options));
-      return executor.transform(fromObject, object, void 0, void 0, void 0, void 0);
-    };
-    ClassTransformer2.prototype.serialize = function(object, options) {
-      return JSON.stringify(this.instanceToPlain(object, options));
-    };
-    ClassTransformer2.prototype.deserialize = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    ClassTransformer2.prototype.deserializeArray = function(cls, json, options) {
-      var jsonObject = JSON.parse(json);
-      return this.plainToInstance(cls, jsonObject, options);
-    };
-    return ClassTransformer2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/index.js
-var classTransformer = new ClassTransformer();
-function instanceToPlain(object, options) {
-  return classTransformer.instanceToPlain(object, options);
-}
-
-// src/game/managers/dataManager.ts
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -6783,32 +6790,78 @@ var dataManager = class {
       document.body.removeChild(downloadLink);
     }
   }
-  /**
-   * Loads game data and processes it.
-   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
-   */
-  loadData(dataToLoad = this.decompileData()) {
+  parseData(dataToParse = this.decompileData()) {
     if (!this.normalData) {
       throw new Error("dataManager.loadData(): You must call init() before writing to data.");
     }
-    if (!dataToLoad) {
-      return;
+    if (!dataToParse) {
+      return null;
     }
-    const [, loadedData] = dataToLoad;
-    console.log(loadedData);
+    const [, loadedData] = dataToParse;
+    function isPlainObject(obj) {
+      return typeof obj === "object" && obj.constructor === Object;
+    }
     function deepMerge(source, target) {
       let out = target;
       for (const key in source) {
         if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
           out[key] = source[key];
-        } else if (typeof source[key] === "object" && typeof target[key] === "object") {
-          out = deepMerge(source[key], target[key]);
+        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
+          out[key] = deepMerge(source[key], target[key]);
         }
       }
       return out;
     }
-    const loadedDataProcessed = deepMerge(this.normalData, loadedData);
-    console.log("Loaded data: ", loadedDataProcessed);
+    let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+    console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
+    const templateClasses = [
+      {
+        class: currency
+      },
+      {
+        class: boost
+      },
+      {
+        class: e_default
+      }
+    ];
+    for (const templateClass of templateClasses) {
+      templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
+    }
+    console.log("Temp", templateClasses);
+    function compareArrays(arr1, arr2) {
+      return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+    }
+    function plainToInstanceRecursive(plain) {
+      const out = plain;
+      for (const key in plain) {
+        if (!(plain[key] instanceof Object && plain[key].constructor === Object))
+          continue;
+        if (!(() => {
+          for (const templateClass of templateClasses) {
+            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClass.properties)) {
+              out[key] = plainToInstance(templateClass.class, out[key]);
+              return true;
+            }
+          }
+          return false;
+        })()) {
+          out[key] = plainToInstanceRecursive(plain[key]);
+        }
+      }
+      return out;
+    }
+    loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+    return loadedDataProcessed;
+  }
+  /**
+   * Loads game data and processes it.
+   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
+   */
+  loadData(dataToLoad = this.decompileData()) {
+    const parsedData = this.parseData(dataToLoad);
+    if (!parsedData)
+      return;
   }
 };
 
