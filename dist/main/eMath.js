@@ -338,7 +338,7 @@ var require_Reflect = __commonJS({
           }
           return provider.OrdinaryOwnMetadataKeys(O, P);
         }
-        function Type2(x) {
+        function Type3(x) {
           if (x === null)
             return 1;
           switch (typeof x) {
@@ -371,7 +371,7 @@ var require_Reflect = __commonJS({
           return typeof x === "object" ? x !== null : typeof x === "function";
         }
         function ToPrimitive(input, PreferredType) {
-          switch (Type2(input)) {
+          switch (Type3(input)) {
             case 0:
               return input;
             case 1:
@@ -451,7 +451,7 @@ var require_Reflect = __commonJS({
           return typeof argument === "function";
         }
         function IsPropertyKey(argument) {
-          switch (Type2(argument)) {
+          switch (Type3(argument)) {
             case 3:
               return true;
             case 4:
@@ -1136,6 +1136,7 @@ __export(src_exports, {
   currencyStatic: () => currencyStatic,
   grid: () => grid,
   gridCell: () => gridCell,
+  upgradeData: () => upgradeData,
   upgradeStatic: () => upgradeStatic
 });
 module.exports = __toCommonJS(src_exports);

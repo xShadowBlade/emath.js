@@ -10,8 +10,8 @@ import LZString from "lz-string";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
 // Recursive plain to class
-import { currency } from "../../classes/currency";
-import { boost } from "../../classes/boost";
+import { currency, upgradeData } from "../../classes/currency";
+import { boost, boostObject } from "../../classes/boost";
 // import { E } from "index";
 import Decimal from "E/e";
 
@@ -253,15 +253,27 @@ class dataManager {
         const templateClasses = [
             {
                 class: currency,
+                subclasses: {
+                    value: Decimal,
+                    upgrades: [upgradeData],
+                    boost: boost,
+                },
             },
             {
                 class: boost,
+                subclasses: {
+                    boostArray: [boostObject],
+                    baseEffect: Decimal,
+                },
             },
             {
                 class: Decimal,
             }
         ] as {
             class: any;
+            subclasses?: {
+                [key: string]: any;
+            }
             properties: string[];
         }[];
 
@@ -297,6 +309,24 @@ class dataManager {
                     for (const templateClass of templateClasses) {
                         if (compareArrays(Object.getOwnPropertyNames((plain as any)[key]), templateClass.properties)) {
                             (out as any)[key] = plainToInstance(templateClass.class, (out as any)[key]);
+
+                            // Convert subclasses
+                            if (templateClass.subclasses) {
+                                for (const subclassKey in templateClass.subclasses) {
+                                    if (Object.prototype.hasOwnProperty.call(templateClass.subclasses, subclassKey)) {
+                                        if (Array.isArray(templateClass.subclasses[subclassKey])) {
+                                            // Convert array
+                                            for (let i = 0; i < (out as any)[key][subclassKey].length; i++) {
+                                                (out as any)[key][subclassKey][i] = plainToInstanceRecursive((out as any)[key][subclassKey][i]);
+                                            }
+                                        } else {
+                                            // Convert object
+                                            (out as any)[key][subclassKey] = plainToInstanceRecursive((out as any)[key][subclassKey]);
+                                        }
+                                    }
+                                }
+                            }
+
                             // Return true if it matches a template class
                             return true;
                         }
@@ -322,7 +352,7 @@ class dataManager {
     public loadData (dataToLoad = this.decompileData()): void {
         const parsedData = this.parseData(dataToLoad);
         if (!parsedData) return;
-        // this.data = parsedData; // TODO: Fix this
+        this.data = parsedData; // TODO: Fix this
     };
 }
 

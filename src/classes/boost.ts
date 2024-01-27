@@ -63,15 +63,15 @@ class boost {
     /**
      * An array of boost objects.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => boostObject)
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Type(() => boostObject)
     public boostArray: boostObject[];
 
     /**
      * The base effect value.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => E)
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Type(() => E)
     public baseEffect: E;
 
     /**

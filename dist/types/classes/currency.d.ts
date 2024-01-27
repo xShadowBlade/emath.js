@@ -173,4 +173,4 @@ declare class currencyStatic {
      */
     buyUpgrade(id: string | number, target: ESource): boolean;
 }
-export { currency, currencyStatic, upgradeInit, upgrade, upgradeStatic };
+export { currency, currencyStatic, upgradeInit, upgrade, upgradeData, upgradeStatic, upgradeDataInterface };

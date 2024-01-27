@@ -99,22 +99,22 @@ class currency {
     /**
      * The current value of the currency.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => E)
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Type(() => E)
     public value: E;
 
     /**
      * An array that represents upgrades and their levels.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => upgradeData)
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Type(() => upgradeData)
     public upgrades: upgradeData[];
 
     /**
      * A boost object that affects the currency gain.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => boost)
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Type(() => boost)
     public boost: boost;
 
     /**
@@ -424,4 +424,4 @@ class currencyStatic {
     }
 }
 
-export { currency, currencyStatic, upgradeInit, upgrade, upgradeStatic };
+export { currency, currencyStatic, upgradeInit, upgrade, upgradeData, upgradeStatic, upgradeDataInterface };
