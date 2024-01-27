@@ -14,7 +14,7 @@ declare class sprite {
     y: number;
     collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
     intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
-    private gameRef;
+    protected gameRef: pixiGame;
     /**
      * Constructs a new game sprite.
      * @param gameRef - The game reference.

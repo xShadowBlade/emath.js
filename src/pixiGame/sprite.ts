@@ -8,7 +8,7 @@
 
 // import React, { useEffect } from "react";
 // import { Sprite as PixiSprite } from "@pixi/react";
-import { loadPIXI } from "./loadPIXI.js";
+// import { loadPIXI } from "./loadPIXI.js";
 import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
@@ -19,7 +19,7 @@ class sprite {
     public collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
     public intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
 
-    private gameRef: pixiGame;
+    protected gameRef: pixiGame;
 
     /**
      * Constructs a new game sprite.

@@ -3,6 +3,7 @@
 		"emitDeclarationOnly": true,
 		"declaration": true,
 		"allowJs": true,
+        "jsx": "react",
 		"target": "es5",
 		"module": "NodeNext",
 		"strict": true, // change later
@@ -15,7 +16,7 @@
 		"outDir": "./dist",  // Adjust this based on your project structure
 		"sourceMap": true
 	},
-	"include": ["src/**/*.ts"],
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
 	"exclude": [
 	  	"node_modules"
 	]

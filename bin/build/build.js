@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const esbuild = require("esbuild");
 const { umdWrapper } = require("./umdPlugin.js");
 /*
