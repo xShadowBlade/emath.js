@@ -3502,8 +3502,8 @@ var Decimal = class _Decimal {
    * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
    * or the original E instance if it is greater than or equal to 5000.
    */
-  toRoman(max) {
-    max = max ? new _Decimal(max) : 5e3;
+  toRoman(max = 5e3) {
+    max = new _Decimal(max);
     const num = this.clone();
     if (num.gte(max))
       return num;
@@ -5476,14 +5476,15 @@ var eventManager = class _eventManager {
     const currentTime = Date.now();
     for (let i = 0; i < this.events.length; i++) {
       const event = this.events[i];
+      const dt = currentTime - event.timeCreated;
       if (event.type === "interval") {
         if (currentTime - event.intervalLast >= event.delay) {
-          event.callbackFn();
+          event.callbackFn(dt);
           event.intervalLast = currentTime;
         }
       } else if (event.type === "timeout") {
         if (currentTime - event.timeCreated >= event.delay) {
-          event.callbackFn();
+          event.callbackFn(dt);
           this.events.splice(i, 1);
           i--;
         }
@@ -5494,7 +5495,7 @@ var eventManager = class _eventManager {
    * Adds a new event to the event system.
    * @param name - The name of the event.
    * @param type - The type of the event, either "interval" or "timeout".
-   * @param delay - The delay in milliseconds before the event triggers.
+   * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
    * @param callbackFn - The callback function to execute when the event triggers.
    * @example
    * const myEventManger = new eventManager();
@@ -5587,11 +5588,18 @@ var dataManager = class {
   /**
    * Creates a new instance of the game class.
    * @param gameRef - A function that returns the game instance.
+   * @param saveOnExit - Whether to save the game when the user exits the page. Defaults to `true`.
    */
-  constructor(gameRef) {
+  constructor(gameRef, saveOnExit = true) {
     this.gameRef = gameRef;
     this.data = {};
     this.static = {};
+    if (saveOnExit) {
+      const saveDataFn = this.saveData;
+      window.addEventListener("beforeunload", function(e) {
+        saveDataFn();
+      });
+    }
   }
   /**
    * Sets the data for the given key.

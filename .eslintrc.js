@@ -2,7 +2,6 @@
  * @file ESLint configuration file.
  */
 
-
 // eslint-disable-next-line
 const fs = require("fs");
 

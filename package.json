@@ -41,6 +41,7 @@
         "@types/react": "^18.2.48",
         "@typescript-eslint/eslint-plugin": "^6.9.0",
         "@typescript-eslint/parser": "^6.9.0",
+        "class-transformer": "^0.5.1",
         "concurrently": "^8.2.2",
         "esbuild": "0.19.11",
         "eslint": "^8.50.0",
@@ -54,11 +55,8 @@
         "prettier": "3.2.4",
         "prettier-eslint": "^16.1.1",
         "react": "^18.2.0",
+        "reflect-metadata": "^0.2.1",
         "ts-mocha": "^10.0.0",
         "typescript": "^5.2.2"
-    },
-    "dependencies": {
-        "class-transformer": "^0.5.1",
-        "reflect-metadata": "^0.2.1"
     }
 }

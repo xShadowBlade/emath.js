@@ -51,8 +51,9 @@ class dataManager {
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
+     * @param saveOnExit - Whether to save the game when the user exits the page. Defaults to `true`.
      */
-    constructor (gameRef: game) {
+    constructor (gameRef: game, saveOnExit = true) {
         // if (typeof window === "undefined") { // Don't run on serverside
         //     throw new Error("dataManager cannot be run on serverside");
         // }
@@ -63,6 +64,17 @@ class dataManager {
 
         this.data = {};
         this.static = {};
+        if (saveOnExit) {
+            const saveDataFn = this.saveData;
+            window.addEventListener('beforeunload', function (e) {
+                // Your code to run before the page unloads goes here
+                // For example, you can save user data to a server.
+                // Make sure to return a message to display to the user.
+                saveDataFn();
+                // e.returnValue = 'Are you sure you want to leave this page?';
+            });
+        }
+        
     }
 
     /**

@@ -30,7 +30,7 @@ declare class eventManager {
      * Adds a new event to the event system.
      * @param name - The name of the event.
      * @param type - The type of the event, either "interval" or "timeout".
-     * @param delay - The delay in milliseconds before the event triggers.
+     * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
      * @param callbackFn - The callback function to execute when the event triggers.
      * @example
      * const myEventManger = new eventManager();
@@ -44,6 +44,6 @@ declare class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    addEvent(name: string, type: "interval" | "timeout", delay: number | E, callbackFn: () => void): void;
+    addEvent(name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
 }
 export { eventManager };

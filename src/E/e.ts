@@ -3435,8 +3435,8 @@ class Decimal {
      * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
      * or the original E instance if it is greater than or equal to 5000.
      */
-    public toRoman (max: DecimalSource): string | Decimal {
-        max = max ? new Decimal(max) : 5000;
+    public toRoman (max: DecimalSource = 5000): string | Decimal {
+        max = new Decimal(max);
 
         const num: Decimal = this.clone();
         if (num.gte(max)) return num;

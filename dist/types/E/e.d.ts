@@ -484,7 +484,7 @@ declare class Decimal {
      * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
      * or the original E instance if it is greater than or equal to 5000.
      */
-    toRoman(max: DecimalSource): string | Decimal;
+    toRoman(max?: DecimalSource): string | Decimal;
     static toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
 }
 export default Decimal;

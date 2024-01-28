@@ -26,8 +26,9 @@ declare class dataManager {
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
+     * @param saveOnExit - Whether to save the game when the user exits the page. Defaults to `true`.
      */
-    constructor(gameRef: game);
+    constructor(gameRef: game, saveOnExit?: boolean);
     /**
      * Sets the data for the given key.
      * @param key - The key to set the data for.

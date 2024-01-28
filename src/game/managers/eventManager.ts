@@ -9,7 +9,7 @@ interface Event {
     name: string;
     type: "interval" | "timeout";
     delay: number;
-    callbackFn: () => void;
+    callbackFn: (dt: number) => void;
     timeCreated: number;
 }
 
@@ -73,17 +73,17 @@ class eventManager {
         const currentTime = Date.now();
         for (let i = 0; i < this.events.length; i++) {
             const event = this.events[i];
-
+            const dt = currentTime - event.timeCreated;
             if (event.type === "interval") {
                 // If interval
                 if (currentTime - (event as intervalEvent).intervalLast >= event.delay) {
-                    event.callbackFn();
+                    event.callbackFn(dt);
                     (event as intervalEvent).intervalLast = currentTime;
                 }
             } else if (event.type === "timeout") {
                 // If timeout
                 if (currentTime - event.timeCreated >= event.delay) {
-                    event.callbackFn();
+                    event.callbackFn(dt);
                     this.events.splice(i, 1);
                     i--;
                 }
@@ -95,7 +95,7 @@ class eventManager {
      * Adds a new event to the event system.
      * @param name - The name of the event.
      * @param type - The type of the event, either "interval" or "timeout".
-     * @param delay - The delay in milliseconds before the event triggers.
+     * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
      * @param callbackFn - The callback function to execute when the event triggers.
      * @example
      * const myEventManger = new eventManager();
@@ -109,7 +109,7 @@ class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public addEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: () => void) {
+    public addEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
         this.events.push((() => {switch (type) {
         case "interval": {
             const event: intervalEvent = {
