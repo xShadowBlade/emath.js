@@ -86,6 +86,8 @@ declare class boost {
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
      * @param value - The value of the boost (function).
+     * NOTE: There is a weird webpack(?) bug where the input can sometimes be 0 instead of the actual input.
+     * Use {@link E.clone}(input) to get the actual input.
      * @param order - The order of the boost (higher order go first)
      */
     setBoost(id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;

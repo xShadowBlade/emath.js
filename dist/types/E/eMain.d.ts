@@ -160,6 +160,19 @@ declare const E: {
     formatST(value: DecimalSource, acc?: number, max?: number, type?: string): string;
     formatGain(value: DecimalSource, gain: DecimalSource): string;
     toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
+    /**
+     * Normalizes the Decimal instance. Helps with a webpack bug .-.
+     * @param {Decimal} x - The Decimal instance to normalize
+     * @returns The normalized decimal
+     */
+    normalizeFromComponents(x: Decimal): Decimal;
+    /**
+     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * @alias Decimal.normalizeFromComponents
+     * @param x - The number to clone
+     * @returns - The cloned number
+     */
+    clone(x: Decimal): Decimal;
 };
 type E = Decimal;
 export { E, DecimalSource as ESource };

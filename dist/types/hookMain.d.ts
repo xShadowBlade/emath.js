@@ -136,6 +136,8 @@ declare const eMathWeb: {
         formatST(value: import("./E/e").DecimalSource, acc?: number | undefined, max?: number | undefined, type?: string | undefined): string;
         formatGain(value: import("./E/e").DecimalSource, gain: import("./E/e").DecimalSource): string;
         toRoman(value: import("./E/e").DecimalSource, max: import("./E/e").DecimalSource): string | import("./E/e").default;
+        normalizeFromComponents(x: import("./E/e").default): import("./E/e").default;
+        clone(x: import("./E/e").default): import("./E/e").default;
     };
     classes: {
         /**

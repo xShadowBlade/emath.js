@@ -73,14 +73,15 @@ class eventManager {
         const currentTime = Date.now();
         for (let i = 0; i < this.events.length; i++) {
             const event = this.events[i];
-            const dt = currentTime - event.timeCreated;
             if (event.type === "interval") {
                 // If interval
                 if (currentTime - (event as intervalEvent).intervalLast >= event.delay) {
+                    const dt = currentTime - (event as intervalEvent).intervalLast;
                     event.callbackFn(dt);
                     (event as intervalEvent).intervalLast = currentTime;
                 }
             } else if (event.type === "timeout") {
+                const dt = currentTime - event.timeCreated;
                 // If timeout
                 if (currentTime - event.timeCreated >= event.delay) {
                     event.callbackFn(dt);

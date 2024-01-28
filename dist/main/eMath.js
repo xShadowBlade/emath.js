@@ -3965,13 +3965,20 @@ var Decimal = class _Decimal {
   }
   /**
    * Creates a clone of the E instance.
-   *
-   * @function
-   * @name clone
+   * @deprecated
    * @returns {Decimal} A EClone instance that is a clone of the original.
    */
   clone() {
     return this;
+  }
+  /**
+   * Creates a clone of the E instance. Helps with a webpack(?) bug
+   * @alias Decimal.normalizeFromComponents
+   * @param x - The number to clone
+   * @returns - The cloned number
+   */
+  static clone(x) {
+    return _Decimal.fromComponents(x.sign, x.layer, x.mag);
   }
   /**
    * Performs modular arithmetic on the DecimalClone instance.
@@ -4165,6 +4172,15 @@ var Decimal = class _Decimal {
   }
   static toRoman(value, max) {
     return new _Decimal(value).toRoman(max);
+  }
+  /**
+   * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
+   * @alias Decimal.clone
+   * @param {Decimal} x - The Decimal instance to normalize
+   * @returns The normalized decimal
+   */
+  static normalizeFromComponents(x) {
+    return _Decimal.fromComponents(x.sign, x.layer, x.mag);
   }
 };
 var ST_NAMES = [
@@ -5128,12 +5144,12 @@ var boost = class {
    */
   calculate(base = this.baseEffect) {
     let output = E(base);
-    const boosts = this.boostArray;
-    boosts.sort((a, b) => a.order - b.order);
+    let boosts = this.boostArray;
+    boosts = boosts.sort((a, b) => a.order - b.order);
     for (let i = 0; i < boosts.length; i++) {
       output = boosts[i].value(output);
     }
-    return output;
+    return E.normalizeFromComponents(output);
   }
 };
 
@@ -5224,8 +5240,8 @@ var currencyStatic = class {
    * @returns The new currency value after applying the boost.
    */
   gain(dt = 1e3) {
-    this.value = this.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
-    return this.value;
+    this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
+    return this.pointer.value;
   }
   /**
    * Adds an upgrade to the upgrades array.

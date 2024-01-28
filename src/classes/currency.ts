@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+// import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { boost } from "./boost";
 
@@ -99,22 +99,16 @@ class currency {
     /**
      * The current value of the currency.
      */
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Type(() => E)
     public value: E;
 
     /**
      * An array that represents upgrades and their levels.
      */
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Type(() => upgradeData)
     public upgrades: upgradeData[];
 
     /**
      * A boost object that affects the currency gain.
      */
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Type(() => boost)
     public boost: boost;
 
     /**
@@ -197,9 +191,10 @@ class currencyStatic {
      * @returns The new currency value after applying the boost.
      */
     public gain (dt: ESource = 1000): E {
-        // console.log(this.boost.calculate(), E(dt).div(1000), this.boost.calculate().mul(E(dt).div(1000)));
-        this.value = this.value.add(this.boost.calculate().mul(E(dt).div(1000)));
-        return this.value;
+        // console.log("boosts", this.boost, this.boost.calculate(), this.boost.calculate().mul(E(dt).div(1000)));
+        this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1000)));
+        // console.log("pointer value", this.pointer.value);
+        return this.pointer.value;
     }
 
     /**

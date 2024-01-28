@@ -395,12 +395,17 @@ declare class Decimal {
     static format(e: DecimalSource, acc?: number, max?: number): string;
     /**
      * Creates a clone of the E instance.
-     *
-     * @function
-     * @name clone
+     * @deprecated
      * @returns {Decimal} A EClone instance that is a clone of the original.
      */
     clone(): Decimal;
+    /**
+     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * @alias Decimal.normalizeFromComponents
+     * @param x - The number to clone
+     * @returns - The cloned number
+     */
+    static clone(x: Decimal): Decimal;
     /**
      * Performs modular arithmetic on the DecimalClone instance.
      *
@@ -486,5 +491,12 @@ declare class Decimal {
      */
     toRoman(max?: DecimalSource): string | Decimal;
     static toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
+    /**
+     * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
+     * @alias Decimal.clone
+     * @param {Decimal} x - The Decimal instance to normalize
+     * @returns The normalized decimal
+     */
+    static normalizeFromComponents(x: Decimal): Decimal;
 }
 export default Decimal;

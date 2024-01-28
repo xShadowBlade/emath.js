@@ -3288,13 +3288,21 @@ class Decimal {
 
     /**
      * Creates a clone of the E instance.
-     *
-     * @function
-     * @name clone
+     * @deprecated
      * @returns {Decimal} A EClone instance that is a clone of the original.
      */
     public clone (): Decimal {
         return this;
+    }
+
+    /**
+     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * @alias Decimal.normalizeFromComponents
+     * @param x - The number to clone
+     * @returns - The cloned number
+     */
+    public static clone (x: Decimal): Decimal {
+        return Decimal.fromComponents(x.sign, x.layer, x.mag);
     }
 
     /**
@@ -3460,6 +3468,16 @@ class Decimal {
     }
     public static toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
         return new Decimal(value).toRoman(max);
+    }
+
+    /**
+     * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
+     * @alias Decimal.clone
+     * @param {Decimal} x - The Decimal instance to normalize
+     * @returns The normalized decimal
+     */
+    public static normalizeFromComponents (x: Decimal): Decimal {
+        return Decimal.fromComponents(x.sign, x.layer, x.mag);
     }
 }
 

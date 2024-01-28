@@ -63,15 +63,11 @@ class boost {
     /**
      * An array of boost objects.
      */
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Type(() => boostObject)
     public boostArray: boostObject[];
 
     /**
      * The base effect value.
      */
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Type(() => E)
     public baseEffect: E;
 
     /**
@@ -143,7 +139,9 @@ class boost {
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
-     * @param value - The value of the boost (function).
+     * @param value - The value of the boost (function). 
+     * NOTE: There is a weird webpack(?) bug where the input can sometimes be 0 instead of the actual input.
+     * Use {@link E.clone}(input) to get the actual input.
      * @param order - The order of the boost (higher order go first)
      */
     public setBoost (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
@@ -195,13 +193,19 @@ class boost {
      */
     public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);
-        const boosts = this.boostArray;
+        let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
-        boosts.sort((a: boostObject, b: boostObject) => a.order - b.order);
+        boosts = boosts.sort((a: boostObject, b: boostObject) => a.order - b.order);
+        // console.log(boosts);
         for (let i = 0; i < boosts.length; i++) {
+            // console.log(`boostint${i}`, output, boosts[i].value(output));
             output = boosts[i].value(output);
         }
-        return output;
+        // console.log("boosts out", output);
+        // return output.normalizeFromComponents(); // webpack is goofy af
+        // return E.fromComponents(output.sign, output.layer, output.mag);
+        return E.normalizeFromComponents(output);
+        // return E(122); // test
     }
 }
 

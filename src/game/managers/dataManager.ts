@@ -296,7 +296,7 @@ class dataManager {
         console.log("Temp", templateClasses);
 
         /**
-         * Compares two arrays in any order. If they have the same elements, returns true.
+         * Compares two arrays. If they have the same elements, returns true.
          * @param arr1 - The first array.
          * @param arr2 - The second array.
          * @returns Whether the arrays are the same.
