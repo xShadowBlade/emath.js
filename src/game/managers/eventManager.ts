@@ -47,14 +47,20 @@ const eventManagerDefaultConfig: eventManagerConfig = {
 };
 
 class eventManager {
-    private events: (intervalEvent | timeoutEvent)[];
+    // protected events: (intervalEvent | timeoutEvent)[];
+    protected events: {
+        [key: string]: (intervalEvent | timeoutEvent);
+    };
 
-    private static configManager = new configManager(eventManagerDefaultConfig);
+    protected static configManager = new configManager(eventManagerDefaultConfig);
     public config: eventManagerConfig;
 
+    /**
+     * @param config - The config to use for this event manager.
+     */
     constructor (config?: eventManagerConfig) {
         this.config = eventManager.configManager.parse(config);
-        this.events = [];
+        this.events = {};
         if (this.config.autoAddInterval) {
             if (this.config.pixiApp) {
                 this.config.pixiApp.ticker.add(() => {
@@ -69,10 +75,13 @@ class eventManager {
         }
     }
 
-    private tickerFunction () {
+    /**
+     * The function that is called every frame, executes all events.
+     */
+    protected tickerFunction () {
         const currentTime = Date.now();
-        for (let i = 0; i < this.events.length; i++) {
-            const event = this.events[i];
+        for (const event of Object.values(this.events)) {
+            // const event = this.events[i];
             if (event.type === "interval") {
                 // If interval
                 if (currentTime - (event as intervalEvent).intervalLast >= event.delay) {
@@ -85,16 +94,17 @@ class eventManager {
                 // If timeout
                 if (currentTime - event.timeCreated >= event.delay) {
                     event.callbackFn(dt);
-                    this.events.splice(i, 1);
-                    i--;
+                    delete this.events[event.name];
+                    // this.events.splice(i, 1);
+                    // i--;
                 }
             }
         }
     }
 
     /**
-     * Adds a new event to the event system.
-     * @param name - The name of the event.
+     * Adds a new event or changes an existing event to the event system.
+     * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
      * @param type - The type of the event, either "interval" or "timeout".
      * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
      * @param callbackFn - The callback function to execute when the event triggers.
@@ -110,34 +120,50 @@ class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public addEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
-        this.events.push((() => {switch (type) {
-        case "interval": {
-            const event: intervalEvent = {
-                name,
-                type,
-                delay: typeof delay === "number" ? delay : delay.toNumber(),
-                callbackFn,
-                timeCreated: Date.now(),
-                intervalLast: Date.now(),
-            };
-            return event;
-        // eslint-disable-next-line no-unreachable
-        }; break;
-        case "timeout":
-        default: {
-            const event: timeoutEvent = {
-                name,
-                type,
-                delay: typeof delay === "number" ? delay : delay.toNumber(),
-                callbackFn,
-                timeCreated: Date.now(),
-            };
+    public setEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
+        this.events[name] = (() => {
+            switch (type) {
+            case "interval": {
+                const event: intervalEvent = {
+                    name,
+                    type,
+                    delay: typeof delay === "number" ? delay : delay.toNumber(),
+                    callbackFn,
+                    timeCreated: Date.now(),
+                    intervalLast: Date.now(),
+                };
+                return event;
+            // eslint-disable-next-line no-unreachable
+            }; break;
+            case "timeout": default: {
+                const event: timeoutEvent = {
+                    name,
+                    type,
+                    delay: typeof delay === "number" ? delay : delay.toNumber(),
+                    callbackFn,
+                    timeCreated: Date.now(),
+                };
 
-            return event;
-        }
-        }})());
+                return event;
+            }
+            }
+        })();
     };
+
+    /**
+     * Adds a new event
+     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @alias eventManager.setEvent
+     */
+    public addEvent = this.setEvent;
+
+    /**
+     * Removes an event from the event system.
+     * @param name - The name of the event to remove.
+     */
+    public removeEvent (name: string) {
+        delete this.events[name];
+    }
 };
 
-export { eventManager };
+export { eventManager, eventManagerConfig };

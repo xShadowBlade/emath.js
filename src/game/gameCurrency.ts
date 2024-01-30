@@ -37,6 +37,14 @@ class gameCurrency {
     get value (): E {
         return this.data.value;
     }
+
+    /**
+     * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
+     * @param currencyPointer - A function or pointer that returns the current currency value.
+     */
+    public updateDataPointer (currencyPointer: (() => currency) | currency): void {
+        this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+    }
 }
 
 class gameCurrencyGroup {

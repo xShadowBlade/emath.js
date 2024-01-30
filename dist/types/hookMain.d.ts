@@ -8,6 +8,72 @@ declare const eMathWeb: {
      */
     E: {
         (x?: import("./E/e").DecimalSource | undefined): import("./E/e").default;
+        formats: {
+            toSubscript: (value: number) => string;
+            toSuperscript: (value: number) => string;
+            formatST: (ex: import("./E/e").DecimalSource, acc?: number | undefined, max?: number | undefined, type?: string | undefined) => string;
+            format: (ex: import("./E/e").DecimalSource, acc?: number | undefined, max?: number | undefined, type?: string | undefined) => string;
+            formatGain: (amt: import("./E/e").DecimalSource, gain: import("./E/e").DecimalSource) => string;
+            formatTime: (ex: import("./E/e").DecimalSource, acc?: number | undefined, type?: string | undefined) => string;
+            formatReduction: (ex: import("./E/e").DecimalSource) => string;
+            formatPercent: (ex: import("./E/e").DecimalSource) => string;
+            formatMult: (ex: import("./E/e").DecimalSource, acc?: number | undefined) => string;
+            expMult: (a: import("./E/e").DecimalSource, b: import("./E/e").DecimalSource, base?: number | undefined) => import("./E/e").default;
+            metric: (num: import("./E/e").DecimalSource, type: number) => string; /**
+             * @deprecated Use `import { attribute } from "emath.js"` instead.
+             */
+            ev: (num: import("./E/e").DecimalSource, c2?: boolean | undefined) => string;
+            omega: {
+                config: {
+                    greek: string;
+                    infinity: string;
+                };
+                format(value: import("./E/e").default): string;
+            }; /**
+             * @deprecated Use `import { gridCell } from "emath.js"` instead.
+             */
+            omega_short: {
+                config: {
+                    greek: string;
+                    infinity: string;
+                };
+                format(value: import("./E/e").default): string;
+            };
+            elemental: {
+                config: {
+                    element_lists: string[][];
+                };
+                getOffset(group: number): number;
+                getAbbreviation(group: number, progress: number): string;
+                beyondOg(x: number): string; /**
+                //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
+                //      */
+                abbreviationLength(group: number): number;
+                getAbbreviationAndValue(x: import("./E/e").default): (string | import("./E/e").default)[];
+                formatElementalPart(abbreviation: string, n: import("./E/e").default): string;
+                format(value: import("./E/e").default, acc: number): string;
+            };
+            old_sc: {
+                format(ex: import("./E/e").DecimalSource, acc: number): string;
+            };
+            eng: {
+                format(ex: import("./E/e").DecimalSource, acc: number): string;
+            };
+            mixed_sc: {
+                format(ex: import("./E/e").DecimalSource, acc: number, max: number): string;
+            };
+            layer: {
+                layers: string[];
+                format(ex: import("./E/e").DecimalSource, acc: number, max: number): string;
+            };
+            standard: {
+                tier1(x: number): string;
+                tier2(x: number): string;
+            };
+            inf: {
+                format(ex: import("./E/e").DecimalSource, acc: number, max: number): string;
+            };
+        };
         readonly dZero: import("./E/e").default;
         readonly dOne: import("./E/e").default;
         readonly dNegOne: import("./E/e").default;
@@ -26,9 +92,7 @@ declare const eMathWeb: {
         fromNumber(value: number): import("./E/e").default;
         fromString(value: string): import("./E/e").default;
         fromValue(value: import("./E/e").DecimalSource): import("./E/e").default;
-        fromValue_noAlloc(value: import("./E/e").DecimalSource): Readonly<import("./E/e").default>; /**
-        //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
-        //      */
+        fromValue_noAlloc(value: import("./E/e").DecimalSource): Readonly<import("./E/e").default>;
         abs(value: import("./E/e").DecimalSource): import("./E/e").default;
         neg(value: import("./E/e").DecimalSource): import("./E/e").default;
         negate(value: import("./E/e").DecimalSource): import("./E/e").default;
@@ -38,9 +102,7 @@ declare const eMathWeb: {
         round(value: import("./E/e").DecimalSource): import("./E/e").default;
         floor(value: import("./E/e").DecimalSource): import("./E/e").default;
         ceil(value: import("./E/e").DecimalSource): import("./E/e").default;
-        trunc(value: import("./E/e").DecimalSource): import("./E/e").default; /**
-         * Attach eMath to the window object
-         */
+        trunc(value: import("./E/e").DecimalSource): import("./E/e").default;
         add(value: import("./E/e").DecimalSource, other: import("./E/e").DecimalSource): import("./E/e").default;
         plus(value: import("./E/e").DecimalSource, other: import("./E/e").DecimalSource): import("./E/e").default;
         sub(value: import("./E/e").DecimalSource, other: import("./E/e").DecimalSource): import("./E/e").default;

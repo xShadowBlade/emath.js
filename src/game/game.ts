@@ -39,42 +39,6 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
     initIntervalBasedManagers: true,
 };
 
-// class gameStatic {
-//     public staticData: {
-//         [key: string]: any;
-//     };
-
-//     constructor (staticData?: any) {
-//         this.staticData = staticData ? staticData : {};
-//     }
-
-//     public set (name: string, value: any): void {
-//         this.staticData[name] = value;
-//     }
-
-//     public get (name: string): any {
-//         return this.staticData[name];
-//     }
-// }
-
-// class gameData {
-//     public data: {
-//         [key: string]: any;
-//     };
-
-//     constructor (data?: any) {
-//         this.data = data ? data : {};
-//     }
-
-//     public set (name: string, value: any): void {
-//         this.data[name] = value;
-//     }
-
-//     public get (name: string): any {
-//         return this.data[name];
-//     }
-// }
-
 /**
  * Represents a game instance.
  */

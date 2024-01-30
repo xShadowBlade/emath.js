@@ -338,7 +338,7 @@ var require_Reflect = __commonJS({
           }
           return provider.OrdinaryOwnMetadataKeys(O, P);
         }
-        function Type3(x) {
+        function Type(x) {
           if (x === null)
             return 1;
           switch (typeof x) {
@@ -371,7 +371,7 @@ var require_Reflect = __commonJS({
           return typeof x === "object" ? x !== null : typeof x === "function";
         }
         function ToPrimitive(input, PreferredType) {
-          switch (Type3(input)) {
+          switch (Type(input)) {
             case 0:
               return input;
             case 1:
@@ -451,7 +451,7 @@ var require_Reflect = __commonJS({
           return typeof argument === "function";
         }
         function IsPropertyKey(argument) {
-          switch (Type3(argument)) {
+          switch (Type(argument)) {
             case 3:
               return true;
             case 4:
@@ -1127,7 +1127,7 @@ var require_Reflect = __commonJS({
 // node_modules/lz-string/libs/lz-string.js
 var require_lz_string = __commonJS({
   "node_modules/lz-string/libs/lz-string.js"(exports, module2) {
-    var LZString2 = function() {
+    var LZString = function() {
       var f = String.fromCharCode;
       var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
       var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
@@ -1141,11 +1141,11 @@ var require_lz_string = __commonJS({
         }
         return baseReverseDic[alphabet][character];
       }
-      var LZString3 = {
+      var LZString2 = {
         compressToBase64: function(input) {
           if (input == null)
             return "";
-          var res = LZString3._compress(input, 6, function(a) {
+          var res = LZString2._compress(input, 6, function(a) {
             return keyStrBase64.charAt(a);
           });
           switch (res.length % 4) {
@@ -1165,14 +1165,14 @@ var require_lz_string = __commonJS({
             return "";
           if (input == "")
             return null;
-          return LZString3._decompress(input.length, 32, function(index) {
+          return LZString2._decompress(input.length, 32, function(index) {
             return getBaseValue(keyStrBase64, input.charAt(index));
           });
         },
         compressToUTF16: function(input) {
           if (input == null)
             return "";
-          return LZString3._compress(input, 15, function(a) {
+          return LZString2._compress(input, 15, function(a) {
             return f(a + 32);
           }) + " ";
         },
@@ -1181,13 +1181,13 @@ var require_lz_string = __commonJS({
             return "";
           if (compressed == "")
             return null;
-          return LZString3._decompress(compressed.length, 16384, function(index) {
+          return LZString2._decompress(compressed.length, 16384, function(index) {
             return compressed.charCodeAt(index) - 32;
           });
         },
         //compress into uint8array (UCS-2 big endian format)
         compressToUint8Array: function(uncompressed) {
-          var compressed = LZString3.compress(uncompressed);
+          var compressed = LZString2.compress(uncompressed);
           var buf = new Uint8Array(compressed.length * 2);
           for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
             var current_value = compressed.charCodeAt(i);
@@ -1199,7 +1199,7 @@ var require_lz_string = __commonJS({
         //decompress from uint8array (UCS-2 big endian format)
         decompressFromUint8Array: function(compressed) {
           if (compressed === null || compressed === void 0) {
-            return LZString3.decompress(compressed);
+            return LZString2.decompress(compressed);
           } else {
             var buf = new Array(compressed.length / 2);
             for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
@@ -1209,14 +1209,14 @@ var require_lz_string = __commonJS({
             buf.forEach(function(c) {
               result.push(f(c));
             });
-            return LZString3.decompress(result.join(""));
+            return LZString2.decompress(result.join(""));
           }
         },
         //compress into a string that is already URI encoded
         compressToEncodedURIComponent: function(input) {
           if (input == null)
             return "";
-          return LZString3._compress(input, 6, function(a) {
+          return LZString2._compress(input, 6, function(a) {
             return keyStrUriSafe.charAt(a);
           });
         },
@@ -1227,12 +1227,12 @@ var require_lz_string = __commonJS({
           if (input == "")
             return null;
           input = input.replace(/ /g, "+");
-          return LZString3._decompress(input.length, 32, function(index) {
+          return LZString2._decompress(input.length, 32, function(index) {
             return getBaseValue(keyStrUriSafe, input.charAt(index));
           });
         },
         compress: function(uncompressed) {
-          return LZString3._compress(uncompressed, 16, function(a) {
+          return LZString2._compress(uncompressed, 16, function(a) {
             return f(a);
           });
         },
@@ -1433,7 +1433,7 @@ var require_lz_string = __commonJS({
             return "";
           if (compressed == "")
             return null;
-          return LZString3._decompress(compressed.length, 32768, function(index) {
+          return LZString2._decompress(compressed.length, 32768, function(index) {
             return compressed.charCodeAt(index);
           });
         },
@@ -1575,17 +1575,17 @@ var require_lz_string = __commonJS({
           }
         }
       };
-      return LZString3;
+      return LZString2;
     }();
     if (typeof define === "function" && define.amd) {
       define(function() {
-        return LZString2;
+        return LZString;
       });
     } else if (typeof module2 !== "undefined" && module2 != null) {
-      module2.exports = LZString2;
+      module2.exports = LZString;
     } else if (typeof angular !== "undefined" && angular != null) {
       angular.module("LZString", []).factory("LZString", function() {
-        return LZString2;
+        return LZString;
       });
     }
   }
@@ -5270,6 +5270,649 @@ Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(
   E[prop] = e_default[prop];
 });
 
+// src/classes/boost.ts
+var boostObject = class {
+  // public index: number;
+  constructor(init) {
+    this.id = init.id;
+    this.name = init.name ?? "";
+    this.desc = init.desc ?? "";
+    this.value = init.value;
+    this.order = init.order ?? 99;
+  }
+};
+var boost = class {
+  /**
+   * Constructs a new boost manager.
+   * @param baseEffect - The base effect value to which boosts are applied.
+   * @param boosts - An array of boost objects to initialize with.
+   */
+  constructor(baseEffect = 1, boosts) {
+    /**
+     * @alias {@link boost.setBoost}
+     * @deprecated Use setBoost instead.
+     */
+    this.addBoost = this.setBoost;
+    boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
+    this.baseEffect = E(baseEffect);
+    this.boostArray = [];
+    if (boosts) {
+      boosts.forEach((boostObj) => {
+        this.boostArray.push(new boostObject(boostObj));
+      });
+    }
+  }
+  getBoosts(id, index) {
+    const boostList = [];
+    const indexList = [];
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
+        boostList.push(this.boostArray[i]);
+        indexList.push(i);
+      }
+    }
+    return index ? [boostList, indexList] : boostList;
+  }
+  /**
+   * Gets a boost object by its ID.
+   * @deprecated Use {@link boost.getBoosts} instead.
+   * @param id - The ID of the boost to retrieve.
+   * @returns The boost object if found, or null if not found.
+   */
+  getBoost(id) {
+    return this.getBoosts(id)[0] ?? null;
+  }
+  /**
+   * Removes a boost by its ID. Only removes the first instance of the id.
+   * @param id - The ID of the boost to remove.
+   */
+  removeBoost(id) {
+    for (let i = 0; i < this.boostArray.length; i++) {
+      if (id === this.boostArray[i].id) {
+        this.boostArray.splice(i, 1);
+        break;
+      }
+    }
+  }
+  setBoost(arg1, arg2, arg3, arg4, arg5) {
+    if (!arg1)
+      return;
+    if (typeof arg1 === "string") {
+      const id = arg1;
+      const name = arg2 ?? "";
+      const desc = arg3 ?? "";
+      const value = arg4 ?? ((e) => e);
+      const order = arg5;
+      const bCheck = this.getBoosts(id, true);
+      if (!bCheck[0][0]) {
+        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
+      } else {
+        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
+      }
+    } else {
+      arg1 = Array.isArray(arg1) ? arg1 : [arg1];
+      for (let i = 0; i < arg1.length; i++) {
+        const bCheck = this.getBoosts(arg1[i].id, true);
+        if (!bCheck[0][0]) {
+          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+        } else {
+          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
+        }
+      }
+    }
+  }
+  /**
+   * Calculates the cumulative effect of all boosts on the base effect.
+   * @param base - The base effect value to calculate with.
+   * @returns The calculated effect after applying boosts.
+   */
+  calculate(base = this.baseEffect) {
+    let output = E(base);
+    let boosts = this.boostArray;
+    boosts = boosts.sort((a, b) => a.order - b.order);
+    for (let i = 0; i < boosts.length; i++) {
+      output = boosts[i].value(output);
+    }
+    return E.normalizeFromComponents(output);
+  }
+};
+
+// src/classes/currency.ts
+var upgradeData = class {
+  constructor(init) {
+    this.id = init.id ?? -1;
+    this.level = init.level ? E(init.level) : E(1);
+  }
+};
+var upgradeStatic = class {
+  /**
+   * @param init - The upgrade object to initialize.
+   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+   */
+  constructor(init, dataPointer) {
+    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+    this.data = data;
+    this.id = init.id;
+    this.name = init.name;
+    this.costScaling = init.costScaling;
+    this.maxLevel = init.maxLevel;
+    this.effect = init.effect;
+  }
+  /**
+   * The current level of the upgrade.
+   * @returns The current level of the upgrade.
+   */
+  get level() {
+    return this.data.level;
+  }
+  set level(n) {
+    this.data.level = E(n);
+  }
+};
+var currency = class {
+  /**
+   * Constructs a new currency object with an initial value of 0.
+   */
+  constructor() {
+    this.value = E(0);
+    this.upgrades = [];
+    this.boost = new boost();
+  }
+};
+var currencyStatic = class {
+  /**
+   * @param pointer - A function or reference that returns the pointer of the data / frontend.
+   * @param defaultVal - The default value of the currency.
+   * @param defaultBoost - The default boost of the currency.
+   */
+  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
+    this.defaultVal = E(defaultVal);
+    this.defaultBoost = E(defaultBoost);
+    this.upgrades = [];
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
+    this.boost = new boost(defaultBoost);
+    this.pointer.value = this.defaultVal;
+  }
+  /**
+   * The current value of the currency.
+   * @returns The current value of the currency.
+   */
+  get value() {
+    return this.pointer.value;
+  }
+  set value(value) {
+    this.pointer.value = value;
+  }
+  /**
+   * Resets the currency and upgrade levels.
+   * @param resetCurrency - Whether to reset the currency value. Default is true.
+   * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+   */
+  reset(resetCurrency = true, resetUpgradeLevels = true) {
+    if (resetCurrency)
+      this.value = this.defaultVal;
+    if (resetUpgradeLevels) {
+      this.upgrades.forEach((upgrade2) => {
+        upgrade2.level = E(0);
+      });
+    }
+    ;
+  }
+  /**
+   * The new currency value after applying the boost.
+   * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+   * @returns The new currency value after applying the boost.
+   */
+  gain(dt = 1e3) {
+    this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
+    return this.pointer.value;
+  }
+  /**
+   * Adds an upgrade to the upgrades array.
+   * @param upgrades1 Upgrade to add
+   * @returns The upgrade object.
+   */
+  pointerAddUpgrade(upgrades1) {
+    const upgrades2 = new upgradeData(upgrades1);
+    this.pointer.upgrades.push(upgrades2);
+    return upgrades1;
+  }
+  /**
+   * Retrieves an upgrade object based on the provided id.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object if found, otherwise null.
+   */
+  getUpgrade(id) {
+    let upgrade2 = null;
+    if (id === void 0) {
+      return null;
+    } else if (typeof id == "number") {
+      upgrade2 = this.upgrades[id];
+    } else if (typeof id == "string") {
+      for (let i = 0; i < this.upgrades.length; i++) {
+        if (this.upgrades[i].id === id) {
+          upgrade2 = this.upgrades[i];
+          break;
+        }
+      }
+    }
+    return upgrade2;
+  }
+  /**
+   * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
+   * @param upgrades - An array of upgrade objects.
+   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+   */
+  addUpgrade(upgrades, runEffectInstantly = true) {
+    if (!Array.isArray(upgrades))
+      upgrades = [upgrades];
+    const upgradesDefault = [];
+    for (let i = 0; i < upgrades.length; i++) {
+      if (!upgrades[i].id)
+        upgrades[i].id = this.upgrades.length + i;
+      this.pointerAddUpgrade(upgrades[i]);
+      const upgrade2 = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+      if (runEffectInstantly)
+        upgrade2.effect(upgrade2.level, upgrade2);
+      upgradesDefault.push(upgrade2);
+    }
+    this.upgrades = this.upgrades.concat(upgradesDefault);
+  }
+  /**
+   * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
+   * @param id - The id of the upgrade to update.
+   * @param upgrade - The upgrade object to update.
+   */
+  updateUpgrade(id, upgrade2) {
+    const upgrade1 = this.getUpgrade(id);
+    if (upgrade1 === null)
+      return;
+    upgrade1.name = upgrade2.name ?? upgrade1.name;
+    upgrade1.costScaling = upgrade2.costScaling ?? upgrade1.costScaling;
+    upgrade1.maxLevel = upgrade2.maxLevel ?? upgrade1.maxLevel;
+    upgrade1.effect = upgrade2.effect ?? upgrade1.effect;
+  }
+  /**
+   * Calculates the cost and how many upgrades you can buy
+   *
+   * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+   * @param id - Index or ID of the upgrade
+   * @param target - How many to buy
+   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+   */
+  calculateUpgrade(id, target, el = false) {
+    target = E(target);
+    function calculateSum(f, b) {
+      let sum = E();
+      for (let n = E(0); n.lte(b); n = n.add(1)) {
+        sum = sum.add(f(n));
+      }
+      return sum;
+    }
+    function findHighestB(f, a, el1 = el) {
+      if (!el1) {
+        let left = E(0);
+        let right = E(1);
+        while (calculateSum(f, right).lt(a)) {
+          right = right.mul(2);
+        }
+        while (left.lt(right)) {
+          const mid = E.floor(left.add(right).div(2));
+          const sum = calculateSum(f, mid);
+          if (sum.lt(a)) {
+            left = mid.add(1);
+          } else {
+            right = mid;
+          }
+        }
+        return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
+      } else {
+        let left = E(0);
+        let right = target;
+        let result = E(0);
+        while (left.lessThanOrEqualTo(right)) {
+          const mid = left.plus(right).dividedBy(2).floor();
+          const value = f(mid);
+          if (value.lte(a)) {
+            result = mid;
+            left = mid.plus(1);
+          } else {
+            right = mid.minus(1);
+          }
+        }
+        return [result, result.gt(0) ? f(result) : E(0)];
+      }
+    }
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null)
+      return [E(0), E(0)];
+    return findHighestB(
+      (level) => upgrade2.costScaling(upgrade2.level.add(level)),
+      this.value
+    );
+  }
+  /**
+   * Buys an upgrade based on its ID or array position if enough currency is available.
+   * @param id - The ID or position of the upgrade to buy or upgrade.
+   * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
+   * @param target - The target level or quantity to reach for the upgrade.
+   * This represents how many upgrades to buy or upgrade.
+   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+   */
+  buyUpgrade(id, target) {
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null)
+      return false;
+    target = E(target);
+    target = upgrade2.level.add(target).lte(upgrade2.maxLevel) ? target : upgrade2.maxLevel.sub(upgrade2.level);
+    const maxAffordableQuantity = this.calculateUpgrade(
+      id,
+      target
+    );
+    if (maxAffordableQuantity[0].lte(0)) {
+      return false;
+    }
+    this.value = this.value.sub(maxAffordableQuantity[1]);
+    upgrade2.level = upgrade2.level.add(maxAffordableQuantity[0]);
+    if (typeof upgrade2.effect === "function") {
+      upgrade2.effect(upgrade2.level, upgrade2);
+    }
+    return true;
+  }
+};
+
+// src/classes/attribute.ts
+var attribute = class {
+  /**
+   * Constructs a static attribute with an initial effect.
+   * @param initial - The inital value of the attribute.
+   */
+  constructor(initial) {
+    this.value = E(initial);
+  }
+};
+var attributeStatic = class {
+  /**
+   * Constructs a new instance of the Attribute class.
+   * @param pointer - A function or an instance of the attribute class.
+   * @param initial - The initial value of the attribute.
+   * @param useBoost - Indicates whether to use boost for the attribute.
+   */
+  constructor(pointer, useBoost = true, initial = 0) {
+    this.initial = E(initial);
+    this.pointer = typeof pointer === "function" ? pointer() : pointer;
+    this.boost = new boost(this.initial);
+  }
+  /**
+   * Gets the value of the attribute, and also updates the value stored.
+   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+   * @returns The calculated value of the attribute.
+   */
+  get value() {
+    if (this.boost) {
+      this.pointer.value = this.boost.calculate();
+    }
+    return this.pointer.value;
+  }
+  /**
+   * Sets the value of the attribute.
+   * NOTE: This setter should not be used when boost is enabled.
+   * @param value - The value to set the attribute to.
+   */
+  set value(value) {
+    if (this.boost) {
+      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+    }
+    this.pointer.value = value;
+  }
+};
+
+// src/game/managers/configManager.ts
+var configManager = class {
+  constructor(configOptionTemplate) {
+    this.configOptionTemplate = configOptionTemplate;
+  }
+  /**
+   * Parses the given configuration object and returns a new object with default values for any missing options.
+   * @param config - The configuration object to parse.
+   * @returns A new object with default values for any missing options.
+   */
+  parse(config) {
+    if (typeof config === "undefined") {
+      return this.configOptionTemplate;
+    }
+    const parseObject = (obj, template) => {
+      for (const key in template) {
+        if (typeof obj[key] === "undefined") {
+          obj[key] = template[key];
+        } else if (typeof obj[key] === "object" && typeof template[key] === "object") {
+          obj[key] = parseObject(obj[key], template[key]);
+        }
+      }
+      return obj;
+    };
+    return parseObject(config, this.configOptionTemplate);
+  }
+  get options() {
+    return this.configOptionTemplate;
+  }
+};
+
+// src/game/managers/keyManager.ts
+var keyManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30,
+  pixiApp: void 0
+};
+var keyManager = class _keyManager {
+  static {
+    this.configManager = new configManager(keyManagerDefaultConfig);
+  }
+  constructor(config) {
+    this.keysPressed = [];
+    this.binds = [];
+    this.tickers = [];
+    this.config = _keyManager.configManager.parse(config);
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add((dt) => {
+          for (const ticker of this.tickers) {
+            ticker(dt);
+          }
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          for (const ticker of this.tickers) {
+            ticker(1e3 / fps);
+          }
+        }, 1e3 / fps);
+      }
+    }
+    if (typeof document === "undefined") {
+      return;
+    }
+    document.addEventListener("keydown", (e) => this.logKey(e, true));
+    document.addEventListener("keyup", (e) => this.logKey(e, false));
+  }
+  logKey(event, type) {
+    const key = event.key;
+    if (type && !this.keysPressed.includes(key))
+      this.keysPressed.push(key);
+    else if (!type && this.keysPressed.includes(key))
+      this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+  }
+  /**
+   * Checks if a specific key binding is currently being pressed.
+   * @param name - The name of the key binding to check.
+   * @returns True if the key binding is being pressed, otherwise false.
+   */
+  isPressing(name) {
+    for (let i = 0; i < this.binds.length; i++) {
+      const current = this.binds[i];
+      if (current.name === name) {
+        return this.keysPressed.includes(current.key);
+      }
+    }
+    return false;
+  }
+  /**
+   * Adds or updates a key binding.
+   * @param name - The name of the key binding.
+   * @param key - The key associated with the binding.
+   * @param [fn] - The function executed when the binding is pressed
+   * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
+   */
+  addKey(name, key, fn) {
+    for (let i = 0; i < this.binds.length; i++) {
+      const current = this.binds[i];
+      if (current.name === name) {
+        current.key = key;
+        return;
+      }
+    }
+    this.binds.push({ name, key, fn });
+    if (typeof fn == "function") {
+      this.tickers.push((dt) => {
+        if (this.isPressing(name))
+          fn(dt);
+      });
+    }
+  }
+  /**
+   * Adds or updates multiple key bindings.
+   * @param keysToAdd - An array of key binding objects.
+   * @example
+   * addKeys([
+   *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
+   *     // Add more key bindings here...
+   * ]);
+   */
+  addKeys(keysToAdd) {
+    for (const keyBinding of keysToAdd) {
+      this.addKey(keyBinding.name, keyBinding.key, keyBinding.fn);
+    }
+  }
+};
+
+// src/game/managers/eventManager.ts
+var eventManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30,
+  pixiApp: void 0
+};
+var eventManager = class _eventManager {
+  /**
+   * @param config - The config to use for this event manager.
+   */
+  constructor(config) {
+    /**
+     * Adds a new event
+     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @alias eventManager.setEvent
+     */
+    this.addEvent = this.setEvent;
+    this.config = _eventManager.configManager.parse(config);
+    this.events = {};
+    if (this.config.autoAddInterval) {
+      if (this.config.pixiApp) {
+        this.config.pixiApp.ticker.add(() => {
+          this.tickerFunction();
+        });
+      } else {
+        const fps = this.config.fps ? this.config.fps : 30;
+        setInterval(() => {
+          this.tickerFunction();
+        }, 1e3 / fps);
+      }
+    }
+  }
+  static {
+    this.configManager = new configManager(eventManagerDefaultConfig);
+  }
+  /**
+   * The function that is called every frame, executes all events.
+   */
+  tickerFunction() {
+    const currentTime = Date.now();
+    for (const event of Object.values(this.events)) {
+      if (event.type === "interval") {
+        if (currentTime - event.intervalLast >= event.delay) {
+          const dt = currentTime - event.intervalLast;
+          event.callbackFn(dt);
+          event.intervalLast = currentTime;
+        }
+      } else if (event.type === "timeout") {
+        const dt = currentTime - event.timeCreated;
+        if (currentTime - event.timeCreated >= event.delay) {
+          event.callbackFn(dt);
+          delete this.events[event.name];
+        }
+      }
+    }
+  }
+  /**
+   * Adds a new event or changes an existing event to the event system.
+   * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
+   * @param type - The type of the event, either "interval" or "timeout".
+   * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
+   * @param callbackFn - The callback function to execute when the event triggers.
+   * @example
+   * const myEventManger = new eventManager();
+   * // Add an interval event that executes every 2 seconds.
+   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
+   *    console.log("Interval event executed.");
+   * });
+   *
+   * // Add a timeout event that executes after 5 seconds.
+   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
+   *   console.log("Timeout event executed.");
+   * });
+   */
+  setEvent(name, type, delay, callbackFn) {
+    this.events[name] = (() => {
+      switch (type) {
+        case "interval":
+          {
+            const event = {
+              name,
+              type,
+              delay: typeof delay === "number" ? delay : delay.toNumber(),
+              callbackFn,
+              timeCreated: Date.now(),
+              intervalLast: Date.now()
+            };
+            return event;
+          }
+          ;
+          break;
+        case "timeout":
+        default: {
+          const event = {
+            name,
+            type,
+            delay: typeof delay === "number" ? delay : delay.toNumber(),
+            callbackFn,
+            timeCreated: Date.now()
+          };
+          return event;
+        }
+      }
+    })();
+  }
+  /**
+   * Removes an event from the event system.
+   * @param name - The name of the event to remove.
+   */
+  removeEvent(name) {
+    delete this.events[name];
+  }
+};
+
+// src/game/managers/dataManager.ts
+var import_lz_string = __toESM(require_lz_string());
+
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
 var TransformationType;
 (function(TransformationType2) {
@@ -5971,37 +6614,6 @@ var ClassTransformer = (
   }()
 );
 
-// node_modules/class-transformer/esm5/decorators/expose.decorator.js
-function Expose(options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return function(object, propertyName) {
-    defaultMetadataStorage.addExposeMetadata({
-      target: object instanceof Function ? object : object.constructor,
-      propertyName,
-      options
-    });
-  };
-}
-
-// node_modules/class-transformer/esm5/decorators/type.decorator.js
-function Type(typeFunction, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return function(target, propertyName) {
-    var reflectedType = Reflect.getMetadata("design:type", target, propertyName);
-    defaultMetadataStorage.addTypeMetadata({
-      target: target.constructor,
-      propertyName,
-      reflectedType,
-      typeFunction,
-      options
-    });
-  };
-}
-
 // node_modules/class-transformer/esm5/index.js
 var classTransformer = new ClassTransformer();
 function instanceToPlain(object, options) {
@@ -6011,631 +6623,7 @@ function plainToInstance(cls, plain, options) {
   return classTransformer.plainToInstance(cls, plain, options);
 }
 
-// src/classes/boost.ts
-var boostObject = class {
-  // public index: number;
-  constructor(init) {
-    this.id = init.id;
-    this.name = init.name ?? "";
-    this.desc = init.desc ?? "";
-    this.value = init.value;
-    this.order = init.order ?? 99;
-  }
-};
-var boost = class {
-  /**
-   * Constructs a new boost manager.
-   * @param baseEffect - The base effect value to which boosts are applied.
-   * @param boosts - An array of boost objects to initialize with.
-   */
-  constructor(baseEffect = 1, boosts) {
-    /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
-     */
-    this.addBoost = this.setBoost;
-    boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    this.baseEffect = E(baseEffect);
-    this.boostArray = [];
-    if (boosts) {
-      boosts.forEach((boostObj) => {
-        this.boostArray.push(new boostObject(boostObj));
-      });
-    }
-  }
-  getBoosts(id, index) {
-    const boostList = [];
-    const indexList = [];
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
-        boostList.push(this.boostArray[i]);
-        indexList.push(i);
-      }
-    }
-    return index ? [boostList, indexList] : boostList;
-  }
-  /**
-   * Gets a boost object by its ID.
-   * @deprecated Use {@link boost.getBoosts} instead.
-   * @param id - The ID of the boost to retrieve.
-   * @returns The boost object if found, or null if not found.
-   */
-  getBoost(id) {
-    return this.getBoosts(id)[0] ?? null;
-  }
-  /**
-   * Removes a boost by its ID. Only removes the first instance of the id.
-   * @param id - The ID of the boost to remove.
-   */
-  removeBoost(id) {
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (id === this.boostArray[i].id) {
-        this.boostArray.splice(i, 1);
-        break;
-      }
-    }
-  }
-  setBoost(arg1, arg2, arg3, arg4, arg5) {
-    if (!arg1)
-      return;
-    if (typeof arg1 === "string") {
-      const id = arg1;
-      const name = arg2 ?? "";
-      const desc = arg3 ?? "";
-      const value = arg4 ?? ((e) => e);
-      const order = arg5;
-      const bCheck = this.getBoosts(id, true);
-      if (!bCheck[0][0]) {
-        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
-      } else {
-        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
-      }
-    } else {
-      arg1 = Array.isArray(arg1) ? arg1 : [arg1];
-      for (let i = 0; i < arg1.length; i++) {
-        const bCheck = this.getBoosts(arg1[i].id, true);
-        if (!bCheck[0][0]) {
-          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
-        } else {
-          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
-        }
-      }
-    }
-  }
-  /**
-   * Calculates the cumulative effect of all boosts on the base effect.
-   * @param base - The base effect value to calculate with.
-   * @returns The calculated effect after applying boosts.
-   */
-  calculate(base = this.baseEffect) {
-    let output = E(base);
-    let boosts = this.boostArray;
-    boosts = boosts.sort((a, b) => a.order - b.order);
-    for (let i = 0; i < boosts.length; i++) {
-      output = boosts[i].value(output);
-    }
-    return E.normalizeFromComponents(output);
-  }
-};
-
-// src/classes/currency.ts
-var upgradeData = class {
-  constructor(init) {
-    this.id = init.id ?? -1;
-    this.level = init.level ? E(init.level) : E(1);
-  }
-};
-var upgradeStatic = class {
-  /**
-   * @param init - The upgrade object to initialize.
-   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-   */
-  constructor(init, dataPointer) {
-    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    this.data = data;
-    this.id = init.id;
-    this.name = init.name;
-    this.costScaling = init.costScaling;
-    this.maxLevel = init.maxLevel;
-    this.effect = init.effect;
-  }
-  /**
-   * The current level of the upgrade.
-   * @returns The current level of the upgrade.
-   */
-  get level() {
-    return this.data.level;
-  }
-  set level(n) {
-    this.data.level = E(n);
-  }
-};
-var currency = class {
-  /**
-   * Constructs a new currency object with an initial value of 0.
-   */
-  constructor() {
-    this.value = E(0);
-    this.upgrades = [];
-    this.boost = new boost();
-  }
-};
-var currencyStatic = class {
-  /**
-   * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param defaultVal - The default value of the currency.
-   * @param defaultBoost - The default boost of the currency.
-   */
-  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
-    this.defaultVal = E(defaultVal);
-    this.defaultBoost = E(defaultBoost);
-    this.upgrades = [];
-    this.pointer = typeof pointer === "function" ? pointer() : pointer;
-    this.boost = new boost(defaultBoost);
-    this.pointer.value = this.defaultVal;
-  }
-  /**
-   * The current value of the currency.
-   * @returns The current value of the currency.
-   */
-  get value() {
-    return this.pointer.value;
-  }
-  set value(value) {
-    this.pointer.value = value;
-  }
-  /**
-   * Resets the currency and upgrade levels.
-   * @param resetCurrency - Whether to reset the currency value. Default is true.
-   * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
-   */
-  reset(resetCurrency = true, resetUpgradeLevels = true) {
-    if (resetCurrency)
-      this.value = this.defaultVal;
-    if (resetUpgradeLevels) {
-      this.upgrades.forEach((upgrade2) => {
-        upgrade2.level = E(0);
-      });
-    }
-    ;
-  }
-  /**
-   * The new currency value after applying the boost.
-   * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-   * @returns The new currency value after applying the boost.
-   */
-  gain(dt = 1e3) {
-    this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
-    return this.pointer.value;
-  }
-  /**
-   * Adds an upgrade to the upgrades array.
-   * @param upgrades1 Upgrade to add
-   * @returns The upgrade object.
-   */
-  pointerAddUpgrade(upgrades1) {
-    const upgrades2 = new upgradeData(upgrades1);
-    this.pointer.upgrades.push(upgrades2);
-    return upgrades1;
-  }
-  /**
-   * Retrieves an upgrade object based on the provided id.
-   * @param id - The id of the upgrade to retrieve.
-   * @returns The upgrade object if found, otherwise null.
-   */
-  getUpgrade(id) {
-    let upgrade2 = null;
-    if (id === void 0) {
-      return null;
-    } else if (typeof id == "number") {
-      upgrade2 = this.upgrades[id];
-    } else if (typeof id == "string") {
-      for (let i = 0; i < this.upgrades.length; i++) {
-        if (this.upgrades[i].id === id) {
-          upgrade2 = this.upgrades[i];
-          break;
-        }
-      }
-    }
-    return upgrade2;
-  }
-  /**
-   * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
-   * @param upgrades - An array of upgrade objects.
-   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
-   */
-  addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades))
-      upgrades = [upgrades];
-    const upgradesDefault = [];
-    for (let i = 0; i < upgrades.length; i++) {
-      if (!upgrades[i].id)
-        upgrades[i].id = this.upgrades.length + i;
-      this.pointerAddUpgrade(upgrades[i]);
-      const upgrade2 = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
-      if (runEffectInstantly)
-        upgrade2.effect(upgrade2.level, upgrade2);
-      upgradesDefault.push(upgrade2);
-    }
-    this.upgrades = this.upgrades.concat(upgradesDefault);
-  }
-  /**
-   * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
-   * @param id - The id of the upgrade to update.
-   * @param upgrade - The upgrade object to update.
-   */
-  updateUpgrade(id, upgrade2) {
-    const upgrade1 = this.getUpgrade(id);
-    if (upgrade1 === null)
-      return;
-    upgrade1.name = upgrade2.name ?? upgrade1.name;
-    upgrade1.costScaling = upgrade2.costScaling ?? upgrade1.costScaling;
-    upgrade1.maxLevel = upgrade2.maxLevel ?? upgrade1.maxLevel;
-    upgrade1.effect = upgrade2.effect ?? upgrade1.effect;
-  }
-  /**
-   * Calculates the cost and how many upgrades you can buy
-   *
-   * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   * @param id - Index or ID of the upgrade
-   * @param target - How many to buy
-   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
-   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
-   */
-  calculateUpgrade(id, target, el = false) {
-    target = E(target);
-    function calculateSum(f, b) {
-      let sum = E();
-      for (let n = E(0); n.lte(b); n = n.add(1)) {
-        sum = sum.add(f(n));
-      }
-      return sum;
-    }
-    function findHighestB(f, a, el1 = el) {
-      if (!el1) {
-        let left = E(0);
-        let right = E(1);
-        while (calculateSum(f, right).lt(a)) {
-          right = right.mul(2);
-        }
-        while (left.lt(right)) {
-          const mid = E.floor(left.add(right).div(2));
-          const sum = calculateSum(f, mid);
-          if (sum.lt(a)) {
-            left = mid.add(1);
-          } else {
-            right = mid;
-          }
-        }
-        return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
-      } else {
-        let left = E(0);
-        let right = target;
-        let result = E(0);
-        while (left.lessThanOrEqualTo(right)) {
-          const mid = left.plus(right).dividedBy(2).floor();
-          const value = f(mid);
-          if (value.lte(a)) {
-            result = mid;
-            left = mid.plus(1);
-          } else {
-            right = mid.minus(1);
-          }
-        }
-        return [result, result.gt(0) ? f(result) : E(0)];
-      }
-    }
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null)
-      return [E(0), E(0)];
-    return findHighestB(
-      (level) => upgrade2.costScaling(upgrade2.level.add(level)),
-      this.value
-    );
-  }
-  /**
-   * Buys an upgrade based on its ID or array position if enough currency is available.
-   * @param id - The ID or position of the upgrade to buy or upgrade.
-   * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
-   * @param target - The target level or quantity to reach for the upgrade.
-   * This represents how many upgrades to buy or upgrade.
-   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   */
-  buyUpgrade(id, target) {
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null)
-      return false;
-    target = E(target);
-    target = upgrade2.level.add(target).lte(upgrade2.maxLevel) ? target : upgrade2.maxLevel.sub(upgrade2.level);
-    const maxAffordableQuantity = this.calculateUpgrade(
-      id,
-      target
-    );
-    if (maxAffordableQuantity[0].lte(0)) {
-      return false;
-    }
-    this.value = this.value.sub(maxAffordableQuantity[1]);
-    upgrade2.level = upgrade2.level.add(maxAffordableQuantity[0]);
-    if (typeof upgrade2.effect === "function") {
-      upgrade2.effect(upgrade2.level, upgrade2);
-    }
-    return true;
-  }
-};
-
-// src/classes/attribute.ts
-var attribute = class {
-  /**
-   * Constructs a static attribute with an initial effect.
-   * @param initial - The inital value of the attribute.
-   */
-  constructor(initial) {
-    this.value = E(initial);
-  }
-};
-var attributeStatic = class {
-  /**
-   * Constructs a new instance of the Attribute class.
-   * @param pointer - A function or an instance of the attribute class.
-   * @param initial - The initial value of the attribute.
-   * @param useBoost - Indicates whether to use boost for the attribute.
-   */
-  constructor(pointer, useBoost = true, initial = 0) {
-    this.initial = E(initial);
-    this.pointer = typeof pointer === "function" ? pointer() : pointer;
-    this.boost = new boost(this.initial);
-  }
-  /**
-   * Gets the value of the attribute, and also updates the value stored.
-   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
-   * @returns The calculated value of the attribute.
-   */
-  get value() {
-    if (this.boost) {
-      this.pointer.value = this.boost.calculate();
-    }
-    return this.pointer.value;
-  }
-  /**
-   * Sets the value of the attribute.
-   * NOTE: This setter should not be used when boost is enabled.
-   * @param value - The value to set the attribute to.
-   */
-  set value(value) {
-    if (this.boost) {
-      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
-    }
-    this.pointer.value = value;
-  }
-};
-
-// src/game/managers/configManager.ts
-var configManager = class {
-  constructor(configOptionTemplate) {
-    this.configOptionTemplate = configOptionTemplate;
-  }
-  /**
-   * Parses the given configuration object and returns a new object with default values for any missing options.
-   * @param config - The configuration object to parse.
-   * @returns A new object with default values for any missing options.
-   */
-  parse(config) {
-    if (typeof config === "undefined") {
-      return this.configOptionTemplate;
-    }
-    const parseObject = (obj, template) => {
-      for (const key in template) {
-        if (typeof obj[key] === "undefined") {
-          obj[key] = template[key];
-        } else if (typeof obj[key] === "object" && typeof template[key] === "object") {
-          obj[key] = parseObject(obj[key], template[key]);
-        }
-      }
-      return obj;
-    };
-    return parseObject(config, this.configOptionTemplate);
-  }
-  get options() {
-    return this.configOptionTemplate;
-  }
-};
-
-// src/game/managers/keyManager.ts
-var keyManagerDefaultConfig = {
-  autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
-};
-var keyManager = class _keyManager {
-  static {
-    this.configManager = new configManager(keyManagerDefaultConfig);
-  }
-  constructor(config) {
-    this.keysPressed = [];
-    this.binds = [];
-    this.tickers = [];
-    this.config = _keyManager.configManager.parse(config);
-    if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add((dt) => {
-          for (const ticker of this.tickers) {
-            ticker(dt);
-          }
-        });
-      } else {
-        const fps = this.config.fps ? this.config.fps : 30;
-        setInterval(() => {
-          for (const ticker of this.tickers) {
-            ticker(1e3 / fps);
-          }
-        }, 1e3 / fps);
-      }
-    }
-    if (typeof document === "undefined") {
-      return;
-    }
-    document.addEventListener("keydown", (e) => this.logKey(e, true));
-    document.addEventListener("keyup", (e) => this.logKey(e, false));
-  }
-  logKey(event, type) {
-    const key = event.key;
-    if (type && !this.keysPressed.includes(key))
-      this.keysPressed.push(key);
-    else if (!type && this.keysPressed.includes(key))
-      this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
-  }
-  /**
-   * Checks if a specific key binding is currently being pressed.
-   * @param name - The name of the key binding to check.
-   * @returns True if the key binding is being pressed, otherwise false.
-   */
-  isPressing(name) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        return this.keysPressed.includes(current.key);
-      }
-    }
-    return false;
-  }
-  /**
-   * Adds or updates a key binding.
-   * @param name - The name of the key binding.
-   * @param key - The key associated with the binding.
-   * @param [fn] - The function executed when the binding is pressed
-   * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
-   */
-  addKey(name, key, fn) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        current.key = key;
-        return;
-      }
-    }
-    this.binds.push({ name, key, fn });
-    if (typeof fn == "function") {
-      this.tickers.push((dt) => {
-        if (this.isPressing(name))
-          fn(dt);
-      });
-    }
-  }
-  /**
-   * Adds or updates multiple key bindings.
-   * @param keysToAdd - An array of key binding objects.
-   * @example
-   * addKeys([
-   *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
-   *     // Add more key bindings here...
-   * ]);
-   */
-  addKeys(keysToAdd) {
-    for (const keyBinding of keysToAdd) {
-      this.addKey(keyBinding.name, keyBinding.key, keyBinding.fn);
-    }
-  }
-};
-
-// src/game/managers/eventManager.ts
-var eventManagerDefaultConfig = {
-  autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
-};
-var eventManager = class _eventManager {
-  static {
-    this.configManager = new configManager(eventManagerDefaultConfig);
-  }
-  constructor(config) {
-    this.config = _eventManager.configManager.parse(config);
-    this.events = [];
-    if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add(() => {
-          this.tickerFunction();
-        });
-      } else {
-        const fps = this.config.fps ? this.config.fps : 30;
-        setInterval(() => {
-          this.tickerFunction();
-        }, 1e3 / fps);
-      }
-    }
-  }
-  tickerFunction() {
-    const currentTime = Date.now();
-    for (let i = 0; i < this.events.length; i++) {
-      const event = this.events[i];
-      if (event.type === "interval") {
-        if (currentTime - event.intervalLast >= event.delay) {
-          const dt = currentTime - event.intervalLast;
-          event.callbackFn(dt);
-          event.intervalLast = currentTime;
-        }
-      } else if (event.type === "timeout") {
-        const dt = currentTime - event.timeCreated;
-        if (currentTime - event.timeCreated >= event.delay) {
-          event.callbackFn(dt);
-          this.events.splice(i, 1);
-          i--;
-        }
-      }
-    }
-  }
-  /**
-   * Adds a new event to the event system.
-   * @param name - The name of the event.
-   * @param type - The type of the event, either "interval" or "timeout".
-   * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
-   * @param callbackFn - The callback function to execute when the event triggers.
-   * @example
-   * const myEventManger = new eventManager();
-   * // Add an interval event that executes every 2 seconds.
-   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
-   *    console.log("Interval event executed.");
-   * });
-   *
-   * // Add a timeout event that executes after 5 seconds.
-   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
-   *   console.log("Timeout event executed.");
-   * });
-   */
-  addEvent(name, type, delay, callbackFn) {
-    this.events.push((() => {
-      switch (type) {
-        case "interval":
-          {
-            const event = {
-              name,
-              type,
-              delay: typeof delay === "number" ? delay : delay.toNumber(),
-              callbackFn,
-              timeCreated: Date.now(),
-              intervalLast: Date.now()
-            };
-            return event;
-          }
-          ;
-          break;
-        case "timeout":
-        default: {
-          const event = {
-            name,
-            type,
-            delay: typeof delay === "number" ? delay : delay.toNumber(),
-            callbackFn,
-            timeCreated: Date.now()
-          };
-          return event;
-        }
-      }
-    })());
-  }
-};
-
 // src/game/managers/dataManager.ts
-var import_lz_string = __toESM(require_lz_string());
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -6754,7 +6742,8 @@ var dataManager = class {
    * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
    */
   compileData(data = this.data) {
-    return import_lz_string.default.compressToBase64(JSON.stringify(this.compileDataRaw(data)));
+    const dataRawString = JSON.stringify(this.compileDataRaw(data));
+    return import_lz_string.compressToBase64 ? (0, import_lz_string.compressToBase64)(dataRawString) : btoa(dataRawString);
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
@@ -6764,7 +6753,7 @@ var dataManager = class {
   decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     if (!data)
       return null;
-    const parsedData = JSON.parse(import_lz_string.default.decompressFromBase64(data));
+    const parsedData = JSON.parse(import_lz_string.decompressFromBase64 ? (0, import_lz_string.decompressFromBase64)(data) : atob(data));
     return parsedData;
   }
   /**
@@ -6827,7 +6816,7 @@ var dataManager = class {
       return typeof obj === "object" && obj.constructor === Object;
     }
     function deepMerge(source, target) {
-      let out = target;
+      const out = target;
       for (const key in source) {
         if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
           out[key] = source[key];
@@ -6838,7 +6827,6 @@ var dataManager = class {
       return out;
     }
     let loadedDataProcessed = deepMerge(this.normalData, loadedData);
-    console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
     const templateClasses = [
       {
         class: currency,
@@ -6856,13 +6844,18 @@ var dataManager = class {
         }
       },
       {
+        class: attribute,
+        subclasses: {
+          value: e_default
+        }
+      },
+      {
         class: e_default
       }
     ];
     for (const templateClass of templateClasses) {
       templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
     }
-    console.log("Temp", templateClasses);
     function compareArrays(arr1, arr2) {
       return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
     }
@@ -6909,6 +6902,7 @@ var dataManager = class {
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData)
       return;
+    console.log("Loaded data: ", parsedData);
     this.data = parsedData;
   }
 };
@@ -6932,6 +6926,13 @@ var gameCurrency = class {
    */
   get value() {
     return this.data.value;
+  }
+  /**
+   * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
+   * @param currencyPointer - A function or pointer that returns the current currency value.
+   */
+  updateDataPointer(currencyPointer) {
+    this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
   }
 };
 

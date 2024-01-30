@@ -2,7 +2,7 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
-import { Type, Expose } from "class-transformer";
+// import { Type, Expose } from "class-transformer";
 /**
  * An object representing a boost.
  */
@@ -40,8 +40,8 @@ class boostObject implements boostsObjectInit {
     public id: string;
     public name: string;
     public desc: string;
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Expose({ name: "value" })
+    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
+    // @Expose({ name: "value" })
     public value: (input: E) => E;
     public order: number;
     // public index: number;

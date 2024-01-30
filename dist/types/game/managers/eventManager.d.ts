@@ -2,7 +2,21 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../E/eMain";
+import { configManager } from "./configManager";
 import type { Application } from "pixi.js";
+interface Event {
+    name: string;
+    type: "interval" | "timeout";
+    delay: number;
+    callbackFn: (dt: number) => void;
+    timeCreated: number;
+}
+interface intervalEvent extends Event {
+    type: "interval";
+    intervalLast: number;
+}
+interface timeoutEvent extends Event {
+}
 interface eventManagerConfig {
     /**
      * Whether or not to automatically add an interval
@@ -21,14 +35,22 @@ interface eventManagerConfig {
     pixiApp?: Application;
 }
 declare class eventManager {
-    private events;
-    private static configManager;
+    protected events: {
+        [key: string]: (intervalEvent | timeoutEvent);
+    };
+    protected static configManager: configManager<eventManagerConfig>;
     config: eventManagerConfig;
-    constructor(config?: eventManagerConfig);
-    private tickerFunction;
     /**
-     * Adds a new event to the event system.
-     * @param name - The name of the event.
+     * @param config - The config to use for this event manager.
+     */
+    constructor(config?: eventManagerConfig);
+    /**
+     * The function that is called every frame, executes all events.
+     */
+    protected tickerFunction(): void;
+    /**
+     * Adds a new event or changes an existing event to the event system.
+     * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
      * @param type - The type of the event, either "interval" or "timeout".
      * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
      * @param callbackFn - The callback function to execute when the event triggers.
@@ -44,6 +66,17 @@ declare class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    addEvent(name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
+    setEvent(name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
+    /**
+     * Adds a new event
+     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @alias eventManager.setEvent
+     */
+    addEvent: (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
+    /**
+     * Removes an event from the event system.
+     * @param name - The name of the event to remove.
+     */
+    removeEvent(name: string): void;
 }
-export { eventManager };
+export { eventManager, eventManagerConfig };

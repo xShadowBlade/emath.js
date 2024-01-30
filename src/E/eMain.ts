@@ -3,7 +3,70 @@ import Decimal, { DecimalSource, CompareResult } from "./e";
 // @ts-expect-error Declared as a function, but adds properties later
 const E: {
 	(x?: DecimalSource): Decimal;
-
+    formats: {
+        toSubscript: (value: number) => string;
+        toSuperscript: (value: number) => string;
+        formatST: (ex: DecimalSource, acc?: number, max?: number, type?: string) => string;
+        format: (ex: DecimalSource, acc?: number, max?: number, type?: string) => string;
+        formatGain: (amt: DecimalSource, gain: DecimalSource) => string;
+        formatTime: (ex: DecimalSource, acc?: number, type?: string) => string;
+        formatReduction: (ex: DecimalSource) => string;
+        formatPercent: (ex: DecimalSource) => string;
+        formatMult: (ex: DecimalSource, acc?: number) => string;
+        expMult: (a: DecimalSource, b: DecimalSource, base?: number) => Decimal;
+        metric: (num: DecimalSource, type: number) => string;
+        ev: (num: DecimalSource, c2?: boolean) => string;
+        omega: {
+            config: {
+                greek: string;
+                infinity: string;
+            };
+            format(value: Decimal): string;
+        };
+        omega_short: {
+            config: {
+                greek: string;
+                infinity: string;
+            };
+            format(value: Decimal): string;
+        };
+        elemental: {
+            config: {
+                element_lists: string[][];
+            };
+            getOffset(group: number): number;
+            getAbbreviation(// For default toString behaviour, when to swap from eee... to (e^n) syntax.
+            group: number, progress: number): string;
+            beyondOg(x: number): string;
+            abbreviationLength(group: number): number;
+            getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
+            formatElementalPart(abbreviation: string, n: Decimal): string;
+            format(value: Decimal, acc: number): string;
+        };
+        old_sc: {
+            format(ex: DecimalSource, // We need this lookup table because Math.pow(10, exponent)
+            acc: number): string;
+        };
+        eng: {
+            format(ex: DecimalSource, acc: number): string;
+        };
+        mixed_sc: {
+            format(ex: DecimalSource, acc: number, // You can fix it with the power of math... or just make a lookup table.
+            max: number): string;
+        };
+        layer: {
+            layers: string[];
+            format(ex: DecimalSource, // Faster AND simpler
+            acc: number, max: number): string;
+        };
+        standard: {
+            tier1(x: number): string;
+            tier2(x: number): string;
+        };
+        inf: {
+            format(ex: DecimalSource, acc: number, max: number): string;
+        };
+    };
     readonly dZero: Decimal;
     readonly dOne: Decimal;
     readonly dNegOne: Decimal;

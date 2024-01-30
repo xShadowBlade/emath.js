@@ -4,7 +4,7 @@
  */
 import type { game } from "../game";
 // import { gameData } from "../game";
-import LZString from "lz-string";
+import { compressToBase64, decompressFromBase64 } from "lz-string";
 
 // Saver
 import { instanceToPlain, plainToInstance } from "class-transformer";
@@ -12,6 +12,7 @@ import { instanceToPlain, plainToInstance } from "class-transformer";
 // Recursive plain to class
 import { currency, upgradeData } from "../../classes/currency";
 import { boost, boostObject } from "../../classes/boost";
+import { attribute } from "../../classes/attribute";
 // import { E } from "index";
 import Decimal from "E/e";
 
@@ -66,15 +67,14 @@ class dataManager {
         this.static = {};
         if (saveOnExit) {
             const saveDataFn = this.saveData;
-            window.addEventListener('beforeunload', function (e) {
+            window.addEventListener("beforeunload", function (e) {
                 // Your code to run before the page unloads goes here
                 // For example, you can save user data to a server.
                 // Make sure to return a message to display to the user.
                 saveDataFn();
-                // e.returnValue = 'Are you sure you want to leave this page?';
+                // e.returnValue = "Are you sure you want to leave this page?";
             });
         }
-        
     }
 
     /**
@@ -144,7 +144,10 @@ class dataManager {
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
     public compileData (data = this.data): string {
-        return LZString.compressToBase64(JSON.stringify(this.compileDataRaw(data)));
+        // console.log("Compiling data", LZString);
+        const dataRawString = JSON.stringify(this.compileDataRaw(data));
+        // If lzstring is not available, use btoa (webpack bug >:( )
+        return compressToBase64 ? compressToBase64(dataRawString) : btoa(dataRawString);
     }
 
     /**
@@ -157,7 +160,7 @@ class dataManager {
         /**
          * Parsed data in a tuple.
          */
-        const parsedData: [string, object] = JSON.parse(LZString.decompressFromBase64(data));
+        const parsedData: [string, object] = JSON.parse(decompressFromBase64 ? decompressFromBase64(data) : atob(data));
         return parsedData;
     }
 
@@ -246,7 +249,7 @@ class dataManager {
          * @returns The merged object.
          */
         function deepMerge (source: object, target: object): object {
-            let out: object = target;
+            const out: object = target;
             for (const key in source) {
                 if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
                     // If the property is missing from the target, add it
@@ -259,7 +262,7 @@ class dataManager {
             return out;
         }
         let loadedDataProcessed = deepMerge(this.normalData, loadedData);
-        console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
+        // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
 
         // Convert plain object to class instance (recursive)
         const templateClasses = [
@@ -279,8 +282,14 @@ class dataManager {
                 },
             },
             {
+                class: attribute,
+                subclasses: {
+                    value: Decimal,
+                },
+            },
+            {
                 class: Decimal,
-            }
+            },
         ] as {
             class: any;
             subclasses?: {
@@ -293,7 +302,7 @@ class dataManager {
             templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
         }
 
-        console.log("Temp", templateClasses);
+        // console.log("Temp", templateClasses);
 
         /**
          * Compares two arrays. If they have the same elements, returns true.
@@ -364,6 +373,7 @@ class dataManager {
     public loadData (dataToLoad = this.decompileData()): void {
         const parsedData = this.parseData(dataToLoad);
         if (!parsedData) return;
+        console.log("Loaded data: ", parsedData);
         this.data = parsedData; // TODO: Fix this
     };
 }

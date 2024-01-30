@@ -1,6 +1,6 @@
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
-import { Type } from "class-transformer";
+// import { Type } from "class-transformer";
 
 /**
  * Represents an attribute in the game.
@@ -10,8 +10,6 @@ class attribute {
     /**
      * The current value of the attribute.
      */
-    // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    @Type(() => E)
     public value: E;
 
     /**

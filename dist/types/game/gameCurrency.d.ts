@@ -24,5 +24,10 @@ declare class gameCurrency {
      * @returns The value of the game currency.
      */
     get value(): E;
+    /**
+     * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
+     * @param currencyPointer - A function or pointer that returns the current currency value.
+     */
+    updateDataPointer(currencyPointer: (() => currency) | currency): void;
 }
 export { gameCurrency };
