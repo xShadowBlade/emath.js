@@ -3082,6 +3082,7 @@ var Decimal = class _Decimal {
    * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
    * @alias Decimal.clone
    * @param {Decimal} x - The Decimal instance to normalize
+   * @deprecated To avoid the webpack bug, import from "emath.js/ts" instead.
    * @returns The normalized decimal
    */
   static normalizeFromComponents(x) {
@@ -3815,7 +3816,7 @@ var boost = class {
     for (let i = 0; i < boosts.length; i++) {
       output = boosts[i].value(output);
     }
-    return E.normalizeFromComponents(output);
+    return output;
   }
 };
 
@@ -3925,20 +3926,20 @@ var currencyStatic = class {
    * @returns The upgrade object if found, otherwise null.
    */
   getUpgrade(id) {
-    let upgrade2 = null;
+    let upgradeToGet = null;
     if (id === void 0) {
       return null;
     } else if (typeof id == "number") {
-      upgrade2 = this.upgrades[id];
+      upgradeToGet = this.upgrades[id];
     } else if (typeof id == "string") {
       for (let i = 0; i < this.upgrades.length; i++) {
         if (this.upgrades[i].id === id) {
-          upgrade2 = this.upgrades[i];
+          upgradeToGet = this.upgrades[i];
           break;
         }
       }
     }
-    return upgrade2;
+    return upgradeToGet;
   }
   /**
    * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
@@ -3983,8 +3984,21 @@ var currencyStatic = class {
    * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
    * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
    */
-  calculateUpgrade(id, target, el = false) {
+  calculateUpgrade(id, target = 1, el = false) {
     target = E(target);
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null) {
+      console.warn(`Upgrade "${id}" not found.`);
+      return [E(0), E(0)];
+    }
+    if (target.lte(0)) {
+      return [E(0), E(0)];
+    }
+    if (target.eq(1)) {
+      const cost = upgrade2.costScaling(upgrade2.level);
+      const canAfford = this.value.gte(cost);
+      return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+    }
     function calculateSum(f, b) {
       let sum = E();
       for (let n = E(0); n.lte(b); n = n.add(1)) {
@@ -4026,13 +4040,27 @@ var currencyStatic = class {
         return [result, result.gt(0) ? f(result) : E(0)];
       }
     }
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null)
-      return [E(0), E(0)];
     return findHighestB(
       (level) => upgrade2.costScaling(upgrade2.level.add(level)),
       this.value
     );
+  }
+  /**
+   * Calculates how much is needed for the next upgrade.
+   * @param id - Index or ID of the upgrade
+   * @param target - How many before the next upgrade
+   * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @returns The cost of the next upgrade.
+   */
+  getNextCost(id, target = 0, el = false) {
+    const upgrade2 = this.getUpgrade(id);
+    if (upgrade2 === null) {
+      console.warn(`Upgrade "${id}" not found.`);
+      return E(0);
+    }
+    const amount = this.calculateUpgrade(id, target, el)[1];
+    const nextCost = upgrade2.costScaling(upgrade2.level.add(amount));
+    return nextCost;
   }
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
@@ -4042,12 +4070,11 @@ var currencyStatic = class {
    * This represents how many upgrades to buy or upgrade.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    */
-  buyUpgrade(id, target) {
+  buyUpgrade(id, target = 1) {
     const upgrade2 = this.getUpgrade(id);
     if (upgrade2 === null)
       return false;
     target = E(target);
-    target = upgrade2.level.add(target).lte(upgrade2.maxLevel) ? target : upgrade2.maxLevel.sub(upgrade2.level);
     const maxAffordableQuantity = this.calculateUpgrade(
       id,
       target
@@ -4055,7 +4082,7 @@ var currencyStatic = class {
     if (maxAffordableQuantity[0].lte(0)) {
       return false;
     }
-    this.value = this.value.sub(maxAffordableQuantity[1]);
+    this.pointer.value = this.pointer.value.sub(maxAffordableQuantity[1]);
     upgrade2.level = upgrade2.level.add(maxAffordableQuantity[0]);
     if (typeof upgrade2.effect === "function") {
       upgrade2.effect(upgrade2.level, upgrade2);

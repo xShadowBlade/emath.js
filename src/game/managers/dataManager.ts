@@ -14,7 +14,7 @@ import { currency, upgradeData } from "../../classes/currency";
 import { boost, boostObject } from "../../classes/boost";
 import { attribute } from "../../classes/attribute";
 // import { E } from "index";
-import Decimal from "E/e";
+import Decimal from "../../E/e";
 
 
 // Save validation

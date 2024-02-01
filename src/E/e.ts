@@ -3474,6 +3474,7 @@ class Decimal {
      * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
      * @alias Decimal.clone
      * @param {Decimal} x - The Decimal instance to normalize
+     * @deprecated To avoid the webpack bug, import from "emath.js/ts" instead.
      * @returns The normalized decimal
      */
     public static normalizeFromComponents (x: Decimal): Decimal {

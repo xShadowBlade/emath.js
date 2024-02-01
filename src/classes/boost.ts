@@ -204,7 +204,7 @@ class boost {
         // console.log("boosts out", output);
         // return output.normalizeFromComponents(); // webpack is goofy af
         // return E.fromComponents(output.sign, output.layer, output.mag);
-        return E.normalizeFromComponents(output);
+        return output;
         // return E(122); // test
     }
 }

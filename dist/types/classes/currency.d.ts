@@ -162,7 +162,15 @@ declare class currencyStatic {
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      */
-    calculateUpgrade(id: string | number, target: E, el?: boolean): [amount: E, cost: E];
+    calculateUpgrade(id: string | number, target?: ESource, el?: boolean): [amount: E, cost: E];
+    /**
+     * Calculates how much is needed for the next upgrade.
+     * @param id - Index or ID of the upgrade
+     * @param target - How many before the next upgrade
+     * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @returns The cost of the next upgrade.
+     */
+    getNextCost(id: string | number, target?: ESource, el?: boolean): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
@@ -171,6 +179,6 @@ declare class currencyStatic {
      * This represents how many upgrades to buy or upgrade.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      */
-    buyUpgrade(id: string | number, target: ESource): boolean;
+    buyUpgrade(id: string | number, target?: ESource): boolean;
 }
 export { currency, currencyStatic, upgradeInit, upgrade, upgradeData, upgradeStatic, upgradeDataInterface };

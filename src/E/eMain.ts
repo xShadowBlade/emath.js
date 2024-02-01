@@ -1,4 +1,5 @@
-import Decimal, { DecimalSource, CompareResult } from "./e";
+import Decimal from "./e";
+import type { DecimalSource, CompareResult } from "./e";
 
 // @ts-expect-error Declared as a function, but adds properties later
 const E: {
@@ -250,4 +251,5 @@ const E: {
 // eslint-disable-next-line no-redeclare
 type E = Decimal;
 
-export { E, DecimalSource as ESource };
+export { E };
+export type { DecimalSource as ESource }

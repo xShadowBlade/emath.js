@@ -14,6 +14,15 @@
         "./pixiGame": {
             "types": "./dist/types/pixiGame/index.d.ts",
             "default": "./dist/pixiGame/eMath.pixiGame.js"
+        },
+        "./ts": {
+            "default": "./src/index.ts"
+        },
+        "./ts/game": {
+            "default": "./src/game/index.ts"
+        },
+        "./ts/pixiGame": {
+            "default": "./src/pixiGame/index.ts"
         }
     },
     "unpkg": "./dist/main/eMath.min.js",

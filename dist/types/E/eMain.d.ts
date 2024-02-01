@@ -1,4 +1,5 @@
-import Decimal, { DecimalSource, CompareResult } from "./e";
+import Decimal from "./e";
+import type { DecimalSource, CompareResult } from "./e";
 declare const E: {
     (x?: DecimalSource): Decimal;
     formats: {
@@ -239,4 +240,5 @@ declare const E: {
     clone(x: Decimal): Decimal;
 };
 type E = Decimal;
-export { E, DecimalSource as ESource };
+export { E };
+export type { DecimalSource as ESource };

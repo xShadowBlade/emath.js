@@ -19,9 +19,7 @@ declare const eMathWeb: {
             formatPercent: (ex: import("./E/e").DecimalSource) => string;
             formatMult: (ex: import("./E/e").DecimalSource, acc?: number | undefined) => string;
             expMult: (a: import("./E/e").DecimalSource, b: import("./E/e").DecimalSource, base?: number | undefined) => import("./E/e").default;
-            metric: (num: import("./E/e").DecimalSource, type: number) => string; /**
-             * @deprecated Use `import { attribute } from "emath.js"` instead.
-             */
+            metric: (num: import("./E/e").DecimalSource, type: number) => string;
             ev: (num: import("./E/e").DecimalSource, c2?: boolean | undefined) => string;
             omega: {
                 config: {
@@ -29,9 +27,7 @@ declare const eMathWeb: {
                     infinity: string;
                 };
                 format(value: import("./E/e").default): string;
-            }; /**
-             * @deprecated Use `import { gridCell } from "emath.js"` instead.
-             */
+            };
             omega_short: {
                 config: {
                     greek: string;
@@ -45,9 +41,7 @@ declare const eMathWeb: {
                 };
                 getOffset(group: number): number;
                 getAbbreviation(group: number, progress: number): string;
-                beyondOg(x: number): string; /**
-                //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
-                //      */
+                beyondOg(x: number): string;
                 abbreviationLength(group: number): number;
                 getAbbreviationAndValue(x: import("./E/e").default): (string | import("./E/e").default)[];
                 formatElementalPart(abbreviation: string, n: import("./E/e").default): string;

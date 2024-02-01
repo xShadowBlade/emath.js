@@ -216,20 +216,21 @@ class currencyStatic {
      * @returns The upgrade object if found, otherwise null.
      */
     public getUpgrade (id?: string | number): upgradeStatic | null {
-        let upgrade: upgradeStatic | null = null;
+        let upgradeToGet: upgradeStatic | null = null;
         if (id === undefined) {
             return null;
         } else if (typeof id == "number") {
-            upgrade = this.upgrades[id];
+            upgradeToGet = this.upgrades[id];
         } else if (typeof id == "string") {
             for (let i = 0; i < this.upgrades.length; i++) {
+                // console.log("upgrade id", this.upgrades[i].id, id);
                 if (this.upgrades[i].id === id) {
-                    upgrade = this.upgrades[i];
+                    upgradeToGet = this.upgrades[i];
                     break;
                 }
             }
         }
-        return upgrade;
+        return upgradeToGet;
     }
 
     /**
@@ -277,8 +278,25 @@ class currencyStatic {
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      */
-    public calculateUpgrade (id: string | number, target: E, el: boolean = false): [amount: E, cost: E] {
+    public calculateUpgrade (id: string | number, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
+        // console.log("target1", target);
         target = E(target);
+        const upgrade = this.getUpgrade(id);
+        if (upgrade === null) {
+            console.warn(`Upgrade "${id}" not found.`);
+            return [E(0), E(0)];
+        }
+        // Special case: If target is less than 1, just return 0
+        if (target.lte(0)) {
+            return [E(0), E(0)];
+        }
+
+        // Special case: If target is 1, just check it manually
+        if (target.eq(1)) {
+            const cost = upgrade.costScaling(upgrade.level);
+            const canAfford = this.value.gte(cost);
+            return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+        }
 
         /**
          * Calculates the sum of 'f(n)' from 0 to 'b'.
@@ -352,14 +370,30 @@ class currencyStatic {
 
         // Example
         // console.log(findHighestB((n) => n.mul(n), 100))
-
-        const upgrade = this.getUpgrade(id);
-        if (upgrade === null) return [E(0), E(0)];
         // Assuming you have found the upgrade object, calculate the maximum affordable quantity
         return findHighestB(
             (level: E) => upgrade.costScaling(upgrade.level.add(level)),
             this.value,
         );
+    }
+
+    /**
+     * Calculates how much is needed for the next upgrade.
+     * @param id - Index or ID of the upgrade
+     * @param target - How many before the next upgrade
+     * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @returns The cost of the next upgrade.
+     */
+    public getNextCost (id: string | number, target: ESource = 0, el: boolean = false): E {
+        const upgrade = this.getUpgrade(id);
+        if (upgrade === null) {
+            console.warn(`Upgrade "${id}" not found.`);
+            return E(0);
+        }
+        const amount = this.calculateUpgrade(id, target, el)[1];
+
+        const nextCost = upgrade.costScaling(upgrade.level.add(amount));
+        return nextCost;
     }
 
     /**
@@ -370,16 +404,17 @@ class currencyStatic {
      * This represents how many upgrades to buy or upgrade.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      */
-    public buyUpgrade (id: string | number, target: ESource): boolean {
+    public buyUpgrade (id: string | number, target: ESource = 1): boolean {
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) return false;
 
         target = E(target);
-        // Determine the actual quantity to purchase based on 'target' and 'maxLevel'
-        target =
-            upgrade.level.add(target).lte(upgrade.maxLevel)
-                ? target
-                : upgrade.maxLevel.sub(upgrade.level);
+        // console.log("targetC", target);
+        // TODO: Determine the actual quantity to purchase based on 'target' and 'maxLevel'
+        // target =
+        //     E.clone(upgrade.level).add(target).lte(upgrade.maxLevel)
+        //         ? target
+        //         : E.clone(upgrade.maxLevel).sub(E.clone(upgrade.level));
 
         // Calculate the maximum affordable quantity
         const maxAffordableQuantity = this.calculateUpgrade(
@@ -404,7 +439,7 @@ class currencyStatic {
         //     : this.calculateSum(upgrade.costScaling, target);
 
         // Deduct the cost from available currency and increase the upgrade level
-        this.value = this.value.sub(maxAffordableQuantity[1]);
+        this.pointer.value = this.pointer.value.sub(maxAffordableQuantity[1]);
 
         // Set the upgrade level
         upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
