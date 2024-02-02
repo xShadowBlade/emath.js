@@ -1,21 +1,43 @@
+/**
+ * @file Declares the currency class and its related classes (upgrade)
+ */
 import { E, ESource } from "../E/eMain";
 import { boost } from "./boost";
+/**
+ * Calculates the cost and how many upgrades you can buy
+ *
+ * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+ * @param value - The current value of the currency.
+ * @param upgrade - The upgrade object to calculate.
+ * @param target - How many to buy
+ * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
+ * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+ */
+declare function calculateUpgrade(value: E, upgrade: upgradeStatic, target?: ESource, el?: boolean): [amount: E, cost: E];
 /**
  * Interface for initializing an upgrade.
  */
 interface upgradeInit {
     /**
-     * The ID of the upgrade. If not provided, it will default to the array position.
+     * The ID of the upgrade.
      */
-    id?: string | number;
+    id: string;
     /**
-     * The name of the upgrade.
+     * The name of the upgrade. Defaults to the ID.
      */
     name?: string;
     /**
+     * The description of the upgrade.
+     */
+    description?: string;
+    /**
      * The cost of upgrades at a certain level.
      */
-    costScaling: (level: E) => E;
+    cost: (level: E) => E;
+    /**
+     * The cost of buying a bulk of upgrades at a certain level.
+     */
+    costBulk?: (level: E, target: E) => [cost: E, amount: E];
     /**
      * The maximum level of the upgrade.
      */
@@ -27,6 +49,10 @@ interface upgradeInit {
      */
     effect: (level: E, context: upgradeStatic) => void;
     /**
+     * Endless: Flag to exclude the sum calculation and only perform binary search.
+     */
+    el?: boolean;
+    /**
      * The current level of the upgrade. Automatically added.
      */
     level?: E;
@@ -34,23 +60,28 @@ interface upgradeInit {
 /**
  * Interface for an upgrade.
  */
-interface upgrade extends Omit<upgradeInit, "level"> {
+interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
+    name: string;
+    description: string;
 }
-interface upgradeDataInterface {
+interface IUpgradeData {
     id: string | number;
     level: E;
 }
-declare class upgradeData implements upgradeDataInterface {
-    id: string | number;
+declare class upgradeData implements IUpgradeData {
+    id: string;
     level: import("../E/e").default;
     constructor(init: upgradeInit);
 }
-declare class upgradeStatic implements upgrade {
-    id?: string | number | undefined;
-    name?: string | undefined;
-    costScaling: (level: import("../E/e").default) => import("../E/e").default;
+declare class upgradeStatic implements IUpgradeStatic {
+    id: string;
+    name: string;
+    description: string;
+    cost: (level: import("../E/e").default) => import("../E/e").default;
+    costBulk: ((level: import("../E/e").default, target: import("../E/e").default) => [cost: import("../E/e").default, amount: import("../E/e").default]) | undefined;
     maxLevel: import("../E/e").default;
     effect: (level: import("../E/e").default, context: upgradeStatic) => void;
+    el?: boolean | undefined;
     protected data: upgradeData;
     /**
      * @param init - The upgrade object to initialize.
@@ -140,7 +171,7 @@ declare class currencyStatic {
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
-    getUpgrade(id?: string | number): upgradeStatic | null;
+    getUpgrade(id?: string): upgradeStatic | null;
     /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
@@ -152,17 +183,17 @@ declare class currencyStatic {
      * @param id - The id of the upgrade to update.
      * @param upgrade - The upgrade object to update.
      */
-    updateUpgrade(id: string | number, upgrade: upgradeInit): void;
+    updateUpgrade(id: string, upgrade: upgradeInit): void;
     /**
      * Calculates the cost and how many upgrades you can buy
-     *
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     * @param id - Index or ID of the upgrade
+     * @deprecated Use {@link calculateUpgrade} instead.
+     * @param id - The ID or position of the upgrade to calculate.
      * @param target - How many to buy
-     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
      * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      */
-    calculateUpgrade(id: string | number, target?: ESource, el?: boolean): [amount: E, cost: E];
+    calculateUpgrade(id: string, target?: ESource, el?: boolean): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
      * @param id - Index or ID of the upgrade
@@ -170,7 +201,7 @@ declare class currencyStatic {
      * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns The cost of the next upgrade.
      */
-    getNextCost(id: string | number, target?: ESource, el?: boolean): E;
+    getNextCost(id: string, target?: ESource, el?: boolean): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
@@ -179,6 +210,6 @@ declare class currencyStatic {
      * This represents how many upgrades to buy or upgrade.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      */
-    buyUpgrade(id: string | number, target?: ESource): boolean;
+    buyUpgrade(id: string, target?: ESource): boolean;
 }
-export { currency, currencyStatic, upgradeInit, upgrade, upgradeData, upgradeStatic, upgradeDataInterface };
+export { currency, currencyStatic, upgradeInit, IUpgradeStatic, upgradeData, upgradeStatic, IUpgradeData, calculateUpgrade };

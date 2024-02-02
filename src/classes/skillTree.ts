@@ -2,36 +2,29 @@
  * @file Skill tree class
  */
 import { E, ESource } from "../E/eMain";
-import type { currencyStatic } from "./currency";
+import { calculateUpgrade } from "./currency";
+import type { currencyStatic, IUpgradeStatic } from "./currency";
 
-interface Skill {
-    id: string;
-    name: string;
-    description?: string;
-    cost: [currency: currencyStatic, cost: (level: E, context: Skill) => E];
-    required: Skill[];
-    maxLevel: E;
-    effect?: (level: E, context: Skill) => void;
+interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost"> {
+    cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E];
+    costBulk?: [currency: currencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
+    required: ISkill[];
+    effect?: (level: E, context: ISkill) => void;
 }
 
 /**
  * Represents a skill tree node.
+ * WIP
  */
-class skillNode implements Skill {
-    public id: string;
-    public name: string;
-    public description: string;
-    public cost: [currency: currencyStatic, cost: (level: E, context: Skill) => E];
-    public required: Skill[];
-    public maxLevel: E;
-    public effect?: (level: E, context: Skill) => void;
+class skillNode implements ISkill {
+    public id; name; description; cost; required; maxLevel; effect;
 
     /**
      * Represents a skill tree node.
      * @param id - The ID of the skill tree node.
      * @param name - The name of the skill tree node. Defaults to the id.
-     * @param description - The description of the skill tree node.
      * @param cost - The cost of the skill tree node. Defaults to 0.
+     * @param description - The description of the skill tree node.
      * @param effect - The effect of the skill tree node.
      * @param maxLevel - The maximum level of the skill tree node. Defaults to 1.
      * @param required - The IDs of the required skill tree nodes.
@@ -39,14 +32,14 @@ class skillNode implements Skill {
     constructor (
         id: string,
         name: string,
-        cost: [currency: currencyStatic, cost: (level: E, context: Skill) => E],
+        cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E],
         description?: string,
-        effect?: (level: E, context: Skill) => void,
+        effect?: (level: E, context: ISkill) => void,
         maxLevel?: ESource,
-        required?: Skill[],
+        required?: ISkill[],
     )
-    // constructor (skillNode: Skill);
-    // constructor (idOrSkillNode: string | Skill, name: string, description: string, cost: ESource, effect: (level: E, context: Skill) => void, maxLevel: ESource, required: Skill[])
+    // constructor (skillNode: ISkill);
+    // constructor (idOrSkillNode: string | ISkill, name: string, description: string, cost: ESource, effect: (level: E, context: ISkill) => void, maxLevel: ESource, required: ISkill[])
     {
         // if (typeof idOrSkillNode === "object") {
         //     const skillNode = idOrSkillNode;
@@ -74,7 +67,7 @@ class skillNode implements Skill {
      * @param skillObj - The skill to convert to a skill tree node.
      * @returns The skill tree node.
      */
-    public static fromSkill (skillObj: Skill): skillNode {
+    public static fromSkill (skillObj: ISkill): skillNode {
         return new skillNode(skillObj.id, skillObj.name, skillObj.cost, skillObj.description, skillObj.effect, skillObj.maxLevel, skillObj.required);
     }
 }
@@ -83,13 +76,13 @@ class skillNode implements Skill {
  * Represents a skill tree.
  */
 class skillTree {
-    public skills: Skill[];
+    public skills: ISkill[];
 
     /**
      * Represents a skill tree.
      * @param skills - The skills in the skill tree.
      */
-    constructor (skills: (Skill | skillNode)[]) {
+    constructor (skills: (ISkill | skillNode)[]) {
         this.skills = skills.map(skillNodeMember => {
             if (skillNodeMember instanceof skillNode) {
                 return skillNodeMember;
@@ -103,7 +96,7 @@ class skillTree {
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    public addSkill (skillNodeMember: (Skill | skillNode)[]): void {
+    public addSkill (skillNodeMember: (ISkill | skillNode)[]): void {
         if (Array.isArray(skillNodeMember)) {
             this.skills.push(...skillNodeMember);
         } else {
@@ -112,4 +105,4 @@ class skillTree {
     }
 }
 
-export { skillNode, skillTree, Skill };
+export { skillNode, skillTree, ISkill };

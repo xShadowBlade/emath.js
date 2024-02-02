@@ -38,6 +38,7 @@ __export(src_exports, {
   attributeStatic: () => attributeStatic,
   boost: () => boost,
   boostObject: () => boostObject,
+  calculateUpgrade: () => calculateUpgrade,
   currency: () => currency,
   currencyStatic: () => currencyStatic,
   grid: () => grid,
@@ -3821,6 +3822,72 @@ var boost = class {
 };
 
 // src/classes/currency.ts
+function calculateUpgrade(value, upgrade, target = 1, el = false) {
+  target = E(target);
+  if (target.lte(0)) {
+    return [E(0), E(0)];
+  }
+  el = upgrade.el ?? el;
+  if (target.eq(1)) {
+    if (el) {
+      const cost2 = upgrade.cost(upgrade.level);
+      const canAfford2 = value.gte(cost2);
+      return [canAfford2 ? E(1) : E(0), canAfford2 ? cost2 : E(0)];
+    }
+    const cost = upgrade.cost(upgrade.level);
+    const canAfford = value.gte(cost);
+    return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+  }
+  if (upgrade.costBulk) {
+    const [cost, amount] = upgrade.costBulk(upgrade.level, target);
+    const canAfford = value.gte(cost);
+    return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
+  }
+  function calculateSum(f, b) {
+    let sum = E();
+    for (let n = E(0); n.lte(b); n = n.add(1)) {
+      sum = sum.add(f(n));
+    }
+    return sum;
+  }
+  function findHighestB(f, a) {
+    if (el) {
+      let left2 = E(0);
+      let right2 = target;
+      let result = E(0);
+      while (left2.lessThanOrEqualTo(right2)) {
+        const mid = left2.plus(right2).dividedBy(2).floor();
+        const valueF = f(mid);
+        if (valueF.lte(a)) {
+          result = mid;
+          left2 = mid.plus(1);
+        } else {
+          right2 = mid.minus(1);
+        }
+      }
+      return [result, result.gt(0) ? f(result) : E(0)];
+    }
+    let left = E(0);
+    let right = E(1);
+    while (calculateSum(f, right).lt(a)) {
+      right = right.mul(2);
+    }
+    while (left.lt(right)) {
+      const mid = E.floor(left.add(right).div(2));
+      const sum = calculateSum(f, mid);
+      if (sum.lt(a)) {
+        left = mid.add(1);
+      } else {
+        right = mid;
+      }
+    }
+    return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
+  }
+  return findHighestB(
+    (level) => upgrade.cost(upgrade.level.add(level)),
+    value
+  );
+}
 var upgradeData = class {
   constructor(init) {
     this.id = init.id ?? -1;
@@ -3836,10 +3903,13 @@ var upgradeStatic = class {
     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
     this.data = data;
     this.id = init.id;
-    this.name = init.name;
-    this.costScaling = init.costScaling;
+    this.name = init.name ?? init.id;
+    this.description = init.description ?? "";
+    this.cost = init.cost;
+    this.costBulk = init.costBulk;
     this.maxLevel = init.maxLevel;
     this.effect = init.effect;
+    this.el = init.el;
   }
   /**
    * The current level of the upgrade.
@@ -3895,8 +3965,8 @@ var currencyStatic = class {
     if (resetCurrency)
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
-      this.upgrades.forEach((upgrade2) => {
-        upgrade2.level = E(0);
+      this.upgrades.forEach((upgrade) => {
+        upgrade.level = E(0);
       });
     }
     ;
@@ -3929,8 +3999,6 @@ var currencyStatic = class {
     let upgradeToGet = null;
     if (id === void 0) {
       return null;
-    } else if (typeof id == "number") {
-      upgradeToGet = this.upgrades[id];
     } else if (typeof id == "string") {
       for (let i = 0; i < this.upgrades.length; i++) {
         if (this.upgrades[i].id === id) {
@@ -3951,13 +4019,11 @@ var currencyStatic = class {
       upgrades = [upgrades];
     const upgradesDefault = [];
     for (let i = 0; i < upgrades.length; i++) {
-      if (!upgrades[i].id)
-        upgrades[i].id = this.upgrades.length + i;
       this.pointerAddUpgrade(upgrades[i]);
-      const upgrade2 = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+      const upgrade = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
       if (runEffectInstantly)
-        upgrade2.effect(upgrade2.level, upgrade2);
-      upgradesDefault.push(upgrade2);
+        upgrade.effect(upgrade.level, upgrade);
+      upgradesDefault.push(upgrade);
     }
     this.upgrades = this.upgrades.concat(upgradesDefault);
   }
@@ -3966,84 +4032,31 @@ var currencyStatic = class {
    * @param id - The id of the upgrade to update.
    * @param upgrade - The upgrade object to update.
    */
-  updateUpgrade(id, upgrade2) {
+  updateUpgrade(id, upgrade) {
     const upgrade1 = this.getUpgrade(id);
     if (upgrade1 === null)
       return;
-    upgrade1.name = upgrade2.name ?? upgrade1.name;
-    upgrade1.costScaling = upgrade2.costScaling ?? upgrade1.costScaling;
-    upgrade1.maxLevel = upgrade2.maxLevel ?? upgrade1.maxLevel;
-    upgrade1.effect = upgrade2.effect ?? upgrade1.effect;
+    upgrade1.name = upgrade.name ?? upgrade1.name;
+    upgrade1.cost = upgrade.cost ?? upgrade1.cost;
+    upgrade1.maxLevel = upgrade.maxLevel ?? upgrade1.maxLevel;
+    upgrade1.effect = upgrade.effect ?? upgrade1.effect;
   }
   /**
    * Calculates the cost and how many upgrades you can buy
-   *
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   * @param id - Index or ID of the upgrade
+   * @deprecated Use {@link calculateUpgrade} instead.
+   * @param id - The ID or position of the upgrade to calculate.
    * @param target - How many to buy
-   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
    * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
    */
   calculateUpgrade(id, target = 1, el = false) {
-    target = E(target);
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null) {
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return [E(0), E(0)];
     }
-    if (target.lte(0)) {
-      return [E(0), E(0)];
-    }
-    if (target.eq(1)) {
-      const cost = upgrade2.costScaling(upgrade2.level);
-      const canAfford = this.value.gte(cost);
-      return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
-    }
-    function calculateSum(f, b) {
-      let sum = E();
-      for (let n = E(0); n.lte(b); n = n.add(1)) {
-        sum = sum.add(f(n));
-      }
-      return sum;
-    }
-    function findHighestB(f, a, el1 = el) {
-      if (!el1) {
-        let left = E(0);
-        let right = E(1);
-        while (calculateSum(f, right).lt(a)) {
-          right = right.mul(2);
-        }
-        while (left.lt(right)) {
-          const mid = E.floor(left.add(right).div(2));
-          const sum = calculateSum(f, mid);
-          if (sum.lt(a)) {
-            left = mid.add(1);
-          } else {
-            right = mid;
-          }
-        }
-        return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
-      } else {
-        let left = E(0);
-        let right = target;
-        let result = E(0);
-        while (left.lessThanOrEqualTo(right)) {
-          const mid = left.plus(right).dividedBy(2).floor();
-          const value = f(mid);
-          if (value.lte(a)) {
-            result = mid;
-            left = mid.plus(1);
-          } else {
-            right = mid.minus(1);
-          }
-        }
-        return [result, result.gt(0) ? f(result) : E(0)];
-      }
-    }
-    return findHighestB(
-      (level) => upgrade2.costScaling(upgrade2.level.add(level)),
-      this.value
-    );
+    return calculateUpgrade(this.value, upgrade, target, el);
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -4053,13 +4066,13 @@ var currencyStatic = class {
    * @returns The cost of the next upgrade.
    */
   getNextCost(id, target = 0, el = false) {
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null) {
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return E(0);
     }
-    const amount = this.calculateUpgrade(id, target, el)[1];
-    const nextCost = upgrade2.costScaling(upgrade2.level.add(amount));
+    const amount = calculateUpgrade(this.value, upgrade, target, el)[1];
+    const nextCost = upgrade.cost(upgrade.level.add(amount));
     return nextCost;
   }
   /**
@@ -4071,21 +4084,22 @@ var currencyStatic = class {
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    */
   buyUpgrade(id, target = 1) {
-    const upgrade2 = this.getUpgrade(id);
-    if (upgrade2 === null)
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null)
       return false;
     target = E(target);
-    const maxAffordableQuantity = this.calculateUpgrade(
-      id,
+    const maxAffordableQuantity = calculateUpgrade(
+      this.value,
+      upgrade,
       target
     );
     if (maxAffordableQuantity[0].lte(0)) {
       return false;
     }
     this.pointer.value = this.pointer.value.sub(maxAffordableQuantity[1]);
-    upgrade2.level = upgrade2.level.add(maxAffordableQuantity[0]);
-    if (typeof upgrade2.effect === "function") {
-      upgrade2.effect(upgrade2.level, upgrade2);
+    upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
+    if (typeof upgrade.effect === "function") {
+      upgrade.effect(upgrade.level, upgrade);
     }
     return true;
   }
@@ -4351,6 +4365,14 @@ var eMathWeb = {
      * @deprecated Use `import { gridCell } from "emath.js"` instead.
      */
     gridCell
+    // /**
+    //  * @deprecated Use `import { skillNode } from "emath.js"` instead.
+    //  */
+    // skillNode,
+    // /**
+    //  * @deprecated Use `import { skillTree } from "emath.js"` instead.
+    //  */
+    // skillTree,
   }
   // /**
   //  * @deprecated Use `import { game } from "emath.js"` instead.

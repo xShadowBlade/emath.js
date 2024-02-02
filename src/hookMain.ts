@@ -3,6 +3,7 @@ import { boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
 import { attribute } from "./classes/attribute";
 import { grid, gridCell } from "./classes/grid";
+import { skillNode, skillTree } from "classes/skillTree";
 
 // import { game } from "./game/game";
 // import { keyManager } from "./game/managers/keyManager";
@@ -43,6 +44,16 @@ const eMathWeb = {
          * @deprecated Use `import { gridCell } from "emath.js"` instead.
          */
         gridCell,
+
+        // /**
+        //  * @deprecated Use `import { skillNode } from "emath.js"` instead.
+        //  */
+        // skillNode,
+
+        // /**
+        //  * @deprecated Use `import { skillTree } from "emath.js"` instead.
+        //  */
+        // skillTree,
     },
 
     // /**

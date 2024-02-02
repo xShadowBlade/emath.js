@@ -52,9 +52,8 @@ class dataManager {
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
-     * @param saveOnExit - Whether to save the game when the user exits the page. Defaults to `true`.
      */
-    constructor (gameRef: game, saveOnExit = true) {
+    constructor (gameRef: game) {
         // if (typeof window === "undefined") { // Don't run on serverside
         //     throw new Error("dataManager cannot be run on serverside");
         // }
@@ -65,16 +64,16 @@ class dataManager {
 
         this.data = {};
         this.static = {};
-        if (saveOnExit) {
-            const saveDataFn = this.saveData;
-            window.addEventListener("beforeunload", function (e) {
-                // Your code to run before the page unloads goes here
-                // For example, you can save user data to a server.
-                // Make sure to return a message to display to the user.
-                saveDataFn();
-                // e.returnValue = "Are you sure you want to leave this page?";
-            });
-        }
+        // if (saveOnExit) {
+        //     const saveDataFn = this.saveData;
+        //     window.addEventListener("beforeunload", function (e) {
+        //         // Your code to run before the page unloads goes here
+        //         // For example, you can save user data to a server.
+        //         // Make sure to return a message to display to the user.
+        //         saveDataFn();
+        //         // e.returnValue = "Are you sure you want to leave this page?";
+        //     });
+        // }
     }
 
     /**
@@ -147,6 +146,7 @@ class dataManager {
         // console.log("Compiling data", LZString);
         const dataRawString = JSON.stringify(this.compileDataRaw(data));
         // If lzstring is not available, use btoa (webpack bug >:( )
+        // console.log(compressToBase64, decompressFromBase64);
         return compressToBase64 ? compressToBase64(dataRawString) : btoa(dataRawString);
     }
 
@@ -326,7 +326,7 @@ class dataManager {
                 // If it's not an object, skip it
                 if (!((plain as any)[key] instanceof Object && (plain as any)[key].constructor === Object)) continue;
                 // If it matches a template class, convert it
-                if (!((): boolean => {
+                if (((): boolean => {
                     for (const templateClass of templateClasses) {
                         if (compareArrays(Object.getOwnPropertyNames((plain as any)[key]), templateClass.properties)) {
                             (out as any)[key] = plainToInstance(templateClass.class, (out as any)[key]);
@@ -348,12 +348,12 @@ class dataManager {
                                 }
                             }
 
-                            // Return true if it matches a template class
-                            return true;
+                            // Return false if it matches a template class
+                            return false;
                         }
                     }
-                    // Return false if it doesn't match a template class
-                    return false;
+                    // Return true if it doesn't match a template class
+                    return true;
                 })()) {
                     (out as any)[key] = plainToInstanceRecursive((plain as any)[key]);
                 }

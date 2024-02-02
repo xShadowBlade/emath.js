@@ -33,6 +33,7 @@ export * from "./classes/boost";
 export * from "./classes/currency";
 export * from "./classes/attribute";
 export * from "./classes/grid";
+// export * from "./classes/skillTree";
 
 // export { E } from "./eMath";
 // export { boost } from "./classes/boost";

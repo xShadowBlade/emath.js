@@ -1,3 +1,6 @@
+/**
+ * @file CLI build script
+ */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const esbuild = require("esbuild");
 const { umdWrapper } = require("./umdPlugin.js");
@@ -104,7 +107,7 @@ Promise.all(buildOptions.map(async function (option) {
         if (!matches) {
             return;
         }
-        console.log(matches);
+        // console.log(matches);
         const fileDataReplaced = fileData.replace(regex, replacement);
         // console.log(fileDataReplaced);
         await fs.writeFile(option.outfile, fileDataReplaced);

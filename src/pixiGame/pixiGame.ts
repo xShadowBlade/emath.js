@@ -1,5 +1,5 @@
 import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
-import { configManager, RequiredDeep } from "game/managers/configManager";
+import { configManager, RequiredDeep } from "../game/managers/configManager";
 import { sprite } from "./sprite";
 import { keyManager } from "../game/managers/keyManager";
 import { eventManager } from "../game/managers/eventManager";

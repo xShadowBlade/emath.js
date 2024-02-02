@@ -2600,18 +2600,11 @@ var dataManager = class {
   /**
    * Creates a new instance of the game class.
    * @param gameRef - A function that returns the game instance.
-   * @param saveOnExit - Whether to save the game when the user exits the page. Defaults to `true`.
    */
-  constructor(gameRef, saveOnExit = true) {
+  constructor(gameRef) {
     this.gameRef = gameRef;
     this.data = {};
     this.static = {};
-    if (saveOnExit) {
-      const saveDataFn = this.saveData;
-      window.addEventListener("beforeunload", function(e) {
-        saveDataFn();
-      });
-    }
   }
   /**
    * Sets the data for the given key.
@@ -2796,7 +2789,7 @@ var dataManager = class {
       for (const key in plain) {
         if (!(plain[key] instanceof Object && plain[key].constructor === Object))
           continue;
-        if (!(() => {
+        if ((() => {
           for (const templateClass of templateClasses) {
             if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClass.properties)) {
               out[key] = plainToInstance(templateClass.class, out[key]);
@@ -2813,10 +2806,10 @@ var dataManager = class {
                   }
                 }
               }
-              return true;
+              return false;
             }
           }
-          return false;
+          return true;
         })()) {
           out[key] = plainToInstanceRecursive(plain[key]);
         }
