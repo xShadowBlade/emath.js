@@ -1,20 +1,52 @@
 {
-  "name": "test",
-  "private": true,
-  "type": "module",
+  "name": "test-emathjs",
   "version": "0.1.0",
-  "description": "test",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "build": "tsc -p ./index.ts --outfile ./index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --mode development --output-pathinfo",
+    "build": "webpack --mode production",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xShadowBlade/template-defaults"
   },
   "author": "xShadowBlade",
   "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5.2.2"
+  "bugs": {
+    "url": "https://github.com/xShadowBlade/template-defaults/issues"
+  },
+  "homepage": "https://github.com/xShadowBlade/template-defaults#readme",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "dependencies": {
-    "emath.js": "file:.."
+    "emath.js": "file:../"
+  },
+  "devDependencies": {
+    "@types/css-modules": "^1.0.4",
+    "copy-webpack-plugin": "^12.0.1",
+    "css-loader": "^6.8.1",
+    "css-minimizer-webpack-plugin": "^6.0.0",
+    "esbuild": "^0.19.5",
+    "esbuild-loader": "^4.0.2",
+    "html-replace-webpack-plugin": "^2.6.0",
+    "html-webpack-plugin": "^5.5.3",
+    "mini-css-extract-plugin": "^2.8.0",
+    "style-loader": "^3.3.4",
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   }
 }
