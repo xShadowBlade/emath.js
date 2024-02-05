@@ -13,9 +13,7 @@ import { instanceToPlain, plainToInstance } from "class-transformer";
 import { currency, upgradeData } from "../../classes/currency";
 import { boost, boostObject } from "../../classes/boost";
 import { attribute } from "../../classes/attribute";
-// import { E } from "index";
 import Decimal from "../../E/e";
-
 
 // Save validation
 /**
@@ -53,14 +51,11 @@ class dataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor (gameRef: game) {
+    constructor (gameRef: game | (() => game)) {
         // if (typeof window === "undefined") { // Don't run on serverside
         //     throw new Error("dataManager cannot be run on serverside");
         // }
-        this.gameRef = gameRef;
-        // this.normalDataRecord = instanceToPlain(gameRef.data);
-        // this.normalData = gameRef.data;
-        // this.data = gameRef.data;
+        this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
 
         this.data = {};
         this.static = {};
@@ -86,7 +81,8 @@ class dataManager {
         if (typeof this.data[key] === "undefined" && this.normalData) {
             console.warn("After initializing data, you should not add new properties to data.");
         }
-        return this.data[key] = value;
+        this.data[key] = value;
+        return this.data[key];
     }
 
     /**
@@ -105,7 +101,11 @@ class dataManager {
      * @returns - The value that was set.
      */
     public setStatic<t> (key: string, value: t): t {
-        return this.static[key] = value;
+        if (typeof this.static[key] === "undefined" && this.normalData) {
+            console.warn("After initializing data, you should not add new properties to staticData.");
+        }
+        this.static[key] = value;
+        return this.static[key];
     }
 
     /**
@@ -121,6 +121,7 @@ class dataManager {
      * Initializes / sets data that is unmodified by the player.
      * This is used to merge the loaded data with the default data.
      * It should be called before you load data.
+     * Note: This should only be called once, and after it is called, you should not add new properties to data.
      */
     public init (): void {
         this.normalData = this.data;
@@ -138,28 +139,22 @@ class dataManager {
     }
 
     /**
-     * Compresses the given game data to a base64-encoded string.
+     * Compresses the given game data to a base64-encoded using lz-string, or btoa if lz-string is not available.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
     public compileData (data = this.data): string {
-        // console.log("Compiling data", LZString);
         const dataRawString = JSON.stringify(this.compileDataRaw(data));
-        // If lzstring is not available, use btoa (webpack bug >:( )
-        // console.log(compressToBase64, decompressFromBase64);
         return compressToBase64 ? compressToBase64(dataRawString) : btoa(dataRawString);
     }
 
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
-     * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
+     * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
     public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [string, object] | null {
         if (!data) return null;
-        /**
-         * Parsed data in a tuple.
-         */
         const parsedData: [string, object] = JSON.parse(decompressFromBase64 ? decompressFromBase64(data) : atob(data));
         return parsedData;
     }
@@ -172,7 +167,8 @@ class dataManager {
     public validateData (data: [string, object]): boolean {
         const [hashSave, gameDataToValidate] = data;
         // Current hash
-        const hashCheck = md5(JSON.stringify(instanceToPlain(gameDataToValidate)));
+        const hashCheck = md5(JSON.stringify(gameDataToValidate));
+        console.log("Hashes: ", hashSave, hashCheck);
         return hashSave === hashCheck;
     }
 
@@ -191,7 +187,7 @@ class dataManager {
     };
 
     /**
-     * Saves the game data to local storage.
+     * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you dont want to save to local storage, use {@link compileData} instead.
      */
     public saveData (): void {
@@ -199,17 +195,17 @@ class dataManager {
     };
 
     /**
-     * Compiles the game data and prompts the user to download it as a text file. (optional)
-     * @param download - Whether to download the file automatically. Defaults to `true`. If set to `false`, this is kinda useless lol use {@link compileData} instead.
+     * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
+     * If you want to implement a custom data export, use {@link compileData} instead.
      */
-    public exportData (download = true): void {
+    public exportData (): void {
         // Step 1: Create the content
         const content = this.compileData();
 
         // console.log(content);
 
         // Ask if user wants to download
-        if (download && prompt("Download save data?:", content) != null) {
+        if (prompt("Download save data?:", content) != null) {
             const blob = new Blob([content], { type: "text/plain" });
 
             const downloadLink = document.createElement("a");
@@ -223,14 +219,15 @@ class dataManager {
         }
     };
 
+    /**
+     * Loads game data and processes it.
+     * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+     * @returns The loaded data.
+     */
     public parseData (dataToParse = this.decompileData()): object | null {
-        if (!this.normalData) {
-            throw new Error("dataManager.loadData(): You must call init() before writing to data.");
-        }
-        if (!dataToParse) {
-            return null;
-        }
-        const [, loadedData] = dataToParse;
+        if (!this.normalData) throw new Error("dataManager.loadData(): You must call init() before writing to data.");
+        if (!dataToParse) return null;
+        const [hash, loadedData] = dataToParse;
         // console.log(loadedData);
 
         /**
@@ -242,6 +239,7 @@ class dataManager {
             return typeof obj === "object" && obj.constructor === Object;
         }
 
+        // Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
         /**
          * Add new / updated properties
          * @param source - The source object to reference if a property is missing.
@@ -263,46 +261,55 @@ class dataManager {
         }
         let loadedDataProcessed = deepMerge(this.normalData, loadedData);
         // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
+        interface templateClass {
+            name?: string;
+            // Class constructor is Function
+            class: any;
+            /** If the value is an array, it's an array of the given type */
+            subclasses?: Record<string, any | [any]>;
+            properties: string[];
+        }
 
         // Convert plain object to class instance (recursive)
-        const templateClasses = [
-            {
-                class: currency,
-                subclasses: {
-                    value: Decimal,
-                    upgrades: [upgradeData],
-                    boost: boost,
-                },
-            },
-            {
-                class: boost,
-                subclasses: {
-                    boostArray: [boostObject],
-                    baseEffect: Decimal,
-                },
-            },
+        // TODO: use class-transformer and metadata
+        const templateClasses = (function (templateClassesInit: Omit<templateClass, "properties">[]) {
+            const out: templateClass[] = [];
+            for (const templateClassConvert of templateClassesInit) {
+                out.push({
+                    class: templateClassConvert.class,
+                    subclasses: templateClassConvert.subclasses,
+                    properties: Object.getOwnPropertyNames(new templateClassConvert.class()),
+                });
+            }
+            return out;
+        })([
             {
                 class: attribute,
                 subclasses: {
                     value: Decimal,
                 },
             },
+            // {
+            //     class: boost,
+            //     subclasses: {
+            //         baseEffect: Decimal,
+            //         boostArray: [boostObject],
+            //     },
+            // },
+            {
+                class: currency,
+                subclasses: {
+                    // boost: boost,
+                    upgrades: [upgradeData],
+                    value: Decimal,
+                },
+            },
             {
                 class: Decimal,
             },
-        ] as {
-            class: any;
-            subclasses?: {
-                [key: string]: any;
-            }
-            properties: string[];
-        }[];
+        ]);
 
-        for (const templateClass of templateClasses) {
-            templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
-        }
-
-        // console.log("Temp", templateClasses);
+        console.log("Temp", templateClasses);
 
         /**
          * Compares two arrays. If they have the same elements, returns true.
@@ -312,6 +319,42 @@ class dataManager {
          */
         function compareArrays (arr1: any[], arr2: any[]): boolean {
             return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+        }
+
+        /**
+         * Converts a plain object to a class instance.
+         * @param templateClass - The template class to convert to.
+         * @param plain - The plain object to convert.
+         * @returns The converted class instance.
+         */
+        function convertTemplateClass (templateClass: templateClass, plain: object): any {
+            // let out: object = plain;
+            // Convert the object
+            let out = plainToInstance(templateClass.class, plain);
+
+            // Convert subclasses
+            // ! Use class-transformer instead
+            // if (templateClass.subclasses) {
+            //     for (const subclassKey in templateClass.subclasses) {
+            //         console.log(subclassKey);
+            //         if (Array.isArray(templateClass.subclasses[subclassKey])) {
+            //             // Convert each object in the array
+            //             for (let i = 0; i < (out as any)[subclassKey].length; i++) {
+            //                 (out as any)[subclassKey][i] = plainToInstanceRecursive((out as any)[subclassKey][i]);
+            //             }
+            //         } else {
+            //             // Convert object
+            //             // Special case for currency.value because I am lazy
+            //             if (subclassKey === "value") {
+            //                 (out as any)[subclassKey] = new Decimal((out as any)[subclassKey]);
+            //             } else {
+            //                 (out as any)[subclassKey] = plainToInstanceRecursive((out as any)[subclassKey]);
+            //             }
+            //             // (out as any)[subclassKey] = plainToInstanceRecursive((out as any)[subclassKey]);
+            //         }
+            //     }
+            // }
+            return out;
         }
 
         /**
@@ -327,26 +370,11 @@ class dataManager {
                 if (!((plain as any)[key] instanceof Object && (plain as any)[key].constructor === Object)) continue;
                 // If it matches a template class, convert it
                 if (((): boolean => {
+                    // Iterate through each template class
                     for (const templateClass of templateClasses) {
+                        // If the object has the same properties as the template class, convert it
                         if (compareArrays(Object.getOwnPropertyNames((plain as any)[key]), templateClass.properties)) {
-                            (out as any)[key] = plainToInstance(templateClass.class, (out as any)[key]);
-
-                            // Convert subclasses
-                            if (templateClass.subclasses) {
-                                for (const subclassKey in templateClass.subclasses) {
-                                    if (Object.prototype.hasOwnProperty.call(templateClass.subclasses, subclassKey)) {
-                                        if (Array.isArray(templateClass.subclasses[subclassKey])) {
-                                            // Convert array
-                                            for (let i = 0; i < (out as any)[key][subclassKey].length; i++) {
-                                                (out as any)[key][subclassKey][i] = plainToInstanceRecursive((out as any)[key][subclassKey][i]);
-                                            }
-                                        } else {
-                                            // Convert object
-                                            (out as any)[key][subclassKey] = plainToInstanceRecursive((out as any)[key][subclassKey]);
-                                        }
-                                    }
-                                }
-                            }
+                            (out as any)[key] = convertTemplateClass(templateClass, (plain as any)[key]);
 
                             // Return false if it matches a template class
                             return false;
@@ -355,6 +383,7 @@ class dataManager {
                     // Return true if it doesn't match a template class
                     return true;
                 })()) {
+                    // If the object doesn't match a template class, convert it recursively
                     (out as any)[key] = plainToInstanceRecursive((plain as any)[key]);
                 }
             }
@@ -368,13 +397,17 @@ class dataManager {
 
     /**
      * Loads game data and processes it.
-     * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
+     * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+     * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
      */
-    public loadData (dataToLoad = this.decompileData()): void {
+    public loadData (dataToLoad = this.decompileData()): null | boolean {
+        if (!dataToLoad) return null;
         const parsedData = this.parseData(dataToLoad);
-        if (!parsedData) return;
+        if (!parsedData) return null;
+        const isDataValid = this.validateData(dataToLoad);
         console.log("Loaded data: ", parsedData);
         this.data = parsedData; // TODO: Fix this
+        return isDataValid;
     };
 }
 

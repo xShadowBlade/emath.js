@@ -52,7 +52,7 @@ declare class game {
     init(): void;
     /**
      * Adds a new currency section to the game. {@link gameCurrency}
-     * @param name - The name of the currency section.
+     * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
      */
     addCurrency(name: string): gameCurrency;

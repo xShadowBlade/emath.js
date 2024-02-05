@@ -96,7 +96,7 @@ class game {
 
     /**
      * Adds a new currency section to the game. {@link gameCurrency}
-     * @param name - The name of the currency section.
+     * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
      */
     public addCurrency (name: string): gameCurrency {
@@ -104,11 +104,11 @@ class game {
             currency: new currency(),
         });
         this.dataManager.setStatic(name, {
-            currency: new currencyStatic(this.dataManager.getData(name).currency),
+            currency: new currencyStatic(() => this.dataManager.getData(name).currency),
             // attributes: {},
         });
 
-        const classInstance = new gameCurrency(this.dataManager.getData(name).currency, this.dataManager.getStatic(name).currency, this);
+        const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this);
         return classInstance;
     }
 

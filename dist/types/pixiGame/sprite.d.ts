@@ -32,15 +32,8 @@ declare class sprite {
      */
     collides(other: this): boolean;
     /**
-     * Removes the sprite from its parent and optionally from an array.
-     * @param parent - The parent object or array.
+     * Removes the sprite from its parent container.
      */
-    remove(parent: Array<any> | object): void;
-    /**
-     * Removes a sprite from its parent container.
-     * @param sprite - The sprite to remove.
-     * @param parent - The parent container from which to remove the sprite.
-     */
-    static remove(sprite: sprite, parent: Array<any> | object): void;
+    remove(): void;
 }
 export { sprite };

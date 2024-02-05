@@ -1,15 +1,18 @@
+/**
+ * @file Declares the attribute and attributeStatic classes.
+ */
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
-// import { Type } from "class-transformer";
+import { Type, Expose } from "class-transformer";
+import Decimal from "../E/e";
 
 /**
  * Represents an attribute in the game.
  * @deprecated Use {@link attributeStatic} instead.
  */
 class attribute {
-    /**
-     * The current value of the attribute.
-     */
+    /** The current value of the attribute. */
+    @Type(() => Decimal)
     public value: E;
 
     /**
@@ -21,22 +24,22 @@ class attribute {
     }
 }
 
-/**
- * Represents a static attribute, which is number effected by boosts.
- */
+/** Represents a static attribute, which is number effected by boosts. */
 class attributeStatic {
-    protected pointer: attribute;
+    protected pointerFn: attribute;
 
-    /**
-     * The initial value of the attribute.
-     */
+    get pointer () {
+        return this.pointerFn;
+    }
+
+    /** The initial value of the attribute. */
     public initial: E;
 
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    public boost: boost;
+    public boost?: boost;
 
     /**
      * Constructs a new instance of the Attribute class.
@@ -46,9 +49,9 @@ class attributeStatic {
      */
     constructor (pointer: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
         this.initial = E(initial);
-
-        this.pointer = typeof pointer === "function" ? pointer() : pointer;
-        this.boost = new boost(this.initial);
+        // this.pointer = typeof pointer === "function" ? pointer() : pointer;
+        this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+        if (useBoost) this.boost = new boost(this.initial);
     }
 
     /**

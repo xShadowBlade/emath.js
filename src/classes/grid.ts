@@ -1,6 +1,7 @@
 /**
- * Represents a grid cell with coordinates and properties.
+ * @file Declares the gridCell and grid classes.
  */
+/** Represents a grid cell with coordinates and properties. */
 class gridCell {
     public x: number;
     public y: number;
@@ -208,7 +209,4 @@ class grid {
         return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
     }
 }
-/**
- * Exports the gridCell and grid classes.
- */
 export { gridCell, grid };

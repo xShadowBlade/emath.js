@@ -1,5 +1,5 @@
 import { game, gameConfigOptions } from "../game/game";
-import { configManager, RequiredDeep } from "game/managers/configManager";
+import { configManager, RequiredDeep } from "../game/managers/configManager";
 import { sprite } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";

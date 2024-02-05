@@ -2,49 +2,56 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
-// import { Type, Expose } from "class-transformer";
-/**
- * An object representing a boost.
- */
+import { Type, Expose, Exclude } from "class-transformer";
+
+/** An object representing a boost. */
 interface boostsObjectInit {
-    /**
-     * The ID of the boost.
-     */
+    /** The ID of the boost. */
     id: string,
-    /**
-     * The name of the boost.
-     */
+    /** The name of the boost. */
     name?: string,
-    /**
-     * An optional description of the boost.
-     */
+    /** An optional description of the boost. */
     desc?: string,
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
      * @returns The calculated value.
+     * @example
+     * // A boost that adds 10 to the input value.
+     * (input) => input.add(10)
+     *
+     * // A boost that multiplies the input value by 2.
+     * (input) => input.mul(2)
      */
     value: (input: E) => E,
-    /**
-     * The order at which the boost is applied. Lower orders are applied first.
-     */
+    /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number,
-    /**
-     * The index of the boost.
-     * @deprecated Don't use this.
-     */
-    index?: number,
 }
+
+// /** An interface representing the data of a boost object. */
+// interface IBoostObjectData {
+//     id: string,
+//     level: E,
+// }
+
+// class boostObjectData implements IBoostObjectData {
+//     @Expose()
+//     public id: string;
+//     @Expose()
+//     public level: E;
+
+//     constructor (id: string, level: ESource = 1) {
+//         this.id = id;
+//         this.level = E(level);
+//     }
+// }
 
 class boostObject implements boostsObjectInit {
     public id: string;
     public name: string;
     public desc: string;
-    // // @ts-expect-error - In ts 5.x.x, decorators are buggy ig
-    // @Expose({ name: "value" })
     public value: (input: E) => E;
     public order: number;
-    // public index: number;
 
     constructor (init: boostsObjectInit) {
         this.id = init.id;
@@ -52,22 +59,30 @@ class boostObject implements boostsObjectInit {
         this.desc = init.desc ?? "";
         this.value = init.value;
         this.order = init.order ?? 99;
-        // this.index = init.index ?? -1;
     }
 }
 
-/**
- * Represents a boost manager that applies various effects to a base value.
- */
+// class boostData {
+//     @Type(() => boostObjectData)
+//     public boostArrayData: boostObjectData[];
+
+//     constructor (boostArrayData?: boostObjectData[]) {
+//         this.boostArrayData = boostArrayData ?? [];
+//     }
+// }
+
+/** Represents a boost manager that applies various effects to a base value. */
 class boost {
-    /**
-     * An array of boost objects.
-     */
+    /** An array of boost objects. */
+    @Type(() => boostObject)
     public boostArray: boostObject[];
 
-    /**
-     * The base effect value.
-     */
+    // /** An array of boost data. */
+    // @Type(() => boostObjectData)
+    // public boostArrayData: boostObjectData[];
+
+    /** The base effect value. */
+    @Expose()
     public baseEffect: E;
 
     /**
@@ -79,7 +94,6 @@ class boost {
         boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
         this.baseEffect = E(baseEffect);
         this.boostArray = [];
-        // this.boostArray = new boostObjectArray(boosts);
         if (boosts) {
             boosts.forEach((boostObj) => {
                 this.boostArray.push(new boostObject(boostObj));
@@ -90,7 +104,7 @@ class boost {
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
-     * @param i - Whether to return the index of the boosts as well.
+     * @param index - Whether to return the index of the boosts as well.
      * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
      */
     public getBoosts (id: string | RegExp): boostObject[];
@@ -139,13 +153,12 @@ class boost {
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
-     * @param value - The value of the boost (function). 
+     * @param value - The value of the boost (function).
      * NOTE: There is a weird webpack(?) bug where the input can sometimes be 0 instead of the actual input.
      * Use {@link E.clone}(input) to get the actual input.
      * @param order - The order of the boost (higher order go first)
      */
     public setBoost (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
-
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -196,16 +209,10 @@ class boost {
         let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
         boosts = boosts.sort((a: boostObject, b: boostObject) => a.order - b.order);
-        // console.log(boosts);
         for (let i = 0; i < boosts.length; i++) {
-            // console.log(`boostint${i}`, output, boosts[i].value(output));
             output = boosts[i].value(output);
         }
-        // console.log("boosts out", output);
-        // return output.normalizeFromComponents(); // webpack is goofy af
-        // return E.fromComponents(output.sign, output.layer, output.mag);
         return output;
-        // return E(122); // test
     }
 }
 

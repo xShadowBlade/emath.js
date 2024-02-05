@@ -2,37 +2,28 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
-/**
- * An object representing a boost.
- */
+/** An object representing a boost. */
 interface boostsObjectInit {
-    /**
-     * The ID of the boost.
-     */
+    /** The ID of the boost. */
     id: string;
-    /**
-     * The name of the boost.
-     */
+    /** The name of the boost. */
     name?: string;
-    /**
-     * An optional description of the boost.
-     */
+    /** An optional description of the boost. */
     desc?: string;
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
      * @returns The calculated value.
+     * @example
+     * // A boost that adds 10 to the input value.
+     * (input) => input.add(10)
+     *
+     * // A boost that multiplies the input value by 2.
+     * (input) => input.mul(2)
      */
     value: (input: E) => E;
-    /**
-     * The order at which the boost is applied. Lower orders are applied first.
-     */
+    /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
-    /**
-     * The index of the boost.
-     * @deprecated Don't use this.
-     */
-    index?: number;
 }
 declare class boostObject implements boostsObjectInit {
     id: string;
@@ -42,17 +33,11 @@ declare class boostObject implements boostsObjectInit {
     order: number;
     constructor(init: boostsObjectInit);
 }
-/**
- * Represents a boost manager that applies various effects to a base value.
- */
+/** Represents a boost manager that applies various effects to a base value. */
 declare class boost {
-    /**
-     * An array of boost objects.
-     */
+    /** An array of boost objects. */
     boostArray: boostObject[];
-    /**
-     * The base effect value.
-     */
+    /** The base effect value. */
     baseEffect: E;
     /**
      * Constructs a new boost manager.
@@ -63,7 +48,7 @@ declare class boost {
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
-     * @param i - Whether to return the index of the boosts as well.
+     * @param index - Whether to return the index of the boosts as well.
      * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
      */
     getBoosts(id: string | RegExp): boostObject[];

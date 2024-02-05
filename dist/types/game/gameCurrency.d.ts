@@ -9,8 +9,10 @@ import type { game } from "./game";
  * To use, destruct the `data` and `static` properties from the class.
  */
 declare class gameCurrency {
-    data: currency;
-    static: currencyStatic;
+    dataPointer: () => currency;
+    staticPointer: () => currencyStatic;
+    get data(): currency;
+    get static(): currencyStatic;
     game?: game;
     /**
      * Creates a new instance of the game class.
@@ -24,10 +26,5 @@ declare class gameCurrency {
      * @returns The value of the game currency.
      */
     get value(): E;
-    /**
-     * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-     * @param currencyPointer - A function or pointer that returns the current currency value.
-     */
-    updateDataPointer(currencyPointer: (() => currency) | currency): void;
 }
 export { gameCurrency };

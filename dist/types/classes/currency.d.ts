@@ -1,7 +1,5 @@
-/**
- * @file Declares the currency class and its related classes (upgrade)
- */
 import { E, ESource } from "../E/eMain";
+import Decimal from "../E/e";
 import { boost } from "./boost";
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -18,29 +16,34 @@ declare function calculateUpgrade(value: E, upgrade: upgradeStatic, target?: ESo
  * Interface for initializing an upgrade.
  */
 interface upgradeInit {
-    /**
-     * The ID of the upgrade.
-     */
+    /** The ID of the upgrade. */
     id: string;
-    /**
-     * The name of the upgrade. Defaults to the ID.
-     */
+    /** The name of the upgrade. Defaults to the ID. */
     name?: string;
-    /**
-     * The description of the upgrade.
-     */
+    /** The description of the upgrade. */
     description?: string;
     /**
      * The cost of upgrades at a certain level.
+     * @param level - The current level of the upgrade.
+     * @returns The cost of the upgrade.
+     * @example
+     * // A cost function that returns twice the level.
+     * (level) => level.mul(2)
      */
     cost: (level: E) => E;
     /**
      * The cost of buying a bulk of upgrades at a certain level.
+     * @param level - The current level of the upgrade.
+     * @param target - The target level of the upgrade.
+     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
+     * @example
+     * // A cost function that returns the sum of the levels and the target.
+     * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
+     * // -target^2 + target + level^2 + level
+     * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
     costBulk?: (level: E, target: E) => [cost: E, amount: E];
-    /**
-     * The maximum level of the upgrade.
-     */
+    /** The maximum level of the upgrade. */
     maxLevel: E;
     /**
      * The effect of the upgrade.
@@ -48,18 +51,12 @@ interface upgradeInit {
      * @param context - The upgrade object.
      */
     effect: (level: E, context: upgradeStatic) => void;
-    /**
-     * Endless: Flag to exclude the sum calculation and only perform binary search.
-     */
+    /** Endless: Flag to exclude the sum calculation and only perform binary search. */
     el?: boolean;
-    /**
-     * The current level of the upgrade. Automatically added.
-     */
+    /** The current level of the upgrade. Automatically added. */
     level?: E;
 }
-/**
- * Interface for an upgrade.
- */
+/** Interface for an upgrade. */
 interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
     name: string;
     description: string;
@@ -70,17 +67,17 @@ interface IUpgradeData {
 }
 declare class upgradeData implements IUpgradeData {
     id: string;
-    level: import("../E/e").default;
+    level: Decimal;
     constructor(init: upgradeInit);
 }
 declare class upgradeStatic implements IUpgradeStatic {
     id: string;
     name: string;
     description: string;
-    cost: (level: import("../E/e").default) => import("../E/e").default;
-    costBulk: ((level: import("../E/e").default, target: import("../E/e").default) => [cost: import("../E/e").default, amount: import("../E/e").default]) | undefined;
-    maxLevel: import("../E/e").default;
-    effect: (level: import("../E/e").default, context: upgradeStatic) => void;
+    cost: (level: Decimal) => Decimal;
+    costBulk: ((level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
+    maxLevel: Decimal;
+    effect: (level: Decimal, context: upgradeStatic) => void;
     el?: boolean | undefined;
     protected data: upgradeData;
     /**
@@ -100,21 +97,11 @@ declare class upgradeStatic implements IUpgradeStatic {
  * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  */
 declare class currency {
-    /**
-     * The current value of the currency.
-     */
+    /** The current value of the currency. */
     value: E;
-    /**
-     * An array that represents upgrades and their levels.
-     */
+    /** An array that represents upgrades and their levels. */
     upgrades: upgradeData[];
-    /**
-     * A boost object that affects the currency gain.
-     */
-    boost: boost;
-    /**
-     * Constructs a new currency object with an initial value of 0.
-     */
+    /** Constructs a new currency object with an initial value of 0. */
     constructor();
 }
 /**
@@ -122,17 +109,12 @@ declare class currency {
  * All the functions are here instead of the `currency` class.
  */
 declare class currencyStatic {
-    /**
-     * An array that represents upgrades, their costs, and their effects.
-     */
+    /** An array that represents upgrades, their costs, and their effects. */
     upgrades: upgradeStatic[];
-    /**
-     * A function that returns the pointer of the data
-     */
-    protected pointer: currency;
-    /**
-     * A boost object that affects the currency gain.
-     */
+    /** A function that returns the pointer of the data */
+    protected pointerFn: (() => currency);
+    get pointer(): currency;
+    /** A boost object that affects the currency gain. */
     boost: boost;
     protected defaultVal: E;
     protected defaultBoost: E;

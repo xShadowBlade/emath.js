@@ -1,6 +1,7 @@
 /**
- * Represents a grid cell with coordinates and properties.
+ * @file Declares the gridCell and grid classes.
  */
+/** Represents a grid cell with coordinates and properties. */
 declare class gridCell {
     x: number;
     y: number;
@@ -126,7 +127,4 @@ declare class grid {
      */
     static getDistance(x1: number, y1: number, x2: number, y2: number): number;
 }
-/**
- * Exports the gridCell and grid classes.
- */
 export { gridCell, grid };

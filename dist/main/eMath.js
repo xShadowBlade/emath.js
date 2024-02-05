@@ -12,10 +12,15 @@
   var exports = {};
   var module = { exports };
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -28,7 +33,1105 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result)
+    __defProp(target, key, result);
+  return result;
+};
+
+// node_modules/reflect-metadata/Reflect.js
+var require_Reflect = __commonJS({
+  "node_modules/reflect-metadata/Reflect.js"() {
+    var Reflect2;
+    (function(Reflect3) {
+      (function(factory) {
+        var root = typeof globalThis === "object" ? globalThis : typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : sloppyModeThis();
+        var exporter = makeExporter(Reflect3);
+        if (typeof root.Reflect !== "undefined") {
+          exporter = makeExporter(root.Reflect, exporter);
+        }
+        factory(exporter, root);
+        if (typeof root.Reflect === "undefined") {
+          root.Reflect = Reflect3;
+        }
+        function makeExporter(target, previous) {
+          return function(key, value) {
+            Object.defineProperty(target, key, { configurable: true, writable: true, value });
+            if (previous)
+              previous(key, value);
+          };
+        }
+        function functionThis() {
+          try {
+            return Function("return this;")();
+          } catch (_) {
+          }
+        }
+        function indirectEvalThis() {
+          try {
+            return (void 0, eval)("(function() { return this; })()");
+          } catch (_) {
+          }
+        }
+        function sloppyModeThis() {
+          return functionThis() || indirectEvalThis();
+        }
+      })(function(exporter, root) {
+        var hasOwn = Object.prototype.hasOwnProperty;
+        var supportsSymbol = typeof Symbol === "function";
+        var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
+        var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
+        var supportsCreate = typeof Object.create === "function";
+        var supportsProto = { __proto__: [] } instanceof Array;
+        var downLevel = !supportsCreate && !supportsProto;
+        var HashMap = {
+          // create an object in dictionary mode (a.k.a. "slow" mode in v8)
+          create: supportsCreate ? function() {
+            return MakeDictionary(/* @__PURE__ */ Object.create(null));
+          } : supportsProto ? function() {
+            return MakeDictionary({ __proto__: null });
+          } : function() {
+            return MakeDictionary({});
+          },
+          has: downLevel ? function(map, key) {
+            return hasOwn.call(map, key);
+          } : function(map, key) {
+            return key in map;
+          },
+          get: downLevel ? function(map, key) {
+            return hasOwn.call(map, key) ? map[key] : void 0;
+          } : function(map, key) {
+            return map[key];
+          }
+        };
+        var functionPrototype = Object.getPrototypeOf(Function);
+        var _Map = typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
+        var _Set = typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
+        var _WeakMap = typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
+        var registrySymbol = supportsSymbol ? Symbol.for("@reflect-metadata:registry") : void 0;
+        var metadataRegistry = GetOrCreateMetadataRegistry();
+        var metadataProvider = CreateMetadataProvider(metadataRegistry);
+        function decorate(decorators, target, propertyKey, attributes) {
+          if (!IsUndefined(propertyKey)) {
+            if (!IsArray(decorators))
+              throw new TypeError();
+            if (!IsObject(target))
+              throw new TypeError();
+            if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
+              throw new TypeError();
+            if (IsNull(attributes))
+              attributes = void 0;
+            propertyKey = ToPropertyKey(propertyKey);
+            return DecorateProperty(decorators, target, propertyKey, attributes);
+          } else {
+            if (!IsArray(decorators))
+              throw new TypeError();
+            if (!IsConstructor(target))
+              throw new TypeError();
+            return DecorateConstructor(decorators, target);
+          }
+        }
+        exporter("decorate", decorate);
+        function metadata(metadataKey, metadataValue) {
+          function decorator(target, propertyKey) {
+            if (!IsObject(target))
+              throw new TypeError();
+            if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
+              throw new TypeError();
+            OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+          }
+          return decorator;
+        }
+        exporter("metadata", metadata);
+        function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+        }
+        exporter("defineMetadata", defineMetadata);
+        function hasMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryHasMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("hasMetadata", hasMetadata);
+        function hasOwnMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("hasOwnMetadata", hasOwnMetadata);
+        function getMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryGetMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("getMetadata", getMetadata);
+        function getOwnMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("getOwnMetadata", getOwnMetadata);
+        function getMetadataKeys(target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryMetadataKeys(target, propertyKey);
+        }
+        exporter("getMetadataKeys", getMetadataKeys);
+        function getOwnMetadataKeys(target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryOwnMetadataKeys(target, propertyKey);
+        }
+        exporter("getOwnMetadataKeys", getOwnMetadataKeys);
+        function deleteMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          var provider = GetMetadataProvider(
+            target,
+            propertyKey,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return false;
+          return provider.OrdinaryDeleteMetadata(metadataKey, target, propertyKey);
+        }
+        exporter("deleteMetadata", deleteMetadata);
+        function DecorateConstructor(decorators, target) {
+          for (var i = decorators.length - 1; i >= 0; --i) {
+            var decorator = decorators[i];
+            var decorated = decorator(target);
+            if (!IsUndefined(decorated) && !IsNull(decorated)) {
+              if (!IsConstructor(decorated))
+                throw new TypeError();
+              target = decorated;
+            }
+          }
+          return target;
+        }
+        function DecorateProperty(decorators, target, propertyKey, descriptor) {
+          for (var i = decorators.length - 1; i >= 0; --i) {
+            var decorator = decorators[i];
+            var decorated = decorator(target, propertyKey, descriptor);
+            if (!IsUndefined(decorated) && !IsNull(decorated)) {
+              if (!IsObject(decorated))
+                throw new TypeError();
+              descriptor = decorated;
+            }
+          }
+          return descriptor;
+        }
+        function OrdinaryHasMetadata(MetadataKey, O, P) {
+          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+          if (hasOwn2)
+            return true;
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (!IsNull(parent))
+            return OrdinaryHasMetadata(MetadataKey, parent, P);
+          return false;
+        }
+        function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return false;
+          return ToBoolean(provider.OrdinaryHasOwnMetadata(MetadataKey, O, P));
+        }
+        function OrdinaryGetMetadata(MetadataKey, O, P) {
+          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+          if (hasOwn2)
+            return OrdinaryGetOwnMetadata(MetadataKey, O, P);
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (!IsNull(parent))
+            return OrdinaryGetMetadata(MetadataKey, parent, P);
+          return void 0;
+        }
+        function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return;
+          return provider.OrdinaryGetOwnMetadata(MetadataKey, O, P);
+        }
+        function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            true
+          );
+          provider.OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P);
+        }
+        function OrdinaryMetadataKeys(O, P) {
+          var ownKeys = OrdinaryOwnMetadataKeys(O, P);
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (parent === null)
+            return ownKeys;
+          var parentKeys = OrdinaryMetadataKeys(parent, P);
+          if (parentKeys.length <= 0)
+            return ownKeys;
+          if (ownKeys.length <= 0)
+            return parentKeys;
+          var set = new _Set();
+          var keys = [];
+          for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
+            var key = ownKeys_1[_i];
+            var hasKey = set.has(key);
+            if (!hasKey) {
+              set.add(key);
+              keys.push(key);
+            }
+          }
+          for (var _a = 0, parentKeys_1 = parentKeys; _a < parentKeys_1.length; _a++) {
+            var key = parentKeys_1[_a];
+            var hasKey = set.has(key);
+            if (!hasKey) {
+              set.add(key);
+              keys.push(key);
+            }
+          }
+          return keys;
+        }
+        function OrdinaryOwnMetadataKeys(O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*create*/
+            false
+          );
+          if (!provider) {
+            return [];
+          }
+          return provider.OrdinaryOwnMetadataKeys(O, P);
+        }
+        function Type2(x) {
+          if (x === null)
+            return 1;
+          switch (typeof x) {
+            case "undefined":
+              return 0;
+            case "boolean":
+              return 2;
+            case "string":
+              return 3;
+            case "symbol":
+              return 4;
+            case "number":
+              return 5;
+            case "object":
+              return x === null ? 1 : 6;
+            default:
+              return 6;
+          }
+        }
+        function IsUndefined(x) {
+          return x === void 0;
+        }
+        function IsNull(x) {
+          return x === null;
+        }
+        function IsSymbol(x) {
+          return typeof x === "symbol";
+        }
+        function IsObject(x) {
+          return typeof x === "object" ? x !== null : typeof x === "function";
+        }
+        function ToPrimitive(input, PreferredType) {
+          switch (Type2(input)) {
+            case 0:
+              return input;
+            case 1:
+              return input;
+            case 2:
+              return input;
+            case 3:
+              return input;
+            case 4:
+              return input;
+            case 5:
+              return input;
+          }
+          var hint = PreferredType === 3 ? "string" : PreferredType === 5 ? "number" : "default";
+          var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
+          if (exoticToPrim !== void 0) {
+            var result = exoticToPrim.call(input, hint);
+            if (IsObject(result))
+              throw new TypeError();
+            return result;
+          }
+          return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
+        }
+        function OrdinaryToPrimitive(O, hint) {
+          if (hint === "string") {
+            var toString_1 = O.toString;
+            if (IsCallable(toString_1)) {
+              var result = toString_1.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+            var valueOf = O.valueOf;
+            if (IsCallable(valueOf)) {
+              var result = valueOf.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+          } else {
+            var valueOf = O.valueOf;
+            if (IsCallable(valueOf)) {
+              var result = valueOf.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+            var toString_2 = O.toString;
+            if (IsCallable(toString_2)) {
+              var result = toString_2.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+          }
+          throw new TypeError();
+        }
+        function ToBoolean(argument) {
+          return !!argument;
+        }
+        function ToString(argument) {
+          return "" + argument;
+        }
+        function ToPropertyKey(argument) {
+          var key = ToPrimitive(
+            argument,
+            3
+            /* String */
+          );
+          if (IsSymbol(key))
+            return key;
+          return ToString(key);
+        }
+        function IsArray(argument) {
+          return Array.isArray ? Array.isArray(argument) : argument instanceof Object ? argument instanceof Array : Object.prototype.toString.call(argument) === "[object Array]";
+        }
+        function IsCallable(argument) {
+          return typeof argument === "function";
+        }
+        function IsConstructor(argument) {
+          return typeof argument === "function";
+        }
+        function IsPropertyKey(argument) {
+          switch (Type2(argument)) {
+            case 3:
+              return true;
+            case 4:
+              return true;
+            default:
+              return false;
+          }
+        }
+        function SameValueZero(x, y) {
+          return x === y || x !== x && y !== y;
+        }
+        function GetMethod(V, P) {
+          var func = V[P];
+          if (func === void 0 || func === null)
+            return void 0;
+          if (!IsCallable(func))
+            throw new TypeError();
+          return func;
+        }
+        function GetIterator(obj) {
+          var method = GetMethod(obj, iteratorSymbol);
+          if (!IsCallable(method))
+            throw new TypeError();
+          var iterator = method.call(obj);
+          if (!IsObject(iterator))
+            throw new TypeError();
+          return iterator;
+        }
+        function IteratorValue(iterResult) {
+          return iterResult.value;
+        }
+        function IteratorStep(iterator) {
+          var result = iterator.next();
+          return result.done ? false : result;
+        }
+        function IteratorClose(iterator) {
+          var f = iterator["return"];
+          if (f)
+            f.call(iterator);
+        }
+        function OrdinaryGetPrototypeOf(O) {
+          var proto = Object.getPrototypeOf(O);
+          if (typeof O !== "function" || O === functionPrototype)
+            return proto;
+          if (proto !== functionPrototype)
+            return proto;
+          var prototype = O.prototype;
+          var prototypeProto = prototype && Object.getPrototypeOf(prototype);
+          if (prototypeProto == null || prototypeProto === Object.prototype)
+            return proto;
+          var constructor = prototypeProto.constructor;
+          if (typeof constructor !== "function")
+            return proto;
+          if (constructor === O)
+            return proto;
+          return constructor;
+        }
+        function CreateMetadataRegistry() {
+          var fallback;
+          if (!IsUndefined(registrySymbol) && typeof root.Reflect !== "undefined" && !(registrySymbol in root.Reflect) && typeof root.Reflect.defineMetadata === "function") {
+            fallback = CreateFallbackProvider(root.Reflect);
+          }
+          var first;
+          var second;
+          var rest;
+          var targetProviderMap = new _WeakMap();
+          var registry = {
+            registerProvider,
+            getProvider,
+            setProvider
+          };
+          return registry;
+          function registerProvider(provider) {
+            if (!Object.isExtensible(registry)) {
+              throw new Error("Cannot add provider to a frozen registry.");
+            }
+            switch (true) {
+              case fallback === provider:
+                break;
+              case IsUndefined(first):
+                first = provider;
+                break;
+              case first === provider:
+                break;
+              case IsUndefined(second):
+                second = provider;
+                break;
+              case second === provider:
+                break;
+              default:
+                if (rest === void 0)
+                  rest = new _Set();
+                rest.add(provider);
+                break;
+            }
+          }
+          function getProviderNoCache(O, P) {
+            if (!IsUndefined(first)) {
+              if (first.isProviderFor(O, P))
+                return first;
+              if (!IsUndefined(second)) {
+                if (second.isProviderFor(O, P))
+                  return first;
+                if (!IsUndefined(rest)) {
+                  var iterator = GetIterator(rest);
+                  while (true) {
+                    var next = IteratorStep(iterator);
+                    if (!next) {
+                      return void 0;
+                    }
+                    var provider = IteratorValue(next);
+                    if (provider.isProviderFor(O, P)) {
+                      IteratorClose(iterator);
+                      return provider;
+                    }
+                  }
+                }
+              }
+            }
+            if (!IsUndefined(fallback) && fallback.isProviderFor(O, P)) {
+              return fallback;
+            }
+            return void 0;
+          }
+          function getProvider(O, P) {
+            var providerMap = targetProviderMap.get(O);
+            var provider;
+            if (!IsUndefined(providerMap)) {
+              provider = providerMap.get(P);
+            }
+            if (!IsUndefined(provider)) {
+              return provider;
+            }
+            provider = getProviderNoCache(O, P);
+            if (!IsUndefined(provider)) {
+              if (IsUndefined(providerMap)) {
+                providerMap = new _Map();
+                targetProviderMap.set(O, providerMap);
+              }
+              providerMap.set(P, provider);
+            }
+            return provider;
+          }
+          function hasProvider(provider) {
+            if (IsUndefined(provider))
+              throw new TypeError();
+            return first === provider || second === provider || !IsUndefined(rest) && rest.has(provider);
+          }
+          function setProvider(O, P, provider) {
+            if (!hasProvider(provider)) {
+              throw new Error("Metadata provider not registered.");
+            }
+            var existingProvider = getProvider(O, P);
+            if (existingProvider !== provider) {
+              if (!IsUndefined(existingProvider)) {
+                return false;
+              }
+              var providerMap = targetProviderMap.get(O);
+              if (IsUndefined(providerMap)) {
+                providerMap = new _Map();
+                targetProviderMap.set(O, providerMap);
+              }
+              providerMap.set(P, provider);
+            }
+            return true;
+          }
+        }
+        function GetOrCreateMetadataRegistry() {
+          var metadataRegistry2;
+          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
+            metadataRegistry2 = root.Reflect[registrySymbol];
+          }
+          if (IsUndefined(metadataRegistry2)) {
+            metadataRegistry2 = CreateMetadataRegistry();
+          }
+          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
+            Object.defineProperty(root.Reflect, registrySymbol, {
+              enumerable: false,
+              configurable: false,
+              writable: false,
+              value: metadataRegistry2
+            });
+          }
+          return metadataRegistry2;
+        }
+        function CreateMetadataProvider(registry) {
+          var metadata2 = new _WeakMap();
+          var provider = {
+            isProviderFor: function(O, P) {
+              var targetMetadata = metadata2.get(O);
+              if (IsUndefined(targetMetadata))
+                return false;
+              return targetMetadata.has(P);
+            },
+            OrdinaryDefineOwnMetadata: OrdinaryDefineOwnMetadata2,
+            OrdinaryHasOwnMetadata: OrdinaryHasOwnMetadata2,
+            OrdinaryGetOwnMetadata: OrdinaryGetOwnMetadata2,
+            OrdinaryOwnMetadataKeys: OrdinaryOwnMetadataKeys2,
+            OrdinaryDeleteMetadata
+          };
+          metadataRegistry.registerProvider(provider);
+          return provider;
+          function GetOrCreateMetadataMap(O, P, Create) {
+            var targetMetadata = metadata2.get(O);
+            var createdTargetMetadata = false;
+            if (IsUndefined(targetMetadata)) {
+              if (!Create)
+                return void 0;
+              targetMetadata = new _Map();
+              metadata2.set(O, targetMetadata);
+              createdTargetMetadata = true;
+            }
+            var metadataMap = targetMetadata.get(P);
+            if (IsUndefined(metadataMap)) {
+              if (!Create)
+                return void 0;
+              metadataMap = new _Map();
+              targetMetadata.set(P, metadataMap);
+              if (!registry.setProvider(O, P, provider)) {
+                targetMetadata.delete(P);
+                if (createdTargetMetadata) {
+                  metadata2.delete(O);
+                }
+                throw new Error("Wrong provider for target.");
+              }
+            }
+            return metadataMap;
+          }
+          function OrdinaryHasOwnMetadata2(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return false;
+            return ToBoolean(metadataMap.has(MetadataKey));
+          }
+          function OrdinaryGetOwnMetadata2(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return void 0;
+            return metadataMap.get(MetadataKey);
+          }
+          function OrdinaryDefineOwnMetadata2(MetadataKey, MetadataValue, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              true
+            );
+            metadataMap.set(MetadataKey, MetadataValue);
+          }
+          function OrdinaryOwnMetadataKeys2(O, P) {
+            var keys = [];
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return keys;
+            var keysObj = metadataMap.keys();
+            var iterator = GetIterator(keysObj);
+            var k = 0;
+            while (true) {
+              var next = IteratorStep(iterator);
+              if (!next) {
+                keys.length = k;
+                return keys;
+              }
+              var nextValue = IteratorValue(next);
+              try {
+                keys[k] = nextValue;
+              } catch (e) {
+                try {
+                  IteratorClose(iterator);
+                } finally {
+                  throw e;
+                }
+              }
+              k++;
+            }
+          }
+          function OrdinaryDeleteMetadata(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return false;
+            if (!metadataMap.delete(MetadataKey))
+              return false;
+            if (metadataMap.size === 0) {
+              var targetMetadata = metadata2.get(O);
+              if (!IsUndefined(targetMetadata)) {
+                targetMetadata.delete(P);
+                if (targetMetadata.size === 0) {
+                  metadata2.delete(targetMetadata);
+                }
+              }
+            }
+            return true;
+          }
+        }
+        function CreateFallbackProvider(reflect) {
+          var defineMetadata2 = reflect.defineMetadata, hasOwnMetadata2 = reflect.hasOwnMetadata, getOwnMetadata2 = reflect.getOwnMetadata, getOwnMetadataKeys2 = reflect.getOwnMetadataKeys, deleteMetadata2 = reflect.deleteMetadata;
+          var metadataOwner = new _WeakMap();
+          var provider = {
+            isProviderFor: function(O, P) {
+              var metadataPropertySet = metadataOwner.get(O);
+              if (!IsUndefined(metadataPropertySet)) {
+                return metadataPropertySet.has(P);
+              }
+              if (getOwnMetadataKeys2(O, P).length) {
+                if (IsUndefined(metadataPropertySet)) {
+                  metadataPropertySet = new _Set();
+                  metadataOwner.set(O, metadataPropertySet);
+                }
+                metadataPropertySet.add(P);
+                return true;
+              }
+              return false;
+            },
+            OrdinaryDefineOwnMetadata: defineMetadata2,
+            OrdinaryHasOwnMetadata: hasOwnMetadata2,
+            OrdinaryGetOwnMetadata: getOwnMetadata2,
+            OrdinaryOwnMetadataKeys: getOwnMetadataKeys2,
+            OrdinaryDeleteMetadata: deleteMetadata2
+          };
+          return provider;
+        }
+        function GetMetadataProvider(O, P, Create) {
+          var registeredProvider = metadataRegistry.getProvider(O, P);
+          if (!IsUndefined(registeredProvider)) {
+            return registeredProvider;
+          }
+          if (Create) {
+            if (metadataRegistry.setProvider(O, P, metadataProvider)) {
+              return metadataProvider;
+            }
+            throw new Error("Illegal state.");
+          }
+          return void 0;
+        }
+        function CreateMapPolyfill() {
+          var cacheSentinel = {};
+          var arraySentinel = [];
+          var MapIterator = (
+            /** @class */
+            function() {
+              function MapIterator2(keys, values, selector) {
+                this._index = 0;
+                this._keys = keys;
+                this._values = values;
+                this._selector = selector;
+              }
+              MapIterator2.prototype["@@iterator"] = function() {
+                return this;
+              };
+              MapIterator2.prototype[iteratorSymbol] = function() {
+                return this;
+              };
+              MapIterator2.prototype.next = function() {
+                var index = this._index;
+                if (index >= 0 && index < this._keys.length) {
+                  var result = this._selector(this._keys[index], this._values[index]);
+                  if (index + 1 >= this._keys.length) {
+                    this._index = -1;
+                    this._keys = arraySentinel;
+                    this._values = arraySentinel;
+                  } else {
+                    this._index++;
+                  }
+                  return { value: result, done: false };
+                }
+                return { value: void 0, done: true };
+              };
+              MapIterator2.prototype.throw = function(error) {
+                if (this._index >= 0) {
+                  this._index = -1;
+                  this._keys = arraySentinel;
+                  this._values = arraySentinel;
+                }
+                throw error;
+              };
+              MapIterator2.prototype.return = function(value) {
+                if (this._index >= 0) {
+                  this._index = -1;
+                  this._keys = arraySentinel;
+                  this._values = arraySentinel;
+                }
+                return { value, done: true };
+              };
+              return MapIterator2;
+            }()
+          );
+          var Map2 = (
+            /** @class */
+            function() {
+              function Map3() {
+                this._keys = [];
+                this._values = [];
+                this._cacheKey = cacheSentinel;
+                this._cacheIndex = -2;
+              }
+              Object.defineProperty(Map3.prototype, "size", {
+                get: function() {
+                  return this._keys.length;
+                },
+                enumerable: true,
+                configurable: true
+              });
+              Map3.prototype.has = function(key) {
+                return this._find(
+                  key,
+                  /*insert*/
+                  false
+                ) >= 0;
+              };
+              Map3.prototype.get = function(key) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  false
+                );
+                return index >= 0 ? this._values[index] : void 0;
+              };
+              Map3.prototype.set = function(key, value) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  true
+                );
+                this._values[index] = value;
+                return this;
+              };
+              Map3.prototype.delete = function(key) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  false
+                );
+                if (index >= 0) {
+                  var size = this._keys.length;
+                  for (var i = index + 1; i < size; i++) {
+                    this._keys[i - 1] = this._keys[i];
+                    this._values[i - 1] = this._values[i];
+                  }
+                  this._keys.length--;
+                  this._values.length--;
+                  if (SameValueZero(key, this._cacheKey)) {
+                    this._cacheKey = cacheSentinel;
+                    this._cacheIndex = -2;
+                  }
+                  return true;
+                }
+                return false;
+              };
+              Map3.prototype.clear = function() {
+                this._keys.length = 0;
+                this._values.length = 0;
+                this._cacheKey = cacheSentinel;
+                this._cacheIndex = -2;
+              };
+              Map3.prototype.keys = function() {
+                return new MapIterator(this._keys, this._values, getKey);
+              };
+              Map3.prototype.values = function() {
+                return new MapIterator(this._keys, this._values, getValue);
+              };
+              Map3.prototype.entries = function() {
+                return new MapIterator(this._keys, this._values, getEntry);
+              };
+              Map3.prototype["@@iterator"] = function() {
+                return this.entries();
+              };
+              Map3.prototype[iteratorSymbol] = function() {
+                return this.entries();
+              };
+              Map3.prototype._find = function(key, insert) {
+                if (!SameValueZero(this._cacheKey, key)) {
+                  this._cacheIndex = -1;
+                  for (var i = 0; i < this._keys.length; i++) {
+                    if (SameValueZero(this._keys[i], key)) {
+                      this._cacheIndex = i;
+                      break;
+                    }
+                  }
+                }
+                if (this._cacheIndex < 0 && insert) {
+                  this._cacheIndex = this._keys.length;
+                  this._keys.push(key);
+                  this._values.push(void 0);
+                }
+                return this._cacheIndex;
+              };
+              return Map3;
+            }()
+          );
+          return Map2;
+          function getKey(key, _) {
+            return key;
+          }
+          function getValue(_, value) {
+            return value;
+          }
+          function getEntry(key, value) {
+            return [key, value];
+          }
+        }
+        function CreateSetPolyfill() {
+          var Set2 = (
+            /** @class */
+            function() {
+              function Set3() {
+                this._map = new _Map();
+              }
+              Object.defineProperty(Set3.prototype, "size", {
+                get: function() {
+                  return this._map.size;
+                },
+                enumerable: true,
+                configurable: true
+              });
+              Set3.prototype.has = function(value) {
+                return this._map.has(value);
+              };
+              Set3.prototype.add = function(value) {
+                return this._map.set(value, value), this;
+              };
+              Set3.prototype.delete = function(value) {
+                return this._map.delete(value);
+              };
+              Set3.prototype.clear = function() {
+                this._map.clear();
+              };
+              Set3.prototype.keys = function() {
+                return this._map.keys();
+              };
+              Set3.prototype.values = function() {
+                return this._map.keys();
+              };
+              Set3.prototype.entries = function() {
+                return this._map.entries();
+              };
+              Set3.prototype["@@iterator"] = function() {
+                return this.keys();
+              };
+              Set3.prototype[iteratorSymbol] = function() {
+                return this.keys();
+              };
+              return Set3;
+            }()
+          );
+          return Set2;
+        }
+        function CreateWeakMapPolyfill() {
+          var UUID_SIZE = 16;
+          var keys = HashMap.create();
+          var rootKey = CreateUniqueKey();
+          return (
+            /** @class */
+            function() {
+              function WeakMap2() {
+                this._key = CreateUniqueKey();
+              }
+              WeakMap2.prototype.has = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? HashMap.has(table, this._key) : false;
+              };
+              WeakMap2.prototype.get = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? HashMap.get(table, this._key) : void 0;
+              };
+              WeakMap2.prototype.set = function(target, value) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  true
+                );
+                table[this._key] = value;
+                return this;
+              };
+              WeakMap2.prototype.delete = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? delete table[this._key] : false;
+              };
+              WeakMap2.prototype.clear = function() {
+                this._key = CreateUniqueKey();
+              };
+              return WeakMap2;
+            }()
+          );
+          function CreateUniqueKey() {
+            var key;
+            do
+              key = "@@WeakMap@@" + CreateUUID();
+            while (HashMap.has(keys, key));
+            keys[key] = true;
+            return key;
+          }
+          function GetOrCreateWeakMapTable(target, create) {
+            if (!hasOwn.call(target, rootKey)) {
+              if (!create)
+                return void 0;
+              Object.defineProperty(target, rootKey, { value: HashMap.create() });
+            }
+            return target[rootKey];
+          }
+          function FillRandomBytes(buffer, size) {
+            for (var i = 0; i < size; ++i)
+              buffer[i] = Math.random() * 255 | 0;
+            return buffer;
+          }
+          function GenRandomBytes(size) {
+            if (typeof Uint8Array === "function") {
+              if (typeof crypto !== "undefined")
+                return crypto.getRandomValues(new Uint8Array(size));
+              if (typeof msCrypto !== "undefined")
+                return msCrypto.getRandomValues(new Uint8Array(size));
+              return FillRandomBytes(new Uint8Array(size), size);
+            }
+            return FillRandomBytes(new Array(size), size);
+          }
+          function CreateUUID() {
+            var data = GenRandomBytes(UUID_SIZE);
+            data[6] = data[6] & 79 | 64;
+            data[8] = data[8] & 191 | 128;
+            var result = "";
+            for (var offset = 0; offset < UUID_SIZE; ++offset) {
+              var byte = data[offset];
+              if (offset === 4 || offset === 6 || offset === 8)
+                result += "-";
+              if (byte < 16)
+                result += "0";
+              result += byte.toString(16).toLowerCase();
+            }
+            return result;
+          }
+        }
+        function MakeDictionary(obj) {
+          obj.__ = void 0;
+          delete obj.__;
+          return obj;
+        }
+      });
+    })(Reflect2 || (Reflect2 = {}));
+  }
+});
 
 // src/index.ts
 var src_exports = {};
@@ -47,6 +1150,7 @@ __export(src_exports, {
   upgradeStatic: () => upgradeStatic
 });
 module.exports = __toCommonJS(src_exports);
+var import_reflect_metadata = __toESM(require_Reflect());
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -137,6 +1241,259 @@ var ListNode = class {
     this.value = value;
   }
 };
+
+// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
+var TransformationType;
+(function(TransformationType2) {
+  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
+  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
+  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
+})(TransformationType || (TransformationType = {}));
+
+// node_modules/class-transformer/esm5/MetadataStorage.js
+var MetadataStorage = (
+  /** @class */
+  function() {
+    function MetadataStorage2() {
+      this._typeMetadatas = /* @__PURE__ */ new Map();
+      this._transformMetadatas = /* @__PURE__ */ new Map();
+      this._exposeMetadatas = /* @__PURE__ */ new Map();
+      this._excludeMetadatas = /* @__PURE__ */ new Map();
+      this._ancestorsMap = /* @__PURE__ */ new Map();
+    }
+    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
+      if (!this._typeMetadatas.has(metadata.target)) {
+        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
+      if (!this._transformMetadatas.has(metadata.target)) {
+        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
+        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
+      }
+      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
+    };
+    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
+      if (!this._exposeMetadatas.has(metadata.target)) {
+        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
+      if (!this._excludeMetadatas.has(metadata.target)) {
+        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
+      }
+      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
+    };
+    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
+      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      });
+    };
+    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._excludeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._exposeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
+      return this.getExposedMetadatas(target).find(function(metadata) {
+        return metadata.options && metadata.options.name === name;
+      });
+    };
+    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
+      return this.findMetadata(this._typeMetadatas, target, propertyName);
+    };
+    MetadataStorage2.prototype.getStrategy = function(target) {
+      var excludeMap = this._excludeMetadatas.get(target);
+      var exclude = excludeMap && excludeMap.get(void 0);
+      var exposeMap = this._exposeMetadatas.get(target);
+      var expose = exposeMap && exposeMap.get(void 0);
+      if (exclude && expose || !exclude && !expose)
+        return "none";
+      return exclude ? "excludeAll" : "exposeAll";
+    };
+    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
+      return this.getMetadata(this._exposeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
+      return this.getMetadata(this._excludeMetadatas, target);
+    };
+    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
+      return this.getExposedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
+      return this.getExcludedMetadatas(target).filter(function(metadata) {
+        if (!metadata.options)
+          return true;
+        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
+          return true;
+        if (metadata.options.toClassOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
+        }
+        if (metadata.options.toPlainOnly === true) {
+          return transformationType === TransformationType.CLASS_TO_PLAIN;
+        }
+        return true;
+      }).map(function(metadata) {
+        return metadata.propertyName;
+      });
+    };
+    MetadataStorage2.prototype.clear = function() {
+      this._typeMetadatas.clear();
+      this._exposeMetadatas.clear();
+      this._excludeMetadatas.clear();
+      this._ancestorsMap.clear();
+    };
+    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
+          return meta.propertyName !== void 0;
+        });
+      }
+      var metadataFromAncestors = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
+            return meta.propertyName !== void 0;
+          });
+          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
+        }
+      }
+      return metadataFromAncestors.concat(metadataFromTarget || []);
+    };
+    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      if (metadataFromTargetMap) {
+        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
+        if (metadataFromTarget) {
+          return metadataFromTarget;
+        }
+      }
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          var ancestorResult = ancestorMetadataMap.get(propertyName);
+          if (ancestorResult) {
+            return ancestorResult;
+          }
+        }
+      }
+      return void 0;
+    };
+    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
+      var metadataFromTargetMap = metadatas.get(target);
+      var metadataFromTarget;
+      if (metadataFromTargetMap) {
+        metadataFromTarget = metadataFromTargetMap.get(propertyName);
+      }
+      var metadataFromAncestorsTarget = [];
+      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
+        var ancestor = _a[_i];
+        var ancestorMetadataMap = metadatas.get(ancestor);
+        if (ancestorMetadataMap) {
+          if (ancestorMetadataMap.has(propertyName)) {
+            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
+          }
+        }
+      }
+      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
+    };
+    MetadataStorage2.prototype.getAncestors = function(target) {
+      if (!target)
+        return [];
+      if (!this._ancestorsMap.has(target)) {
+        var ancestors = [];
+        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
+          ancestors.push(baseClass);
+        }
+        this._ancestorsMap.set(target, ancestors);
+      }
+      return this._ancestorsMap.get(target);
+    };
+    return MetadataStorage2;
+  }()
+);
+
+// node_modules/class-transformer/esm5/storage.js
+var defaultMetadataStorage = new MetadataStorage();
+
+// node_modules/class-transformer/esm5/decorators/exclude.decorator.js
+function Exclude(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(object, propertyName) {
+    defaultMetadataStorage.addExcludeMetadata({
+      target: object instanceof Function ? object : object.constructor,
+      propertyName,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/decorators/expose.decorator.js
+function Expose(options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(object, propertyName) {
+    defaultMetadataStorage.addExposeMetadata({
+      target: object instanceof Function ? object : object.constructor,
+      propertyName,
+      options
+    });
+  };
+}
+
+// node_modules/class-transformer/esm5/decorators/type.decorator.js
+function Type(typeFunction, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return function(target, propertyName) {
+    var reflectedType = Reflect.getMetadata("design:type", target, propertyName);
+    defaultMetadataStorage.addTypeMetadata({
+      target: target.constructor,
+      propertyName,
+      reflectedType,
+      typeFunction,
+      options
+    });
+  };
+}
 
 // src/E/e.ts
 var MAX_SIGNIFICANT_DIGITS = 17;
@@ -567,51 +1924,18 @@ function d_lambertw(z, tol = 1e-10) {
   }
   throw Error(`Iteration failed to converge: ${z.toString()}`);
 }
-var Decimal = class _Decimal {
+var Decimal = class {
   constructor(value) {
     this.sign = 0;
     this.mag = 0;
     this.layer = 0;
-    if (value instanceof _Decimal) {
+    if (value instanceof Decimal) {
       this.fromDecimal(value);
     } else if (typeof value === "number") {
       this.fromNumber(value);
     } else if (typeof value === "string") {
       this.fromString(value);
     }
-  }
-  static {
-    this.dZero = _Decimal.fromComponents_noNormalize(0, 0, 0);
-  }
-  static {
-    this.dOne = _Decimal.fromComponents_noNormalize(1, 0, 1);
-  }
-  static {
-    this.dNegOne = _Decimal.fromComponents_noNormalize(-1, 0, 1);
-  }
-  static {
-    this.dTwo = _Decimal.fromComponents_noNormalize(1, 0, 2);
-  }
-  static {
-    this.dTen = _Decimal.fromComponents_noNormalize(1, 0, 10);
-  }
-  static {
-    this.dNaN = _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
-  }
-  static {
-    this.dInf = _Decimal.fromComponents_noNormalize(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-  }
-  static {
-    this.dNegInf = _Decimal.fromComponents_noNormalize(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-  }
-  static {
-    this.dNumberMax = _Decimal.fromComponents(1, 0, Number.MAX_VALUE);
-  }
-  static {
-    this.dNumberMin = _Decimal.fromComponents(1, 0, Number.MIN_VALUE);
-  }
-  static {
-    this.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
   }
   get m() {
     if (this.sign === 0) {
@@ -685,28 +2009,28 @@ var Decimal = class _Decimal {
     this.e = value;
   }
   static fromComponents(sign, layer, mag) {
-    return new _Decimal().fromComponents(sign, layer, mag);
+    return new Decimal().fromComponents(sign, layer, mag);
   }
   static fromComponents_noNormalize(sign, layer, mag) {
-    return new _Decimal().fromComponents_noNormalize(sign, layer, mag);
+    return new Decimal().fromComponents_noNormalize(sign, layer, mag);
   }
   static fromMantissaExponent(mantissa, exponent) {
-    return new _Decimal().fromMantissaExponent(mantissa, exponent);
+    return new Decimal().fromMantissaExponent(mantissa, exponent);
   }
   static fromMantissaExponent_noNormalize(mantissa, exponent) {
-    return new _Decimal().fromMantissaExponent_noNormalize(mantissa, exponent);
+    return new Decimal().fromMantissaExponent_noNormalize(mantissa, exponent);
   }
   static fromDecimal(value) {
-    return new _Decimal().fromDecimal(value);
+    return new Decimal().fromDecimal(value);
   }
   static fromNumber(value) {
-    return new _Decimal().fromNumber(value);
+    return new Decimal().fromNumber(value);
   }
   static fromString(value) {
-    return new _Decimal().fromString(value);
+    return new Decimal().fromString(value);
   }
   static fromValue(value) {
-    return new _Decimal().fromValue(value);
+    return new Decimal().fromValue(value);
   }
   /**
   * Converts a DecimalSource to a Decimal, without constructing a new Decimal
@@ -718,273 +2042,273 @@ var Decimal = class _Decimal {
   * is required.
   */
   static fromValue_noAlloc(value) {
-    if (value instanceof _Decimal) {
+    if (value instanceof Decimal) {
       return value;
     } else if (typeof value === "string") {
-      const cached = _Decimal.fromStringCache.get(value);
+      const cached = Decimal.fromStringCache.get(value);
       if (cached !== void 0) {
         return cached;
       }
-      return _Decimal.fromString(value);
+      return Decimal.fromString(value);
     } else if (typeof value === "number") {
-      return _Decimal.fromNumber(value);
+      return Decimal.fromNumber(value);
     } else {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
   }
   static abs(value) {
-    return _Decimal.fromValue_noAlloc(value).abs();
+    return Decimal.fromValue_noAlloc(value).abs();
   }
   static neg(value) {
-    return _Decimal.fromValue_noAlloc(value).neg();
+    return Decimal.fromValue_noAlloc(value).neg();
   }
   static negate(value) {
-    return _Decimal.fromValue_noAlloc(value).neg();
+    return Decimal.fromValue_noAlloc(value).neg();
   }
   static negated(value) {
-    return _Decimal.fromValue_noAlloc(value).neg();
+    return Decimal.fromValue_noAlloc(value).neg();
   }
   static sign(value) {
-    return _Decimal.fromValue_noAlloc(value).sign;
+    return Decimal.fromValue_noAlloc(value).sign;
   }
   static sgn(value) {
-    return _Decimal.fromValue_noAlloc(value).sign;
+    return Decimal.fromValue_noAlloc(value).sign;
   }
   static round(value) {
-    return _Decimal.fromValue_noAlloc(value).round();
+    return Decimal.fromValue_noAlloc(value).round();
   }
   static floor(value) {
-    return _Decimal.fromValue_noAlloc(value).floor();
+    return Decimal.fromValue_noAlloc(value).floor();
   }
   static ceil(value) {
-    return _Decimal.fromValue_noAlloc(value).ceil();
+    return Decimal.fromValue_noAlloc(value).ceil();
   }
   static trunc(value) {
-    return _Decimal.fromValue_noAlloc(value).trunc();
+    return Decimal.fromValue_noAlloc(value).trunc();
   }
   static add(value, other) {
-    return _Decimal.fromValue_noAlloc(value).add(other);
+    return Decimal.fromValue_noAlloc(value).add(other);
   }
   static plus(value, other) {
-    return _Decimal.fromValue_noAlloc(value).add(other);
+    return Decimal.fromValue_noAlloc(value).add(other);
   }
   static sub(value, other) {
-    return _Decimal.fromValue_noAlloc(value).sub(other);
+    return Decimal.fromValue_noAlloc(value).sub(other);
   }
   static subtract(value, other) {
-    return _Decimal.fromValue_noAlloc(value).sub(other);
+    return Decimal.fromValue_noAlloc(value).sub(other);
   }
   static minus(value, other) {
-    return _Decimal.fromValue_noAlloc(value).sub(other);
+    return Decimal.fromValue_noAlloc(value).sub(other);
   }
   static mul(value, other) {
-    return _Decimal.fromValue_noAlloc(value).mul(other);
+    return Decimal.fromValue_noAlloc(value).mul(other);
   }
   static multiply(value, other) {
-    return _Decimal.fromValue_noAlloc(value).mul(other);
+    return Decimal.fromValue_noAlloc(value).mul(other);
   }
   static times(value, other) {
-    return _Decimal.fromValue_noAlloc(value).mul(other);
+    return Decimal.fromValue_noAlloc(value).mul(other);
   }
   static div(value, other) {
-    return _Decimal.fromValue_noAlloc(value).div(other);
+    return Decimal.fromValue_noAlloc(value).div(other);
   }
   static divide(value, other) {
-    return _Decimal.fromValue_noAlloc(value).div(other);
+    return Decimal.fromValue_noAlloc(value).div(other);
   }
   static recip(value) {
-    return _Decimal.fromValue_noAlloc(value).recip();
+    return Decimal.fromValue_noAlloc(value).recip();
   }
   static reciprocal(value) {
-    return _Decimal.fromValue_noAlloc(value).recip();
+    return Decimal.fromValue_noAlloc(value).recip();
   }
   static reciprocate(value) {
-    return _Decimal.fromValue_noAlloc(value).reciprocate();
+    return Decimal.fromValue_noAlloc(value).reciprocate();
   }
   static mod(value, other) {
-    return _Decimal.fromValue_noAlloc(value).mod(other);
+    return Decimal.fromValue_noAlloc(value).mod(other);
   }
   static modulo(value, other) {
-    return _Decimal.fromValue_noAlloc(value).modulo(other);
+    return Decimal.fromValue_noAlloc(value).modulo(other);
   }
   static modular(value, other) {
-    return _Decimal.fromValue_noAlloc(value).modular(other);
+    return Decimal.fromValue_noAlloc(value).modular(other);
   }
   static cmp(value, other) {
-    return _Decimal.fromValue_noAlloc(value).cmp(other);
+    return Decimal.fromValue_noAlloc(value).cmp(other);
   }
   static cmpabs(value, other) {
-    return _Decimal.fromValue_noAlloc(value).cmpabs(other);
+    return Decimal.fromValue_noAlloc(value).cmpabs(other);
   }
   static compare(value, other) {
-    return _Decimal.fromValue_noAlloc(value).cmp(other);
+    return Decimal.fromValue_noAlloc(value).cmp(other);
   }
   static isNaN(value) {
-    value = _Decimal.fromValue_noAlloc(value);
+    value = Decimal.fromValue_noAlloc(value);
     return isNaN(value.sign) || isNaN(value.layer) || isNaN(value.mag);
   }
   static isFinite(value) {
-    value = _Decimal.fromValue_noAlloc(value);
+    value = Decimal.fromValue_noAlloc(value);
     return isFinite(value.sign) && isFinite(value.layer) && isFinite(value.mag);
   }
   static eq(value, other) {
-    return _Decimal.fromValue_noAlloc(value).eq(other);
+    return Decimal.fromValue_noAlloc(value).eq(other);
   }
   static equals(value, other) {
-    return _Decimal.fromValue_noAlloc(value).eq(other);
+    return Decimal.fromValue_noAlloc(value).eq(other);
   }
   static neq(value, other) {
-    return _Decimal.fromValue_noAlloc(value).neq(other);
+    return Decimal.fromValue_noAlloc(value).neq(other);
   }
   static notEquals(value, other) {
-    return _Decimal.fromValue_noAlloc(value).notEquals(other);
+    return Decimal.fromValue_noAlloc(value).notEquals(other);
   }
   static lt(value, other) {
-    return _Decimal.fromValue_noAlloc(value).lt(other);
+    return Decimal.fromValue_noAlloc(value).lt(other);
   }
   static lte(value, other) {
-    return _Decimal.fromValue_noAlloc(value).lte(other);
+    return Decimal.fromValue_noAlloc(value).lte(other);
   }
   static gt(value, other) {
-    return _Decimal.fromValue_noAlloc(value).gt(other);
+    return Decimal.fromValue_noAlloc(value).gt(other);
   }
   static gte(value, other) {
-    return _Decimal.fromValue_noAlloc(value).gte(other);
+    return Decimal.fromValue_noAlloc(value).gte(other);
   }
   static max(value, other) {
-    return _Decimal.fromValue_noAlloc(value).max(other);
+    return Decimal.fromValue_noAlloc(value).max(other);
   }
   static min(value, other) {
-    return _Decimal.fromValue_noAlloc(value).min(other);
+    return Decimal.fromValue_noAlloc(value).min(other);
   }
   static minabs(value, other) {
-    return _Decimal.fromValue_noAlloc(value).minabs(other);
+    return Decimal.fromValue_noAlloc(value).minabs(other);
   }
   static maxabs(value, other) {
-    return _Decimal.fromValue_noAlloc(value).maxabs(other);
+    return Decimal.fromValue_noAlloc(value).maxabs(other);
   }
   static clamp(value, min, max) {
-    return _Decimal.fromValue_noAlloc(value).clamp(min, max);
+    return Decimal.fromValue_noAlloc(value).clamp(min, max);
   }
   static clampMin(value, min) {
-    return _Decimal.fromValue_noAlloc(value).clampMin(min);
+    return Decimal.fromValue_noAlloc(value).clampMin(min);
   }
   static clampMax(value, max) {
-    return _Decimal.fromValue_noAlloc(value).clampMax(max);
+    return Decimal.fromValue_noAlloc(value).clampMax(max);
   }
   static cmp_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
   }
   static compare_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
   }
   static eq_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
   }
   static equals_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
   }
   static neq_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).neq_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).neq_tolerance(other, tolerance);
   }
   static notEquals_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).notEquals_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).notEquals_tolerance(other, tolerance);
   }
   static lt_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).lt_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).lt_tolerance(other, tolerance);
   }
   static lte_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).lte_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).lte_tolerance(other, tolerance);
   }
   static gt_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).gt_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).gt_tolerance(other, tolerance);
   }
   static gte_tolerance(value, other, tolerance) {
-    return _Decimal.fromValue_noAlloc(value).gte_tolerance(other, tolerance);
+    return Decimal.fromValue_noAlloc(value).gte_tolerance(other, tolerance);
   }
   static pLog10(value) {
-    return _Decimal.fromValue_noAlloc(value).pLog10();
+    return Decimal.fromValue_noAlloc(value).pLog10();
   }
   static absLog10(value) {
-    return _Decimal.fromValue_noAlloc(value).absLog10();
+    return Decimal.fromValue_noAlloc(value).absLog10();
   }
   static log10(value) {
-    return _Decimal.fromValue_noAlloc(value).log10();
+    return Decimal.fromValue_noAlloc(value).log10();
   }
   static log(value, base) {
-    return _Decimal.fromValue_noAlloc(value).log(base);
+    return Decimal.fromValue_noAlloc(value).log(base);
   }
   static log2(value) {
-    return _Decimal.fromValue_noAlloc(value).log2();
+    return Decimal.fromValue_noAlloc(value).log2();
   }
   static ln(value) {
-    return _Decimal.fromValue_noAlloc(value).ln();
+    return Decimal.fromValue_noAlloc(value).ln();
   }
   static logarithm(value, base) {
-    return _Decimal.fromValue_noAlloc(value).logarithm(base);
+    return Decimal.fromValue_noAlloc(value).logarithm(base);
   }
   static pow(value, other) {
-    return _Decimal.fromValue_noAlloc(value).pow(other);
+    return Decimal.fromValue_noAlloc(value).pow(other);
   }
   static pow10(value) {
-    return _Decimal.fromValue_noAlloc(value).pow10();
+    return Decimal.fromValue_noAlloc(value).pow10();
   }
   static root(value, other) {
-    return _Decimal.fromValue_noAlloc(value).root(other);
+    return Decimal.fromValue_noAlloc(value).root(other);
   }
   static factorial(value, _other) {
-    return _Decimal.fromValue_noAlloc(value).factorial();
+    return Decimal.fromValue_noAlloc(value).factorial();
   }
   static gamma(value, _other) {
-    return _Decimal.fromValue_noAlloc(value).gamma();
+    return Decimal.fromValue_noAlloc(value).gamma();
   }
   static lngamma(value, _other) {
-    return _Decimal.fromValue_noAlloc(value).lngamma();
+    return Decimal.fromValue_noAlloc(value).lngamma();
   }
   static exp(value) {
-    return _Decimal.fromValue_noAlloc(value).exp();
+    return Decimal.fromValue_noAlloc(value).exp();
   }
   static sqr(value) {
-    return _Decimal.fromValue_noAlloc(value).sqr();
+    return Decimal.fromValue_noAlloc(value).sqr();
   }
   static sqrt(value) {
-    return _Decimal.fromValue_noAlloc(value).sqrt();
+    return Decimal.fromValue_noAlloc(value).sqrt();
   }
   static cube(value) {
-    return _Decimal.fromValue_noAlloc(value).cube();
+    return Decimal.fromValue_noAlloc(value).cube();
   }
   static cbrt(value) {
-    return _Decimal.fromValue_noAlloc(value).cbrt();
+    return Decimal.fromValue_noAlloc(value).cbrt();
   }
-  static tetrate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
-    return _Decimal.fromValue_noAlloc(value).tetrate(height, payload, linear);
+  static tetrate(value, height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return Decimal.fromValue_noAlloc(value).tetrate(height, payload, linear);
   }
-  static iteratedexp(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
-    return _Decimal.fromValue_noAlloc(value).iteratedexp(height, payload, linear);
+  static iteratedexp(value, height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return Decimal.fromValue_noAlloc(value).iteratedexp(height, payload, linear);
   }
   static iteratedlog(value, base = 10, times = 1, linear = false) {
-    return _Decimal.fromValue_noAlloc(value).iteratedlog(base, times, linear);
+    return Decimal.fromValue_noAlloc(value).iteratedlog(base, times, linear);
   }
   static layeradd10(value, diff, linear = false) {
-    return _Decimal.fromValue_noAlloc(value).layeradd10(diff, linear);
+    return Decimal.fromValue_noAlloc(value).layeradd10(diff, linear);
   }
   static layeradd(value, diff, base = 10, linear = false) {
-    return _Decimal.fromValue_noAlloc(value).layeradd(diff, base, linear);
+    return Decimal.fromValue_noAlloc(value).layeradd(diff, base, linear);
   }
   static slog(value, base = 10, linear = false) {
-    return _Decimal.fromValue_noAlloc(value).slog(base, 100, linear);
+    return Decimal.fromValue_noAlloc(value).slog(base, 100, linear);
   }
   static lambertw(value) {
-    return _Decimal.fromValue_noAlloc(value).lambertw();
+    return Decimal.fromValue_noAlloc(value).lambertw();
   }
   static ssqrt(value) {
-    return _Decimal.fromValue_noAlloc(value).ssqrt();
+    return Decimal.fromValue_noAlloc(value).ssqrt();
   }
   static linear_sroot(value, height) {
-    return _Decimal.fromValue_noAlloc(value).linear_sroot(height);
+    return Decimal.fromValue_noAlloc(value).linear_sroot(height);
   }
-  static pentate(value, height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
-    return _Decimal.fromValue_noAlloc(value).pentate(height, payload, linear);
+  static pentate(value, height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    return Decimal.fromValue_noAlloc(value).pentate(height, payload, linear);
   }
   /**
   * If you're willing to spend 'resourcesAvailable' and want to buy something
@@ -994,9 +2318,9 @@ var Decimal = class _Decimal {
   */
   static affordGeometricSeries(resourcesAvailable, priceStart, priceRatio, currentOwned) {
     return this.affordGeometricSeries_core(
-      _Decimal.fromValue_noAlloc(resourcesAvailable),
-      _Decimal.fromValue_noAlloc(priceStart),
-      _Decimal.fromValue_noAlloc(priceRatio),
+      Decimal.fromValue_noAlloc(resourcesAvailable),
+      Decimal.fromValue_noAlloc(priceStart),
+      Decimal.fromValue_noAlloc(priceRatio),
       currentOwned
     );
   }
@@ -1005,7 +2329,7 @@ var Decimal = class _Decimal {
   * the initial price is priceStart and it multiplies by priceRatio each purchase?
   */
   static sumGeometricSeries(numItems, priceStart, priceRatio, currentOwned) {
-    return this.sumGeometricSeries_core(numItems, _Decimal.fromValue_noAlloc(priceStart), _Decimal.fromValue_noAlloc(priceRatio), currentOwned);
+    return this.sumGeometricSeries_core(numItems, Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceRatio), currentOwned);
   }
   /**
   * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
@@ -1014,10 +2338,10 @@ var Decimal = class _Decimal {
   */
   static affordArithmeticSeries(resourcesAvailable, priceStart, priceAdd, currentOwned) {
     return this.affordArithmeticSeries_core(
-      _Decimal.fromValue_noAlloc(resourcesAvailable),
-      _Decimal.fromValue_noAlloc(priceStart),
-      _Decimal.fromValue_noAlloc(priceAdd),
-      _Decimal.fromValue_noAlloc(currentOwned)
+      Decimal.fromValue_noAlloc(resourcesAvailable),
+      Decimal.fromValue_noAlloc(priceStart),
+      Decimal.fromValue_noAlloc(priceAdd),
+      Decimal.fromValue_noAlloc(currentOwned)
     );
   }
   /**
@@ -1026,7 +2350,7 @@ var Decimal = class _Decimal {
   * Adapted from http://www.mathwords.com/a/arithmetic_series.htm
   */
   static sumArithmeticSeries(numItems, priceStart, priceAdd, currentOwned) {
-    return this.sumArithmeticSeries_core(_Decimal.fromValue_noAlloc(numItems), _Decimal.fromValue_noAlloc(priceStart), _Decimal.fromValue_noAlloc(priceAdd), _Decimal.fromValue_noAlloc(currentOwned));
+    return this.sumArithmeticSeries_core(Decimal.fromValue_noAlloc(numItems), Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceAdd), Decimal.fromValue_noAlloc(currentOwned));
   }
   /**
   * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
@@ -1035,15 +2359,15 @@ var Decimal = class _Decimal {
   * http://cookieclicker.wikia.com/wiki/Frozen_Cookies_(JavaScript_Add-on)#Efficiency.3F_What.27s_that.3F
   */
   static efficiencyOfPurchase(cost, currentRpS, deltaRpS) {
-    return this.efficiencyOfPurchase_core(_Decimal.fromValue_noAlloc(cost), _Decimal.fromValue_noAlloc(currentRpS), _Decimal.fromValue_noAlloc(deltaRpS));
+    return this.efficiencyOfPurchase_core(Decimal.fromValue_noAlloc(cost), Decimal.fromValue_noAlloc(currentRpS), Decimal.fromValue_noAlloc(deltaRpS));
   }
   static randomDecimalForTesting(maxLayers) {
     if (Math.random() * 20 < 1) {
-      return _Decimal.fromComponents_noNormalize(0, 0, 0);
+      return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     const randomsign = Math.random() > 0.5 ? 1 : -1;
     if (Math.random() * 20 < 1) {
-      return _Decimal.fromComponents_noNormalize(randomsign, 0, 1);
+      return Decimal.fromComponents_noNormalize(randomsign, 0, 1);
     }
     const layer = Math.floor(Math.random() * (maxLayers + 1));
     let randomexp = layer === 0 ? Math.random() * 616 - 308 : Math.random() * 16;
@@ -1054,16 +2378,16 @@ var Decimal = class _Decimal {
     if (Math.random() > 0.9) {
       randommag = Math.trunc(randommag);
     }
-    return _Decimal.fromComponents(randomsign, layer, randommag);
+    return Decimal.fromComponents(randomsign, layer, randommag);
   }
   static affordGeometricSeries_core(resourcesAvailable, priceStart, priceRatio, currentOwned) {
     const actualStart = priceStart.mul(priceRatio.pow(currentOwned));
-    return _Decimal.floor(
+    return Decimal.floor(
       resourcesAvailable.div(actualStart).mul(priceRatio.sub(1)).add(1).log10().div(priceRatio.log10())
     );
   }
   static sumGeometricSeries_core(numItems, priceStart, priceRatio, currentOwned) {
-    return priceStart.mul(priceRatio.pow(currentOwned)).mul(_Decimal.sub(1, priceRatio.pow(numItems))).div(_Decimal.sub(1, priceRatio));
+    return priceStart.mul(priceRatio.pow(currentOwned)).mul(Decimal.sub(1, priceRatio.pow(numItems))).div(Decimal.sub(1, priceRatio));
   }
   static affordArithmeticSeries_core(resourcesAvailable, priceStart, priceAdd, currentOwned) {
     const actualStart = priceStart.add(currentOwned.mul(priceAdd));
@@ -1162,7 +2486,7 @@ var Decimal = class _Decimal {
   }
   fromString(value) {
     const originalValue = value;
-    const cached = _Decimal.fromStringCache.get(originalValue);
+    const cached = Decimal.fromStringCache.get(originalValue);
     if (cached !== void 0) {
       return this.fromDecimal(cached);
     }
@@ -1184,12 +2508,12 @@ var Decimal = class _Decimal {
         }
       }
       if (isFinite(base2) && isFinite(height2)) {
-        const result = _Decimal.pentate(base2, height2, payload);
+        const result = Decimal.pentate(base2, height2, payload);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1207,12 +2531,12 @@ var Decimal = class _Decimal {
         }
       }
       if (isFinite(base2) && isFinite(height2)) {
-        const result = _Decimal.tetrate(base2, height2, payload);
+        const result = Decimal.tetrate(base2, height2, payload);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1222,12 +2546,12 @@ var Decimal = class _Decimal {
       const base2 = parseFloat(powparts[0]);
       const exponent2 = parseFloat(powparts[1]);
       if (isFinite(base2) && isFinite(exponent2)) {
-        const result = _Decimal.pow(base2, exponent2);
+        const result = Decimal.pow(base2, exponent2);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1246,12 +2570,12 @@ var Decimal = class _Decimal {
         payload = 1;
       }
       if (isFinite(base) && isFinite(height)) {
-        const result = _Decimal.tetrate(base, height, payload);
+        const result = Decimal.tetrate(base, height, payload);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1267,12 +2591,12 @@ var Decimal = class _Decimal {
         payload = 1;
       }
       if (isFinite(base) && isFinite(height)) {
-        const result = _Decimal.tetrate(base, height, payload);
+        const result = Decimal.tetrate(base, height, payload);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1290,12 +2614,12 @@ var Decimal = class _Decimal {
         payload = 1;
       }
       if (isFinite(base) && isFinite(height)) {
-        const result = _Decimal.tetrate(base, height, payload);
+        const result = Decimal.tetrate(base, height, payload);
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1306,8 +2630,8 @@ var Decimal = class _Decimal {
       const numberAttempt = parseFloat(value);
       if (isFinite(numberAttempt)) {
         this.fromNumber(numberAttempt);
-        if (_Decimal.fromStringCache.size >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.size >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1315,8 +2639,8 @@ var Decimal = class _Decimal {
       const numberAttempt = parseFloat(value);
       if (isFinite(numberAttempt) && numberAttempt !== 0) {
         this.fromNumber(numberAttempt);
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       }
@@ -1336,8 +2660,8 @@ var Decimal = class _Decimal {
           this.layer = parseFloat(layerstring);
           this.mag = parseFloat(newparts[1].substr(i + 1));
           this.normalize();
-          if (_Decimal.fromStringCache.maxSize >= 1) {
-            _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+          if (Decimal.fromStringCache.maxSize >= 1) {
+            Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
           }
           return this;
         }
@@ -1347,8 +2671,8 @@ var Decimal = class _Decimal {
       this.sign = 0;
       this.layer = 0;
       this.mag = 0;
-      if (_Decimal.fromStringCache.maxSize >= 1) {
-        _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+      if (Decimal.fromStringCache.maxSize >= 1) {
+        Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
       }
       return this;
     }
@@ -1357,8 +2681,8 @@ var Decimal = class _Decimal {
       this.sign = 0;
       this.layer = 0;
       this.mag = 0;
-      if (_Decimal.fromStringCache.maxSize >= 1) {
-        _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+      if (Decimal.fromStringCache.maxSize >= 1) {
+        Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
       }
       return this;
     }
@@ -1382,12 +2706,12 @@ var Decimal = class _Decimal {
       this.sign = Math.sign(mantissa);
       this.layer = ecount;
       if (ecount === 2) {
-        const result = _Decimal.mul(_Decimal.fromComponents(1, 2, exponent), _Decimal.fromValue_noAlloc(mantissa));
+        const result = Decimal.mul(Decimal.fromComponents(1, 2, exponent), Decimal.fromValue_noAlloc(mantissa));
         this.sign = result.sign;
         this.layer = result.layer;
         this.mag = result.mag;
-        if (_Decimal.fromStringCache.maxSize >= 1) {
-          _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+        if (Decimal.fromStringCache.maxSize >= 1) {
+          Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
         }
         return this;
       } else {
@@ -1395,13 +2719,13 @@ var Decimal = class _Decimal {
       }
     }
     this.normalize();
-    if (_Decimal.fromStringCache.maxSize >= 1) {
-      _Decimal.fromStringCache.set(originalValue, _Decimal.fromDecimal(this));
+    if (Decimal.fromStringCache.maxSize >= 1) {
+      Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
     }
     return this;
   }
   fromValue(value) {
-    if (value instanceof _Decimal) {
+    if (value instanceof Decimal) {
       return this.fromDecimal(value);
     }
     if (typeof value === "number") {
@@ -1511,10 +2835,10 @@ var Decimal = class _Decimal {
     }
   }
   abs() {
-    return _Decimal.fromComponents_noNormalize(this.sign === 0 ? 0 : 1, this.layer, this.mag);
+    return Decimal.fromComponents_noNormalize(this.sign === 0 ? 0 : 1, this.layer, this.mag);
   }
   neg() {
-    return _Decimal.fromComponents_noNormalize(-this.sign, this.layer, this.mag);
+    return Decimal.fromComponents_noNormalize(-this.sign, this.layer, this.mag);
   }
   negate() {
     return this.neg();
@@ -1530,42 +2854,42 @@ var Decimal = class _Decimal {
   }
   round() {
     if (this.mag < 0) {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
     if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.round(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.round(this.mag));
     }
     return this;
   }
   floor() {
     if (this.mag < 0) {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
     if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.floor(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.floor(this.mag));
     }
     return this;
   }
   ceil() {
     if (this.mag < 0) {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
     if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.ceil(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.ceil(this.mag));
     }
     return this;
   }
   trunc() {
     if (this.mag < 0) {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
     if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.trunc(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.trunc(this.mag));
     }
     return this;
   }
   add(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     if (!Number.isFinite(this.layer)) {
       return this;
     }
@@ -1579,14 +2903,14 @@ var Decimal = class _Decimal {
       return this;
     }
     if (this.sign === -decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag) {
-      return _Decimal.fromComponents_noNormalize(0, 0, 0);
+      return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     let a;
     let b;
     if (this.layer >= 2 || decimal.layer >= 2) {
       return this.maxabs(decimal);
     }
-    if (_Decimal.cmpabs(this, decimal) > 0) {
+    if (Decimal.cmpabs(this, decimal) > 0) {
       a = this;
       b = decimal;
     } else {
@@ -1594,7 +2918,7 @@ var Decimal = class _Decimal {
       b = this;
     }
     if (a.layer === 0 && b.layer === 0) {
-      return _Decimal.fromNumber(a.sign * a.mag + b.sign * b.mag);
+      return Decimal.fromNumber(a.sign * a.mag + b.sign * b.mag);
     }
     const layera = a.layer * Math.sign(a.mag);
     const layerb = b.layer * Math.sign(b.mag);
@@ -1607,7 +2931,7 @@ var Decimal = class _Decimal {
       } else {
         const magdiff = Math.pow(10, Math.log10(a.mag) - b.mag);
         const mantissa = b.sign + a.sign * magdiff;
-        return _Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+        return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
       }
     }
     if (layera === 1 && layerb === 0) {
@@ -1616,7 +2940,7 @@ var Decimal = class _Decimal {
       } else {
         const magdiff = Math.pow(10, a.mag - Math.log10(b.mag));
         const mantissa = b.sign + a.sign * magdiff;
-        return _Decimal.fromComponents(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
+        return Decimal.fromComponents(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
       }
     }
     if (Math.abs(a.mag - b.mag) > MAX_SIGNIFICANT_DIGITS) {
@@ -1624,7 +2948,7 @@ var Decimal = class _Decimal {
     } else {
       const magdiff = Math.pow(10, a.mag - b.mag);
       const mantissa = b.sign + a.sign * magdiff;
-      return _Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+      return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
     }
     throw Error("Bad arguments to add: " + this + ", " + value);
   }
@@ -1632,7 +2956,7 @@ var Decimal = class _Decimal {
     return this.add(value);
   }
   sub(value) {
-    return this.add(_Decimal.fromValue_noAlloc(value).neg());
+    return this.add(Decimal.fromValue_noAlloc(value).neg());
   }
   subtract(value) {
     return this.sub(value);
@@ -1641,7 +2965,7 @@ var Decimal = class _Decimal {
     return this.sub(value);
   }
   mul(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     if (!Number.isFinite(this.layer)) {
       return this;
     }
@@ -1649,10 +2973,10 @@ var Decimal = class _Decimal {
       return decimal;
     }
     if (this.sign === 0 || decimal.sign === 0) {
-      return _Decimal.fromComponents_noNormalize(0, 0, 0);
+      return Decimal.fromComponents_noNormalize(0, 0, 0);
     }
     if (this.layer === decimal.layer && this.mag === -decimal.mag) {
-      return _Decimal.fromComponents_noNormalize(this.sign * decimal.sign, 0, 1);
+      return Decimal.fromComponents_noNormalize(this.sign * decimal.sign, 0, 1);
     }
     let a;
     let b;
@@ -1664,28 +2988,28 @@ var Decimal = class _Decimal {
       b = this;
     }
     if (a.layer === 0 && b.layer === 0) {
-      return _Decimal.fromNumber(a.sign * b.sign * a.mag * b.mag);
+      return Decimal.fromNumber(a.sign * b.sign * a.mag * b.mag);
     }
     if (a.layer >= 3 || a.layer - b.layer >= 2) {
-      return _Decimal.fromComponents(a.sign * b.sign, a.layer, a.mag);
+      return Decimal.fromComponents(a.sign * b.sign, a.layer, a.mag);
     }
     if (a.layer === 1 && b.layer === 0) {
-      return _Decimal.fromComponents(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
+      return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
     }
     if (a.layer === 1 && b.layer === 1) {
-      return _Decimal.fromComponents(a.sign * b.sign, 1, a.mag + b.mag);
+      return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + b.mag);
     }
     if (a.layer === 2 && b.layer === 1) {
-      const newmag = _Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-        _Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
+      const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+        Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
       );
-      return _Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+      return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
     }
     if (a.layer === 2 && b.layer === 2) {
-      const newmag = _Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-        _Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
+      const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+        Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag))
       );
-      return _Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+      return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
     }
     throw Error("Bad arguments to mul: " + this + ", " + value);
   }
@@ -1696,7 +3020,7 @@ var Decimal = class _Decimal {
     return this.mul(value);
   }
   div(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.mul(decimal.recip());
   }
   divide(value) {
@@ -1710,11 +3034,11 @@ var Decimal = class _Decimal {
   }
   recip() {
     if (this.mag === 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, 1 / this.mag);
+      return Decimal.fromComponents(this.sign, 0, 1 / this.mag);
     } else {
-      return _Decimal.fromComponents(this.sign, this.layer, -this.mag);
+      return Decimal.fromComponents(this.sign, this.layer, -this.mag);
     }
   }
   reciprocal() {
@@ -1727,7 +3051,7 @@ var Decimal = class _Decimal {
   * -1 for less than value, 0 for equals value, 1 for greater than value
   */
   cmp(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     if (this.sign > decimal.sign) {
       return 1;
     }
@@ -1737,7 +3061,7 @@ var Decimal = class _Decimal {
     return this.sign * this.cmpabs(value);
   }
   cmpabs(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     const layera = this.mag > 0 ? this.layer : -this.layer;
     const layerb = decimal.mag > 0 ? decimal.layer : -decimal.layer;
     if (layera > layerb) {
@@ -1764,7 +3088,7 @@ var Decimal = class _Decimal {
     return isFinite(this.sign) && isFinite(this.layer) && isFinite(this.mag);
   }
   eq(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.sign === decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag;
   }
   equals(value) {
@@ -1789,19 +3113,19 @@ var Decimal = class _Decimal {
     return !this.lt(value);
   }
   max(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.lt(decimal) ? decimal : this;
   }
   min(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.gt(decimal) ? decimal : this;
   }
   maxabs(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.cmpabs(decimal) < 0 ? decimal : this;
   }
   minabs(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.cmpabs(decimal) > 0 ? decimal : this;
   }
   clamp(min, max) {
@@ -1814,7 +3138,7 @@ var Decimal = class _Decimal {
     return this.min(max);
   }
   cmp_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.eq_tolerance(decimal, tolerance) ? 0 : this.cmp(decimal);
   }
   compare_tolerance(value, tolerance) {
@@ -1826,7 +3150,7 @@ var Decimal = class _Decimal {
   * larger number than (larger number)*1e-9 will be considered equal.
   */
   eq_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     if (tolerance == null) {
       tolerance = 1e-7;
     }
@@ -1856,101 +3180,101 @@ var Decimal = class _Decimal {
     return this.neq_tolerance(value, tolerance);
   }
   lt_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return !this.eq_tolerance(decimal, tolerance) && this.lt(decimal);
   }
   lte_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.eq_tolerance(decimal, tolerance) || this.lt(decimal);
   }
   gt_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return !this.eq_tolerance(decimal, tolerance) && this.gt(decimal);
   }
   gte_tolerance(value, tolerance) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.eq_tolerance(decimal, tolerance) || this.gt(decimal);
   }
   pLog10() {
-    if (this.lt(_Decimal.dZero)) {
-      return _Decimal.dZero;
+    if (this.lt(Decimal.dZero)) {
+      return Decimal.dZero;
     }
     return this.log10();
   }
   absLog10() {
     if (this.sign === 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer > 0) {
-      return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+      return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
     } else {
-      return _Decimal.fromComponents(1, 0, Math.log10(this.mag));
+      return Decimal.fromComponents(1, 0, Math.log10(this.mag));
     }
   }
   log10() {
     if (this.sign <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer > 0) {
-      return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+      return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
     } else {
-      return _Decimal.fromComponents(this.sign, 0, Math.log10(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.log10(this.mag));
     }
   }
   log(base) {
-    base = _Decimal.fromValue_noAlloc(base);
+    base = Decimal.fromValue_noAlloc(base);
     if (this.sign <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     if (base.sign <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     if (base.sign === 1 && base.layer === 0 && base.mag === 1) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer === 0 && base.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
     }
-    return _Decimal.div(this.log10(), base.log10());
+    return Decimal.div(this.log10(), base.log10());
   }
   log2() {
     if (this.sign <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.log2(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.log2(this.mag));
     } else if (this.layer === 1) {
-      return _Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362);
+      return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362);
     } else if (this.layer === 2) {
-      return _Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247);
+      return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247);
     } else {
-      return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+      return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
     }
   }
   ln() {
     if (this.sign <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (this.layer === 0) {
-      return _Decimal.fromComponents(this.sign, 0, Math.log(this.mag));
+      return Decimal.fromComponents(this.sign, 0, Math.log(this.mag));
     } else if (this.layer === 1) {
-      return _Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046);
+      return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046);
     } else if (this.layer === 2) {
-      return _Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325);
+      return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325);
     } else {
-      return _Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+      return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
     }
   }
   logarithm(base) {
     return this.log(base);
   }
   pow(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     const a = this;
     const b = decimal;
     if (a.sign === 0) {
-      return b.eq(0) ? _Decimal.fromComponents_noNormalize(1, 0, 1) : a;
+      return b.eq(0) ? Decimal.fromComponents_noNormalize(1, 0, 1) : a;
     }
     if (a.sign === 1 && a.layer === 0 && a.mag === 1) {
       return a;
     }
     if (b.sign === 0) {
-      return _Decimal.fromComponents_noNormalize(1, 0, 1);
+      return Decimal.fromComponents_noNormalize(1, 0, 1);
     }
     if (b.sign === 1 && b.layer === 0 && b.mag === 1) {
       return a;
@@ -1962,38 +3286,38 @@ var Decimal = class _Decimal {
       } else if (Math.abs(b.toNumber() % 2) % 2 === 0) {
         return result;
       }
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     return result;
   }
   pow10() {
     if (!Number.isFinite(this.layer) || !Number.isFinite(this.mag)) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     let a = this;
     if (a.layer === 0) {
       const newmag = Math.pow(10, a.sign * a.mag);
       if (Number.isFinite(newmag) && Math.abs(newmag) >= 0.1) {
-        return _Decimal.fromComponents(1, 0, newmag);
+        return Decimal.fromComponents(1, 0, newmag);
       } else if (a.sign === 0) {
-        return _Decimal.dOne;
+        return Decimal.dOne;
       } else {
-        a = _Decimal.fromComponents_noNormalize(a.sign, a.layer + 1, Math.log10(a.mag));
+        a = Decimal.fromComponents_noNormalize(a.sign, a.layer + 1, Math.log10(a.mag));
       }
     }
     if (a.sign > 0 && a.mag >= 0) {
-      return _Decimal.fromComponents(a.sign, a.layer + 1, a.mag);
+      return Decimal.fromComponents(a.sign, a.layer + 1, a.mag);
     }
     if (a.sign < 0 && a.mag >= 0) {
-      return _Decimal.fromComponents(-a.sign, a.layer + 1, -a.mag);
+      return Decimal.fromComponents(-a.sign, a.layer + 1, -a.mag);
     }
-    return _Decimal.dOne;
+    return Decimal.dOne;
   }
   pow_base(value) {
-    return _Decimal.fromValue_noAlloc(value).pow(this);
+    return Decimal.fromValue_noAlloc(value).pow(this);
   }
   root(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value);
+    const decimal = Decimal.fromValue_noAlloc(value);
     return this.pow(decimal.recip());
   }
   factorial() {
@@ -2002,9 +3326,9 @@ var Decimal = class _Decimal {
     } else if (this.layer === 0) {
       return this.add(1).gamma();
     } else if (this.layer === 1) {
-      return _Decimal.exp(_Decimal.mul(this, _Decimal.ln(this).sub(1)));
+      return Decimal.exp(Decimal.mul(this, Decimal.ln(this).sub(1)));
     } else {
-      return _Decimal.exp(this);
+      return Decimal.exp(this);
     }
   }
   // from HyperCalc source code
@@ -2012,8 +3336,8 @@ var Decimal = class _Decimal {
     if (this.mag < 0) {
       return this.recip();
     } else if (this.layer === 0) {
-      if (this.lt(_Decimal.fromComponents_noNormalize(1, 0, 24))) {
-        return _Decimal.fromNumber(f_gamma(this.sign * this.mag));
+      if (this.lt(Decimal.fromComponents_noNormalize(1, 0, 24))) {
+        return Decimal.fromNumber(f_gamma(this.sign * this.mag));
       }
       const t = this.mag - 1;
       let l = 0.9189385332046727;
@@ -2025,7 +3349,7 @@ var Decimal = class _Decimal {
       let adj = 1 / lm;
       let l2 = l + adj;
       if (l2 === l) {
-        return _Decimal.exp(l);
+        return Decimal.exp(l);
       }
       l = l2;
       np = np * n2;
@@ -2033,7 +3357,7 @@ var Decimal = class _Decimal {
       adj = 1 / lm;
       l2 = l - adj;
       if (l2 === l) {
-        return _Decimal.exp(l);
+        return Decimal.exp(l);
       }
       l = l2;
       np = np * n2;
@@ -2044,11 +3368,11 @@ var Decimal = class _Decimal {
       lm = 1680 * np;
       lt = 1 / lm;
       l = l - lt;
-      return _Decimal.exp(l);
+      return Decimal.exp(l);
     } else if (this.layer === 1) {
-      return _Decimal.exp(_Decimal.mul(this, _Decimal.ln(this).sub(1)));
+      return Decimal.exp(Decimal.mul(this, Decimal.ln(this).sub(1)));
     } else {
-      return _Decimal.exp(this);
+      return Decimal.exp(this);
     }
   }
   lngamma() {
@@ -2056,16 +3380,16 @@ var Decimal = class _Decimal {
   }
   exp() {
     if (this.mag < 0) {
-      return _Decimal.dOne;
+      return Decimal.dOne;
     }
     if (this.layer === 0 && this.mag <= 709.7) {
-      return _Decimal.fromNumber(Math.exp(this.sign * this.mag));
+      return Decimal.fromNumber(Math.exp(this.sign * this.mag));
     } else if (this.layer === 0) {
-      return _Decimal.fromComponents(1, 1, this.sign * Math.log10(Math.E) * this.mag);
+      return Decimal.fromComponents(1, 1, this.sign * Math.log10(Math.E) * this.mag);
     } else if (this.layer === 1) {
-      return _Decimal.fromComponents(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
+      return Decimal.fromComponents(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
     } else {
-      return _Decimal.fromComponents(1, this.layer + 1, this.sign * this.mag);
+      return Decimal.fromComponents(1, this.layer + 1, this.sign * this.mag);
     }
   }
   sqr() {
@@ -2073,11 +3397,11 @@ var Decimal = class _Decimal {
   }
   sqrt() {
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.sqrt(this.sign * this.mag));
+      return Decimal.fromNumber(Math.sqrt(this.sign * this.mag));
     } else if (this.layer === 1) {
-      return _Decimal.fromComponents(1, 2, Math.log10(this.mag) - 0.3010299956639812);
+      return Decimal.fromComponents(1, 2, Math.log10(this.mag) - 0.3010299956639812);
     } else {
-      const result = _Decimal.div(_Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag), _Decimal.fromComponents_noNormalize(1, 0, 2));
+      const result = Decimal.div(Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag), Decimal.fromComponents_noNormalize(1, 0, 2));
       result.layer += 1;
       result.normalize();
       return result;
@@ -2092,48 +3416,48 @@ var Decimal = class _Decimal {
   // Tetration/tetrate: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
   // If payload != 1, then this is 'iterated exponentiation', the result of exping (payload) to base (this) (height) times. https://andydude.github.io/tetration/archives/tetration2/ident.html
   // Works with negative and positive real heights.
-  tetrate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+  tetrate(height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
     if (height === 1) {
-      return _Decimal.pow(this, payload);
+      return Decimal.pow(this, payload);
     }
     if (height === 0) {
-      return new _Decimal(payload);
+      return new Decimal(payload);
     }
-    if (this.eq(_Decimal.dOne)) {
-      return _Decimal.dOne;
+    if (this.eq(Decimal.dOne)) {
+      return Decimal.dOne;
     }
     if (this.eq(-1)) {
-      return _Decimal.pow(this, payload);
+      return Decimal.pow(this, payload);
     }
     if (height === Number.POSITIVE_INFINITY) {
       const this_num = this.toNumber();
       if (this_num <= 1.444667861009766 && this_num >= 0.06598803584531254) {
         if (this_num > 1.444667861009099) {
-          return _Decimal.fromNumber(Math.E);
+          return Decimal.fromNumber(Math.E);
         }
-        const negln = _Decimal.ln(this).neg();
+        const negln = Decimal.ln(this).neg();
         return negln.lambertw().div(negln);
       } else if (this_num > 1.444667861009766) {
-        return _Decimal.fromNumber(Number.POSITIVE_INFINITY);
+        return Decimal.fromNumber(Number.POSITIVE_INFINITY);
       } else {
-        return _Decimal.dNaN;
+        return Decimal.dNaN;
       }
     }
-    if (this.eq(_Decimal.dZero)) {
+    if (this.eq(Decimal.dZero)) {
       let result = Math.abs((height + 1) % 2);
       if (result > 1) {
         result = 2 - result;
       }
-      return _Decimal.fromNumber(result);
+      return Decimal.fromNumber(result);
     }
     if (height < 0) {
-      return _Decimal.iteratedlog(payload, this, -height, linear);
+      return Decimal.iteratedlog(payload, this, -height, linear);
     }
-    payload = _Decimal.fromValue_noAlloc(payload);
+    payload = Decimal.fromValue_noAlloc(payload);
     const oldheight = height;
     height = Math.trunc(height);
     const fracheight = oldheight - height;
-    if (this.gt(_Decimal.dZero) && this.lte(1.444667861009766) && (oldheight > 1e4 || !linear)) {
+    if (this.gt(Decimal.dZero) && this.lte(1.444667861009766) && (oldheight > 1e4 || !linear)) {
       height = Math.min(1e4, height);
       for (let i = 0; i < height; ++i) {
         const old_payload = payload;
@@ -2153,11 +3477,11 @@ var Decimal = class _Decimal {
       return payload;
     }
     if (fracheight !== 0) {
-      if (payload.eq(_Decimal.dOne)) {
+      if (payload.eq(Decimal.dOne)) {
         if (this.gt(10) || linear) {
           payload = this.pow(fracheight);
         } else {
-          payload = _Decimal.fromNumber(_Decimal.tetrate_critical(this.toNumber(), fracheight));
+          payload = Decimal.fromNumber(Decimal.tetrate_critical(this.toNumber(), fracheight));
           if (this.lt(2)) {
             payload = payload.sub(1).mul(this.minus(1)).plus(1);
           }
@@ -2176,7 +3500,7 @@ var Decimal = class _Decimal {
         return payload.normalize();
       }
       if (payload.layer - this.layer > 3) {
-        return _Decimal.fromComponents_noNormalize(payload.sign, payload.layer + (height - i - 1), payload.mag);
+        return Decimal.fromComponents_noNormalize(payload.sign, payload.layer + (height - i - 1), payload.mag);
       }
       if (i > 1e4) {
         return payload;
@@ -2185,17 +3509,17 @@ var Decimal = class _Decimal {
     return payload;
   }
   // iteratedexp/iterated exponentiation: - all cases handled in tetrate, so just call it
-  iteratedexp(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+  iteratedexp(height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
     return this.tetrate(height, payload, linear);
   }
   // iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting (times) from the number's slog representation. Equivalent to tetrating to a negative height.
   // Works with negative and positive real heights.
   iteratedlog(base = 10, times = 1, linear = false) {
     if (times < 0) {
-      return _Decimal.tetrate(base, -times, this, linear);
+      return Decimal.tetrate(base, -times, this, linear);
     }
-    base = _Decimal.fromValue_noAlloc(base);
-    let result = _Decimal.fromDecimal(this);
+    base = Decimal.fromValue_noAlloc(base);
+    let result = Decimal.fromDecimal(this);
     const fulltimes = times;
     times = Math.trunc(times);
     const fraction = fulltimes - times;
@@ -2231,7 +3555,7 @@ var Decimal = class _Decimal {
     let previously_rose = false;
     let result = this.slog_internal(base, linear).toNumber();
     for (let i = 1; i < iterations; ++i) {
-      const new_decimal = new _Decimal(base).tetrate(result, _Decimal.dOne, linear);
+      const new_decimal = new Decimal(base).tetrate(result, Decimal.dOne, linear);
       const currently_rose = new_decimal.gt(this);
       if (i > 1) {
         if (previously_rose != currently_rose) {
@@ -2250,60 +3574,60 @@ var Decimal = class _Decimal {
         break;
       }
     }
-    return _Decimal.fromNumber(result);
+    return Decimal.fromNumber(result);
   }
   slog_internal(base = 10, linear = false) {
-    base = _Decimal.fromValue_noAlloc(base);
-    if (base.lte(_Decimal.dZero)) {
-      return _Decimal.dNaN;
+    base = Decimal.fromValue_noAlloc(base);
+    if (base.lte(Decimal.dZero)) {
+      return Decimal.dNaN;
     }
-    if (base.eq(_Decimal.dOne)) {
-      return _Decimal.dNaN;
+    if (base.eq(Decimal.dOne)) {
+      return Decimal.dNaN;
     }
-    if (base.lt(_Decimal.dOne)) {
-      if (this.eq(_Decimal.dOne)) {
-        return _Decimal.dZero;
+    if (base.lt(Decimal.dOne)) {
+      if (this.eq(Decimal.dOne)) {
+        return Decimal.dZero;
       }
-      if (this.eq(_Decimal.dZero)) {
-        return _Decimal.dNegOne;
+      if (this.eq(Decimal.dZero)) {
+        return Decimal.dNegOne;
       }
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
-    if (this.mag < 0 || this.eq(_Decimal.dZero)) {
-      return _Decimal.dNegOne;
+    if (this.mag < 0 || this.eq(Decimal.dZero)) {
+      return Decimal.dNegOne;
     }
     let result = 0;
-    let copy = _Decimal.fromDecimal(this);
+    let copy = Decimal.fromDecimal(this);
     if (copy.layer - base.layer > 3) {
       const layerloss = copy.layer - base.layer - 3;
       result += layerloss;
       copy.layer -= layerloss;
     }
     for (let i = 0; i < 100; ++i) {
-      if (copy.lt(_Decimal.dZero)) {
-        copy = _Decimal.pow(base, copy);
+      if (copy.lt(Decimal.dZero)) {
+        copy = Decimal.pow(base, copy);
         result -= 1;
-      } else if (copy.lte(_Decimal.dOne)) {
+      } else if (copy.lte(Decimal.dOne)) {
         if (linear)
-          return _Decimal.fromNumber(result + copy.toNumber() - 1);
+          return Decimal.fromNumber(result + copy.toNumber() - 1);
         else
-          return _Decimal.fromNumber(result + _Decimal.slog_critical(base.toNumber(), copy.toNumber()));
+          return Decimal.fromNumber(result + Decimal.slog_critical(base.toNumber(), copy.toNumber()));
       } else {
         result += 1;
-        copy = _Decimal.log(copy, base);
+        copy = Decimal.log(copy, base);
       }
     }
-    return _Decimal.fromNumber(result);
+    return Decimal.fromNumber(result);
   }
   // background info and tables of values for critical functions taken here: https://github.com/Patashu/break_eternity.js/issues/22
   static slog_critical(base, height) {
     if (base > 10) {
       return height - 1;
     }
-    return _Decimal.critical_section(base, height, critical_slog_values);
+    return Decimal.critical_section(base, height, critical_slog_values);
   }
   static tetrate_critical(base, height) {
-    return _Decimal.critical_section(base, height, critical_tetr_values);
+    return Decimal.critical_section(base, height, critical_tetr_values);
   }
   static critical_section(base, height, grid2, linear = false) {
     height *= 10;
@@ -2343,8 +3667,8 @@ var Decimal = class _Decimal {
   // Function for adding/removing layers from a Decimal, even fractional layers (e.g. its slog10 representation).
   // Moved this over to use the same critical section as tetrate/slog.
   layeradd10(diff, linear = false) {
-    diff = _Decimal.fromValue_noAlloc(diff).toNumber();
-    const result = _Decimal.fromDecimal(this);
+    diff = Decimal.fromValue_noAlloc(diff).toNumber();
+    const result = Decimal.fromDecimal(this);
     if (diff >= 1) {
       if (result.mag < 0 && result.layer > 0) {
         result.sign = 0;
@@ -2403,13 +3727,13 @@ var Decimal = class _Decimal {
     const slogthis = this.slog(base).toNumber();
     const slogdest = slogthis + diff;
     if (slogdest >= 0) {
-      return _Decimal.tetrate(base, slogdest, _Decimal.dOne, linear);
+      return Decimal.tetrate(base, slogdest, Decimal.dOne, linear);
     } else if (!Number.isFinite(slogdest)) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     } else if (slogdest >= -1) {
-      return _Decimal.log(_Decimal.tetrate(base, slogdest + 1, _Decimal.dOne, linear), base);
+      return Decimal.log(Decimal.tetrate(base, slogdest + 1, Decimal.dOne, linear), base);
     } else {
-      return _Decimal.log(_Decimal.log(_Decimal.tetrate(base, slogdest + 2, _Decimal.dOne, linear), base), base);
+      return Decimal.log(Decimal.log(Decimal.tetrate(base, slogdest + 2, Decimal.dOne, linear), base), base);
     }
   }
   // The Lambert W function, also called the omega function or product logarithm, is the solution W(x) === x*e^x.
@@ -2419,16 +3743,16 @@ var Decimal = class _Decimal {
     if (this.lt(-0.3678794411710499)) {
       throw Error("lambertw is unimplemented for results less than -1, sorry!");
     } else if (this.mag < 0) {
-      return _Decimal.fromNumber(f_lambertw(this.toNumber()));
+      return Decimal.fromNumber(f_lambertw(this.toNumber()));
     } else if (this.layer === 0) {
-      return _Decimal.fromNumber(f_lambertw(this.sign * this.mag));
+      return Decimal.fromNumber(f_lambertw(this.sign * this.mag));
     } else if (this.layer === 1) {
       return d_lambertw(this);
     } else if (this.layer === 2) {
       return d_lambertw(this);
     }
     if (this.layer >= 3) {
-      return _Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
+      return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
     }
     throw "Unhandled behavior in lambertw()";
   }
@@ -2437,7 +3761,7 @@ var Decimal = class _Decimal {
   // https://en.wikipedia.org/wiki/Tetration#Super-root
   ssqrt() {
     if (this.sign == 1 && this.layer >= 3) {
-      return _Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
+      return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
     }
     const lnx = this.ln();
     return lnx.div(lnx.lambertw());
@@ -2449,57 +3773,57 @@ var Decimal = class _Decimal {
     if (degree == 1) {
       return this;
     }
-    if (this.eq(_Decimal.dInf)) {
-      return _Decimal.dInf;
+    if (this.eq(Decimal.dInf)) {
+      return Decimal.dInf;
     }
     if (!this.isFinite()) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     if (degree == 2) {
       try {
         return this.ssqrt();
       } catch {
-        return _Decimal.dNaN;
+        return Decimal.dNaN;
       }
     }
     if (degree > 0 && degree < 1) {
       return this.root(degree);
     }
     if (degree > -2 && degree < -1) {
-      return _Decimal.fromNumber(degree).add(2).pow(this.recip());
+      return Decimal.fromNumber(degree).add(2).pow(this.recip());
     }
     if (degree <= 0) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     if (degree == Number.POSITIVE_INFINITY) {
       const this_num = this.toNumber();
       if (this_num < Math.E && this_num > _EXPN1) {
         return this.pow(this.recip());
       } else {
-        return _Decimal.dNaN;
+        return Decimal.dNaN;
       }
     }
     if (this.eq(1)) {
-      return _Decimal.dOne;
+      return Decimal.dOne;
     }
     if (this.lt(0)) {
-      return _Decimal.dNaN;
+      return Decimal.dNaN;
     }
     if (this.lte("1ee-16")) {
       if (degree % 2 == 1)
         return this;
       else
-        return _Decimal.dNaN;
+        return Decimal.dNaN;
     }
     if (this.gt(1)) {
-      let upperBound = _Decimal.dTen;
-      if (this.gte(_Decimal.tetrate(10, degree, 1, true))) {
+      let upperBound = Decimal.dTen;
+      if (this.gte(Decimal.tetrate(10, degree, 1, true))) {
         upperBound = this.iteratedlog(10, degree - 1, true);
       }
       if (degree <= 1) {
         upperBound = this.root(degree);
       }
-      let lower = _Decimal.dZero;
+      let lower = Decimal.dZero;
       const layer = upperBound.layer;
       let upper = upperBound.iteratedlog(10, layer, true);
       let previous = upper;
@@ -2507,7 +3831,7 @@ var Decimal = class _Decimal {
       let loopGoing = true;
       while (loopGoing) {
         guess = lower.add(upper).div(2);
-        if (_Decimal.iteratedexp(10, layer, guess, true).tetrate(degree, 1, true).gt(this))
+        if (Decimal.iteratedexp(10, layer, guess, true).tetrate(degree, 1, true).gt(this))
           upper = guess;
         else
           lower = guess;
@@ -2516,35 +3840,35 @@ var Decimal = class _Decimal {
         else
           previous = guess;
       }
-      return _Decimal.iteratedexp(10, layer, guess, true);
+      return Decimal.iteratedexp(10, layer, guess, true);
     } else {
       let stage = 1;
-      let minimum = _Decimal.fromComponents(1, 10, 1);
-      let maximum = _Decimal.fromComponents(1, 10, 1);
-      let lower = _Decimal.fromComponents(1, 10, 1);
-      let upper = _Decimal.fromComponents(1, 1, -16);
-      let prevspan = _Decimal.dZero;
-      let difference = _Decimal.fromComponents(1, 10, 1);
+      let minimum = Decimal.fromComponents(1, 10, 1);
+      let maximum = Decimal.fromComponents(1, 10, 1);
+      let lower = Decimal.fromComponents(1, 10, 1);
+      let upper = Decimal.fromComponents(1, 1, -16);
+      let prevspan = Decimal.dZero;
+      let difference = Decimal.fromComponents(1, 10, 1);
       let upperBound = upper.pow10().recip();
-      let distance = _Decimal.dZero;
+      let distance = Decimal.dZero;
       let prevPoint = upperBound;
       let nextPoint = upperBound;
       const evenDegree = Math.ceil(degree) % 2 == 0;
       let range = 0;
-      let lastValid = _Decimal.fromComponents(1, 10, 1);
+      let lastValid = Decimal.fromComponents(1, 10, 1);
       let infLoopDetector = false;
-      let previousUpper = _Decimal.dZero;
+      let previousUpper = Decimal.dZero;
       let decreasingFound = false;
       while (stage < 4) {
         if (stage == 2) {
           if (evenDegree)
             break;
           else {
-            lower = _Decimal.fromComponents(1, 10, 1);
+            lower = Decimal.fromComponents(1, 10, 1);
             upper = minimum;
             stage = 3;
-            difference = _Decimal.fromComponents(1, 10, 1);
-            lastValid = _Decimal.fromComponents(1, 10, 1);
+            difference = Decimal.fromComponents(1, 10, 1);
+            lastValid = Decimal.fromComponents(1, 10, 1);
           }
         }
         infLoopDetector = false;
@@ -2554,7 +3878,7 @@ var Decimal = class _Decimal {
             upperBound = upper.pow10().recip();
             prevPoint = upper.pow10().recip();
             nextPoint = upper.pow10().recip();
-            distance = _Decimal.dZero;
+            distance = Decimal.dZero;
             range = -1;
             if (stage == 3)
               lastValid = upper;
@@ -2562,11 +3886,11 @@ var Decimal = class _Decimal {
             upperBound = upper.pow10().recip();
             prevPoint = upper.pow10().recip();
             nextPoint = upper.pow10().recip();
-            distance = _Decimal.dZero;
+            distance = Decimal.dZero;
             range = 0;
           } else if (upper.pow10().recip().tetrate(degree, 1, true).eq(upper.pow10().recip().mul(2).tetrate(degree, 1, true))) {
             upperBound = upper.pow10().recip();
-            prevPoint = _Decimal.dZero;
+            prevPoint = Decimal.dZero;
             nextPoint = upperBound.mul(2);
             distance = upperBound;
             if (evenDegree)
@@ -2611,7 +3935,7 @@ var Decimal = class _Decimal {
           if (range == -1)
             decreasingFound = true;
           if (stage == 1 && range == 1 || stage == 3 && range != 0) {
-            if (lower.eq(_Decimal.fromComponents(1, 10, 1))) {
+            if (lower.eq(Decimal.fromComponents(1, 10, 1))) {
               upper = upper.mul(2);
             } else {
               let cutOff = false;
@@ -2622,7 +3946,7 @@ var Decimal = class _Decimal {
                 break;
             }
           } else {
-            if (lower.eq(_Decimal.fromComponents(1, 10, 1))) {
+            if (lower.eq(Decimal.fromComponents(1, 10, 1))) {
               lower = upper;
               upper = upper.div(2);
             } else {
@@ -2647,7 +3971,7 @@ var Decimal = class _Decimal {
           break;
         if (!decreasingFound)
           break;
-        if (lastValid == _Decimal.fromComponents(1, 10, 1)) {
+        if (lastValid == Decimal.fromComponents(1, 10, 1)) {
           break;
         }
         if (stage == 1)
@@ -2657,16 +3981,16 @@ var Decimal = class _Decimal {
         stage++;
       }
       lower = minimum;
-      upper = _Decimal.fromComponents(1, 1, -18);
+      upper = Decimal.fromComponents(1, 1, -18);
       let previous = upper;
-      let guess = _Decimal.dZero;
+      let guess = Decimal.dZero;
       let loopGoing = true;
       while (loopGoing) {
-        if (lower.eq(_Decimal.fromComponents(1, 10, 1)))
+        if (lower.eq(Decimal.fromComponents(1, 10, 1)))
           guess = upper.mul(2);
         else
           guess = lower.add(upper).div(2);
-        if (_Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
+        if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
           upper = guess;
         else
           lower = guess;
@@ -2675,25 +3999,25 @@ var Decimal = class _Decimal {
         else
           previous = guess;
         if (upper.gt("1e18"))
-          return _Decimal.dNaN;
+          return Decimal.dNaN;
       }
       if (!guess.eq_tolerance(minimum, 1e-15)) {
         return guess.pow10().recip();
       } else {
-        if (maximum.eq(_Decimal.fromComponents(1, 10, 1))) {
-          return _Decimal.dNaN;
+        if (maximum.eq(Decimal.fromComponents(1, 10, 1))) {
+          return Decimal.dNaN;
         }
-        lower = _Decimal.fromComponents(1, 10, 1);
+        lower = Decimal.fromComponents(1, 10, 1);
         upper = maximum;
         previous = upper;
-        guess = _Decimal.dZero;
+        guess = Decimal.dZero;
         loopGoing = true;
         while (loopGoing) {
-          if (lower.eq(_Decimal.fromComponents(1, 10, 1)))
+          if (lower.eq(Decimal.fromComponents(1, 10, 1)))
             guess = upper.mul(2);
           else
             guess = lower.add(upper).div(2);
-          if (_Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
+          if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
             upper = guess;
           else
             lower = guess;
@@ -2702,7 +4026,7 @@ var Decimal = class _Decimal {
           else
             previous = guess;
           if (upper.gt("1e18"))
-            return _Decimal.dNaN;
+            return Decimal.dNaN;
         }
         return guess.pow10().recip();
       }
@@ -2710,15 +4034,15 @@ var Decimal = class _Decimal {
   }
   // Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
   // https://en.wikipedia.org/wiki/Pentation
-  pentate(height = 2, payload = _Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
-    payload = _Decimal.fromValue_noAlloc(payload);
+  pentate(height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false) {
+    payload = Decimal.fromValue_noAlloc(payload);
     const oldheight = height;
     height = Math.trunc(height);
     const fracheight = oldheight - height;
     if (fracheight !== 0) {
-      if (payload.eq(_Decimal.dOne)) {
+      if (payload.eq(Decimal.dOne)) {
         ++height;
-        payload = _Decimal.fromNumber(fracheight);
+        payload = Decimal.fromNumber(fracheight);
       } else {
         if (this.eq(10)) {
           payload = payload.layeradd10(fracheight, linear);
@@ -2728,7 +4052,7 @@ var Decimal = class _Decimal {
       }
     }
     for (let i = 0; i < height; ++i) {
-      payload = this.tetrate(payload.toNumber(), _Decimal.dOne, linear);
+      payload = this.tetrate(payload.toNumber(), Decimal.dOne, linear);
       if (!isFinite(payload.layer) || !isFinite(payload.mag)) {
         return payload.normalize();
       }
@@ -2744,54 +4068,54 @@ var Decimal = class _Decimal {
       return this;
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.sin(this.sign * this.mag));
+      return Decimal.fromNumber(Math.sin(this.sign * this.mag));
     }
-    return _Decimal.fromComponents_noNormalize(0, 0, 0);
+    return Decimal.fromComponents_noNormalize(0, 0, 0);
   }
   cos() {
     if (this.mag < 0) {
-      return _Decimal.dOne;
+      return Decimal.dOne;
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.cos(this.sign * this.mag));
+      return Decimal.fromNumber(Math.cos(this.sign * this.mag));
     }
-    return _Decimal.fromComponents_noNormalize(0, 0, 0);
+    return Decimal.fromComponents_noNormalize(0, 0, 0);
   }
   tan() {
     if (this.mag < 0) {
       return this;
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.tan(this.sign * this.mag));
+      return Decimal.fromNumber(Math.tan(this.sign * this.mag));
     }
-    return _Decimal.fromComponents_noNormalize(0, 0, 0);
+    return Decimal.fromComponents_noNormalize(0, 0, 0);
   }
   asin() {
     if (this.mag < 0) {
       return this;
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.asin(this.sign * this.mag));
+      return Decimal.fromNumber(Math.asin(this.sign * this.mag));
     }
-    return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+    return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
   }
   acos() {
     if (this.mag < 0) {
-      return _Decimal.fromNumber(Math.acos(this.toNumber()));
+      return Decimal.fromNumber(Math.acos(this.toNumber()));
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.acos(this.sign * this.mag));
+      return Decimal.fromNumber(Math.acos(this.sign * this.mag));
     }
-    return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+    return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
   }
   atan() {
     if (this.mag < 0) {
       return this;
     }
     if (this.layer === 0) {
-      return _Decimal.fromNumber(Math.atan(this.sign * this.mag));
+      return Decimal.fromNumber(Math.atan(this.sign * this.mag));
     }
-    return _Decimal.fromNumber(Math.atan(this.sign * Infinity));
+    return Decimal.fromNumber(Math.atan(this.sign * Infinity));
   }
   sinh() {
     return this.exp().sub(this.negate().exp()).div(2);
@@ -2803,16 +4127,16 @@ var Decimal = class _Decimal {
     return this.sinh().div(this.cosh());
   }
   asinh() {
-    return _Decimal.ln(this.add(this.sqr().add(1).sqrt()));
+    return Decimal.ln(this.add(this.sqr().add(1).sqrt()));
   }
   acosh() {
-    return _Decimal.ln(this.add(this.sqr().sub(1).sqrt()));
+    return Decimal.ln(this.add(this.sqr().sub(1).sqrt()));
   }
   atanh() {
     if (this.abs().gte(1)) {
-      return _Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+      return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
     }
-    return _Decimal.ln(this.add(1).div(_Decimal.fromNumber(1).sub(this))).div(2);
+    return Decimal.ln(this.add(1).div(Decimal.fromNumber(1).sub(this))).div(2);
   }
   /**
   * Joke function from Realm Grinder
@@ -2821,7 +4145,7 @@ var Decimal = class _Decimal {
     if (ascensions === 0) {
       return this;
     }
-    return this.root(_Decimal.pow(10, ascensions));
+    return this.root(Decimal.pow(10, ascensions));
   }
   /**
   * Joke function from Cookie Clicker. It's 'egg'
@@ -2855,7 +4179,7 @@ var Decimal = class _Decimal {
    * @returns {Decimal} - The interpolated value between `current` and `target`.
    */
   static smoothDamp(current, target, smoothing, deltaTime) {
-    return new _Decimal(current).add(new _Decimal(target).minus(new _Decimal(current)).times(new _Decimal(smoothing)).times(new _Decimal(deltaTime)));
+    return new Decimal(current).add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)));
   }
   /**
   * Formats the E instance with a specified accuracy and maximum decimal places.
@@ -2867,7 +4191,7 @@ var Decimal = class _Decimal {
   * @returns {string} A string representing the formatted E value.
   */
   static format(e, acc = 2, max = 9) {
-    return format(new _Decimal(e), acc, max);
+    return format(new Decimal(e), acc, max);
   }
   /**
    * Creates a clone of the E instance.
@@ -2884,7 +4208,7 @@ var Decimal = class _Decimal {
    * @returns - The cloned number
    */
   static clone(x) {
-    return _Decimal.fromComponents(x.sign, x.layer, x.mag);
+    return Decimal.fromComponents(x.sign, x.layer, x.mag);
   }
   /**
    * Performs modular arithmetic on the DecimalClone instance.
@@ -2899,16 +4223,16 @@ var Decimal = class _Decimal {
   // Taken from OmegaNum.js, with a couple touch-ups
   // "Truncated division" modulo, like JavaScript's %
   mod(value) {
-    const decimal = _Decimal.fromValue_noAlloc(value).abs();
-    if (decimal.eq(_Decimal.dZero))
-      return _Decimal.dZero;
+    const decimal = Decimal.fromValue_noAlloc(value).abs();
+    if (decimal.eq(Decimal.dZero))
+      return Decimal.dZero;
     const num_this = this.toNumber();
     const num_decimal = decimal.toNumber();
     if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
-      return new _Decimal(num_this % num_decimal);
+      return new Decimal(num_this % num_decimal);
     }
     if (this.sub(decimal).eq(this)) {
-      return _Decimal.dZero;
+      return Decimal.dZero;
     }
     if (decimal.sub(this).eq(decimal)) {
       return this;
@@ -2943,7 +4267,7 @@ var Decimal = class _Decimal {
     return x;
   }
   static softcap(value, start, power, mode) {
-    return new _Decimal(value).softcap(start, power, mode);
+    return new Decimal(value).softcap(start, power, mode);
   }
   /**
   * Scales a currency value using a specified scaling function.
@@ -2955,19 +4279,19 @@ var Decimal = class _Decimal {
   * @returns {Decimal} - The scaled currency value.
   */
   scale(s, p, mode, rev = false) {
-    s = new _Decimal(s);
-    p = new _Decimal(p);
+    s = new Decimal(s);
+    p = new Decimal(p);
     let x = this.clone();
     if (x.gte(s)) {
       if ([0, "pow"].includes(mode))
         x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)));
       if ([1, "exp"].includes(mode))
-        x = rev ? x.div(s).max(1).log(p).add(s) : _Decimal.pow(p, x.sub(s)).mul(s);
+        x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p, x.sub(s)).mul(s);
     }
     return x;
   }
   static scale(value, s, p, mode, rev = false) {
-    return new _Decimal(value).scale(s, p, mode, rev);
+    return new Decimal(value).scale(s, p, mode, rev);
   }
   /**
    * Formats the E instance with a specified accuracy and maximum decimal places.
@@ -2995,7 +4319,7 @@ var Decimal = class _Decimal {
     return format(this.clone(), acc, max, type);
   }
   static formatST(value, acc = 2, max = 9, type = "st") {
-    return format(new _Decimal(value), acc, max, type);
+    return format(new Decimal(value), acc, max, type);
   }
   /**
    * Formats the gain rate using the E instance.
@@ -3016,7 +4340,7 @@ var Decimal = class _Decimal {
     return formatGain(this.clone(), gain);
   }
   static formatGain(value, gain) {
-    return formatGain(new _Decimal(value), gain);
+    return formatGain(new Decimal(value), gain);
   }
   /**
    * Converts the E instance to a Roman numeral representation.
@@ -3025,59 +4349,39 @@ var Decimal = class _Decimal {
    * @name toRoman
    * @param {number|Decimal} [max=5000] - Max before it returns the original
    * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
-   * or the original E instance if it is greater than or equal to 5000.
+   * or the original E instance if it is greater than or equal to 5000 or less than 1.
    */
   toRoman(max = 5e3) {
-    max = new _Decimal(max);
+    max = new Decimal(max);
     const num = this.clone();
-    if (num.gte(max))
+    if (num.gte(max) || num.lt(1))
       return num;
-    const newNum = num.toNumber();
-    const digits = String(+newNum).split("");
-    const key = [
-      "",
-      "C",
-      "CC",
-      "CCC",
-      "CD",
-      "D",
-      "DC",
-      "DCC",
-      "DCCC",
-      "CM",
-      "",
-      "X",
-      "XX",
-      "XXX",
-      "XL",
-      "L",
-      "LX",
-      "LXX",
-      "LXXX",
-      "XC",
-      "",
-      "I",
-      "II",
-      "III",
-      "IV",
-      "V",
-      "VI",
-      "VII",
-      "VIII",
-      "IX"
-    ];
-    let roman = "", i = 3;
-    if (typeof digits.pop() !== "undefined") {
-      while (i--) {
-        roman = (key[+digits.pop() + i * 10] || "") + roman;
-      }
-      return Array(+digits.join("") + 1).join("M") + roman;
-    } else {
-      return "";
+    let newNum = num.toNumber();
+    const roman = {
+      M: 1e3,
+      CM: 900,
+      D: 500,
+      CD: 400,
+      C: 100,
+      XC: 90,
+      L: 50,
+      XL: 40,
+      X: 10,
+      IX: 9,
+      V: 5,
+      IV: 4,
+      I: 1
+    };
+    let str = "";
+    for (let i of Object.keys(roman)) {
+      let q = Math.floor(newNum / roman[i]);
+      newNum -= q * roman[i];
+      str += i.repeat(q);
     }
+    return str;
   }
   static toRoman(value, max) {
-    return new _Decimal(value).toRoman(max);
+    return new Decimal(value).toRoman(max);
   }
   /**
    * Normalizes the Decimal instance. Helps with a webpack(?) bug .-.
@@ -3087,9 +4391,32 @@ var Decimal = class _Decimal {
    * @returns The normalized decimal
    */
   static normalizeFromComponents(x) {
-    return _Decimal.fromComponents(x.sign, x.layer, x.mag);
+    return Decimal.fromComponents(x.sign, x.layer, x.mag);
   }
 };
+Decimal.dZero = Decimal.fromComponents_noNormalize(0, 0, 0);
+Decimal.dOne = Decimal.fromComponents_noNormalize(1, 0, 1);
+Decimal.dNegOne = Decimal.fromComponents_noNormalize(-1, 0, 1);
+Decimal.dTwo = Decimal.fromComponents_noNormalize(1, 0, 2);
+Decimal.dTen = Decimal.fromComponents_noNormalize(1, 0, 10);
+Decimal.dNaN = Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+Decimal.dInf = Decimal.fromComponents_noNormalize(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+Decimal.dNegInf = Decimal.fromComponents_noNormalize(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+Decimal.dNumberMax = Decimal.fromComponents(1, 0, Number.MAX_VALUE);
+Decimal.dNumberMin = Decimal.fromComponents(1, 0, Number.MIN_VALUE);
+Decimal.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
+__decorateClass([
+  Expose()
+], Decimal.prototype, "sign", 2);
+__decorateClass([
+  Expose()
+], Decimal.prototype, "mag", 2);
+__decorateClass([
+  Expose()
+], Decimal.prototype, "layer", 2);
+Decimal = __decorateClass([
+  Exclude()
+], Decimal);
 var ST_NAMES = [
   [
     ["", "U", "D", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"],
@@ -3716,7 +5043,6 @@ Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(
 
 // src/classes/boost.ts
 var boostObject = class {
-  // public index: number;
   constructor(init) {
     this.id = init.id;
     this.name = init.name ?? "";
@@ -3820,6 +5146,12 @@ var boost = class {
     return output;
   }
 };
+__decorateClass([
+  Type(() => boostObject)
+], boost.prototype, "boostArray", 2);
+__decorateClass([
+  Expose()
+], boost.prototype, "baseEffect", 2);
 
 // src/classes/currency.ts
 function calculateUpgrade(value, upgrade, target = 1, el = false) {
@@ -3890,10 +5222,17 @@ function calculateUpgrade(value, upgrade, target = 1, el = false) {
 }
 var upgradeData = class {
   constructor(init) {
+    init = init ?? {};
     this.id = init.id ?? -1;
     this.level = init.level ? E(init.level) : E(1);
   }
 };
+__decorateClass([
+  Expose()
+], upgradeData.prototype, "id", 2);
+__decorateClass([
+  Type(() => e_default)
+], upgradeData.prototype, "level", 2);
 var upgradeStatic = class {
   /**
    * @param init - The upgrade object to initialize.
@@ -3923,16 +5262,25 @@ var upgradeStatic = class {
   }
 };
 var currency = class {
-  /**
-   * Constructs a new currency object with an initial value of 0.
-   */
+  // /** A boost object that affects the currency gain. */
+  // @Expose()
+  // public boost: boost;
+  /** Constructs a new currency object with an initial value of 0. */
   constructor() {
     this.value = E(0);
     this.upgrades = [];
-    this.boost = new boost();
   }
 };
+__decorateClass([
+  Type(() => e_default)
+], currency.prototype, "value", 2);
+__decorateClass([
+  Type(() => upgradeData)
+], currency.prototype, "upgrades", 2);
 var currencyStatic = class {
+  get pointer() {
+    return this.pointerFn();
+  }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param defaultVal - The default value of the currency.
@@ -3942,7 +5290,7 @@ var currencyStatic = class {
     this.defaultVal = E(defaultVal);
     this.defaultBoost = E(defaultBoost);
     this.upgrades = [];
-    this.pointer = typeof pointer === "function" ? pointer() : pointer;
+    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
     this.boost = new boost(defaultBoost);
     this.pointer.value = this.defaultVal;
   }
@@ -4115,7 +5463,13 @@ var attribute = class {
     this.value = E(initial);
   }
 };
+__decorateClass([
+  Type(() => e_default)
+], attribute.prototype, "value", 2);
 var attributeStatic = class {
+  get pointer() {
+    return this.pointerFn;
+  }
   /**
    * Constructs a new instance of the Attribute class.
    * @param pointer - A function or an instance of the attribute class.
@@ -4124,8 +5478,9 @@ var attributeStatic = class {
    */
   constructor(pointer, useBoost = true, initial = 0) {
     this.initial = E(initial);
-    this.pointer = typeof pointer === "function" ? pointer() : pointer;
-    this.boost = new boost(this.initial);
+    this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+    if (useBoost)
+      this.boost = new boost(this.initial);
   }
   /**
    * Gets the value of the attribute, and also updates the value stored.
@@ -4401,6 +5756,24 @@ function hookMain() {
 
 // src/index.ts
 hookMain();
+/*! Bundled license information:
+
+reflect-metadata/Reflect.js:
+  (*! *****************************************************************************
+  Copyright (C) Microsoft. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+  this file except in compliance with the License. You may obtain a copy of the
+  License at http://www.apache.org/licenses/LICENSE-2.0
+  
+  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+  MERCHANTABLITY OR NON-INFRINGEMENT.
+  
+  See the Apache Version 2.0 License for specific language governing permissions
+  and limitations under the License.
+  ***************************************************************************** *)
+*/
 if (typeof module.exports == "object" && typeof exports == "object") {
     var __cp = (to, from, except, desc) => {
       if ((from && typeof from === "object") || typeof from === "function") {

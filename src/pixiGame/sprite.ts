@@ -57,28 +57,18 @@ class sprite {
     }
 
     /**
-     * Removes the sprite from its parent and optionally from an array.
-     * @param parent - The parent object or array.
+     * Removes the sprite from its parent container.
      */
-    public remove (parent: Array<any> | object): void {
+    public remove (): void {
         this.x = this.y = Infinity; // buggy collision detection
         this.sprite.parent.removeChild(this.sprite);
-        if (Array.isArray(parent)) {
-            const index = parent.indexOf(this);
-            if (index !== -1) {
-                parent.splice(index, 1);
-            }
-            // @ts-expect-error - collisionShape is a string, but we want to use it as a type
-        } else if (typeof parent == "object") delete this;
-    }
-
-    /**
-     * Removes a sprite from its parent container.
-     * @param sprite - The sprite to remove.
-     * @param parent - The parent container from which to remove the sprite.
-     */
-    public static remove (sprite: sprite, parent: Array<any> | object): void {
-        sprite.remove(parent);
+        // if (Array.isArray(parent)) {
+        //     const index = parent.indexOf(this);
+        //     if (index !== -1) {
+        //         parent.splice(index, 1);
+        //     }
+        //     // @ts-expect-error - collisionShape is a string, but we want to use it as a type
+        // } else if (typeof parent == "object") delete this;
     }
 };
 export { sprite };

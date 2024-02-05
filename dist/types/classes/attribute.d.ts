@@ -1,3 +1,6 @@
+/**
+ * @file Declares the attribute and attributeStatic classes.
+ */
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
 /**
@@ -5,9 +8,7 @@ import { boost } from "../classes/boost";
  * @deprecated Use {@link attributeStatic} instead.
  */
 declare class attribute {
-    /**
-     * The current value of the attribute.
-     */
+    /** The current value of the attribute. */
     value: E;
     /**
      * Constructs a static attribute with an initial effect.
@@ -15,20 +16,17 @@ declare class attribute {
      */
     constructor(initial: ESource);
 }
-/**
- * Represents a static attribute, which is number effected by boosts.
- */
+/** Represents a static attribute, which is number effected by boosts. */
 declare class attributeStatic {
-    protected pointer: attribute;
-    /**
-     * The initial value of the attribute.
-     */
+    protected pointerFn: attribute;
+    get pointer(): attribute;
+    /** The initial value of the attribute. */
     initial: E;
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    boost: boost;
+    boost?: boost;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class.

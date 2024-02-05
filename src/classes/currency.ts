@@ -1,8 +1,10 @@
 /**
  * @file Declares the currency class and its related classes (upgrade)
  */
-// import { Type } from "class-transformer";
+import { Type, Expose } from "class-transformer";
 import { E, ESource } from "../E/eMain";
+import Decimal from "../E/e";
+
 import { boost } from "./boost";
 
 /**
@@ -130,34 +132,39 @@ function calculateUpgrade (value: E, upgrade: upgradeStatic, target: ESource = 1
  * Interface for initializing an upgrade.
  */
 interface upgradeInit {
-    /**
-     * The ID of the upgrade.
-     */
+    /** The ID of the upgrade. */
     id: string,
 
-    /**
-     * The name of the upgrade. Defaults to the ID.
-     */
+    /** The name of the upgrade. Defaults to the ID. */
     name?: string,
 
-    /**
-     * The description of the upgrade.
-     */
+    /** The description of the upgrade. */
     description?: string,
 
     /**
      * The cost of upgrades at a certain level.
+     * @param level - The current level of the upgrade.
+     * @returns The cost of the upgrade.
+     * @example
+     * // A cost function that returns twice the level.
+     * (level) => level.mul(2)
      */
     cost: (level: E) => E,
 
     /**
      * The cost of buying a bulk of upgrades at a certain level.
+     * @param level - The current level of the upgrade.
+     * @param target - The target level of the upgrade.
+     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
+     * @example
+     * // A cost function that returns the sum of the levels and the target.
+     * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
+     * // -target^2 + target + level^2 + level
+     * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
     costBulk?: (level: E, target: E) => [cost: E, amount: E],
 
-    /**
-     * The maximum level of the upgrade.
-     */
+    /** The maximum level of the upgrade. */
     maxLevel: E
 
     /**
@@ -167,21 +174,15 @@ interface upgradeInit {
      */
     effect: (level: E, context: upgradeStatic) => void,
 
-    /**
-     * Endless: Flag to exclude the sum calculation and only perform binary search.
-     */
+    /** Endless: Flag to exclude the sum calculation and only perform binary search. */
     el?: boolean,
 
     // Below are types that are automatically added
-    /**
-     * The current level of the upgrade. Automatically added.
-     */
+    /** The current level of the upgrade. Automatically added. */
     level?: E;
 }
 
-/**
- * Interface for an upgrade.
- */
+/** Interface for an upgrade. */
 interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
     name: string,
     description: string,
@@ -193,9 +194,11 @@ interface IUpgradeData {
 }
 
 class upgradeData implements IUpgradeData {
-    public id; level;
+    @Expose() public id;
+    @Type(() => Decimal) public level;
 
     constructor (init: upgradeInit) {
+        init = init ?? {}; // class-transformer bug
         this.id = init.id ?? -1;
         this.level = init.level ? E(init.level) : E(1);
     }
@@ -239,28 +242,23 @@ class upgradeStatic implements IUpgradeStatic {
  * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  */
 class currency {
-    /**
-     * The current value of the currency.
-     */
+    /** The current value of the currency. */
+    @Type(() => Decimal)
     public value: E;
 
-    /**
-     * An array that represents upgrades and their levels.
-     */
+    /** An array that represents upgrades and their levels. */
+    @Type(() => upgradeData)
     public upgrades: upgradeData[];
 
-    /**
-     * A boost object that affects the currency gain.
-     */
-    public boost: boost;
+    // /** A boost object that affects the currency gain. */
+    // @Expose()
+    // public boost: boost;
 
-    /**
-     * Constructs a new currency object with an initial value of 0.
-     */
+    /** Constructs a new currency object with an initial value of 0. */
     constructor () {
         this.value = E(0);
         this.upgrades = [];
-        this.boost = new boost();
+        // this.boost = new boost();
     }
 }
 
@@ -269,19 +267,15 @@ class currency {
  * All the functions are here instead of the `currency` class.
  */
 class currencyStatic {
-    /**
-     * An array that represents upgrades, their costs, and their effects.
-     */
+    /** An array that represents upgrades, their costs, and their effects. */
     public upgrades: upgradeStatic[];
 
-    /**
-     * A function that returns the pointer of the data
-     */
-    protected pointer: currency;
+    /** A function that returns the pointer of the data */
+    protected pointerFn: (() => currency);
 
-    /**
-     * A boost object that affects the currency gain.
-     */
+    get pointer () { return this.pointerFn(); }
+
+    /** A boost object that affects the currency gain. */
     public boost: boost;
 
     protected defaultVal: E;
@@ -297,7 +291,8 @@ class currencyStatic {
         this.defaultBoost = E(defaultBoost);
 
         this.upgrades = [];
-        this.pointer = typeof pointer === "function" ? pointer() : pointer;
+        // this.pointer = typeof pointer === "function" ? pointer() : pointer;
+        this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
         this.boost = new boost(defaultBoost);
 
         this.pointer.value = this.defaultVal;
@@ -334,9 +329,7 @@ class currencyStatic {
      * @returns The new currency value after applying the boost.
      */
     public gain (dt: ESource = 1000): E {
-        // console.log("boosts", this.boost, this.boost.calculate(), this.boost.calculate().mul(E(dt).div(1000)));
         this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1000)));
-        // console.log("pointer value", this.pointer.value);
         return this.pointer.value;
     }
 
@@ -368,7 +361,6 @@ class currencyStatic {
         // }
         else if (typeof id == "string") {
             for (let i = 0; i < this.upgrades.length; i++) {
-                // console.log("upgrade id", this.upgrades[i].id, id);
                 if (this.upgrades[i].id === id) {
                     upgradeToGet = this.upgrades[i];
                     break;

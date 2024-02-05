@@ -6,6 +6,7 @@
 /* eslint-disable */
 
 import { LRUCache } from "./lru-cache";
+import { Exclude, Expose } from "class-transformer";
 
 export type CompareResult = -1 | 0 | 1;
 
@@ -325,6 +326,7 @@ export type DecimalSource = Decimal | number | string;
 /**
  * The value of the Decimal is sign * 10^10^10...^mag, with (layer) 10s. If the layer is not 0, then negative mag means it's the reciprocal of the corresponding number with positive mag.
  */
+@Exclude()
 class Decimal {
     public static readonly dZero = Decimal.fromComponents_noNormalize(0, 0, 0);
     public static readonly dOne = Decimal.fromComponents_noNormalize(1, 0, 1);
@@ -339,9 +341,9 @@ class Decimal {
 
     static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
 
-    public sign = 0;
-    public mag = 0;
-    public layer = 0;
+    @Expose() public sign = 0;
+    @Expose() public mag = 0;
+    @Expose() public layer = 0;
     static formats: {
         toSubscript: (value: number
         ) => string; toSuperscript: (value: number) => string; formatST: (ex: DecimalSource, acc?: number, max?: number
@@ -3441,30 +3443,39 @@ class Decimal {
      * @name toRoman
      * @param {number|Decimal} [max=5000] - Max before it returns the original
      * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000.
+     * or the original E instance if it is greater than or equal to 5000 or less than 1.
      */
     public toRoman (max: DecimalSource = 5000): string | Decimal {
         max = new Decimal(max);
 
         const num: Decimal = this.clone();
-        if (num.gte(max)) return num;
-        const newNum: number = num.toNumber();
+        if (num.gte(max) || num.lt(1)) return num;
+        let newNum: number = num.toNumber();
 
-        const digits = String(+newNum).split("");
-        const key = [
-            "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM",
-            "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC",
-            "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX",
-        ];
-
-        let roman = "", i = 3;
-        if (typeof digits.pop() !== "undefined") {
-            // @ts-ignore
-            while (i--) {roman = (key[+digits.pop() + (i * 10)] || "") + roman;}
-            return Array(+digits.join("") + 1).join("M") + roman;
-        } else {
-            return "";
+        const roman = {
+            M: 1000,
+            CM: 900,
+            D: 500,
+            CD: 400,
+            C: 100,
+            XC: 90,
+            L: 50,
+            XL: 40,
+            X: 10,
+            IX: 9,
+            V: 5,
+            IV: 4,
+            I: 1
+        };
+        let str = '';
+        
+        for (let i of Object.keys(roman)) {
+            let q = Math.floor(newNum / (roman as any)[i]);
+            newNum -= q * (roman as any)[i];
+            str += i.repeat(q);
         }
+        
+        return str;
     }
     public static toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
         return new Decimal(value).toRoman(max);

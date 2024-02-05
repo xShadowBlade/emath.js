@@ -1,6 +1,8 @@
 {
 	"compilerOptions": {
 		"emitDeclarationOnly": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
 		"declaration": true,
 		"allowJs": true,
         "jsx": "react",

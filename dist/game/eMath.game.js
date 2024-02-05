@@ -2553,7 +2553,6 @@ function plainToInstance(cls, plain, options) {
 
 // src/game/managers/dataManager.ts
 var import_currency = require("../main/emath.js");
-var import_boost = require("../main/emath.js");
 var import_attribute = require("../main/emath.js");
 var import_e = __toESM(require("../main/emath.js"));
 function md5(_) {
@@ -2602,7 +2601,7 @@ var dataManager = class {
    * @param gameRef - A function that returns the game instance.
    */
   constructor(gameRef) {
-    this.gameRef = gameRef;
+    this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
     this.data = {};
     this.static = {};
   }
@@ -2616,7 +2615,8 @@ var dataManager = class {
     if (typeof this.data[key] === "undefined" && this.normalData) {
       console.warn("After initializing data, you should not add new properties to data.");
     }
-    return this.data[key] = value;
+    this.data[key] = value;
+    return this.data[key];
   }
   /**
    * Gets the data for the given key.
@@ -2633,7 +2633,11 @@ var dataManager = class {
    * @returns - The value that was set.
    */
   setStatic(key, value) {
-    return this.static[key] = value;
+    if (typeof this.static[key] === "undefined" && this.normalData) {
+      console.warn("After initializing data, you should not add new properties to staticData.");
+    }
+    this.static[key] = value;
+    return this.static[key];
   }
   /**
    * Gets the static data for the given key.
@@ -2647,6 +2651,7 @@ var dataManager = class {
    * Initializes / sets data that is unmodified by the player.
    * This is used to merge the loaded data with the default data.
    * It should be called before you load data.
+   * Note: This should only be called once, and after it is called, you should not add new properties to data.
    */
   init() {
     this.normalData = this.data;
@@ -2662,7 +2667,7 @@ var dataManager = class {
     return [hasedData, gameDataString];
   }
   /**
-   * Compresses the given game data to a base64-encoded string.
+   * Compresses the given game data to a base64-encoded using lz-string, or btoa if lz-string is not available.
    * @param data The game data to be compressed. Defaults to the current game data.
    * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
    */
@@ -2672,7 +2677,7 @@ var dataManager = class {
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
-   * @param data - The data to decompile. If not provided, it will be fetched from localStorage.
+   * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
   decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
@@ -2688,7 +2693,8 @@ var dataManager = class {
    */
   validateData(data) {
     const [hashSave, gameDataToValidate] = data;
-    const hashCheck = md5(JSON.stringify(instanceToPlain(gameDataToValidate)));
+    const hashCheck = md5(JSON.stringify(gameDataToValidate));
+    console.log("Hashes: ", hashSave, hashCheck);
     return hashSave === hashCheck;
   }
   /**
@@ -2706,19 +2712,19 @@ var dataManager = class {
       window.location.reload();
   }
   /**
-   * Saves the game data to local storage.
+   * Saves the game data to local storage under the key `${game.config.name.id}-data`.
    * If you dont want to save to local storage, use {@link compileData} instead.
    */
   saveData() {
     localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
   }
   /**
-   * Compiles the game data and prompts the user to download it as a text file. (optional)
-   * @param download - Whether to download the file automatically. Defaults to `true`. If set to `false`, this is kinda useless lol use {@link compileData} instead.
+   * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
+   * If you want to implement a custom data export, use {@link compileData} instead.
    */
-  exportData(download = true) {
+  exportData() {
     const content = this.compileData();
-    if (download && prompt("Download save data?:", content) != null) {
+    if (prompt("Download save data?:", content) != null) {
       const blob = new Blob([content], { type: "text/plain" });
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
@@ -2729,14 +2735,17 @@ var dataManager = class {
       document.body.removeChild(downloadLink);
     }
   }
+  /**
+   * Loads game data and processes it.
+   * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+   * @returns The loaded data.
+   */
   parseData(dataToParse = this.decompileData()) {
-    if (!this.normalData) {
+    if (!this.normalData)
       throw new Error("dataManager.loadData(): You must call init() before writing to data.");
-    }
-    if (!dataToParse) {
+    if (!dataToParse)
       return null;
-    }
-    const [, loadedData] = dataToParse;
+    const [hash, loadedData] = dataToParse;
     function isPlainObject(obj) {
       return typeof obj === "object" && obj.constructor === Object;
     }
@@ -2752,37 +2761,49 @@ var dataManager = class {
       return out;
     }
     let loadedDataProcessed = deepMerge(this.normalData, loadedData);
-    const templateClasses = [
-      {
-        class: import_currency.currency,
-        subclasses: {
-          value: import_e.default,
-          upgrades: [import_currency.upgradeData],
-          boost: import_boost.boost
-        }
-      },
-      {
-        class: import_boost.boost,
-        subclasses: {
-          boostArray: [import_boost.boostObject],
-          baseEffect: import_e.default
-        }
-      },
+    const templateClasses = function(templateClassesInit) {
+      const out = [];
+      for (const templateClassConvert of templateClassesInit) {
+        out.push({
+          class: templateClassConvert.class,
+          subclasses: templateClassConvert.subclasses,
+          properties: Object.getOwnPropertyNames(new templateClassConvert.class())
+        });
+      }
+      return out;
+    }([
       {
         class: import_attribute.attribute,
         subclasses: {
           value: import_e.default
         }
       },
+      // {
+      //     class: boost,
+      //     subclasses: {
+      //         baseEffect: Decimal,
+      //         boostArray: [boostObject],
+      //     },
+      // },
+      {
+        class: import_currency.currency,
+        subclasses: {
+          // boost: boost,
+          upgrades: [import_currency.upgradeData],
+          value: import_e.default
+        }
+      },
       {
         class: import_e.default
       }
-    ];
-    for (const templateClass of templateClasses) {
-      templateClass.properties = Object.getOwnPropertyNames(new templateClass.class());
-    }
+    ]);
+    console.log("Temp", templateClasses);
     function compareArrays(arr1, arr2) {
       return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
+    }
+    function convertTemplateClass(templateClass, plain) {
+      let out = plainToInstance(templateClass.class, plain);
+      return out;
     }
     function plainToInstanceRecursive(plain) {
       const out = plain;
@@ -2792,20 +2813,7 @@ var dataManager = class {
         if ((() => {
           for (const templateClass of templateClasses) {
             if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClass.properties)) {
-              out[key] = plainToInstance(templateClass.class, out[key]);
-              if (templateClass.subclasses) {
-                for (const subclassKey in templateClass.subclasses) {
-                  if (Object.prototype.hasOwnProperty.call(templateClass.subclasses, subclassKey)) {
-                    if (Array.isArray(templateClass.subclasses[subclassKey])) {
-                      for (let i = 0; i < out[key][subclassKey].length; i++) {
-                        out[key][subclassKey][i] = plainToInstanceRecursive(out[key][subclassKey][i]);
-                      }
-                    } else {
-                      out[key][subclassKey] = plainToInstanceRecursive(out[key][subclassKey]);
-                    }
-                  }
-                }
-              }
+              out[key] = convertTemplateClass(templateClass, plain[key]);
               return false;
             }
           }
@@ -2821,19 +2829,30 @@ var dataManager = class {
   }
   /**
    * Loads game data and processes it.
-   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage.
+   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+   * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
    */
   loadData(dataToLoad = this.decompileData()) {
+    if (!dataToLoad)
+      return null;
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData)
-      return;
+      return null;
+    const isDataValid = this.validateData(dataToLoad);
     console.log("Loaded data: ", parsedData);
     this.data = parsedData;
+    return isDataValid;
   }
 };
 
 // src/game/gameCurrency.ts
 var gameCurrency = class {
+  get data() {
+    return this.dataPointer();
+  }
+  get static() {
+    return this.staticPointer();
+  }
   /**
    * Creates a new instance of the game class.
    * @param currencyPointer - A function that returns the current currency value.
@@ -2841,8 +2860,8 @@ var gameCurrency = class {
    * @param gamePointer A pointer to the game instance.
    */
   constructor(currencyPointer, staticPointer, gamePointer) {
-    this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-    this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
+    this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
+    this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
     this.game = gamePointer;
   }
   /**
@@ -2852,13 +2871,13 @@ var gameCurrency = class {
   get value() {
     return this.data.value;
   }
-  /**
-   * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-   * @param currencyPointer - A function or pointer that returns the current currency value.
-   */
-  updateDataPointer(currencyPointer) {
-    this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-  }
+  // /**
+  //  * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
+  //  * @param currencyPointer - A function or pointer that returns the current currency value.
+  //  */
+  // public updateDataPointer (currencyPointer: (() => currency) | currency): void {
+  //     this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+  // }
 };
 
 // src/game/gameAttribute.ts
@@ -2957,7 +2976,7 @@ var game = class _game {
   }
   /**
    * Adds a new currency section to the game. {@link gameCurrency}
-   * @param name - The name of the currency section.
+   * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
    * @returns A new instance of the gameCurrency class.
    */
   addCurrency(name) {
@@ -2965,10 +2984,10 @@ var game = class _game {
       currency: new import_currency2.currency()
     });
     this.dataManager.setStatic(name, {
-      currency: new import_currency2.currencyStatic(this.dataManager.getData(name).currency)
+      currency: new import_currency2.currencyStatic(() => this.dataManager.getData(name).currency)
       // attributes: {},
     });
-    const classInstance = new gameCurrency(this.dataManager.getData(name).currency, this.dataManager.getStatic(name).currency, this);
+    const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this);
     return classInstance;
   }
   /**

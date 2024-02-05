@@ -12,8 +12,15 @@ import type { game } from "./game";
  * To use, destruct the `data` and `static` properties from the class.
  */
 class gameCurrency {
-    public data: currency;
-    public static: currencyStatic;
+    public dataPointer: () => currency;
+    public staticPointer: () => currencyStatic;
+
+    get data (): currency {
+        return this.dataPointer();
+    }
+    get static (): currencyStatic {
+        return this.staticPointer();
+    }
 
     public game?: game;
 
@@ -24,8 +31,11 @@ class gameCurrency {
      * @param gamePointer A pointer to the game instance.
      */
     constructor (currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer?: game) {
-        this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-        this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
+        // this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+        // this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
+
+        this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
+        this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
 
         this.game = gamePointer;
     }
@@ -38,17 +48,17 @@ class gameCurrency {
         return this.data.value;
     }
 
-    /**
-     * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-     * @param currencyPointer - A function or pointer that returns the current currency value.
-     */
-    public updateDataPointer (currencyPointer: (() => currency) | currency): void {
-        this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-    }
+    // /**
+    //  * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
+    //  * @param currencyPointer - A function or pointer that returns the current currency value.
+    //  */
+    // public updateDataPointer (currencyPointer: (() => currency) | currency): void {
+    //     this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
+    // }
 }
 
-class gameCurrencyGroup {
+// class gameCurrencyGroup {
 
-}
+// }
 
 export { gameCurrency };
