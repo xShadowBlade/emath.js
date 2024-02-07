@@ -206,7 +206,12 @@ class upgradeData implements IUpgradeData {
 
 class upgradeStatic implements IUpgradeStatic {
     public id; name; description; cost; costBulk; maxLevel; effect; el?;
-    protected data: upgradeData;
+
+    protected dataPointerFn: () => upgradeData;
+
+    public get data (): upgradeData {
+        return this.dataPointerFn();
+    }
 
     /**
      * @param init - The upgrade object to initialize.
@@ -214,7 +219,8 @@ class upgradeStatic implements IUpgradeStatic {
      */
     constructor (init: upgradeInit, dataPointer: (() => upgradeData) | upgradeData) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
-        this.data = data;
+        // this.data = data;
+        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
         this.id = init.id;
         this.name = init.name ?? init.id;
         this.description = init.description ?? "";
@@ -275,11 +281,24 @@ class currencyStatic {
 
     get pointer () { return this.pointerFn(); }
 
+    /**
+     * Updates / applies effects to the currency on load.
+     */
+    public onLoadData () {
+        // console.log("onLoadData", this.upgrades);
+        this.upgrades.forEach((upgrade) => {
+            upgrade.effect(upgrade.level, upgrade);
+        });
+    }
+
     /** A boost object that affects the currency gain. */
     public boost: boost;
 
-    protected defaultVal: E;
-    protected defaultBoost: E;
+    /** The default value of the currency. */
+    public defaultVal: E;
+
+    /** The default boost of the currency. */
+    public defaultBoost: E;
 
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
@@ -291,7 +310,6 @@ class currencyStatic {
         this.defaultBoost = E(defaultBoost);
 
         this.upgrades = [];
-        // this.pointer = typeof pointer === "function" ? pointer() : pointer;
         this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
         this.boost = new boost(defaultBoost);
 
@@ -339,11 +357,29 @@ class currencyStatic {
      * @returns The upgrade object.
      */
     private pointerAddUpgrade (upgrades1: upgradeInit): upgradeInit {
-        // If level exists, add it else default to 1
         const upgrades2 = new upgradeData(upgrades1);
         this.pointer.upgrades.push(upgrades2);
         return upgrades1;
     };
+
+    /**
+     * Retrieves an upgrade object based on the provided id.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object if found, otherwise null.
+     */
+    private pointerGetUpgrade (id?: string): upgradeData | null {
+        let upgradeToGet: upgradeData | null = null;
+        if (id === undefined) {
+            return null;
+        }
+        for (let i = 0; i < this.pointer.upgrades.length; i++) {
+            if (this.pointer.upgrades[i].id === id) {
+                upgradeToGet = this.pointer.upgrades[i];
+                break;
+            }
+        }
+        return upgradeToGet;
+    }
 
 
     /**
@@ -383,7 +419,12 @@ class currencyStatic {
         for (let i = 0; i < upgrades.length; i++) {
             // if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
             this.pointerAddUpgrade(upgrades[i]);
-            const upgrade = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+            const currentLength = this.pointer.upgrades.length;
+            const upgrade = new upgradeStatic(upgrades[i], () =>
+                this.pointerGetUpgrade((upgrades as upgradeInit[])[i].id) as upgradeData
+                ??
+                this.pointer.upgrades[currentLength - 1],
+            );
             if (runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
             upgradesDefault.push(upgrade);
         }
@@ -491,6 +532,8 @@ class currencyStatic {
 
         // Set the upgrade level
         upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
+
+        // console.log("upgrade.level", upgrade.level);
 
         // Call the effect function if it exists
         if (typeof upgrade.effect === "function") {

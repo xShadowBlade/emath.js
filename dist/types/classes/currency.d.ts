@@ -79,7 +79,8 @@ declare class upgradeStatic implements IUpgradeStatic {
     maxLevel: Decimal;
     effect: (level: Decimal, context: upgradeStatic) => void;
     el?: boolean | undefined;
-    protected data: upgradeData;
+    protected dataPointerFn: () => upgradeData;
+    get data(): upgradeData;
     /**
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
@@ -114,10 +115,16 @@ declare class currencyStatic {
     /** A function that returns the pointer of the data */
     protected pointerFn: (() => currency);
     get pointer(): currency;
+    /**
+     * Updates / applies effects to the currency on load.
+     */
+    onLoadData(): void;
     /** A boost object that affects the currency gain. */
     boost: boost;
-    protected defaultVal: E;
-    protected defaultBoost: E;
+    /** The default value of the currency. */
+    defaultVal: E;
+    /** The default boost of the currency. */
+    defaultBoost: E;
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param defaultVal - The default value of the currency.
@@ -148,6 +155,12 @@ declare class currencyStatic {
      * @returns The upgrade object.
      */
     private pointerAddUpgrade;
+    /**
+     * Retrieves an upgrade object based on the provided id.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object if found, otherwise null.
+     */
+    private pointerGetUpgrade;
     /**
      * Retrieves an upgrade object based on the provided id.
      * @param id - The id of the upgrade to retrieve.

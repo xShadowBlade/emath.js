@@ -11,7 +11,7 @@ import { instanceToPlain, plainToInstance } from "class-transformer";
 
 // Recursive plain to class
 import { currency, upgradeData } from "../../classes/currency";
-import { boost, boostObject } from "../../classes/boost";
+// import { boost, boostObject } from "../../classes/boost";
 import { attribute } from "../../classes/attribute";
 import Decimal from "../../E/e";
 
@@ -37,15 +37,18 @@ class dataManager {
     /**
      * The current game data.
      */
-    private data: Record<string, any>;
+    private data: Record<string, any> = {};
     /**
      * The static game data.
      */
-    private static: Record<string, any>;
+    private static: Record<string, any> = {};
     /**
      * A reference to the game instance.
      */
     private gameRef: game;
+
+    /** A queue of functions to call when the game data is loaded. */
+    public eventsOnLoad: (() => void)[] = [];
 
     /**
      * Creates a new instance of the game class.
@@ -56,19 +59,14 @@ class dataManager {
         //     throw new Error("dataManager cannot be run on serverside");
         // }
         this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+    }
 
-        this.data = {};
-        this.static = {};
-        // if (saveOnExit) {
-        //     const saveDataFn = this.saveData;
-        //     window.addEventListener("beforeunload", function (e) {
-        //         // Your code to run before the page unloads goes here
-        //         // For example, you can save user data to a server.
-        //         // Make sure to return a message to display to the user.
-        //         saveDataFn();
-        //         // e.returnValue = "Are you sure you want to leave this page?";
-        //     });
-        // }
+    /**
+     * Adds an event to call when the game data is loaded.
+     * @param event - The event to call when the game data is loaded.
+     */
+    public addEventOnLoad (event: () => void): void {
+        this.eventsOnLoad.push(event);
     }
 
     /**
@@ -266,7 +264,7 @@ class dataManager {
             // Class constructor is Function
             class: any;
             /** If the value is an array, it's an array of the given type */
-            subclasses?: Record<string, any | [any]>;
+            // subclasses?: Record<string, any | [any]>;
             properties: string[];
         }
 
@@ -277,17 +275,17 @@ class dataManager {
             for (const templateClassConvert of templateClassesInit) {
                 out.push({
                     class: templateClassConvert.class,
-                    subclasses: templateClassConvert.subclasses,
-                    properties: Object.getOwnPropertyNames(new templateClassConvert.class()),
+                    // subclasses: templateClassConvert.subclasses,
+                    properties: Object.getOwnPropertyNames(instanceToPlain(new templateClassConvert.class())),
                 });
             }
             return out;
         })([
             {
                 class: attribute,
-                subclasses: {
-                    value: Decimal,
-                },
+                // subclasses: {
+                //     value: Decimal,
+                // },
             },
             // {
             //     class: boost,
@@ -298,18 +296,18 @@ class dataManager {
             // },
             {
                 class: currency,
-                subclasses: {
-                    // boost: boost,
-                    upgrades: [upgradeData],
-                    value: Decimal,
-                },
+                // subclasses: {
+                //     // boost: boost,
+                //     upgrades: [upgradeData],
+                //     value: Decimal,
+                // },
             },
             {
                 class: Decimal,
             },
         ]);
 
-        console.log("Temp", templateClasses);
+        // console.log("Temp", templateClasses);
 
         /**
          * Compares two arrays. If they have the same elements, returns true.
@@ -321,6 +319,9 @@ class dataManager {
             return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
         }
 
+        /** A queue of objects to call onLoadData on. */
+        // const loadDataQueue: any = [];
+
         /**
          * Converts a plain object to a class instance.
          * @param templateClass - The template class to convert to.
@@ -331,6 +332,13 @@ class dataManager {
             // let out: object = plain;
             // Convert the object
             let out = plainToInstance(templateClass.class, plain);
+            if (!out) throw new Error(`Failed to convert ${templateClass.name} to class instance.`);
+
+            // if ((out as any).onLoadData) {
+            //     // (out as any).onLoadData();
+            //     console.log("Loaded data2 for: ", out, (out as any).onLoadData);
+            //     loadDataQueue.push(out);
+            // }
 
             // Convert subclasses
             // ! Use class-transformer instead
@@ -391,6 +399,14 @@ class dataManager {
         }
 
         loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+
+        // Call onLoadData on all objects
+        // for (const obj of loadDataQueue) {
+        //     if ((obj as any).onLoadData) {
+        //         (obj as any).onLoadData();
+        //         console.log("Loaded data for: ", obj, (obj as any).onLoadData);
+        //     }
+        // }
         // console.log("Converted data: ", loadedDataProcessed);
         return loadedDataProcessed;
     }
@@ -404,9 +420,17 @@ class dataManager {
         if (!dataToLoad) return null;
         const parsedData = this.parseData(dataToLoad);
         if (!parsedData) return null;
+
         const isDataValid = this.validateData(dataToLoad);
         console.log("Loaded data: ", parsedData);
+
         this.data = parsedData; // TODO: Fix this
+
+        // Call onLoadData on all objects
+        for (const obj of this.eventsOnLoad) {
+            obj();
+        }
+
         return isDataValid;
     };
 }

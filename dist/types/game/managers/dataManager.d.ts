@@ -23,11 +23,18 @@ declare class dataManager {
      * A reference to the game instance.
      */
     private gameRef;
+    /** A queue of functions to call when the game data is loaded. */
+    eventsOnLoad: (() => void)[];
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
     constructor(gameRef: game | (() => game));
+    /**
+     * Adds an event to call when the game data is loaded.
+     * @param event - The event to call when the game data is loaded.
+     */
+    addEventOnLoad(event: () => void): void;
     /**
      * Sets the data for the given key.
      * @param key - The key to set the data for.

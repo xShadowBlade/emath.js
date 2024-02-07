@@ -32,13 +32,9 @@ declare class game {
      * As of v5.0.0, all data is stored here.
      */
     dataManager: dataManager;
-    /**
-     * The key manager for the game.
-     */
+    /** The key manager for the game. */
     keyManager: keyManager;
-    /**
-     * The event manager for the game.
-     */
+    /** The event manager for the game. */
     eventManager: eventManager;
     protected tickers: ((dt: number) => void)[];
     /**
@@ -46,9 +42,7 @@ declare class game {
      * @param config - The configuration object for the game.
      */
     constructor(config?: gameConfigOptions);
-    /**
-     * Initializes the game. Also initializes the data manager.
-     */
+    /** Initializes the game. Also initializes the data manager. */
     init(): void;
     /**
      * Adds a new currency section to the game. {@link gameCurrency}

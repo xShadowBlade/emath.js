@@ -2601,9 +2601,24 @@ var dataManager = class {
    * @param gameRef - A function that returns the game instance.
    */
   constructor(gameRef) {
-    this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+    /**
+     * The current game data.
+     */
     this.data = {};
+    /**
+     * The static game data.
+     */
     this.static = {};
+    /** A queue of functions to call when the game data is loaded. */
+    this.eventsOnLoad = [];
+    this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+  }
+  /**
+   * Adds an event to call when the game data is loaded.
+   * @param event - The event to call when the game data is loaded.
+   */
+  addEventOnLoad(event) {
+    this.eventsOnLoad.push(event);
   }
   /**
    * Sets the data for the given key.
@@ -2766,17 +2781,17 @@ var dataManager = class {
       for (const templateClassConvert of templateClassesInit) {
         out.push({
           class: templateClassConvert.class,
-          subclasses: templateClassConvert.subclasses,
-          properties: Object.getOwnPropertyNames(new templateClassConvert.class())
+          // subclasses: templateClassConvert.subclasses,
+          properties: Object.getOwnPropertyNames(instanceToPlain(new templateClassConvert.class()))
         });
       }
       return out;
     }([
       {
-        class: import_attribute.attribute,
-        subclasses: {
-          value: import_e.default
-        }
+        class: import_attribute.attribute
+        // subclasses: {
+        //     value: Decimal,
+        // },
       },
       // {
       //     class: boost,
@@ -2786,23 +2801,24 @@ var dataManager = class {
       //     },
       // },
       {
-        class: import_currency.currency,
-        subclasses: {
-          // boost: boost,
-          upgrades: [import_currency.upgradeData],
-          value: import_e.default
-        }
+        class: import_currency.currency
+        // subclasses: {
+        //     // boost: boost,
+        //     upgrades: [upgradeData],
+        //     value: Decimal,
+        // },
       },
       {
         class: import_e.default
       }
     ]);
-    console.log("Temp", templateClasses);
     function compareArrays(arr1, arr2) {
       return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
     }
     function convertTemplateClass(templateClass, plain) {
       let out = plainToInstance(templateClass.class, plain);
+      if (!out)
+        throw new Error(`Failed to convert ${templateClass.name} to class instance.`);
       return out;
     }
     function plainToInstanceRecursive(plain) {
@@ -2841,6 +2857,9 @@ var dataManager = class {
     const isDataValid = this.validateData(dataToLoad);
     console.log("Loaded data: ", parsedData);
     this.data = parsedData;
+    for (const obj of this.eventsOnLoad) {
+      obj();
+    }
     return isDataValid;
   }
 };
@@ -2863,6 +2882,9 @@ var gameCurrency = class {
     this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
     this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
     this.game = gamePointer;
+    this.game?.dataManager.addEventOnLoad(() => {
+      this.static.onLoadData();
+    });
   }
   /**
    * Gets the value of the game currency.
@@ -2916,16 +2938,17 @@ var gameReset = class {
   /**
    * Creates a new instance of the game reset.
    * @param currenciesToReset The currencies to reset.
-   * @param extender The extender for the game reset.
+   * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
    */
   constructor(currenciesToReset, extender) {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = extender;
   }
-  /**
-   * Resets a currency.
-   */
+  /** Resets a currency. */
   reset() {
+    if (this.onReset) {
+      this.onReset();
+    }
     this.currenciesToReset.forEach((currency3) => {
       currency3.static.reset();
     });
@@ -2968,9 +2991,7 @@ var game = class _game {
     });
     this.tickers = [];
   }
-  /**
-   * Initializes the game. Also initializes the data manager.
-   */
+  /** Initializes the game. Also initializes the data manager. */
   init() {
     this.dataManager.init();
   }

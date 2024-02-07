@@ -20,7 +20,7 @@ declare class gameCurrency {
      * @param staticPointer - A function that returns the static data for the game.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor(currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer?: game);
+    constructor(currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer: game);
     /**
      * Gets the value of the game currency.
      * @returns The value of the game currency.

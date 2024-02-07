@@ -5234,13 +5234,16 @@ __decorateClass([
   Type(() => e_default)
 ], upgradeData.prototype, "level", 2);
 var upgradeStatic = class {
+  get data() {
+    return this.dataPointerFn();
+  }
   /**
    * @param init - The upgrade object to initialize.
    * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
    */
   constructor(init, dataPointer) {
     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    this.data = data;
+    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
     this.id = init.id;
     this.name = init.name ?? init.id;
     this.description = init.description ?? "";
@@ -5280,6 +5283,14 @@ __decorateClass([
 var currencyStatic = class {
   get pointer() {
     return this.pointerFn();
+  }
+  /**
+   * Updates / applies effects to the currency on load.
+   */
+  onLoadData() {
+    this.upgrades.forEach((upgrade) => {
+      upgrade.effect(upgrade.level, upgrade);
+    });
   }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
@@ -5343,6 +5354,24 @@ var currencyStatic = class {
    * @param id - The id of the upgrade to retrieve.
    * @returns The upgrade object if found, otherwise null.
    */
+  pointerGetUpgrade(id) {
+    let upgradeToGet = null;
+    if (id === void 0) {
+      return null;
+    }
+    for (let i = 0; i < this.pointer.upgrades.length; i++) {
+      if (this.pointer.upgrades[i].id === id) {
+        upgradeToGet = this.pointer.upgrades[i];
+        break;
+      }
+    }
+    return upgradeToGet;
+  }
+  /**
+   * Retrieves an upgrade object based on the provided id.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object if found, otherwise null.
+   */
   getUpgrade(id) {
     let upgradeToGet = null;
     if (id === void 0) {
@@ -5368,7 +5397,11 @@ var currencyStatic = class {
     const upgradesDefault = [];
     for (let i = 0; i < upgrades.length; i++) {
       this.pointerAddUpgrade(upgrades[i]);
-      const upgrade = new upgradeStatic(upgrades[i], this.pointer.upgrades[this.pointer.upgrades.length - 1]);
+      const currentLength = this.pointer.upgrades.length;
+      const upgrade = new upgradeStatic(
+        upgrades[i],
+        () => this.pointerGetUpgrade(upgrades[i].id) ?? this.pointer.upgrades[currentLength - 1]
+      );
       if (runEffectInstantly)
         upgrade.effect(upgrade.level, upgrade);
       upgradesDefault.push(upgrade);

@@ -3,7 +3,7 @@
  */
 
 import { E, ESource } from "../E/eMain";
-import { boost } from "../classes/boost";
+// import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute, attributeStatic } from "../classes/attribute";
 import { keyManager } from "./managers/keyManager";
@@ -55,14 +55,10 @@ class game {
      */
     public dataManager: dataManager;
 
-    /**
-     * The key manager for the game.
-     */
+    /** The key manager for the game. */
     public keyManager: keyManager;
 
-    /**
-     * The event manager for the game.
-     */
+    /** The event manager for the game. */
     public eventManager: eventManager;
 
     protected tickers: ((dt: number) => void)[];
@@ -87,9 +83,7 @@ class game {
         this.tickers = [];
     }
 
-    /**
-     * Initializes the game. Also initializes the data manager.
-     */
+    /** Initializes the game. Also initializes the data manager. */
     public init (): void {
         this.dataManager.init();
     }
