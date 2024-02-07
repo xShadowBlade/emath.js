@@ -1,0 +1,13 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src/**/*.ts"],
+    "exclude": [
+        "**/node_modules/**",
+        "**/test/**", "src/index.ts",
+        "src/hookMain.ts",
+        "src/game/hookGame.ts",
+        "src/pixiGame/hookPixiGame.ts",
+        "src/pixiGame/react/**",
+    ],
+    "out": "./documentation/production/typedoc",
+}

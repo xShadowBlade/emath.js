@@ -5032,13 +5032,12 @@ var formats = { ...FORMATS, ...{
   ev
 } };
 Decimal.formats = formats;
-var e_default = Decimal;
 
 // src/E/eMain.ts
-var E = (x) => new e_default(x);
-Object.getOwnPropertyNames(e_default).filter((b) => !Object.getOwnPropertyNames(class {
+var E = (x) => new Decimal(x);
+Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
 }).includes(b)).forEach((prop) => {
-  E[prop] = e_default[prop];
+  E[prop] = Decimal[prop];
 });
 
 // src/classes/boost.ts
@@ -5231,7 +5230,7 @@ __decorateClass([
   Expose()
 ], upgradeData.prototype, "id", 2);
 __decorateClass([
-  Type(() => e_default)
+  Type(() => Decimal)
 ], upgradeData.prototype, "level", 2);
 var upgradeStatic = class {
   get data() {
@@ -5275,7 +5274,7 @@ var currency = class {
   }
 };
 __decorateClass([
-  Type(() => e_default)
+  Type(() => Decimal)
 ], currency.prototype, "value", 2);
 __decorateClass([
   Type(() => upgradeData)
@@ -5498,7 +5497,7 @@ var attribute = class {
   }
 };
 __decorateClass([
-  Type(() => e_default)
+  Type(() => Decimal)
 ], attribute.prototype, "value", 2);
 var attributeStatic = class {
   get pointer() {

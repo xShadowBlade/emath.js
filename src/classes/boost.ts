@@ -2,7 +2,7 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
-import { Type, Expose, Exclude } from "class-transformer";
+// import { Type, Expose } from "class-transformer";
 
 /** An object representing a boost. */
 interface boostsObjectInit {
@@ -74,7 +74,7 @@ class boostObject implements boostsObjectInit {
 /** Represents a boost manager that applies various effects to a base value. */
 class boost {
     /** An array of boost objects. */
-    @Type(() => boostObject)
+    // @Type(() => boostObject)
     public boostArray: boostObject[];
 
     // /** An array of boost data. */
@@ -82,7 +82,7 @@ class boost {
     // public boostArrayData: boostObjectData[];
 
     /** The base effect value. */
-    @Expose()
+    // @Expose()
     public baseEffect: E;
 
     /**
@@ -194,8 +194,8 @@ class boost {
         }
     }
     /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
+     * @alias setBoost
+     * @deprecated Use {@link setBoost} instead.
      */
     public addBoost = this.setBoost;
 

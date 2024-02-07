@@ -3,8 +3,8 @@
  */
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
-import { Type, Expose } from "class-transformer";
-import Decimal from "../E/e";
+import { Type } from "class-transformer";
+import { Decimal } from "../E/e";
 
 /**
  * Represents an attribute in the game.
@@ -44,8 +44,8 @@ class attributeStatic {
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class.
-     * @param initial - The initial value of the attribute.
      * @param useBoost - Indicates whether to use boost for the attribute.
+     * @param initial - The initial value of the attribute.
      */
     constructor (pointer: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
         this.initial = E(initial);

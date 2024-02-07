@@ -2554,7 +2554,7 @@ function plainToInstance(cls, plain, options) {
 // src/game/managers/dataManager.ts
 var import_currency = require("../main/emath.js");
 var import_attribute = require("../main/emath.js");
-var import_e = __toESM(require("../main/emath.js"));
+var import_e = require("../main/emath.js");
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -2808,7 +2808,7 @@ var dataManager = class {
         // },
       },
       {
-        class: import_e.default
+        class: import_e.Decimal
       }
     ]);
     function compareArrays(arr1, arr2) {

@@ -3,7 +3,7 @@
  */
 import { Type, Expose } from "class-transformer";
 import { E, ESource } from "../E/eMain";
-import Decimal from "../E/e";
+import { Decimal } from "../E/e";
 
 import { boost } from "./boost";
 

@@ -4025,6 +4025,8 @@ const formats = {...FORMATS, ...{
 Decimal.formats = formats;
 /* END FORMATS */
 
-export default Decimal;
+// export default Decimal;
+
+export { Decimal };
 
 // return Decimal;
