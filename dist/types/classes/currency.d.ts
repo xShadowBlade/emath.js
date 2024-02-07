@@ -146,7 +146,7 @@ declare class currencyStatic {
     /**
      * The new currency value after applying the boost.
      * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-     * @returns The new currency value after applying the boost.
+     * @returns What you gained.
      */
     gain(dt?: ESource): E;
     /**

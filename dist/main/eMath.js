@@ -5333,11 +5333,12 @@ var currencyStatic = class {
   /**
    * The new currency value after applying the boost.
    * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-   * @returns The new currency value after applying the boost.
+   * @returns What you gained.
    */
   gain(dt = 1e3) {
-    this.pointer.value = this.pointer.value.add(this.boost.calculate().mul(E(dt).div(1e3)));
-    return this.pointer.value;
+    const toAdd = this.boost.calculate().mul(E(dt).div(1e3));
+    this.pointer.value = this.pointer.value.add(toAdd);
+    return toAdd;
   }
   /**
    * Adds an upgrade to the upgrades array.

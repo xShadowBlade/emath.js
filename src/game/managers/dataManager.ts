@@ -166,7 +166,7 @@ class dataManager {
         const [hashSave, gameDataToValidate] = data;
         // Current hash
         const hashCheck = md5(JSON.stringify(gameDataToValidate));
-        console.log("Hashes: ", hashSave, hashCheck);
+        // console.log("Hashes: ", hashSave, hashCheck);
         return hashSave === hashCheck;
     }
 
@@ -422,7 +422,7 @@ class dataManager {
         if (!parsedData) return null;
 
         const isDataValid = this.validateData(dataToLoad);
-        console.log("Loaded data: ", parsedData);
+        // console.log("Loaded data: ", parsedData);
 
         this.data = parsedData; // TODO: Fix this
 

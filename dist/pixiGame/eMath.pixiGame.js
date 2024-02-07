@@ -1647,7 +1647,6 @@ var dataManager = class {
   validateData(data) {
     const [hashSave, gameDataToValidate] = data;
     const hashCheck = md5(JSON.stringify(gameDataToValidate));
-    console.log("Hashes: ", hashSave, hashCheck);
     return hashSave === hashCheck;
   }
   /**
@@ -1793,7 +1792,6 @@ var dataManager = class {
     if (!parsedData)
       return null;
     const isDataValid = this.validateData(dataToLoad);
-    console.log("Loaded data: ", parsedData);
     this.data = parsedData;
     for (const obj of this.eventsOnLoad) {
       obj();
