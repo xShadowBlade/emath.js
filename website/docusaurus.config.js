@@ -1,8 +1,7 @@
-// @ts-nocheck
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require("prism-react-renderer/themes/github");
-const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+import lightCodeTheme from "prism-react-renderer/themes/github";
+import darkCodeTheme from "prism-react-renderer/themes/dracula";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -136,4 +135,4 @@ const config = {
         }),
 };
 
-module.exports = config;
+export default config;
