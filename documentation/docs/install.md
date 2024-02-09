@@ -6,7 +6,7 @@ sidebar_label: Installation
 
 ---
 
-You can install ``eMath.js`` via [npm](#install-via-npm) or include it in your HTML file via a [CDN](#include-using-cdn).
+You can install ``eMath.js`` via [npm](#install-via-npm) or include it in your HTML file via a [CDN](#include-using-cdn). Note: For advanced usage, using npm and nodejs is prefered.
 
 ### Install via npm:
 
@@ -19,6 +19,9 @@ The package exports a default export named ``eMath``. Use as the following: (CJS
 ```js
 import eMath from "emath.js";
 ```
+
+**Quickstart**
+If you want to get started quickly with webpack, then you can use my [template-defaults](https://github.com/xShadowBlade/template-defaults) repo.
 
 ### Include using CDN
 **NOTE: This will not include types**

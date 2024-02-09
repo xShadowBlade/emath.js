@@ -16,7 +16,8 @@ Next, create a HTML file named ``index.html`` and put the following code in it:
 <!DOCTYPE html>
 <html>
 	<head>
-		<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/eMath.bundle.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.js"></script>
 		<script src="./script.js"></script>
 	</head>
 	<body>
@@ -24,7 +25,7 @@ Next, create a HTML file named ``index.html`` and put the following code in it:
 </html>
 ```
 
-This code sets up the project and imports ``emath.js`` using jsDelivr. Alternatively, you can download ``emath.js`` on a local copy, though this is not recommended as you will have to manually check for updates.
+This code sets up the project and imports ``emath.js`` and ``emath.js/game`` using jsDelivr. Alternatively, you can download ``emath.js`` on a local copy, though this is not recommended as you will have to manually check for updates.
 
 Now, create a js file named ``script.js`` and put the following code in it:
 
@@ -51,7 +52,6 @@ Now, to install ``emath.js``, run:
 ```bash
 npm install emath.js
 ```
-
 
 ---
 

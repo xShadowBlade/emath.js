@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
+    "start": "docusaurus start --port 8080 --host 127.0.0.1",
     "build": "docusaurus build && mv production/typedoc build/ && rm -rf production/ && mv build/ production/",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
