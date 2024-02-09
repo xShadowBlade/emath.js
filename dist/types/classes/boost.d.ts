@@ -25,15 +25,18 @@ interface boostsObjectInit {
     /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
 }
+/** Represents an indiviual boost object. */
 declare class boostObject implements boostsObjectInit {
     id: string;
     name: string;
     desc: string;
     value: (input: E) => E;
     order: number;
-    constructor(init: boostsObjectInit);
+    constructor(init: boostObject | boostsObjectInit);
 }
-/** Represents a boost manager that applies various effects to a base value. */
+/**
+ * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
+ */
 declare class boost {
     /** An array of boost objects. */
     boostArray: boostObject[];
@@ -50,6 +53,15 @@ declare class boost {
      * @param id - A string or regular expression to match the ID of the boosts.
      * @param index - Whether to return the index of the boosts as well.
      * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
+     * @example
+     * // Get all boosts with the ID "healthBoost"
+     * const healthBoosts = boost.getBoosts("healthBoost");
+     *
+     * // Get all boosts with the ID "healthBoost" and their index
+     * const [healthBoosts, healthBoostIndexes] = boost.getBoosts("healthBoost", true);
+     *
+     * // Get all boosts with the ID "healthBoost" or "manaBoost"
+     * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
     getBoosts(id: string | RegExp): boostObject[];
     getBoosts(id: string | RegExp, index: boolean): [boostObject[], number[]];
@@ -63,6 +75,9 @@ declare class boost {
     /**
      * Removes a boost by its ID. Only removes the first instance of the id.
      * @param id - The ID of the boost to remove.
+     * @example
+     * // Remove the boost with the ID "healthBoost"
+     * boost.removeBoost("healthBoost");
      */
     removeBoost(id: string): void;
     /**
@@ -71,19 +86,28 @@ declare class boost {
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
      * @param value - The value of the boost (function).
-     * NOTE: There is a weird webpack(?) bug where the input can sometimes be 0 instead of the actual input.
-     * Use {@link E.clone}(input) to get the actual input.
      * @param order - The order of the boost (higher order go first)
+     * @example
+     * // Set a boost that multiplies the input value by 2
+     * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
     setBoost(id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
+     * @example
+     * // Set a boost that multiplies the input value by 2
+     * boost.setBoost({
+     *     id: "doubleBoost",
+     *     name: "Double Boost",
+     *     desc: "Doubles the input value",
+     *     value: (input) => input.mul(2),
+     * });
      */
     setBoost(boostObj: boostsObjectInit | boostsObjectInit[]): void;
     /**
-     * @alias {@link boost.setBoost}
-     * @deprecated Use setBoost instead.
+     * @alias setBoost
+     * @deprecated Use {@link setBoost} instead.
      */
     addBoost: {
         (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
@@ -91,8 +115,11 @@ declare class boost {
     };
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
-     * @param base - The base effect value to calculate with.
+     * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
      * @returns The calculated effect after applying boosts.
+     * @example
+     * // Calculate the effect of all boosts
+     * const finalEffect = boost.calculate();
      */
     calculate(base?: ESource): E;
 }

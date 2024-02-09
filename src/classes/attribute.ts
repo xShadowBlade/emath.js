@@ -8,7 +8,7 @@ import { Decimal } from "../E/e";
 
 /**
  * Represents an attribute in the game.
- * @deprecated Use {@link attributeStatic} instead.
+ * Note: This is only meant for the data of an attribute. Use in combination with {@link attributeStatic} for the actual attribute.
  */
 class attribute {
     /** The current value of the attribute. */
@@ -19,12 +19,22 @@ class attribute {
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
-    constructor (initial: ESource) {
+    constructor (initial: ESource = 0) {
         this.value = E(initial);
     }
 }
 
-/** Represents a static attribute, which is number effected by boosts. */
+/**
+ * Represents a static attribute, which is number that can effected by boosts.
+ * @example
+ * const health = new attributeStatic(undefined, true, 100);
+ * // Set a health boost that multiplies the health by 1.1
+ * health.boost?.setBoost({
+ *     id: "healthBoost",
+ *     value: (e) => e.mul(1.1),
+ * });
+ * console.log(health.value); // 110
+ */
 class attributeStatic {
     protected pointerFn: attribute;
 
@@ -43,15 +53,25 @@ class attributeStatic {
 
     /**
      * Constructs a new instance of the Attribute class.
-     * @param pointer - A function or an instance of the attribute class.
+     * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor (pointer: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
+    constructor (pointer?: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
         this.initial = E(initial);
-        // this.pointer = typeof pointer === "function" ? pointer() : pointer;
+        pointer = pointer ?? new attribute(this.initial);
         this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
         if (useBoost) this.boost = new boost(this.initial);
+    }
+
+    /**
+     * Updates the value of the attribute.
+     * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
+     */
+    public update (): void {
+        if (this.boost) {
+            this.pointer.value = this.boost.calculate();
+        }
     }
 
     /**
@@ -77,8 +97,6 @@ class attributeStatic {
         }
         this.pointer.value = value;
     }
-
-
 }
 
 export { attribute, attributeStatic };

@@ -1,3 +1,6 @@
+/**
+ * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
+ */
 import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
 import { configManager, RequiredDeep } from "../game/managers/configManager";
 import { sprite } from "./sprite";
@@ -12,7 +15,7 @@ import type { Application } from "pixi.js";
 // const { Application } = PIXI;
 
 interface pixiGameConfig extends gameConfigOptions {
-    pixi?: {
+    pixi: {
         app: InstanceType<typeof Application> | null;
     }
 }
@@ -25,11 +28,17 @@ const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
     },
 };
 
+/**
+ * Represents a game instance with PIXI-specific methods and properties.
+ * Uses PIXI.js time-based game loop.
+ */
 class pixiGame extends game {
     protected static configManager = new configManager(pixiGameDefaultConfig);
 
+    /** The configuration for the game. */
     public config: RequiredDeep<pixiGameConfig>;
 
+    /** The key manager for the game. */
     public PIXI: {
         app: InstanceType<typeof Application>,
         camera: {
@@ -38,6 +47,10 @@ class pixiGame extends game {
         },
     };
 
+    /**
+     * Creates a new instance of the pixiGame class.
+     * @param config - The configuration for the game.
+     */
     constructor (config?: pixiGameConfig) {
         super(config);
         this.config = pixiGame.configManager.parse(config);
@@ -83,9 +96,15 @@ class pixiGame extends game {
         });
     }
 
+    /**
+     * Adds a sprite to the game.
+     * @param spriteToAdd - The sprite to add.
+     * @param collisionShape - The collision shape to use for the sprite.
+     * @returns The sprite object.
+     */
     public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle"): sprite {
         return new sprite(this, spriteToAdd, collisionShape);
     }
 }
 
-export { pixiGame };
+export { pixiGame, pixiGameConfig, pixiGameDefaultConfig };

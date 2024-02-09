@@ -46,13 +46,18 @@ const eventManagerDefaultConfig: eventManagerConfig = {
     pixiApp: undefined,
 };
 
+/**
+ * The event manager class, used to manage events and execute them at the correct time.
+ */
 class eventManager {
-    // protected events: (intervalEvent | timeoutEvent)[];
-    protected events: {
-        [key: string]: (intervalEvent | timeoutEvent);
-    };
+    private events: Record<string, (intervalEvent | timeoutEvent)>;
+    // {
+    //     [key: string]: (intervalEvent | timeoutEvent);
+    // };
+    private tickerInterval?: ReturnType<typeof setInterval>;
 
-    protected static configManager = new configManager(eventManagerDefaultConfig);
+    private static configManager = new configManager(eventManagerDefaultConfig);
+    /** The config object */
     public config: eventManagerConfig;
 
     /**
@@ -68,16 +73,14 @@ class eventManager {
                 });
             } else {
                 const fps = this.config.fps ? this.config.fps : 30;
-                setInterval(() => {
+                this.tickerInterval = setInterval(() => {
                     this.tickerFunction();
                 }, 1000 / fps);
             }
         }
     }
 
-    /**
-     * The function that is called every frame, executes all events.
-     */
+    /** The function that is called every frame, executes all events. */
     protected tickerFunction () {
         const currentTime = Date.now();
         for (const event of Object.values(this.events)) {
@@ -99,6 +102,22 @@ class eventManager {
                     // i--;
                 }
             }
+        }
+    }
+
+    /**
+     * Changes the framerate of the event manager.
+     * @param fps - The new framerate to use.
+     */
+    public changeFps (fps: number): void {
+        this.config.fps = fps;
+        if (this.tickerInterval) {
+            clearInterval(this.tickerInterval);
+            this.tickerInterval = setInterval(() => {
+                this.tickerFunction();
+            }, 1000 / fps);
+        } else if (this.config.pixiApp) {
+            this.config.pixiApp.ticker.maxFPS = fps;
         }
     }
 
@@ -160,10 +179,12 @@ class eventManager {
     /**
      * Removes an event from the event system.
      * @param name - The name of the event to remove.
+     * @example
+     * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
      */
     public removeEvent (name: string) {
         delete this.events[name];
     }
 };
 
-export { eventManager, eventManagerConfig };
+export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event };

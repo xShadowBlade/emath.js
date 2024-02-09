@@ -1,5 +1,10 @@
-import Decimal from "./e";
+import { Decimal } from "./e";
 import type { DecimalSource, CompareResult } from "./e";
+/**
+ * A function that returns a Decimal instance. Also contains static methods and properties of the Decimal class.
+ * @param x - The value to convert to a Decimal instance.
+ * @returns - The Decimal instance.
+ */
 declare const E: {
     (x?: DecimalSource): Decimal;
     formats: {
@@ -240,5 +245,4 @@ declare const E: {
     clone(x: Decimal): Decimal;
 };
 type E = Decimal;
-export { E };
-export type { DecimalSource as ESource };
+export { E, DecimalSource as ESource };

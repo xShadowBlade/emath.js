@@ -1,5 +1,5 @@
 import { E, ESource } from "../E/eMain";
-import Decimal from "../E/e";
+import { Decimal } from "../E/e";
 import { boost } from "./boost";
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -43,33 +43,37 @@ interface upgradeInit {
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
     costBulk?: (level: E, target: E) => [cost: E, amount: E];
-    /** The maximum level of the upgrade. */
-    maxLevel: E;
+    /** The maximum level of the upgrade. Defaults to 1. */
+    maxLevel?: E;
     /**
      * The effect of the upgrade.
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect: (level: E, context: upgradeStatic) => void;
+    effect?: (level: E, context: upgradeStatic) => void;
     /** Endless: Flag to exclude the sum calculation and only perform binary search. */
     el?: boolean;
-    /** The current level of the upgrade. Automatically added. */
+    /** The default level of the upgrade. Automatically added. */
     level?: E;
 }
 /** Interface for an upgrade. */
 interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
+    maxLevel: E;
     name: string;
     description: string;
 }
+/** Interface for upgrade data. */
 interface IUpgradeData {
     id: string | number;
     level: E;
 }
+/** Represents the frontend for an upgrade. */
 declare class upgradeData implements IUpgradeData {
     id: string;
     level: Decimal;
     constructor(init: upgradeInit);
 }
+/** Represents the backend for an upgrade. */
 declare class upgradeStatic implements IUpgradeStatic {
     id: string;
     name: string;
@@ -77,7 +81,7 @@ declare class upgradeStatic implements IUpgradeStatic {
     cost: (level: Decimal) => Decimal;
     costBulk: ((level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
     maxLevel: Decimal;
-    effect: (level: Decimal, context: upgradeStatic) => void;
+    effect: ((level: Decimal, context: upgradeStatic) => void) | undefined;
     el?: boolean | undefined;
     protected dataPointerFn: () => upgradeData;
     get data(): upgradeData;
@@ -95,7 +99,7 @@ declare class upgradeStatic implements IUpgradeStatic {
 }
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
- * @deprecated This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
+ * Note: This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  */
 declare class currency {
     /** The current value of the currency. */
@@ -108,13 +112,17 @@ declare class currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
+ * @example
+ * const currency = new currencyStatic();
+ * currency.gain();
+ * console.log(currency.value); // E(1)
  */
 declare class currencyStatic {
     /** An array that represents upgrades, their costs, and their effects. */
     upgrades: upgradeStatic[];
     /** A function that returns the pointer of the data */
     protected pointerFn: (() => currency);
-    get pointer(): currency;
+    protected get pointer(): currency;
     /**
      * Updates / applies effects to the currency on load.
      */
@@ -141,12 +149,17 @@ declare class currencyStatic {
      * Resets the currency and upgrade levels.
      * @param resetCurrency - Whether to reset the currency value. Default is true.
      * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+     * @example
+     * currency.reset();
+     * console.log(currency.value); // E(0), or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
     /**
      * The new currency value after applying the boost.
      * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
      * @returns What you gained.
+     * @example
+     * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
      */
     gain(dt?: ESource): E;
     /**
@@ -165,18 +178,50 @@ declare class currencyStatic {
      * Retrieves an upgrade object based on the provided id.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
+     * @example
+     * const upgrade = currency.getUpgrade("healthBoost");
+     * console.log(upgrade); // upgrade object
      */
     getUpgrade(id?: string): upgradeStatic | null;
     /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+     * @example
+     * currenct.addUpgrade({
+     *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
+     *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
+     *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
+     *     cost: (level) => level.mul(10), // Cost of the upgrade, 10 times the level
+     *     maxLevel: 10, // Maximum level of the upgrade (optional, defaults to 1)
+     *     // Effect of the upgrade (runs when the upgrade is bought, and instantly if runEffectInstantly is true)
+     *     effect: (level, context) => {
+     *         // Set / update the boost
+     *         // health: currencyStatic
+     *         health.boost.setBoost(
+     *             "healthBoost",
+     *             "Health Boost",
+     *             "Boosts health by 2x per level.",
+     *             n => n.mul(E.pow(2, level.sub(1))),
+     *             2,
+     *         );
+     *     }
+     * });
      */
     addUpgrade(upgrades: upgradeInit | upgradeInit[], runEffectInstantly?: boolean): void;
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
      * @param upgrade - The upgrade object to update.
+     * @example
+     * currency.updateUpgrade("healthBoost", {
+     *     name: "New Health Boost".
+     *     cost: (level) => level.mul(20),
+     *     maxLevel: 20,
+     *     effect: (level, context) => {
+     *         console.log("Health Boost effect");
+     *     }
+     * });
      */
     updateUpgrade(id: string, upgrade: upgradeInit): void;
     /**
@@ -187,6 +232,9 @@ declare class currencyStatic {
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
      * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+     * @example
+     * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
+     * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
     calculateUpgrade(id: string, target?: ESource, el?: boolean): [amount: E, cost: E];
     /**
@@ -195,6 +243,9 @@ declare class currencyStatic {
      * @param target - How many before the next upgrade
      * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
      * @returns The cost of the next upgrade.
+     * @example
+     * // Calculate the cost of the next healthBoost upgrade
+     * const nextCost = currency.getNextCost("healthBoost");
      */
     getNextCost(id: string, target?: ESource, el?: boolean): E;
     /**
@@ -204,6 +255,9 @@ declare class currencyStatic {
      * @param target - The target level or quantity to reach for the upgrade.
      * This represents how many upgrades to buy or upgrade.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+     * @example
+     * // Attempt to buy up to 10 healthBoost upgrades at once
+     * currency.buyUpgrade("healthBoost", 10);
      */
     buyUpgrade(id: string, target?: ESource): boolean;
 }

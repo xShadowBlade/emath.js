@@ -3,7 +3,11 @@
     "entryPoints": ["src/**/*.ts"],
     "exclude": [
         "**/node_modules/**",
-        "**/test/**", "src/index.ts",
+        "**/test/**",
+        "src/index.ts",
+        "src/game/index.ts",
+        "src/pixiGame/index.ts",
+        "src/E/lru-cache.ts",
         "src/hookMain.ts",
         "src/game/hookGame.ts",
         "src/pixiGame/hookPixiGame.ts",

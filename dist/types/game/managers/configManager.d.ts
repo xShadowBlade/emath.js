@@ -15,9 +15,7 @@ declare class configManager<T> {
     parse(config?: object): T;
     get options(): T;
 }
-/**
- * Generic type that recursively makes all properties required
- */
+/** Generic type that recursively makes all properties required */
 type RequiredDeep<T> = {
     [P in keyof T]-?: RequiredDeep<T[P]>;
 };

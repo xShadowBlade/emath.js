@@ -25,7 +25,9 @@ class gameReset {
         this.extender = extender;
     }
 
-    /** Resets a currency. */
+    /**
+     * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
+     */
     public reset (): void {
         if (this.onReset) {
             this.onReset();

@@ -23,6 +23,7 @@ declare class gameCurrency {
     constructor(currencyPointer: (() => currency) | currency, staticPointer: (() => currencyStatic) | currencyStatic, gamePointer: game);
     /**
      * Gets the value of the game currency.
+     * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
      * @returns The value of the game currency.
      */
     get value(): E;

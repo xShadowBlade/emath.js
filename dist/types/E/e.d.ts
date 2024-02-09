@@ -500,4 +500,4 @@ declare class Decimal {
      */
     static normalizeFromComponents(x: Decimal): Decimal;
 }
-export default Decimal;
+export { Decimal };

@@ -66,6 +66,14 @@ class game {
     /**
      * Creates a new instance of the game class.
      * @param config - The configuration object for the game.
+     * @example
+     * const myGame = new game({
+     *     name: {
+     *         title: "My Game",
+     *         id: "my-game",
+     *     },
+     *     // Additional options here
+     * });
      */
     constructor (config?: gameConfigOptions) {
         this.config = game.configManager.parse(config);
@@ -89,9 +97,23 @@ class game {
     }
 
     /**
-     * Adds a new currency section to the game. {@link gameCurrency}
+     * Changes the framerate of the game.
+     * @param fps - The new framerate to use.
+     */
+    public changeFps (fps: number): void {
+        this.keyManager.changeFps(fps);
+        this.eventManager.changeFps(fps);
+    }
+
+    /**
+     * Adds a new currency section to the game. {@link gameCurrency} is the class.
+     * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
+     * @example
+     * const currency = game.addCurrency("currency");
+     * currency.static.gain();
+     * console.log(currency.value); // E(1)
      */
     public addCurrency (name: string): gameCurrency {
         this.dataManager.setData(name, {
@@ -126,10 +148,13 @@ class game {
 
     /**
      * Adds a new attribute to the game. {@link gameAttribute} is the class.
+     * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the attribute.
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      * @returns The newly created attribute.
+     * @example
+     * const myAttribute = game.addAttribute("myAttribute");
      */
     public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
         this.dataManager.setData(name, new attribute(initial));

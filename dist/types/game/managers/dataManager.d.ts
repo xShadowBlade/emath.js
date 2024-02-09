@@ -5,6 +5,9 @@
 import type { game } from "../game";
 /**
  * A class that manages game data, including saving, loading, and exporting data.
+ *
+ * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
+ * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 declare class dataManager {
     /**
@@ -24,7 +27,7 @@ declare class dataManager {
      */
     private gameRef;
     /** A queue of functions to call when the game data is loaded. */
-    eventsOnLoad: (() => void)[];
+    private eventsOnLoad;
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
@@ -33,6 +36,7 @@ declare class dataManager {
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.
+     * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
      */
     addEventOnLoad(event: () => void): void;
     /**
@@ -47,7 +51,7 @@ declare class dataManager {
      * @param key - The key to get the data for.
      * @returns - The data for the given key.
      */
-    getData(key: string): any;
+    getData(key: string): any | undefined;
     /**
      * Sets the static data for the given key.
      * @param key - The key to set the static data for.
@@ -60,12 +64,13 @@ declare class dataManager {
      * @param key - The key to get the static data for.
      * @returns - The static data for the given key.
      */
-    getStatic(key: string): any;
+    getStatic(key: string): any | undefined;
     /**
      * Initializes / sets data that is unmodified by the player.
      * This is used to merge the loaded data with the default data.
      * It should be called before you load data.
      * Note: This should only be called once, and after it is called, you should not add new properties to data.
+     * @example dataManager.init(); // Call this after setting the initial data.
      */
     init(): void;
     /**

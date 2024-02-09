@@ -28,6 +28,9 @@ function md5(_:string):string{var $="0123456789abcdef";function n(_){var n,r="";
 
 /**
  * A class that manages game data, including saving, loading, and exporting data.
+ *
+ * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
+ * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 class dataManager {
     /**
@@ -48,7 +51,7 @@ class dataManager {
     private gameRef: game;
 
     /** A queue of functions to call when the game data is loaded. */
-    public eventsOnLoad: (() => void)[] = [];
+    private eventsOnLoad: (() => void)[] = [];
 
     /**
      * Creates a new instance of the game class.
@@ -64,6 +67,7 @@ class dataManager {
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.
+     * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
      */
     public addEventOnLoad (event: () => void): void {
         this.eventsOnLoad.push(event);
@@ -88,7 +92,7 @@ class dataManager {
      * @param key - The key to get the data for.
      * @returns - The data for the given key.
      */
-    public getData (key: string): any {
+    public getData (key: string): any | undefined {
         return this.data[key];
     }
 
@@ -111,7 +115,7 @@ class dataManager {
      * @param key - The key to get the static data for.
      * @returns - The static data for the given key.
      */
-    public getStatic (key: string): any {
+    public getStatic (key: string): any | undefined {
         return this.static[key];
     }
 
@@ -120,6 +124,7 @@ class dataManager {
      * This is used to merge the loaded data with the default data.
      * It should be called before you load data.
      * Note: This should only be called once, and after it is called, you should not add new properties to data.
+     * @example dataManager.init(); // Call this after setting the initial data.
      */
     public init (): void {
         this.normalData = this.data;

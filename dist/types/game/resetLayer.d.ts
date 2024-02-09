@@ -16,7 +16,9 @@ declare class gameReset {
      * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
      */
     constructor(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset);
-    /** Resets a currency. */
+    /**
+     * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
+     */
     reset(): void;
 }
 export { gameReset };

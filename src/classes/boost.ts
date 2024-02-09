@@ -28,24 +28,7 @@ interface boostsObjectInit {
     order?: number,
 }
 
-// /** An interface representing the data of a boost object. */
-// interface IBoostObjectData {
-//     id: string,
-//     level: E,
-// }
-
-// class boostObjectData implements IBoostObjectData {
-//     @Expose()
-//     public id: string;
-//     @Expose()
-//     public level: E;
-
-//     constructor (id: string, level: ESource = 1) {
-//         this.id = id;
-//         this.level = E(level);
-//     }
-// }
-
+/** Represents an indiviual boost object. */
 class boostObject implements boostsObjectInit {
     public id: string;
     public name: string;
@@ -53,7 +36,10 @@ class boostObject implements boostsObjectInit {
     public value: (input: E) => E;
     public order: number;
 
-    constructor (init: boostsObjectInit) {
+    constructor (init: boostObject | boostsObjectInit) {
+        // if (init instanceof boostObject) {
+        //     init = init as boostObject;
+        // }
         this.id = init.id;
         this.name = init.name ?? "";
         this.desc = init.desc ?? "";
@@ -62,24 +48,13 @@ class boostObject implements boostsObjectInit {
     }
 }
 
-// class boostData {
-//     @Type(() => boostObjectData)
-//     public boostArrayData: boostObjectData[];
-
-//     constructor (boostArrayData?: boostObjectData[]) {
-//         this.boostArrayData = boostArrayData ?? [];
-//     }
-// }
-
-/** Represents a boost manager that applies various effects to a base value. */
+/**
+ * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
+ */
 class boost {
     /** An array of boost objects. */
     // @Type(() => boostObject)
     public boostArray: boostObject[];
-
-    // /** An array of boost data. */
-    // @Type(() => boostObjectData)
-    // public boostArrayData: boostObjectData[];
 
     /** The base effect value. */
     // @Expose()
@@ -106,6 +81,15 @@ class boost {
      * @param id - A string or regular expression to match the ID of the boosts.
      * @param index - Whether to return the index of the boosts as well.
      * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
+     * @example
+     * // Get all boosts with the ID "healthBoost"
+     * const healthBoosts = boost.getBoosts("healthBoost");
+     *
+     * // Get all boosts with the ID "healthBoost" and their index
+     * const [healthBoosts, healthBoostIndexes] = boost.getBoosts("healthBoost", true);
+     *
+     * // Get all boosts with the ID "healthBoost" or "manaBoost"
+     * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
     public getBoosts (id: string | RegExp): boostObject[];
     public getBoosts (id: string | RegExp, index: boolean): [boostObject[], number[]];
@@ -138,6 +122,9 @@ class boost {
     /**
      * Removes a boost by its ID. Only removes the first instance of the id.
      * @param id - The ID of the boost to remove.
+     * @example
+     * // Remove the boost with the ID "healthBoost"
+     * boost.removeBoost("healthBoost");
      */
     public removeBoost (id: string): void {
         for (let i = 0; i < this.boostArray.length; i++) {
@@ -154,14 +141,23 @@ class boost {
      * @param name - The name of the boost.
      * @param desc - The description of the boost.
      * @param value - The value of the boost (function).
-     * NOTE: There is a weird webpack(?) bug where the input can sometimes be 0 instead of the actual input.
-     * Use {@link E.clone}(input) to get the actual input.
      * @param order - The order of the boost (higher order go first)
+     * @example
+     * // Set a boost that multiplies the input value by 2
+     * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
     public setBoost (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
+     * @example
+     * // Set a boost that multiplies the input value by 2
+     * boost.setBoost({
+     *     id: "doubleBoost",
+     *     name: "Double Boost",
+     *     desc: "Doubles the input value",
+     *     value: (input) => input.mul(2),
+     * });
      */
     public setBoost (boostObj: boostsObjectInit | boostsObjectInit[]): void;
     public setBoost (arg1: string | (boostsObjectInit | boostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
@@ -201,8 +197,11 @@ class boost {
 
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
-     * @param base - The base effect value to calculate with.
+     * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
      * @returns The calculated effect after applying boosts.
+     * @example
+     * // Calculate the effect of all boosts
+     * const finalEffect = boost.calculate();
      */
     public calculate (base: ESource = this.baseEffect): E {
         let output: E = E(base);

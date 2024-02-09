@@ -41,9 +41,7 @@ class configManager<T> {
     }
 }
 
-/**
- * Generic type that recursively makes all properties required
- */
+/** Generic type that recursively makes all properties required */
 type RequiredDeep<T> = {
     [P in keyof T]-?: RequiredDeep<T[P]>;
 };

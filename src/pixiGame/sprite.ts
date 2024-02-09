@@ -12,6 +12,10 @@
 import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
+
+/**
+ * Represents a game sprite
+ */
 class sprite {
     public sprite: Sprite | Graphics;
     public x: number;
@@ -58,6 +62,8 @@ class sprite {
 
     /**
      * Removes the sprite from its parent container.
+     * Note: This does not delete the sprite object, it only removes it from the parent container.
+     * You should delete the sprite object after calling this method, or it will still exist in memory.
      */
     public remove (): void {
         this.x = this.y = Infinity; // buggy collision detection

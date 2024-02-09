@@ -2,7 +2,6 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../E/eMain";
-import { configManager } from "./configManager";
 import type { Application } from "pixi.js";
 interface Event {
     name: string;
@@ -34,20 +33,26 @@ interface eventManagerConfig {
      */
     pixiApp?: Application;
 }
+/**
+ * The event manager class, used to manage events and execute them at the correct time.
+ */
 declare class eventManager {
-    protected events: {
-        [key: string]: (intervalEvent | timeoutEvent);
-    };
-    protected static configManager: configManager<eventManagerConfig>;
+    private events;
+    private tickerInterval?;
+    private static configManager;
+    /** The config object */
     config: eventManagerConfig;
     /**
      * @param config - The config to use for this event manager.
      */
     constructor(config?: eventManagerConfig);
-    /**
-     * The function that is called every frame, executes all events.
-     */
+    /** The function that is called every frame, executes all events. */
     protected tickerFunction(): void;
+    /**
+     * Changes the framerate of the event manager.
+     * @param fps - The new framerate to use.
+     */
+    changeFps(fps: number): void;
     /**
      * Adds a new event or changes an existing event to the event system.
      * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
@@ -76,7 +81,9 @@ declare class eventManager {
     /**
      * Removes an event from the event system.
      * @param name - The name of the event to remove.
+     * @example
+     * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
      */
     removeEvent(name: string): void;
 }
-export { eventManager, eventManagerConfig };
+export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event };

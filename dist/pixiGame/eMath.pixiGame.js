@@ -514,6 +514,7 @@ var require_lz_string = __commonJS({
 var pixiGame_exports = {};
 __export(pixiGame_exports, {
   pixiGame: () => pixiGame,
+  pixiGameDefaultConfig: () => pixiGameDefaultConfig,
   sprite: () => sprite
 });
 module.exports = __toCommonJS(pixiGame_exports);
@@ -571,11 +572,15 @@ var keyManagerDefaultConfig = {
   fps: 30,
   pixiApp: void 0
 };
+var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 var keyManager = class _keyManager {
-  static {
-    this.configManager = new configManager(keyManagerDefaultConfig);
-  }
+  /**
+   * Creates a new key manager.
+   * @param config - The configuration for the key manager.
+   */
   constructor(config) {
+    /** @deprecated Use {@link addKey} instead. */
+    this.addKeys = this.addKey;
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
@@ -589,7 +594,7 @@ var keyManager = class _keyManager {
         });
       } else {
         const fps = this.config.fps ? this.config.fps : 30;
-        setInterval(() => {
+        this.tickerInterval = setInterval(() => {
           for (const ticker of this.tickers) {
             ticker(1e3 / fps);
           }
@@ -601,6 +606,26 @@ var keyManager = class _keyManager {
     }
     document.addEventListener("keydown", (e) => this.logKey(e, true));
     document.addEventListener("keyup", (e) => this.logKey(e, false));
+  }
+  static {
+    this.configManager = new configManager(keyManagerDefaultConfig);
+  }
+  /**
+   * Changes the framerate of the key manager.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.config.fps = fps;
+    if (this.tickerInterval) {
+      clearInterval(this.tickerInterval);
+      this.tickerInterval = setInterval(() => {
+        for (const ticker of this.tickers) {
+          ticker(1e3 / fps);
+        }
+      }, 1e3 / fps);
+    } else if (this.config.pixiApp) {
+      this.config.pixiApp.ticker.maxFPS = fps;
+    }
   }
   logKey(event, type) {
     const key = event.key;
@@ -623,41 +648,30 @@ var keyManager = class _keyManager {
     }
     return false;
   }
-  /**
-   * Adds or updates a key binding.
-   * @param name - The name of the key binding.
-   * @param key - The key associated with the binding.
-   * @param [fn] - The function executed when the binding is pressed
-   * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
-   */
-  addKey(name, key, fn) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        current.key = key;
-        return;
+  addKey(nameOrKeysToAdd, key, fn) {
+    const addKeyA = (name, key2, fn2) => {
+      for (let i = 0; i < this.binds.length; i++) {
+        const current = this.binds[i];
+        if (current.name === name) {
+          current.key = key2;
+          return;
+        }
       }
-    }
-    this.binds.push({ name, key, fn });
-    if (typeof fn == "function") {
-      this.tickers.push((dt) => {
-        if (this.isPressing(name))
-          fn(dt);
-      });
-    }
-  }
-  /**
-   * Adds or updates multiple key bindings.
-   * @param keysToAdd - An array of key binding objects.
-   * @example
-   * addKeys([
-   *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
-   *     // Add more key bindings here...
-   * ]);
-   */
-  addKeys(keysToAdd) {
-    for (const keyBinding of keysToAdd) {
-      this.addKey(keyBinding.name, keyBinding.key, keyBinding.fn);
+      this.binds.push({ name, key: key2, fn: fn2 });
+      if (typeof fn2 == "function") {
+        this.tickers.push((dt) => {
+          if (this.isPressing(name))
+            fn2(dt);
+        });
+      }
+    };
+    if (typeof nameOrKeysToAdd === "string") {
+      addKeyA(nameOrKeysToAdd, key, fn);
+    } else {
+      nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
+      for (const keyBinding of nameOrKeysToAdd) {
+        addKeyA(keyBinding.name, keyBinding.key, keyBinding.fn);
+      }
     }
   }
 };
@@ -688,7 +702,7 @@ var eventManager = class _eventManager {
         });
       } else {
         const fps = this.config.fps ? this.config.fps : 30;
-        setInterval(() => {
+        this.tickerInterval = setInterval(() => {
           this.tickerFunction();
         }, 1e3 / fps);
       }
@@ -697,9 +711,7 @@ var eventManager = class _eventManager {
   static {
     this.configManager = new configManager(eventManagerDefaultConfig);
   }
-  /**
-   * The function that is called every frame, executes all events.
-   */
+  /** The function that is called every frame, executes all events. */
   tickerFunction() {
     const currentTime = Date.now();
     for (const event of Object.values(this.events)) {
@@ -716,6 +728,21 @@ var eventManager = class _eventManager {
           delete this.events[event.name];
         }
       }
+    }
+  }
+  /**
+   * Changes the framerate of the event manager.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.config.fps = fps;
+    if (this.tickerInterval) {
+      clearInterval(this.tickerInterval);
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
+    } else if (this.config.pixiApp) {
+      this.config.pixiApp.ticker.maxFPS = fps;
     }
   }
   /**
@@ -770,6 +797,8 @@ var eventManager = class _eventManager {
   /**
    * Removes an event from the event system.
    * @param name - The name of the event to remove.
+   * @example
+   * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
    */
   removeEvent(name) {
     delete this.events[name];
@@ -1125,7 +1154,7 @@ var TransformOperationExecutor = (
         if (this.options.enableCircularCheck) {
           this.recursionStack.add(value);
         }
-        var keys = this.getKeys(targetType, value, isMap);
+        var keys2 = this.getKeys(targetType, value, isMap);
         var newValue = source ? source : {};
         if (!source && (this.transformationType === TransformationType.PLAIN_TO_CLASS || this.transformationType === TransformationType.CLASS_TO_CLASS)) {
           if (isMap) {
@@ -1265,7 +1294,7 @@ var TransformOperationExecutor = (
           }
         };
         var this_1 = this;
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+        for (var _i = 0, keys_1 = keys2; _i < keys_1.length; _i++) {
           var key = keys_1[_i];
           _loop_1(key);
         }
@@ -1317,21 +1346,21 @@ var TransformOperationExecutor = (
       var strategy = defaultMetadataStorage.getStrategy(target);
       if (strategy === "none")
         strategy = this.options.strategy || "exposeAll";
-      var keys = [];
+      var keys2 = [];
       if (strategy === "exposeAll" || isMap) {
         if (object instanceof Map) {
-          keys = Array.from(object.keys());
+          keys2 = Array.from(object.keys());
         } else {
-          keys = Object.keys(object);
+          keys2 = Object.keys(object);
         }
       }
       if (isMap) {
-        return keys;
+        return keys2;
       }
       if (this.options.ignoreDecorators && this.options.excludeExtraneousValues && target) {
         var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
         var excludedProperties = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
-        keys = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
+        keys2 = __spreadArray(__spreadArray([], exposedProperties, true), excludedProperties, true);
       }
       if (!this.options.ignoreDecorators && target) {
         var exposedProperties = defaultMetadataStorage.getExposedProperties(target, this.transformationType);
@@ -1345,18 +1374,18 @@ var TransformOperationExecutor = (
           });
         }
         if (this.options.excludeExtraneousValues) {
-          keys = exposedProperties;
+          keys2 = exposedProperties;
         } else {
-          keys = keys.concat(exposedProperties);
+          keys2 = keys2.concat(exposedProperties);
         }
         var excludedProperties_1 = defaultMetadataStorage.getExcludedProperties(target, this.transformationType);
         if (excludedProperties_1.length > 0) {
-          keys = keys.filter(function(key) {
+          keys2 = keys2.filter(function(key) {
             return !excludedProperties_1.includes(key);
           });
         }
         if (this.options.version !== void 0) {
-          keys = keys.filter(function(key) {
+          keys2 = keys2.filter(function(key) {
             var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
             if (!exposeMetadata || !exposeMetadata.options)
               return true;
@@ -1364,30 +1393,30 @@ var TransformOperationExecutor = (
           });
         }
         if (this.options.groups && this.options.groups.length) {
-          keys = keys.filter(function(key) {
+          keys2 = keys2.filter(function(key) {
             var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
             if (!exposeMetadata || !exposeMetadata.options)
               return true;
             return _this.checkGroups(exposeMetadata.options.groups);
           });
         } else {
-          keys = keys.filter(function(key) {
+          keys2 = keys2.filter(function(key) {
             var exposeMetadata = defaultMetadataStorage.findExposeMetadata(target, key);
             return !exposeMetadata || !exposeMetadata.options || !exposeMetadata.options.groups || !exposeMetadata.options.groups.length;
           });
         }
       }
       if (this.options.excludePrefixes && this.options.excludePrefixes.length) {
-        keys = keys.filter(function(key) {
+        keys2 = keys2.filter(function(key) {
           return _this.options.excludePrefixes.every(function(prefix) {
             return key.substr(0, prefix.length) !== prefix;
           });
         });
       }
-      keys = keys.filter(function(key, index, self2) {
+      keys2 = keys2.filter(function(key, index, self2) {
         return self2.indexOf(key) === index;
       });
-      return keys;
+      return keys2;
     };
     TransformOperationExecutor2.prototype.checkVersion = function(since, until) {
       var decision = true;
@@ -1554,6 +1583,7 @@ var dataManager = class {
   /**
    * Adds an event to call when the game data is loaded.
    * @param event - The event to call when the game data is loaded.
+   * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
    */
   addEventOnLoad(event) {
     this.eventsOnLoad.push(event);
@@ -1605,6 +1635,7 @@ var dataManager = class {
    * This is used to merge the loaded data with the default data.
    * It should be called before you load data.
    * Note: This should only be called once, and after it is called, you should not add new properties to data.
+   * @example dataManager.init(); // Call this after setting the initial data.
    */
   init() {
     this.normalData = this.data;
@@ -1824,6 +1855,7 @@ var gameCurrency = class {
   }
   /**
    * Gets the value of the game currency.
+   * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
    * @returns The value of the game currency.
    */
   get value() {
@@ -1880,7 +1912,9 @@ var gameReset = class {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = extender;
   }
-  /** Resets a currency. */
+  /**
+   * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
+   */
   reset() {
     if (this.onReset) {
       this.onReset();
@@ -1913,6 +1947,14 @@ var game = class _game {
   /**
    * Creates a new instance of the game class.
    * @param config - The configuration object for the game.
+   * @example
+   * const myGame = new game({
+   *     name: {
+   *         title: "My Game",
+   *         id: "my-game",
+   *     },
+   *     // Additional options here
+   * });
    */
   constructor(config) {
     this.config = _game.configManager.parse(config);
@@ -1932,9 +1974,22 @@ var game = class _game {
     this.dataManager.init();
   }
   /**
-   * Adds a new currency section to the game. {@link gameCurrency}
+   * Changes the framerate of the game.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.keyManager.changeFps(fps);
+    this.eventManager.changeFps(fps);
+  }
+  /**
+   * Adds a new currency section to the game. {@link gameCurrency} is the class.
+   * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
    * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
    * @returns A new instance of the gameCurrency class.
+   * @example
+   * const currency = game.addCurrency("currency");
+   * currency.static.gain();
+   * console.log(currency.value); // E(1)
    */
   addCurrency(name) {
     this.dataManager.setData(name, {
@@ -1964,10 +2019,13 @@ var game = class _game {
   }
   /**
    * Adds a new attribute to the game. {@link gameAttribute} is the class.
+   * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
    * @param name - The name of the attribute.
    * @param useBoost - Indicates whether to use boost for the attribute.
    * @param initial - The initial value of the attribute.
    * @returns The newly created attribute.
+   * @example
+   * const myAttribute = game.addAttribute("myAttribute");
    */
   addAttribute(name, useBoost = true, initial = 0) {
     this.dataManager.setData(name, new import_attribute2.attribute(initial));
@@ -2489,6 +2547,8 @@ var sprite = class {
   }
   /**
    * Removes the sprite from its parent container.
+   * Note: This does not delete the sprite object, it only removes it from the parent container.
+   * You should delete the sprite object after calling this method, or it will still exist in memory.
    */
   remove() {
     this.x = this.y = Infinity;
@@ -2508,6 +2568,10 @@ var pixiGame = class _pixiGame extends game {
   static {
     this.configManager = new configManager(pixiGameDefaultConfig);
   }
+  /**
+   * Creates a new instance of the pixiGame class.
+   * @param config - The configuration for the game.
+   */
   constructor(config) {
     super(config);
     this.config = _pixiGame.configManager.parse(config);
@@ -2530,6 +2594,12 @@ var pixiGame = class _pixiGame extends game {
       pixiApp: this.PIXI.app
     });
   }
+  /**
+   * Adds a sprite to the game.
+   * @param spriteToAdd - The sprite to add.
+   * @param collisionShape - The collision shape to use for the sprite.
+   * @returns The sprite object.
+   */
   addSprite(spriteToAdd, collisionShape = "Rectangle") {
     return new sprite(this, spriteToAdd, collisionShape);
   }
