@@ -6,9 +6,32 @@ import { configManager, RequiredDeep } from "./configManager";
 import type { Application } from "pixi.js";
 
 interface KeyBinding {
+    /** The name of the key binding, for use when updating */
     name: string;
+    /** The key associated with the binding. */
     key: string;
+    /** @deprecated Equivalent to {@link onDownContinuous}. Use either that or {@link onDown}, {@link onPress}, {@link onUp} instead. */
     fn?: (dt: number) => void;
+
+    /**
+     * A function that is executed every frame while the binding is being pressed.
+     */
+    onDownContinuous?: (dt: number) => void;
+
+    /**
+     * The function executed when the binding is pressed down.
+     */
+    onDown?: () => void;
+
+    /**
+     * The function executed when the binding is being pressed.
+     */
+    onPress?: () => void;
+
+    /**
+     * The function executed when the binding is released.
+     */
+    onUp?: () => void;
 }
 
 interface keyManagerConfig {
@@ -83,8 +106,20 @@ class keyManager {
         if (typeof document === "undefined") {
             return;
         }
-        document.addEventListener("keydown", (e) => this.logKey(e, true));
-        document.addEventListener("keyup", (e) => this.logKey(e, false));
+        document.addEventListener("keydown", (e) => {
+            this.logKey(e, true);
+            // console.log("down", e.key);
+            this.onAll("down", e.key);
+        });
+        document.addEventListener("keyup", (e) => {
+            this.logKey(e, false);
+            // console.log("up", e.key);
+            this.onAll("up", e.key);
+        });
+        document.addEventListener("keypress", (e) => {
+            // console.log("press", e.key);
+            this.onAll("press", e.key);
+        });
     }
 
     /**
@@ -105,10 +140,44 @@ class keyManager {
         }
     }
 
+    /**
+     * Adds keys to the list of keys pressed.
+     * @param event - The event to add the key from.
+     * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
+     */
     private logKey (this: keyManager, event: KeyboardEvent, type: boolean): void {
         const key = event.key;
         if (type && !this.keysPressed.includes(key)) this.keysPressed.push(key); else if (!type && this.keysPressed.includes(key)) this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
     };
+
+    /**
+     * Manages onDown, onPress, and onUp events for all key bindings.
+     * @param eventType - The type of event to call for.
+     * @param keypress - The key that was pressed.
+     */
+    private onAll (eventType: "down" | "press" | "up", keypress: string): void {
+        // const events = ["onDownContinuous", "onDown", "onPress", "onUp"];
+        for (const bind of this.binds) {
+            // for (const event of events) {
+            //     if (this.isPressing(bind.name) && (bind as any)[event]) {
+            //         (bind as any)[event](dt);
+            //     }
+            //     Handled by constructor
+            //     if (event === "onDownContinuous" && bind.onDownContinuous && this.isPressing(bind.name)) {
+            //         bind.onDownContinuous();
+            //     }
+            // }
+            if (eventType === "down" && bind.key === keypress && bind.onDown) {
+                bind.onDown();
+            }
+            if (eventType === "press" && bind.key === keypress && bind.onPress) {
+                bind.onPress();
+            }
+            if (eventType === "up" && bind.key === keypress && bind.onUp) {
+                bind.onUp();
+            }
+        }
+    }
 
     /**
      * Checks if a specific key binding is currently being pressed.
@@ -127,48 +196,47 @@ class keyManager {
     }
 
     /**
+     * Gets a key binding by its name.
+     * @param name - The name of the key binding to get.
+     * @returns The key binding, if found.
+     */
+    private getBind (name: string): KeyBinding | undefined {
+        return this.binds.find((current) => current.name === name);
+    }
+
+    /**
      * Adds or updates a key binding.
+     * @deprecated Use the other overload instead, as it is more flexible.
      * @param name - The name of the key binding.
      * @param key - The key associated with the binding.
-     * @param [fn] - The function executed when the binding is pressed
-     * @example addKey("Move Up", "w", () => Game.player.velocity.y -= Game.player.acceleration);
+     * @param fn - The function executed when the binding is pressed
+     * @example addKey("Move Up", "w", () => player.velocity.y += player.acceleration.y);
      */
     public addKey (name: string, key: string, fn?: (dt: number) => void): void;
     /**
      * Adds or updates multiple key bindings.
      * @param keysToAdd - An array of key binding objects.
-     * @deprecated Use {@link addKey} instead.
      * @example
+     * const moveUpKeyBinding: KeyBinding = { name: "Move Up", key: "w", onDownContinuous: () => player.velocity.y += player.acceleration.y };
+     * // Use either of the following:
+     * addKey(moveUpKeyBinding);
+     * // or
      * addKeys([
-     *     { name: "Move Up", key: "w", fn: () => Game.player.velocity.y -= Game.player.acceleration },
+     *     moveUpKeyBinding,
      *     // Add more key bindings here...
      * ]);
      */
     public addKey (keysToAdd: KeyBinding | KeyBinding[]): void;
     public addKey (nameOrKeysToAdd: string | KeyBinding | KeyBinding[], key?: string, fn?: (dt: number) => void): void {
-        const addKeyA = (name: string, key: string, fn?: (dt: number) => void) => {
-            for (let i = 0; i < this.binds.length; i++) {
-                const current = this.binds[i];
-                if (current.name === name) {
-                    current.key = key;
-                    return;
-                }
+        nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key: (key as string), fn }] : nameOrKeysToAdd;
+        nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
+        for (const keyBinding of nameOrKeysToAdd) {
+            const existing = this.getBind(keyBinding.name);
+            if (existing) {
+                Object.assign(existing, keyBinding);
+                continue;
             }
-            // if not found (new keybind entirely)
-            this.binds.push({ name, key, fn });
-            if (typeof fn == "function") {
-                this.tickers.push((dt) => {
-                    if (this.isPressing(name)) fn(dt);
-                });
-            }
-        };
-        if (typeof nameOrKeysToAdd === "string") {
-            addKeyA(nameOrKeysToAdd, (key as string), fn);
-        } else {
-            nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
-            for (const keyBinding of nameOrKeysToAdd) {
-                addKeyA(keyBinding.name, keyBinding.key, keyBinding.fn);
-            }
+            this.binds.push(keyBinding);
         }
     }
 

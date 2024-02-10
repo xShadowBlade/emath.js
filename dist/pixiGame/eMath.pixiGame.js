@@ -604,8 +604,17 @@ var keyManager = class _keyManager {
     if (typeof document === "undefined") {
       return;
     }
-    document.addEventListener("keydown", (e) => this.logKey(e, true));
-    document.addEventListener("keyup", (e) => this.logKey(e, false));
+    document.addEventListener("keydown", (e) => {
+      this.logKey(e, true);
+      this.onAll("down", e.key);
+    });
+    document.addEventListener("keyup", (e) => {
+      this.logKey(e, false);
+      this.onAll("up", e.key);
+    });
+    document.addEventListener("keypress", (e) => {
+      this.onAll("press", e.key);
+    });
   }
   static {
     this.configManager = new configManager(keyManagerDefaultConfig);
@@ -627,12 +636,35 @@ var keyManager = class _keyManager {
       this.config.pixiApp.ticker.maxFPS = fps;
     }
   }
+  /**
+   * Adds keys to the list of keys pressed.
+   * @param event - The event to add the key from.
+   * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
+   */
   logKey(event, type) {
     const key = event.key;
     if (type && !this.keysPressed.includes(key))
       this.keysPressed.push(key);
     else if (!type && this.keysPressed.includes(key))
       this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+  }
+  /**
+   * Manages onDown, onPress, and onUp events for all key bindings.
+   * @param eventType - The type of event to call for.
+   * @param keypress - The key that was pressed.
+   */
+  onAll(eventType, keypress) {
+    for (const bind of this.binds) {
+      if (eventType === "down" && bind.key === keypress && bind.onDown) {
+        bind.onDown();
+      }
+      if (eventType === "press" && bind.key === keypress && bind.onPress) {
+        bind.onPress();
+      }
+      if (eventType === "up" && bind.key === keypress && bind.onUp) {
+        bind.onUp();
+      }
+    }
   }
   /**
    * Checks if a specific key binding is currently being pressed.
@@ -648,30 +680,24 @@ var keyManager = class _keyManager {
     }
     return false;
   }
+  /**
+   * Gets a key binding by its name.
+   * @param name - The name of the key binding to get.
+   * @returns The key binding, if found.
+   */
+  getBind(name) {
+    return this.binds.find((current) => current.name === name);
+  }
   addKey(nameOrKeysToAdd, key, fn) {
-    const addKeyA = (name, key2, fn2) => {
-      for (let i = 0; i < this.binds.length; i++) {
-        const current = this.binds[i];
-        if (current.name === name) {
-          current.key = key2;
-          return;
-        }
+    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key, fn }] : nameOrKeysToAdd;
+    nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
+    for (const keyBinding of nameOrKeysToAdd) {
+      const existing = this.getBind(keyBinding.name);
+      if (existing) {
+        Object.assign(existing, keyBinding);
+        continue;
       }
-      this.binds.push({ name, key: key2, fn: fn2 });
-      if (typeof fn2 == "function") {
-        this.tickers.push((dt) => {
-          if (this.isPressing(name))
-            fn2(dt);
-        });
-      }
-    };
-    if (typeof nameOrKeysToAdd === "string") {
-      addKeyA(nameOrKeysToAdd, key, fn);
-    } else {
-      nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
-      for (const keyBinding of nameOrKeysToAdd) {
-        addKeyA(keyBinding.name, keyBinding.key, keyBinding.fn);
-      }
+      this.binds.push(keyBinding);
     }
   }
 };
@@ -1697,9 +1723,10 @@ var dataManager = class {
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
    * If you dont want to save to local storage, use {@link compileData} instead.
+   * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
    */
-  saveData() {
-    localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
+  saveData(dataToSave = this.compileData()) {
+    localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
   }
   /**
    * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
@@ -1732,18 +1759,7 @@ var dataManager = class {
     function isPlainObject(obj) {
       return typeof obj === "object" && obj.constructor === Object;
     }
-    function deepMerge(source, target) {
-      const out = target;
-      for (const key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
-          out[key] = source[key];
-        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
-          out[key] = deepMerge(source[key], target[key]);
-        }
-      }
-      return out;
-    }
-    let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+    let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
     const templateClasses = function(templateClassesInit) {
       const out = [];
       for (const templateClassConvert of templateClassesInit) {
@@ -1817,6 +1833,7 @@ var dataManager = class {
    * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
    */
   loadData(dataToLoad = this.decompileData()) {
+    dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad)
       return null;
     const parsedData = this.parseData(dataToLoad);

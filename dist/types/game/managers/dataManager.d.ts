@@ -105,8 +105,9 @@ declare class dataManager {
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you dont want to save to local storage, use {@link compileData} instead.
+     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
-    saveData(): void;
+    saveData(dataToSave?: string): void;
     /**
      * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
      * If you want to implement a custom data export, use {@link compileData} instead.
@@ -123,6 +124,6 @@ declare class dataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
      */
-    loadData(dataToLoad?: [string, object] | null): null | boolean;
+    loadData(dataToLoad?: [string, object] | null | string): null | boolean;
 }
 export { dataManager };

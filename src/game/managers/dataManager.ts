@@ -192,9 +192,10 @@ class dataManager {
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you dont want to save to local storage, use {@link compileData} instead.
+     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
-    public saveData (): void {
-        localStorage.setItem(`${this.gameRef.config.name.id}-data`, this.compileData());
+    public saveData (dataToSave = this.compileData()): void {
+        localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
     };
 
     /**
@@ -242,27 +243,27 @@ class dataManager {
             return typeof obj === "object" && obj.constructor === Object;
         }
 
-        // Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
         /**
-         * Add new / updated properties
+         * Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
+         * @deprecated use Object.assign instead
          * @param source - The source object to reference if a property is missing.
          * @param target - The target object.
          * @returns The merged object.
          */
-        function deepMerge (source: object, target: object): object {
-            const out: object = target;
-            for (const key in source) {
-                if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
-                    // If the property is missing from the target, add it
-                    (out as any)[key] = (source as any)[key];
-                } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
-                    // Recursive
-                    (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
-                }
-            }
-            return out;
-        }
-        let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+        // function deepMerge (source: object, target: object): object {
+        //     const out: object = target;
+        //     for (const key in source) {
+        //         if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+        //             // If the property is missing from the target, add it
+        //             (out as any)[key] = (source as any)[key];
+        //         } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
+        //             // Recursive
+        //             (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
+        //         }
+        //     }
+        //     return out;
+        // }
+        let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
         // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
         interface templateClass {
             name?: string;
@@ -421,7 +422,8 @@ class dataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
      */
-    public loadData (dataToLoad = this.decompileData()): null | boolean {
+    public loadData (dataToLoad: [string, object] | null | string = this.decompileData()): null | boolean {
+        dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
         if (!dataToLoad) return null;
         const parsedData = this.parseData(dataToLoad);
         if (!parsedData) return null;
