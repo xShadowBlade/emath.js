@@ -1759,7 +1759,18 @@ var dataManager = class {
     function isPlainObject(obj) {
       return typeof obj === "object" && obj.constructor === Object;
     }
-    let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
+    function deepMerge(source, target) {
+      const out = target;
+      for (const key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+          out[key] = source[key];
+        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
+          out[key] = deepMerge(source[key], target[key]);
+        }
+      }
+      return out;
+    }
+    let loadedDataProcessed = deepMerge(this.normalData, loadedData);
     const templateClasses = function(templateClassesInit) {
       const out = [];
       for (const templateClassConvert of templateClassesInit) {

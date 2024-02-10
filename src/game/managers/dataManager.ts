@@ -250,20 +250,21 @@ class dataManager {
          * @param target - The target object.
          * @returns The merged object.
          */
-        // function deepMerge (source: object, target: object): object {
-        //     const out: object = target;
-        //     for (const key in source) {
-        //         if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
-        //             // If the property is missing from the target, add it
-        //             (out as any)[key] = (source as any)[key];
-        //         } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
-        //             // Recursive
-        //             (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
-        //         }
-        //     }
-        //     return out;
-        // }
-        let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
+        function deepMerge (source: object, target: object): object {
+            const out: object = target;
+            for (const key in source) {
+                if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+                    // If the property is missing from the target, add it
+                    (out as any)[key] = (source as any)[key];
+                } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
+                    // Recursive
+                    (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
+                }
+            }
+            return out;
+        }
+        // let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
+        let loadedDataProcessed = deepMerge(this.normalData, loadedData); // TODO: Fix this
         // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
         interface templateClass {
             name?: string;

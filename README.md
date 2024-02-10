@@ -1,4 +1,4 @@
-![Header](https://raw.githubusercontent.com/xShadowBlade/emath.js/main/website/static/img/banner.png)
+![Header](https://raw.githubusercontent.com/xShadowBlade/emath.js/main/documentation/static/img/banner.png)
 
 <div align="center">
 eMath.js is a JavaScript library designed to provide tools for incremental game development. It includes support for the break_eternity.js library, advanced formatting capabilities, and classes for managing boosts, currency, and attributes in game development.

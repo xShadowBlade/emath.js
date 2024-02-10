@@ -1,4 +1,5 @@
 import { LRUCache } from "./lru-cache";
+import { FormatType } from "./formats";
 export type CompareResult = -1 | 0 | 1;
 export type DecimalSource = Decimal | number | string;
 /**
@@ -22,8 +23,8 @@ declare class Decimal {
     static formats: {
         toSubscript: (value: number) => string;
         toSuperscript: (value: number) => string;
-        formatST: (ex: DecimalSource, acc?: number, max?: number, type?: string) => string;
-        format: (ex: DecimalSource, acc?: number, max?: number, type?: string) => string;
+        formatST: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
+        format: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
         formatGain: (amt: DecimalSource, gain: DecimalSource) => string;
         formatTime: (ex: DecimalSource, acc?: number, type?: string) => string;
         formatReduction: (ex: DecimalSource) => string;
@@ -37,22 +38,21 @@ declare class Decimal {
                 greek: string;
                 infinity: string;
             };
-            format(value: Decimal): string;
+            format(value: DecimalSource): string;
         };
         omega_short: {
             config: {
                 greek: string;
                 infinity: string;
             };
-            format(value: Decimal): string;
+            format(value: DecimalSource): string;
         };
         elemental: {
             config: {
                 element_lists: string[][];
             };
             getOffset(group: number): number;
-            getAbbreviation(// For default toString behaviour, when to swap from eee... to (e^n) syntax.
-            group: number, progress: number): string;
+            getAbbreviation(group: number, progress: number): string;
             beyondOg(x: number): string;
             abbreviationLength(group: number): number;
             getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
@@ -60,20 +60,17 @@ declare class Decimal {
             format(value: Decimal, acc: number): string;
         };
         old_sc: {
-            format(ex: DecimalSource, // We need this lookup table because Math.pow(10, exponent)
-            acc: number): string;
+            format(ex: DecimalSource, acc: number): string;
         };
         eng: {
             format(ex: DecimalSource, acc: number): string;
         };
         mixed_sc: {
-            format(ex: DecimalSource, acc: number, // You can fix it with the power of math... or just make a lookup table.
-            max: number): string;
+            format(ex: DecimalSource, acc: number, max: number): string;
         };
         layer: {
             layers: string[];
-            format(ex: DecimalSource, // Faster AND simpler
-            acc: number, max: number): string;
+            format(ex: DecimalSource, acc: number, max: number): string;
         };
         standard: {
             tier1(x: number): string;
@@ -360,12 +357,12 @@ declare class Decimal {
     acosh(): Decimal;
     atanh(): Decimal;
     /**
-   * Joke function from Realm Grinder
-   */
+     * Joke function from Realm Grinder
+     */
     ascensionPenalty(ascensions: DecimalSource): Decimal;
     /**
-   * Joke function from Cookie Clicker. It's 'egg'
-   */
+     * Joke function from Cookie Clicker. It's 'egg'
+     */
     egg(): Decimal;
     lessThanOrEqualTo(other: DecimalSource): boolean;
     lessThan(other: DecimalSource): boolean;
@@ -461,8 +458,8 @@ declare class Decimal {
      * @param {string} [type="st"] - The type of format (default standard)
      * @returns {string} A string representing the formatted E value.
      */
-    formatST(acc?: number, max?: number, type?: string): string;
-    static formatST(value: DecimalSource, acc?: number, max?: number, type?: string): string;
+    formatST(acc?: number, max?: number, type?: FormatType): string;
+    static formatST(value: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
     /**
      * Formats the gain rate using the E instance.
      *
@@ -475,7 +472,7 @@ declare class Decimal {
      * @example
      * const currency = new Decimal(100);
      * const currencyGain = new Decimal(12);
-     * const formatted = currency.formatGain(currencyGain);
+     * const formatted = currency.formats.formatGain(currencyGain);
      * console.log(formatted); // should return "(+12/sec)"
      */
     formatGain(gain: DecimalSource): string;

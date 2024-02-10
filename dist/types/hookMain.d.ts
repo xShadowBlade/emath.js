@@ -14,15 +14,13 @@ declare const eMathWeb: {
             formatST: (ex: import("./E/e").DecimalSource, acc?: number | undefined, max?: number | undefined, type?: string | undefined) => string;
             format: (ex: import("./E/e").DecimalSource, acc?: number | undefined, max?: number | undefined, type?: string | undefined) => string;
             formatGain: (amt: import("./E/e").DecimalSource, gain: import("./E/e").DecimalSource) => string;
-            formatTime: (ex: import("./E/e").DecimalSource, acc?: number | undefined, type?: string | undefined) => string; /**
-             * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-             */
+            formatTime: (ex: import("./E/e").DecimalSource, acc?: number | undefined, type?: string | undefined) => string;
             formatReduction: (ex: import("./E/e").DecimalSource) => string;
-            formatPercent: (ex: import("./E/e").DecimalSource) => string;
-            formatMult: (ex: import("./E/e").DecimalSource, acc?: number | undefined) => string;
-            expMult: (a: import("./E/e").DecimalSource, b: import("./E/e").DecimalSource, base?: number | undefined) => import("./E/e").Decimal; /**
-             * @deprecated Use `import { grid } from "emath.js"` instead.
+            formatPercent: (ex: import("./E/e").DecimalSource) => string; /**
+             * @deprecated Use `import { attribute } from "emath.js"` instead.
              */
+            formatMult: (ex: import("./E/e").DecimalSource, acc?: number | undefined) => string;
+            expMult: (a: import("./E/e").DecimalSource, b: import("./E/e").DecimalSource, base?: number | undefined) => import("./E/e").Decimal;
             metric: (num: import("./E/e").DecimalSource, type: number) => string;
             ev: (num: import("./E/e").DecimalSource, c2?: boolean | undefined) => string;
             omega: {
@@ -49,6 +47,9 @@ declare const eMathWeb: {
                 abbreviationLength(group: number): number;
                 getAbbreviationAndValue(x: import("./E/e").Decimal): (string | import("./E/e").Decimal)[];
                 formatElementalPart(abbreviation: string, n: import("./E/e").Decimal): string;
+                /**
+                 * Attach eMath to the window object
+                 */
                 format(value: import("./E/e").Decimal, acc: number): string;
             };
             old_sc: {

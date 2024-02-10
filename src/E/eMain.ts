@@ -1,5 +1,7 @@
-import { Decimal } from "./e";
-import type { DecimalSource, CompareResult } from "./e";
+/**
+ * @file The main file for the E library.
+ */
+import { Decimal, DecimalSource, CompareResult } from "./e";
 
 /**
  * A function that returns a Decimal instance. Also contains static methods and properties of the Decimal class.
@@ -250,6 +252,7 @@ const E: {
 
 // Copy properties from Decimal to E
 (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b)) as string[]).forEach((prop) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (E as any)[prop] = (Decimal as any)[prop];
 });
 
@@ -257,3 +260,5 @@ const E: {
 type E = Decimal;
 
 export { E, DecimalSource as ESource };
+// export * from "./formats";
+export { FORMATS, FormatType, FormatTypeList } from "./formats";
