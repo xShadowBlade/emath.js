@@ -17,13 +17,9 @@ import { boost } from "./boost";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: E, upgrade: upgradeStatic, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
+function calculateUpgrade (value: ESource, upgrade: upgradeStatic, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
+    value = E(value);
     target = E(target);
-    // const upgrade = this.getUpgrade(id);
-    // if (upgrade === null) {
-    //     console.warn(`Upgrade "${id}" not found.`);
-    //     return [E(0), E(0)];
-    // }
 
     // Special case: If target is less than 1, just return 0
     if (target.lte(0)) {
@@ -46,7 +42,7 @@ function calculateUpgrade (value: E, upgrade: upgradeStatic, target: ESource = 1
 
     // Special case: If costBulk exists, use it
     if (upgrade.costBulk) {
-        const [cost, amount] = upgrade.costBulk(upgrade.level, target);
+        const [cost, amount] = upgrade.costBulk(value, upgrade.level, target);
         const canAfford = value.gte(cost);
         return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
     }
@@ -162,7 +158,7 @@ interface upgradeInit {
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (level: E, target: E) => [cost: E, amount: E],
+    costBulk?: (currencyValue: E, level: E, target: E) => [cost: E, amount: E],
 
     /** The maximum level of the upgrade. Defaults to 1. */
     maxLevel?: E
@@ -496,7 +492,7 @@ class currencyStatic {
     /**
      * Calculates the cost and how many upgrades you can buy
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     * @deprecated Use {@link calculateUpgrade} instead.
+     * {@link calculateUpgrade}
      * @param id - The ID or position of the upgrade to calculate.
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)

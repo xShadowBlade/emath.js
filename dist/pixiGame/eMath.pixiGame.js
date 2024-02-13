@@ -2032,6 +2032,7 @@ var game = class _game {
   }
   /**
    * Adds a new currency group to the game.
+   * @deprecated Use {@link addCurrency} instead.
    * @param name - The name of the currency group.
    * @param currencies - An array of currency names to add to the group.
    */

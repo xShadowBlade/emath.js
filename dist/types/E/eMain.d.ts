@@ -8,7 +8,7 @@ import type { DecimalSource } from "./e";
  * @param x - The value to convert to a Decimal instance.
  * @returns - The Decimal instance.
  */
-declare const E: typeof Decimal & ((x?: DecimalSource) => Decimal);
+declare const E: ((x?: DecimalSource) => Decimal) & typeof Decimal;
 type E = Decimal;
 export { E, DecimalSource as ESource };
 export { FORMATS, FormatTypeList } from "./e";

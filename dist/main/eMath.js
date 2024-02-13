@@ -5068,7 +5068,7 @@ Decimal.formats = formats;
 
 // src/E/eMain.ts
 var E = (() => {
-  let out = (x) => new Decimal(x);
+  const out = (x) => new Decimal(x);
   Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
   }).includes(b)).forEach((prop) => {
     out[prop] = Decimal[prop];
@@ -5190,6 +5190,7 @@ var boost = class {
 
 // src/classes/currency.ts
 function calculateUpgrade(value, upgrade, target = 1, el = false) {
+  value = E(value);
   target = E(target);
   if (target.lte(0)) {
     return [E(0), E(0)];
@@ -5206,7 +5207,7 @@ function calculateUpgrade(value, upgrade, target = 1, el = false) {
     return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
   }
   if (upgrade.costBulk) {
-    const [cost, amount] = upgrade.costBulk(upgrade.level, target);
+    const [cost, amount] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost);
     return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
   }
@@ -5499,7 +5500,7 @@ var currencyStatic = class {
   /**
    * Calculates the cost and how many upgrades you can buy
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   * @deprecated Use {@link calculateUpgrade} instead.
+   * {@link calculateUpgrade}
    * @param id - The ID or position of the upgrade to calculate.
    * @param target - How many to buy
    * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
