@@ -5,7 +5,7 @@
  */
 
 // Extract relevant classes from eMath
-// /** @type {import("../../../../../src/game/hookGame").eMathGameWeb} */
+/** @type {import("../../../../../src/game/hookGame").eMathGameWeb} */
 let eMath = window.eMath;
 const { E, game } = eMath;
 

@@ -125,9 +125,9 @@ declare function formatST(ex: DecimalSource, acc?: number, max?: number, type?: 
 /**
  * Format the value into a specific format type
  * @param ex - The value to format
- * @param acc - The accuracy
- * @param max - The maximum value
- * @param type - The type
+ * @param acc - The desired accuracy (number of significant figures), defaults to `2`.
+ * @param max - The maximum number of decimal places to display, defaults to `9`.
+ * @param type - The type of format to use (default "mixed_sc")
  * @returns - The formatted value
  */
 declare function format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
@@ -287,3 +287,4 @@ declare const formats: {
     };
 };
 export { formats, FORMATS, ST_NAMES, FormatType, FormatTypeList };
+export * from "./e";
