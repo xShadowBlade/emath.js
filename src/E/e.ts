@@ -3333,8 +3333,12 @@ class Decimal {
         p = new Decimal(p);
         let x = this.clone();
         if (x.gte(s)) {
-            if ([0, "pow"].includes(mode)) x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)));
-            if ([1, "exp"].includes(mode)) x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p, x.sub(s)).mul(s);
+            if ([0, "pow"].includes(mode)) x = rev ? 
+                x.mul(s.pow(p.sub(1))).root(p) : // (x * s^(p - 1))^(1 / p)
+                x.pow(p).div(s.pow(p.sub(1))); // x^p / s^(p - 1)
+            if ([1, "exp"].includes(mode)) x = rev ? 
+                x.div(s).max(1).log(p).add(s) : // log_p((x / s).max(1)) + s
+                Decimal.pow(p, x.sub(s)).mul(s); // p^(x - s) * s
         }
         return x;
     }
@@ -3908,7 +3912,7 @@ function formatGain (amt: DecimalSource, gain: DecimalSource, type: FormatType =
 
 /**
  * Format the time
- * @param ex - The value to format
+ * @param ex - The value to format (in seconds)
  * @param acc - The accuracy
  * @param type - The type
  * @returns - The formatted time
@@ -3920,21 +3924,72 @@ function formatTime (ex: DecimalSource, acc: number = 2, type: string = "s"): st
     if (ex.gte(60) || type == "h") return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
     return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
 }
+
+/**
+ * Format the time long
+ * @param ex - The value to format (in seconds)
+ * @param ms - Whether to include milliseconds
+ * @param acc - The accuracy
+ * @param max - The maximum value
+ * @param type - The type
+ * @returns - The formatted time
+ */
+function formatTimeLong (ex: DecimalSource, ms = false, acc = 0, max = 9, type: FormatType = "mixed_sc"): string {
+    const formatFn = (ex: DecimalSource) => format(ex, acc, max, type);
+    ex = new Decimal(ex);
+    const mls = ex.mul(1000).mod(1000).floor();
+    const sec = ex.mod(60).floor();
+    const min = ex.div(60).mod(60).floor();
+    const hour = ex.div(3600).mod(24).floor();
+    const day = ex.div(86400).mod(365.2425).floor();
+    const year = ex.div(31556952).floor();
+    const yearStr = year.eq(1) ? " year" : " years";
+    const dayStr = day.eq(1) ? " day" : " days";
+    const hourStr = hour.eq(1) ? " hour" : " hours";
+    const minStr = min.eq(1) ? " minute" : " minutes";
+    const secStr = sec.eq(1) ? " second" : " seconds";
+    const mlsStr = mls.eq(1) ? " millisecond" : " milliseconds";
+    return `${year.gt(0) ? formatFn(year) + yearStr + ", " : ""}${day.gt(0) ? formatFn(day) + dayStr + ", " : ""}${hour.gt(0) ? formatFn(hour) + hourStr + ", " : ""}${min.gt(0) ? formatFn(min) + minStr + ", " : ""}${sec.gt(0) ? formatFn(sec) + secStr + "," : ""}${ms && mls.gt(0) ? " " + formatFn(mls) + mlsStr : ""}`.replace(/,([^,]*)$/, "$1").trim();
+}
+
+/**
+ * Format the reduction
+ * @param ex - The value to format
+ * @returns - The formatted reduction
+ */
 function formatReduction (ex: DecimalSource): string {
     ex = new Decimal(ex);
     return format(new Decimal(1).sub(ex).mul(100)) + "%";
 }
 
+/**
+ * Format the percent
+ * @param ex - The value to format
+ * @returns - The formatted percent
+ */
 function formatPercent (ex: DecimalSource): string {
     ex = new Decimal(ex);
     return format(ex.mul(100)) + "%";
 }
 
+/**
+ * Format the multiplier
+ * @param ex - The value to format
+ * @param acc - The accuracy
+ * @returns - The formatted multiplier
+ */
 function formatMult (ex: DecimalSource, acc: number = 2): string {
     ex = new Decimal(ex);
     return ex.gte(1) ? "×" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
 }
 
+/**
+ * Exponential multiplier
+ * @param a - The value to exponentiate
+ * @param b - The exponent
+ * @param base - The base
+ * @returns - The value after being exponentiated
+ */
 function expMult (a: DecimalSource, b: DecimalSource, base: number = 10) {
     return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : new Decimal(a);
 }
@@ -3954,7 +4009,7 @@ function expMult (a: DecimalSource, b: DecimalSource, base: number = 10) {
  * metric(1234, 2); // Returns "1.23"
  * metric(1234, 3); // Returns "Kilo"
  */
-function metric (num: DecimalSource, type: number): string {
+function metric (num: DecimalSource, type: 0 | 1 | 2 | 3): string {
     num = new Decimal(num);
     interface IAbb {
         name: string;
@@ -4011,60 +4066,42 @@ function metric (num: DecimalSource, type: number): string {
             altName: "Quetta",
         },
     ]);
+    // console.log("ev", abb);
     let output = "";
-    for (let i = 0; i < abb.length; i++) {
-        if (num.greaterThanOrEqualTo(abb[i]["value"])) {
-            if (i == abb.length - 1) {
-                switch (type) {
-                case 1:
-                    output = abb[i]["name"];
-                    break;
-                case 2:
-                    output = `${num.divide(abb[i]["value"]).format()}`;
-                    break;
-                case 3:
-                    output = abb[i]["altName"];
-                    break;
-                case 0:
-                default:
-                    output = `${num.divide(abb[i]["value"]).format()} ${abb[i]["name"]}`;
-                    break;
-                }
-            }
-            continue;
-        } else if (i == 0) {
-            switch (type) {
-            case 1:
-                output = "";
-                break;
-            case 2:
-            case 0:
-            default:
-                output = num.format();
-                break;
-            }
-        } else {
-            switch (type) {
-            case 1:
-                output = abb[i - 1]["name"];
-                break;
-            case 2:
-                output = `${num.divide(abb[i - 1]["value"]).format()}`;
-                break;
-            case 3:
-                output = abb[i - 1]["altName"];
-                break;
-            case 0:
-            default:
-                output = `${num.divide(abb[i - 1]["value"]).format()} ${abb[i - 1]["name"]}`;
-                break;
-            }
+    const abbNum = num.lte(0) ? 0 : Decimal.min(Decimal.log(num, 1000).sub(1), abb.length - 1).floor().toNumber();
+    const abbMax = abb[abbNum];
+    if (abbNum === 0) {
+        switch (type) {
+        case 1:
+            output = "";
+            break;
+        case 2:
+        case 0:
+        default:
+            output = num.format();
+            break;
         }
+    }
+    switch (type) {
+    case 1:
+        output = abbMax["name"];
+        break;
+    case 2:
+        output = `${num.divide(abbMax["value"]).format()}`;
+        break;
+    case 3:
+        output = abbMax["altName"];
+        break;
+    case 0:
+    default:
+        output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+        break;
     }
     return output;
 }
 /**
  * Format the value into eV (includes metric prefixes)
+ * @deprecated Use {@link metric} instead
  * @param num - The value to format
  * @param c2 - Whether to include /c^2
  * @returns The formatted value
@@ -4080,6 +4117,7 @@ const formats = {...FORMATS, ...{
     format,
     formatGain,
     formatTime,
+    formatTimeLong,
     formatReduction,
     formatPercent,
     formatMult,
@@ -4089,42 +4127,57 @@ const formats = {...FORMATS, ...{
 }};
 
 // Test
-// const test = new Decimal(Math.random()).mul("1e" + Math.floor(Math.random() * 30));
-// console.log(test);
+/*
+const testA = new Decimal(Math.random()).mul("1e" + Math.floor(Math.random() * 1e6));
+console.log(testA);
+const testB = new Decimal(Math.random()).mul("1e" + Math.floor(Math.random() * 1e6));
+console.log(testB);
 
-// const testFormats = {
-//     standard: (x: DecimalSource) => format(x, 2, 9, "st"),
-//     sc: (x: DecimalSource) => format(x, 2, 9, "sc"),
-//     default: (x: DecimalSource) => format(x, 2, 9),
-//     // gain: formatGain,
-//     omega: (x: DecimalSource) => format(x, 2, 9, "omega"),
-//     omega_short: (x: DecimalSource) => format(x, 2, 9, "omega_short"),
-//     elemental: (x: DecimalSource) => format(x, 2, 9, "elemental"),
-//     old_sc: (x: DecimalSource) => format(x, 2, 9, "old_sc"),
-//     eng: (x: DecimalSource) => format(x, 2, 9, "eng"),
-//     mixed_sc: (x: DecimalSource) => format(x, 2, 9, "mixed_sc"),
-//     layer: (x: DecimalSource) => format(x, 2, 9, "layer"),
-//     inf: (x: DecimalSource) => format(x, 2, 9, "inf"),
-//     metric: metric,
-//     ev: ev,
-// };
+const testFormats = {
+    toString: (x: DecimalSource) => new Decimal(x).toString(),
+    standard: (x: DecimalSource) => format(x, 2, 9, "st"),
+    sc: (x: DecimalSource) => format(x, 2, 9, "sc"),
+    default: format,
+    gain: [formatGain],
+    omega: (x: DecimalSource) => format(x, 2, 9, "omega"),
+    omega_short: (x: DecimalSource) => format(x, 2, 9, "omega_short"),
+    elemental: (x: DecimalSource) => format(x, 2, 9, "elemental"),
+    old_sc: (x: DecimalSource) => format(x, 2, 9, "old_sc"),
+    eng: (x: DecimalSource) => format(x, 2, 9, "eng"),
+    mixed_sc: (x: DecimalSource) => format(x, 2, 9, "mixed_sc"),
+    layer: (x: DecimalSource) => format(x, 2, 9, "layer"),
+    inf: (x: DecimalSource) => format(x, 2, 9, "inf"),
+    metric: metric,
+    ev: ev,
+    time: formatTime,
+    timeLong: formatTimeLong,
+    formatReduction,
+    formatPercent,
+    formatMult,
+    expMult: [expMult],
+};
 
-// console.table(Object.keys(testFormats).map((x) => {
-//     let value;
-//     try {
-//         value = (testFormats as any)[x](test);
-//     } catch (e) {
-//         console.error(e);
-//         value = "Error";
-//     }
-//     return {
-//         format: x,
-//         value,
-//     };
-// }));
+console.table(Object.keys(testFormats).map((x) => {
+    let value;
+    try {
+        if (Array.isArray((testFormats as any)[x])) {
+            value = (testFormats as any)[x][0](testA, testB);
+        } else {
+            value = (testFormats as any)[x](testA);
+        }
+    } catch (e) {
+        console.error(e);
+        value = "Error";
+    }
+    return {
+        format: x,
+        value,
+    };
+}));
+// end test
+*/
 
 export { formats, FORMATS, ST_NAMES, FormatType, FormatTypeList };
-
 
 Decimal.formats = formats;
 

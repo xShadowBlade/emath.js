@@ -4271,9 +4271,15 @@ var Decimal = class {
     let x = this.clone();
     if (x.gte(s)) {
       if ([0, "pow"].includes(mode))
-        x = rev ? x.mul(s.pow(p.sub(1))).root(p) : x.pow(p).div(s.pow(p.sub(1)));
+        x = rev ? x.mul(s.pow(p.sub(1))).root(p) : (
+          // (x * s^(p - 1))^(1 / p)
+          x.pow(p).div(s.pow(p.sub(1)))
+        );
       if ([1, "exp"].includes(mode))
-        x = rev ? x.div(s).max(1).log(p).add(s) : Decimal.pow(p, x.sub(s)).mul(s);
+        x = rev ? x.div(s).max(1).log(p).add(s) : (
+          // log_p((x / s).max(1)) + s
+          Decimal.pow(p, x.sub(s)).mul(s)
+        );
     }
     return x;
   }
@@ -4928,6 +4934,23 @@ function formatTime(ex, acc = 2, type = "s") {
     return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
   return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
 }
+function formatTimeLong(ex, ms = false, acc = 0, max = 9, type = "mixed_sc") {
+  const formatFn = (ex2) => format(ex2, acc, max, type);
+  ex = new Decimal(ex);
+  const mls = ex.mul(1e3).mod(1e3).floor();
+  const sec = ex.mod(60).floor();
+  const min = ex.div(60).mod(60).floor();
+  const hour = ex.div(3600).mod(24).floor();
+  const day = ex.div(86400).mod(365.2425).floor();
+  const year = ex.div(31556952).floor();
+  const yearStr = year.eq(1) ? " year" : " years";
+  const dayStr = day.eq(1) ? " day" : " days";
+  const hourStr = hour.eq(1) ? " hour" : " hours";
+  const minStr = min.eq(1) ? " minute" : " minutes";
+  const secStr = sec.eq(1) ? " second" : " seconds";
+  const mlsStr = mls.eq(1) ? " millisecond" : " milliseconds";
+  return `${year.gt(0) ? formatFn(year) + yearStr + ", " : ""}${day.gt(0) ? formatFn(day) + dayStr + ", " : ""}${hour.gt(0) ? formatFn(hour) + hourStr + ", " : ""}${min.gt(0) ? formatFn(min) + minStr + ", " : ""}${sec.gt(0) ? formatFn(sec) + secStr + "," : ""}${ms && mls.gt(0) ? " " + formatFn(mls) + mlsStr : ""}`.replace(/,([^,]*)$/, "$1").trim();
+}
 function formatReduction(ex) {
   ex = new Decimal(ex);
   return format(new Decimal(1).sub(ex).mul(100)) + "%";
@@ -4996,54 +5019,34 @@ function metric(num, type) {
     }
   ]);
   let output = "";
-  for (let i = 0; i < abb.length; i++) {
-    if (num.greaterThanOrEqualTo(abb[i]["value"])) {
-      if (i == abb.length - 1) {
-        switch (type) {
-          case 1:
-            output = abb[i]["name"];
-            break;
-          case 2:
-            output = `${num.divide(abb[i]["value"]).format()}`;
-            break;
-          case 3:
-            output = abb[i]["altName"];
-            break;
-          case 0:
-          default:
-            output = `${num.divide(abb[i]["value"]).format()} ${abb[i]["name"]}`;
-            break;
-        }
-      }
-      continue;
-    } else if (i == 0) {
-      switch (type) {
-        case 1:
-          output = "";
-          break;
-        case 2:
-        case 0:
-        default:
-          output = num.format();
-          break;
-      }
-    } else {
-      switch (type) {
-        case 1:
-          output = abb[i - 1]["name"];
-          break;
-        case 2:
-          output = `${num.divide(abb[i - 1]["value"]).format()}`;
-          break;
-        case 3:
-          output = abb[i - 1]["altName"];
-          break;
-        case 0:
-        default:
-          output = `${num.divide(abb[i - 1]["value"]).format()} ${abb[i - 1]["name"]}`;
-          break;
-      }
+  const abbNum = num.lte(0) ? 0 : Decimal.min(Decimal.log(num, 1e3).sub(1), abb.length - 1).floor().toNumber();
+  const abbMax = abb[abbNum];
+  if (abbNum === 0) {
+    switch (type) {
+      case 1:
+        output = "";
+        break;
+      case 2:
+      case 0:
+      default:
+        output = num.format();
+        break;
     }
+  }
+  switch (type) {
+    case 1:
+      output = abbMax["name"];
+      break;
+    case 2:
+      output = `${num.divide(abbMax["value"]).format()}`;
+      break;
+    case 3:
+      output = abbMax["altName"];
+      break;
+    case 0:
+    default:
+      output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+      break;
   }
   return output;
 }
@@ -5057,6 +5060,7 @@ var formats = { ...FORMATS, ...{
   format,
   formatGain,
   formatTime,
+  formatTimeLong,
   formatReduction,
   formatPercent,
   formatMult,
@@ -5294,7 +5298,7 @@ var upgradeStatic = class {
    * @returns The current level of the upgrade.
    */
   get level() {
-    return this.data.level;
+    return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
   }
   set level(n) {
     this.data.level = E(n);
@@ -5324,10 +5328,11 @@ var currencyStatic = class {
    * Updates / applies effects to the currency on load.
    */
   onLoadData() {
-    this.upgrades.forEach((upgrade) => {
-      if (upgrade.effect)
+    for (const upgrade of this.upgrades) {
+      if (upgrade.effect) {
         upgrade.effect(upgrade.level, upgrade);
-    });
+      }
+    }
   }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.

@@ -15,6 +15,11 @@ import { gameReset } from "./resetLayer";
 
 import { configManager, RequiredDeep } from "./managers/configManager";
 
+/**
+ * A pointer to a value or a function that returns a value by reference.
+ */
+type Pointer<T> = (() => T) | T;
+
 interface gameConfigOptions {
 	mode?: "development" | "production";
 	name: {
@@ -124,7 +129,7 @@ class game {
             // attributes: {},
         });
 
-        const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this);
+        const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
         return classInstance;
     }
 
@@ -133,18 +138,22 @@ class game {
      * @deprecated Use {@link addCurrency} instead.
      * @param name - The name of the currency group.
      * @param currencies - An array of currency names to add to the group.
+     * @returns An array of gameCurrency objects, in the same order as the input array.
      */
-    public addCurrencyGroup (name: string, currencies: string[]): void {
+    public addCurrencyGroup (name: string, currencies: string[]): gameCurrency[] {
         this.dataManager.setData(name, {});
         this.dataManager.setStatic(name, {
             attributes: {},
         });
 
         // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
+        const outCurrencies: gameCurrency[] = [];
         currencies.forEach((currencyName) => {
             this.dataManager.getData(name)[currencyName] = new currency();
             this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
+            outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
         });
+        return outCurrencies;
     }
 
     /**
@@ -177,4 +186,4 @@ class game {
     }
 }
 
-export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig, Pointer };

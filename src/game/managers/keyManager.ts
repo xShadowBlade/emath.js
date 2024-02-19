@@ -106,6 +106,15 @@ class keyManager {
         if (typeof document === "undefined") {
             return;
         }
+        this.tickers.push((dt) => {
+            for (const bind of this.binds) {
+                // console.log(bind);
+                if ((bind.onDownContinuous || bind.fn) && this.isPressing(bind.name)) {
+                    bind.onDownContinuous?.(dt);
+                    bind.fn?.(dt);
+                }
+            }
+        });
         document.addEventListener("keydown", (e) => {
             this.logKey(e, true);
             // console.log("down", e.key);

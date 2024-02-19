@@ -31,10 +31,12 @@
     ]
   },
   "dependencies": {
-    "emath.js": "file:../"
+    "emath.js": "file:../",
+    "evaluatex": "^2.2.0"
   },
   "devDependencies": {
     "@types/css-modules": "^1.0.4",
+    "@types/evaluatex": "^2.2.8",
     "copy-webpack-plugin": "^12.0.1",
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^6.0.0",

@@ -604,6 +604,14 @@ var keyManager = class _keyManager {
     if (typeof document === "undefined") {
       return;
     }
+    this.tickers.push((dt) => {
+      for (const bind of this.binds) {
+        if ((bind.onDownContinuous || bind.fn) && this.isPressing(bind.name)) {
+          bind.onDownContinuous?.(dt);
+          bind.fn?.(dt);
+        }
+      }
+    });
     document.addEventListener("keydown", (e) => {
       this.logKey(e, true);
       this.onAll("down", e.key);
@@ -1673,7 +1681,7 @@ var dataManager = class {
    */
   compileDataRaw(data = this.data) {
     const gameDataString = instanceToPlain(data);
-    const hasedData = md5(JSON.stringify(gameDataString));
+    const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     return [hasedData, gameDataString];
   }
   /**
@@ -1697,13 +1705,13 @@ var dataManager = class {
     return parsedData;
   }
   /**
-   * Validates the given data.
+   * Validates the given data using a hashing algorithm (md5)
    * @param data - [hash, data] The data to validate.
    * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
    */
   validateData(data) {
     const [hashSave, gameDataToValidate] = data;
-    const hashCheck = md5(JSON.stringify(gameDataToValidate));
+    const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
     return hashSave === hashCheck;
   }
   /**
@@ -1841,7 +1849,7 @@ var dataManager = class {
   /**
    * Loads game data and processes it.
    * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-   * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
+   * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
    */
   loadData(dataToLoad = this.decompileData()) {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
@@ -1850,7 +1858,7 @@ var dataManager = class {
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData)
       return null;
-    const isDataValid = this.validateData(dataToLoad);
+    const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
     this.data = parsedData;
     for (const obj of this.eventsOnLoad) {
       obj();
@@ -1872,11 +1880,13 @@ var gameCurrency = class {
    * @param currencyPointer - A function that returns the current currency value.
    * @param staticPointer - A function that returns the static data for the game.
    * @param gamePointer A pointer to the game instance.
+   * @param name - The name of the currency. This is optional, and you can use it for display purposes.
    */
-  constructor(currencyPointer, staticPointer, gamePointer) {
+  constructor(currencyPointer, staticPointer, gamePointer, name) {
     this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
     this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
     this.game = gamePointer;
+    this.name = name ?? "";
     this.game?.dataManager.addEventOnLoad(() => {
       this.static.onLoadData();
     });
@@ -2027,7 +2037,7 @@ var game = class _game {
       currency: new import_currency2.currencyStatic(() => this.dataManager.getData(name).currency)
       // attributes: {},
     });
-    const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this);
+    const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
     return classInstance;
   }
   /**
@@ -2035,16 +2045,20 @@ var game = class _game {
    * @deprecated Use {@link addCurrency} instead.
    * @param name - The name of the currency group.
    * @param currencies - An array of currency names to add to the group.
+   * @returns An array of gameCurrency objects, in the same order as the input array.
    */
   addCurrencyGroup(name, currencies) {
     this.dataManager.setData(name, {});
     this.dataManager.setStatic(name, {
       attributes: {}
     });
+    const outCurrencies = [];
     currencies.forEach((currencyName) => {
       this.dataManager.getData(name)[currencyName] = new import_currency2.currency();
       this.dataManager.getStatic(name)[currencyName] = new import_currency2.currencyStatic(this.dataManager.getData(name)[currencyName]);
+      outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
     });
+    return outCurrencies;
   }
   /**
    * Adds a new attribute to the game. {@link gameAttribute} is the class.

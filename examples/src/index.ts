@@ -7,3 +7,5 @@
 // console.log(E(69420).format());
 
 import "./nguformat";
+// import "./latexToE";
+import "./coinGame/index";

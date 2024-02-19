@@ -92,7 +92,7 @@ declare class dataManager {
      */
     decompileData(data?: string | null): [string, object] | null;
     /**
-     * Validates the given data.
+     * Validates the given data using a hashing algorithm (md5)
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
@@ -122,7 +122,7 @@ declare class dataManager {
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
+     * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
     loadData(dataToLoad?: [string, object] | null | string): null | boolean;
 }

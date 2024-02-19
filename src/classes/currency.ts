@@ -229,6 +229,14 @@ class upgradeStatic implements IUpgradeStatic {
         this.maxLevel = init.maxLevel ?? E(1);
         this.effect = init.effect;
         this.el = init.el;
+
+        // this.level = this.level.bind(this);
+        // Object.defineProperty(this, "level", {
+        //     get: () => this.data.level,
+        //     set: (n: ESource) => {
+        //         this.data.level = E(n);
+        //     },
+        // });
     }
 
     /**
@@ -236,7 +244,9 @@ class upgradeStatic implements IUpgradeStatic {
      * @returns The current level of the upgrade.
      */
     get level (): E {
-        return this.data.level;
+        // `this` can sometimes be null if loaded from a save
+        // console.log("this", this);
+        return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
     }
     set level (n: ESource) {
         this.data.level = E(n);
@@ -290,9 +300,11 @@ class currencyStatic {
      */
     public onLoadData () {
         // console.log("onLoadData", this.upgrades);
-        this.upgrades.forEach((upgrade) => {
-            if (upgrade.effect) upgrade.effect(upgrade.level, upgrade);
-        });
+        for (const upgrade of this.upgrades) {
+            if (upgrade.effect) {
+                upgrade.effect(upgrade.level, upgrade);
+            }
+        }
     }
 
     /** A boost object that affects the currency gain. */

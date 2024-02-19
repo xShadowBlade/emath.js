@@ -3,10 +3,11 @@
  */
 import { E } from "../E/eMain";
 import { attribute, attributeStatic } from "../classes/attribute";
-import type { game } from "./game";
+import type { game, Pointer } from "./game";
 /**
  * Represents a game attribute. {@link attribute} is the data class and {@link attributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
+ * WIP
  */
 declare class gameAttribute {
     data: attribute;
@@ -18,7 +19,7 @@ declare class gameAttribute {
      * @param staticPointer - A function that returns the static data for the attribute.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor(attributePointer: (() => attribute) | attribute, staticPointer: (() => attributeStatic) | attributeStatic, gamePointer?: game);
+    constructor(attributePointer: Pointer<attribute>, staticPointer: Pointer<attributeStatic>, gamePointer?: game);
     /**
      * Gets the value of the attribute.
      * NOTE: This getter is sometimes inaccurate.

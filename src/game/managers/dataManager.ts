@@ -137,7 +137,7 @@ class dataManager {
      */
     private compileDataRaw (data = this.data): [string, object] {
         const gameDataString = instanceToPlain(data);
-        const hasedData = md5(JSON.stringify(gameDataString));
+        const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
         return [hasedData, gameDataString];
     }
 
@@ -163,14 +163,14 @@ class dataManager {
     }
 
     /**
-     * Validates the given data.
+     * Validates the given data using a hashing algorithm (md5)
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
     public validateData (data: [string, object]): boolean {
         const [hashSave, gameDataToValidate] = data;
         // Current hash
-        const hashCheck = md5(JSON.stringify(gameDataToValidate));
+        const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
         // console.log("Hashes: ", hashSave, hashCheck);
         return hashSave === hashCheck;
     }
@@ -421,18 +421,20 @@ class dataManager {
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @returns Returns null if the data is empty or invalid, or false if the data is invalid / tampered with. Otherwise, returns true.
+     * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
     public loadData (dataToLoad: [string, object] | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
         if (!dataToLoad) return null;
+        // console.log("Loaded data1: ", dataToLoad);
         const parsedData = this.parseData(dataToLoad);
+        // console.log("Loaded data2: ", dataToLoad);
         if (!parsedData) return null;
 
-        const isDataValid = this.validateData(dataToLoad);
-        // console.log("Loaded data: ", parsedData);
+        const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??
+        // console.log("Loaded data: ", [dataToLoad[0], instanceToPlain(dataToLoad[1])]);
 
-        this.data = parsedData; // TODO: Fix this
+        this.data = parsedData;
 
         // Call onLoadData on all objects
         for (const obj of this.eventsOnLoad) {

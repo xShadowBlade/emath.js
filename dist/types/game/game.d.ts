@@ -9,6 +9,10 @@ import { gameCurrency } from "./gameCurrency";
 import { gameAttribute } from "./gameAttribute";
 import { gameReset } from "./resetLayer";
 import { configManager, RequiredDeep } from "./managers/configManager";
+/**
+ * A pointer to a value or a function that returns a value by reference.
+ */
+type Pointer<T> = (() => T) | T;
 interface gameConfigOptions {
     mode?: "development" | "production";
     name: {
@@ -73,8 +77,9 @@ declare class game {
      * @deprecated Use {@link addCurrency} instead.
      * @param name - The name of the currency group.
      * @param currencies - An array of currency names to add to the group.
+     * @returns An array of gameCurrency objects, in the same order as the input array.
      */
-    addCurrencyGroup(name: string, currencies: string[]): void;
+    addCurrencyGroup(name: string, currencies: string[]): gameCurrency[];
     /**
      * Adds a new attribute to the game. {@link gameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
@@ -94,4 +99,4 @@ declare class game {
      */
     addReset(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset;
 }
-export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig };
+export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig, Pointer };

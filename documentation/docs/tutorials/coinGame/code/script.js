@@ -25,9 +25,12 @@ coins.static.addUpgrade({
     costBulk: (coinsAmt, level, target) => { // Math - Optional, if not defined, it will use a binary search to find the max affordable. (slow for large numbers)
         // Summation of levels to target of 10 times the level
         const costFn = (a, b) => E(-5).mul(a.sub(b).sub(1)).mul(a.add(b));
-        const maxAffordable = E.min(E.min(level.sub(0.5), coinsAmt), target); // TODO
-        const cost = costFn(level, maxAffordable);
-        console.log(cost, maxAffordable); // Debugging
+        // \operatorname{floor}\left(\frac{-1+\sqrt{1+4\left(a^{2}-a+\frac{v}{5}\right)}}{2}\right)-a
+        const discriminant = level.pow(2).sub(level).add(coinsAmt.div(5)).mul(4).add(1);
+        const maxAffordable = E.floor(E.sqrt(discriminant).sub(1).div(2)).sub(level);
+        const cost = costFn(level, maxAffordable.add(level));
+        console.log({ coinsAmt, level, target }); // Debugging
+        console.log({ cost, maxAffordable, discriminant }); // Debugging
         return [cost, maxAffordable];
     },
     maxLevel: E(1000),

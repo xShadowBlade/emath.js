@@ -556,15 +556,48 @@ declare function format(ex: DecimalSource, acc?: number, max?: number, type?: Fo
 declare function formatGain(amt: DecimalSource, gain: DecimalSource, type?: FormatType): string;
 /**
  * Format the time
- * @param ex - The value to format
+ * @param ex - The value to format (in seconds)
  * @param acc - The accuracy
  * @param type - The type
  * @returns - The formatted time
  */
 declare function formatTime(ex: DecimalSource, acc?: number, type?: string): string;
+/**
+ * Format the time long
+ * @param ex - The value to format (in seconds)
+ * @param ms - Whether to include milliseconds
+ * @param acc - The accuracy
+ * @param max - The maximum value
+ * @param type - The type
+ * @returns - The formatted time
+ */
+declare function formatTimeLong(ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType): string;
+/**
+ * Format the reduction
+ * @param ex - The value to format
+ * @returns - The formatted reduction
+ */
 declare function formatReduction(ex: DecimalSource): string;
+/**
+ * Format the percent
+ * @param ex - The value to format
+ * @returns - The formatted percent
+ */
 declare function formatPercent(ex: DecimalSource): string;
+/**
+ * Format the multiplier
+ * @param ex - The value to format
+ * @param acc - The accuracy
+ * @returns - The formatted multiplier
+ */
 declare function formatMult(ex: DecimalSource, acc?: number): string;
+/**
+ * Exponential multiplier
+ * @param a - The value to exponentiate
+ * @param b - The exponent
+ * @param base - The base
+ * @returns - The value after being exponentiated
+ */
 declare function expMult(a: DecimalSource, b: DecimalSource, base?: number): Decimal;
 /**
  * Converts a number to a metric representation based on the specified type.
@@ -581,9 +614,10 @@ declare function expMult(a: DecimalSource, b: DecimalSource, base?: number): Dec
  * metric(1234, 2); // Returns "1.23"
  * metric(1234, 3); // Returns "Kilo"
  */
-declare function metric(num: DecimalSource, type: number): string;
+declare function metric(num: DecimalSource, type: 0 | 1 | 2 | 3): string;
 /**
  * Format the value into eV (includes metric prefixes)
+ * @deprecated Use {@link metric} instead
  * @param num - The value to format
  * @param c2 - Whether to include /c^2
  * @returns The formatted value
@@ -596,6 +630,7 @@ declare const formats: {
     format: typeof format;
     formatGain: typeof formatGain;
     formatTime: typeof formatTime;
+    formatTimeLong: typeof formatTimeLong;
     formatReduction: typeof formatReduction;
     formatPercent: typeof formatPercent;
     formatMult: typeof formatMult;
