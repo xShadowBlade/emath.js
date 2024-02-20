@@ -1,12 +1,14 @@
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-loss-of-precision */
 /* eslint-disable max-statements-per-line */
 /* eslint-disable no-shadow */
 /* eslint-disable no-loss-of-precision */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-lonely-if */
-/* eslint-disable */
-
-import { LRUCache } from "./lru-cache";
 import { Exclude, Expose } from "class-transformer";
+import { LRUCache } from "./lru-cache";
 
 export type CompareResult = -1 | 0 | 1;
 
@@ -190,6 +192,28 @@ const critical_slog_values = [
     ],
 ];
 
+const D = function D (value: DecimalSource): Readonly<Decimal> {
+    return Decimal.fromValue_noAlloc(value);
+};
+
+const FC = function (sign: number, layer: number, mag: number) {
+    return Decimal.fromComponents(sign, layer, mag);
+};
+
+const FC_NN = function FC_NN (sign: number, layer: number, mag: number) {
+    return Decimal.fromComponents_noNormalize(sign, layer, mag);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ME = function ME (mantissa: number, exponent: number) {
+    return Decimal.fromMantissaExponent(mantissa, exponent);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ME_NN = function ME_NN (mantissa: number, exponent: number) {
+    return Decimal.fromMantissaExponent_noNormalize(mantissa, exponent);
+};
+
 const decimalPlaces = function decimalPlaces (value: number, places: number): number {
     const len = places + 1;
     const numDigits = Math.ceil(Math.log10(Math.abs(value)));
@@ -286,6 +310,9 @@ const f_lambertw = function (z: number, tol = 1e-10): number {
 // The evaluation can become inaccurate very close to the branch point
 // at ``-1/e``. In some corner cases, `lambertw` might currently
 // fail to converge, or can end up on the wrong branch.
+/**
+ *
+ */
 function d_lambertw (z: Decimal, tol = 1e-10): Decimal {
     let w;
     let ew, wewz, wn;
@@ -328,23 +355,25 @@ export type DecimalSource = Decimal | number | string;
  */
 @Exclude()
 class Decimal {
-    public static readonly dZero = Decimal.fromComponents_noNormalize(0, 0, 0);
-    public static readonly dOne = Decimal.fromComponents_noNormalize(1, 0, 1);
-    public static readonly dNegOne = Decimal.fromComponents_noNormalize(-1, 0, 1);
-    public static readonly dTwo = Decimal.fromComponents_noNormalize(1, 0, 2);
-    public static readonly dTen = Decimal.fromComponents_noNormalize(1, 0, 10);
-    public static readonly dNaN = Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
-    public static readonly dInf = Decimal.fromComponents_noNormalize(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-    public static readonly dNegInf = Decimal.fromComponents_noNormalize(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-    public static readonly dNumberMax = Decimal.fromComponents(1, 0, Number.MAX_VALUE);
-    public static readonly dNumberMin = Decimal.fromComponents(1, 0, Number.MIN_VALUE);
+    public static readonly dZero = FC_NN(0, 0, 0);
+    public static readonly dOne = FC_NN(1, 0, 1);
+    public static readonly dNegOne = FC_NN(-1, 0, 1);
+    public static readonly dTwo = FC_NN(1, 0, 2);
+    public static readonly dTen = FC_NN(1, 0, 10);
+    public static readonly dNaN = FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    public static readonly dInf = FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    public static readonly dNegInf = FC_NN(-1, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+    public static readonly dNumberMax = FC(1, 0, Number.MAX_VALUE);
+    public static readonly dNumberMin = FC(1, 0, Number.MIN_VALUE);
 
-    static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
+    private static fromStringCache = new LRUCache<string, Decimal>(DEFAULT_FROM_STRING_CACHE_SIZE);
 
-    @Expose() public sign = 0;
-    @Expose() public mag = 0;
-    @Expose() public layer = 0;
-    static formats: typeof formats;
+    @Expose()
+    public sign = 0;
+    @Expose()
+    public mag = 0;
+    @Expose()
+    public layer = 0;
 
     constructor (value?: DecimalSource) {
         if (value instanceof Decimal) {
@@ -437,47 +466,73 @@ class Decimal {
         this.e = value;
     }
 
+    /**
+     * Turns the given components into a valid Decimal.
+     */
     public static fromComponents (sign: number, layer: number, mag: number): Decimal {
         return new Decimal().fromComponents(sign, layer, mag);
     }
 
+    /**
+     * Turns the given components into a Decimal, but not necessarily a valid one (it's only valid if the components would already create a valid Decimal without normalization). Users of this library should not use this function.
+     */
     public static fromComponents_noNormalize (sign: number, layer: number, mag: number): Decimal {
         return new Decimal().fromComponents_noNormalize(sign, layer, mag);
     }
 
+    /**
+     * Turns the mantissa and exponent into a valid Decimal with value mantissa * 10^exponent.
+     */
     public static fromMantissaExponent (mantissa: number, exponent: number): Decimal {
         return new Decimal().fromMantissaExponent(mantissa, exponent);
     }
 
+    /**
+     * Turns the mantissa and exponent into a Decimal, but not necessarily a valid one. Users of this library should not use this function.
+     */
     public static fromMantissaExponent_noNormalize (mantissa: number, exponent: number): Decimal {
         return new Decimal().fromMantissaExponent_noNormalize(mantissa, exponent);
     }
 
+    /**
+     * Creates a deep copy of the provided value.
+     */
     public static fromDecimal (value: Decimal): Decimal {
         return new Decimal().fromDecimal(value);
     }
 
+    /**
+     * Converts a floating-point number into a Decimal.
+     */
     public static fromNumber (value: number): Decimal {
         return new Decimal().fromNumber(value);
     }
 
-    public static fromString (value: string): Decimal {
-        return new Decimal().fromString(value);
+    /**
+     * Converts a string into a Decimal.
+     *
+     * If linearhyper4 is true, then strings like "10^^8.5" will use the linear approximation of tetration even for bases <= 10.
+     */
+    public static fromString (value: string, linearhyper4: boolean = false): Decimal {
+        return new Decimal().fromString(value, linearhyper4);
     }
 
+    /**
+     * The function used by new Decimal() to create a new Decimal. Accepts a DecimalSource: uses fromNumber if given a number, uses fromString if given a string, and uses fromDecimal if given a Decimal.
+     */
     public static fromValue (value: DecimalSource): Decimal {
         return new Decimal().fromValue(value);
     }
 
     /**
-   * Converts a DecimalSource to a Decimal, without constructing a new Decimal
-   * if the provided value is already a Decimal.
-   *
-   * As the return value could be the provided value itself, this function
-   * returns a read-only Decimal to prevent accidental mutations of the value.
-   * Use `new Decimal(value)` to explicitly create a writeable copy if mutation
-   * is required.
-   */
+     * Converts a DecimalSource to a Decimal, without constructing a new Decimal
+     * if the provided value is already a Decimal.
+     *
+     * As the return value could be the provided value itself, this function
+     * returns a read-only Decimal to prevent accidental mutations of the value.
+     * Use `new Decimal(value)` to explicitly create a writeable copy if mutation
+     * is required.
+     */
     public static fromValue_noAlloc (value: DecimalSource): Readonly<Decimal> {
         if (value instanceof Decimal) {
             return value;
@@ -497,400 +552,833 @@ class Decimal {
         }
     }
 
+    /**
+     * Absolute value function: returns 'value' if 'value' >= 0, returns the negative of 'value' if 'value' < 0.
+     */
     public static abs (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).abs();
+        return D(value).abs();
     }
 
+    /**
+     * Returns the negative of the given value.
+     */
     public static neg (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).neg();
+        return D(value).neg();
     }
 
+    /**
+     * Returns the negative of the given value.
+     */
     public static negate (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).neg();
+        return D(value).neg();
     }
 
+    /**
+     * Returns the negative of the given value.
+     */
     public static negated (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).neg();
+        return D(value).neg();
     }
 
+    /**
+     * Returns the sign of the given value.
+     */
     public static sign (value: DecimalSource): number {
-        return Decimal.fromValue_noAlloc(value).sign;
+        return D(value).sign;
     }
 
+    /**
+     * Returns the sign of the given value.
+     */
     public static sgn (value: DecimalSource): number {
-        return Decimal.fromValue_noAlloc(value).sign;
+        return D(value).sign;
     }
 
+    /**
+     * Rounds the value to the nearest integer.
+     */
     public static round (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).round();
+        return D(value).round();
     }
 
+    /**
+     * "Rounds" the value to the nearest integer that's less than or equal to it.
+     */
     public static floor (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).floor();
+        return D(value).floor();
     }
 
+    /**
+     * "Rounds" the value to the nearest integer that's greater than or equal to it.
+     */
     public static ceil (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).ceil();
+        return D(value).ceil();
     }
 
+    /**
+     * Extracts the integer part of the Decimal and returns it. Behaves like floor on positive numbers, but behaves like ceiling on negative numbers.
+     */
     public static trunc (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).trunc();
+        return D(value).trunc();
     }
 
+    /**
+     * Addition: returns the sum of the two Decimals.
+     */
     public static add (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).add(other);
+        return D(value).add(other);
     }
 
+    /**
+     * Addition: returns the sum of the two Decimals.
+     */
     public static plus (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).add(other);
+        return D(value).add(other);
     }
 
+    /**
+     * Subtraction: returns the difference between 'value' and 'other'.
+     */
     public static sub (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).sub(other);
+        return D(value).sub(other);
     }
 
+    /**
+     * Subtraction: returns the difference between 'value' and 'other'.
+     */
     public static subtract (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).sub(other);
+        return D(value).sub(other);
     }
 
+    /**
+     * Subtraction: returns the difference between 'value' and 'other'.
+     */
     public static minus (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).sub(other);
+        return D(value).sub(other);
     }
 
+    /**
+     * Multiplication: returns the product of the two Decimals.
+     */
     public static mul (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).mul(other);
+        return D(value).mul(other);
     }
 
+    /**
+     * Multiplication: returns the product of the two Decimals.
+     */
     public static multiply (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).mul(other);
+        return D(value).mul(other);
     }
 
+    /**
+     * Multiplication: returns the product of the two Decimals.
+     */
     public static times (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).mul(other);
+        return D(value).mul(other);
     }
 
+    /**
+     * Division: returns the quotient of 'value' and 'other'.
+     */
     public static div (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).div(other);
+        return D(value).div(other);
     }
 
+    /**
+     * Division: returns the quotient of 'value' and 'other'.
+     */
     public static divide (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).div(other);
+        return D(value).div(other);
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the given value.
+     */
     public static recip (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).recip();
+        return D(value).recip();
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the given value.
+     */
     public static reciprocal (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).recip();
+        return D(value).recip();
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the given value.
+     */
     public static reciprocate (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).reciprocate();
+        return D(value).reciprocate();
     }
 
+    /**
+     * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
     public static mod (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).mod(other);
+        return D(value).mod(other);
     }
 
+    /**
+     * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
     public static modulo (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).modulo(other);
+        return D(value).modulo(other);
     }
 
+    /**
+     * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
     public static modular (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).modular(other);
+        return D(value).modular(other);
     }
 
+    /**
+     * Returns 1 if 'value' > 'other', returns -1 if 'value' < 'other', returns 0 if 'value' == 'other'.
+     */
     public static cmp (value: DecimalSource, other: DecimalSource): CompareResult {
-        return Decimal.fromValue_noAlloc(value).cmp(other);
+        return D(value).cmp(other);
     }
 
+    /**
+     * Compares the absolute values of this and value.
+     * Returns 1 if |'value'| > |'other'|, returns -1 if |'value'| < |'other'|, returns 0 if |'value'| == |'other'|.
+     */
     public static cmpabs (value: DecimalSource, other: DecimalSource): CompareResult {
-        return Decimal.fromValue_noAlloc(value).cmpabs(other);
+        return D(value).cmpabs(other);
     }
 
+    /**
+     * Returns 1 if 'value' > 'other', returns -1 if 'value' < 'other', returns 0 if 'value' == 'other'.
+     */
     public static compare (value: DecimalSource, other: DecimalSource): CompareResult {
-        return Decimal.fromValue_noAlloc(value).cmp(other);
+        return D(value).cmp(other);
     }
 
+    /**
+     * Returns true if the given value is an NaN value.
+     */
     public static isNaN (value: DecimalSource): boolean {
-        value = Decimal.fromValue_noAlloc(value);
+        value = D(value);
         return isNaN(value.sign) || isNaN(value.layer) || isNaN(value.mag);
     }
 
+    /**
+     * Returns true if the given value is finite (by Decimal standards, not by floating point standards - a humongous Decimal like 10^^10^100 is still finite!)
+     */
     public static isFinite (value: DecimalSource): boolean {
-        value = Decimal.fromValue_noAlloc(value);
+        value = D(value);
         return isFinite(value.sign) && isFinite(value.layer) && isFinite(value.mag);
     }
 
+    /**
+     * The Decimal equivalent of ==. Returns true if 'value' and 'other' have equal values.
+     */
     public static eq (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).eq(other);
+        return D(value).eq(other);
     }
 
+    /**
+     * Returns true if 'value' and 'other' have equal values.
+     */
     public static equals (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).eq(other);
+        return D(value).eq(other);
     }
 
+    /**
+     * The Decimal equivalent of !=. Returns true if 'value' and 'other' do not have equal values.
+     */
     public static neq (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).neq(other);
+        return D(value).neq(other);
     }
 
+    /**
+     * Returns true if 'value' and 'other' do not have equal values.
+     */
     public static notEquals (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).notEquals(other);
+        return D(value).notEquals(other);
     }
 
+    /**
+     * The Decimal equivalent of <. Returns true if 'value' is less than 'other'.
+     */
     public static lt (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).lt(other);
+        return D(value).lt(other);
     }
 
+    /**
+     * The Decimal equivalent of <=. Returns true if 'value' is less than or equal to 'other'.
+     */
     public static lte (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).lte(other);
+        return D(value).lte(other);
     }
 
+    /**
+     * The Decimal equivalent of >. Returns true if 'value' is greater than 'other'.
+     */
     public static gt (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).gt(other);
+        return D(value).gt(other);
     }
 
+    /**
+     * The Decimal equivalent of >=. Returns true if 'value' is greater than or equal to 'other'.
+     */
     public static gte (value: DecimalSource, other: DecimalSource): boolean {
-        return Decimal.fromValue_noAlloc(value).gte(other);
+        return D(value).gte(other);
     }
 
+    /**
+     * Returns whichever of 'value' and 'other' is higher.
+     */
     public static max (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).max(other);
+        return D(value).max(other);
     }
 
+    /**
+     * Returns whichever of 'value' and 'other' is lower.
+     */
     public static min (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).min(other);
+        return D(value).min(other);
     }
 
+    /**
+     * Returns whichever of 'value' and 'other' has a larger absolute value.
+     */
     public static minabs (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).minabs(other);
+        return D(value).minabs(other);
     }
 
+    /**
+     * Returns whichever of 'value' and 'other' has a smaller absolute value.
+     */
     public static maxabs (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).maxabs(other);
+        return D(value).maxabs(other);
     }
 
+    /**
+     * A combination of minimum and maximum: the value returned by clamp is normally 'value', but it won't go below 'min' and it won't go above 'max'.
+     * Therefore, if 'value' < 'min', then 'min' is returned, and if 'value' > 'max', then 'max' is returned.
+     */
     public static clamp (value: DecimalSource, min: DecimalSource, max: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).clamp(min, max);
+        return D(value).clamp(min, max);
     }
 
+    /**
+     * Returns 'value', unless 'value' is less than 'min', in which case 'min' is returned.
+     */
     public static clampMin (value: DecimalSource, min: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).clampMin(min);
+        return D(value).clampMin(min);
     }
 
+    /**
+     * Returns 'value', unless 'value' is greater than 'max', in which case 'max' is returned.
+     */
     public static clampMax (value: DecimalSource, max: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).clampMax(max);
+        return D(value).clampMax(max);
     }
 
+    /**
+     * Returns 1 if 'value' is greater than 'other', returns -1 if 'value' is less than 'other', returns 0 if 'value' is equal to 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static cmp_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): CompareResult {
-        return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
+        return D(value).cmp_tolerance(other, tolerance);
     }
 
+    /**
+     * Returns 1 if 'value' is greater than 'other', returns -1 if 'value' is less than 'other', returns 0 if 'value' is equal to 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static compare_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): CompareResult {
-        return Decimal.fromValue_noAlloc(value).cmp_tolerance(other, tolerance);
+        return D(value).cmp_tolerance(other, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static eq_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
+        return D(value).eq_tolerance(other, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static equals_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).eq_tolerance(other, tolerance);
+        return D(value).eq_tolerance(other, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are not approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static neq_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).neq_tolerance(other, tolerance);
+        return D(value).neq_tolerance(other, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are not approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static notEquals_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).notEquals_tolerance(other, tolerance);
+        return D(value).notEquals_tolerance(other, tolerance);
     }
 
+    /**
+     * Returns true if 'value' is less than 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static lt_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).lt_tolerance(other, tolerance);
+        return D(value).lt_tolerance(other, tolerance);
     }
 
+    /**
+     * Returns true if 'value' is less than or equal to 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static lte_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).lte_tolerance(other, tolerance);
+        return D(value).lte_tolerance(other, tolerance);
     }
 
+    /**
+     * Returns true if 'value' is greater than 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static gt_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).gt_tolerance(other, tolerance);
+        return D(value).gt_tolerance(other, tolerance);
     }
 
+    /**
+     * Returns true if 'value' is greater than or equal to 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public static gte_tolerance (
         value: DecimalSource,
         other: DecimalSource,
         tolerance: number,
     ): boolean {
-        return Decimal.fromValue_noAlloc(value).gte_tolerance(other, tolerance);
-    }
-
-    public static pLog10 (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).pLog10();
-    }
-
-    public static absLog10 (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).absLog10();
-    }
-
-    public static log10 (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).log10();
-    }
-
-    public static log (value: DecimalSource, base: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).log(base);
-    }
-
-    public static log2 (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).log2();
-    }
-
-    public static ln (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).ln();
-    }
-
-    public static logarithm (value: DecimalSource, base: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).logarithm(base);
-    }
-
-    public static pow (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).pow(other);
-    }
-
-    public static pow10 (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).pow10();
-    }
-
-    public static root (value: DecimalSource, other: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).root(other);
-    }
-
-    public static factorial (value: DecimalSource, _other?: never): Decimal {
-        return Decimal.fromValue_noAlloc(value).factorial();
-    }
-
-    public static gamma (value: DecimalSource, _other?: never): Decimal {
-        return Decimal.fromValue_noAlloc(value).gamma();
-    }
-
-    public static lngamma (value: DecimalSource, _other?: never): Decimal {
-        return Decimal.fromValue_noAlloc(value).lngamma();
-    }
-
-    public static exp (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).exp();
-    }
-
-    public static sqr (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).sqr();
-    }
-
-    public static sqrt (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).sqrt();
-    }
-
-    public static cube (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).cube();
-    }
-
-    public static cbrt (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).cbrt();
-    }
-
-    public static tetrate (
-        value: DecimalSource,
-        height = 2,
-        payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1),
-        linear = false,
-    ): Decimal {
-        return Decimal.fromValue_noAlloc(value).tetrate(height, payload, linear);
-    }
-
-    public static iteratedexp (value: DecimalSource, height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false): Decimal {
-        return Decimal.fromValue_noAlloc(value).iteratedexp(height, payload, linear);
-    }
-
-    public static iteratedlog (value: DecimalSource, base: DecimalSource = 10, times = 1, linear = false): Decimal {
-        return Decimal.fromValue_noAlloc(value).iteratedlog(base, times, linear);
-    }
-
-    public static layeradd10 (value: DecimalSource, diff: DecimalSource, linear = false): Decimal {
-        return Decimal.fromValue_noAlloc(value).layeradd10(diff, linear);
-    }
-
-    public static layeradd (value: DecimalSource, diff: number, base = 10, linear = false): Decimal {
-        return Decimal.fromValue_noAlloc(value).layeradd(diff, base, linear);
-    }
-
-    public static slog (value: DecimalSource, base = 10, linear = false): Decimal {
-        return Decimal.fromValue_noAlloc(value).slog(base, 100, linear);
-    }
-
-    public static lambertw (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).lambertw();
-    }
-
-    public static ssqrt (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).ssqrt();
-    }
-
-    public static linear_sroot (value: DecimalSource, height: number): Decimal {
-        return Decimal.fromValue_noAlloc(value).linear_sroot(height);
-    }
-
-    public static pentate (
-        value: DecimalSource,
-        height = 2,
-        payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1),
-        linear = false,
-    ): Decimal {
-        return Decimal.fromValue_noAlloc(value).pentate(height, payload, linear);
+        return D(value).gte_tolerance(other, tolerance);
     }
 
     /**
-   * If you're willing to spend 'resourcesAvailable' and want to buy something
-   * with exponentially increasing cost each purchase (start at priceStart,
-   * multiply by priceRatio, already own currentOwned), how much of it can you buy?
-   * Adapted from Trimps source code.
-   */
+     * "Positive log10": Returns the base-10 logarithm of nonnegative Decimals, but returns 0 for negative Decimals.
+     */
+    public static pLog10 (value: DecimalSource): Decimal {
+        return D(value).pLog10();
+    }
+
+    /**
+     * Returns the base-10 logarithm of abs('value').
+     */
+    public static absLog10 (value: DecimalSource): Decimal {
+        return D(value).absLog10();
+    }
+
+    /**
+     * Base-10 logarithm: returns the Decimal X such that 10^X = 'value'.
+     * For numbers above layer 0, this is equivalent to subtracting 1 from layer and normalizing.
+     */
+    public static log10 (value: DecimalSource): Decimal {
+        return D(value).log10();
+    }
+
+    /**
+     * Logarithms are one of the inverses of exponentiation: this function finds the Decimal X such that base^X = 'value'.
+     */
+    public static log (value: DecimalSource, base: DecimalSource): Decimal {
+        return D(value).log(base);
+    }
+
+    /**
+     * Base-2 logarithm: returns the Decimal X such that 2^X = 'value'.
+     */
+    public static log2 (value: DecimalSource): Decimal {
+        return D(value).log2();
+    }
+
+    /**
+     * Base-e logarithm, also known as the "natural" logarithm: returns the Decimal X such that e^X = 'value'.
+     */
+    public static ln (value: DecimalSource): Decimal {
+        return D(value).ln();
+    }
+
+    /**
+     * Logarithms are one of the inverses of exponentiation: this function finds the Decimal X such that base^X = 'value'.
+     */
+    public static logarithm (value: DecimalSource, base: DecimalSource): Decimal {
+        return D(value).logarithm(base);
+    }
+
+    /**
+     * Exponentiation: Returns the result of 'value' ^ 'other' (often written as 'value' ** 'other' in programming languages).
+     */
+    public static pow (value: DecimalSource, other: DecimalSource): Decimal {
+        return D(value).pow(other);
+    }
+
+    /**
+     * Raises 10 to the power of 'value', i.e. (10^'value'). For positive numbers above 1, this is equivalent to adding 1 to the value's layer and normalizing.
+     */
+    public static pow10 (value: DecimalSource): Decimal {
+        return D(value).pow10();
+    }
+
+    /**
+     * Roots are one of the inverses of exponentiation: this function finds the Decimal X such that X ^ 'other' = 'value'.
+     * Equivalent to 'value' ^ (1 / 'other'), which is written here as value.pow(other.recip()).
+     */
+    public static root (value: DecimalSource, other: DecimalSource): Decimal {
+        return D(value).root(other);
+    }
+
+    /**
+     * For positive integers, X factorial (written as X!) equals X * (X - 1) * (X - 2) *... * 3 * 2 * 1. 0! equals 1.
+     * This can be extended to real numbers (except for negative integers) via the gamma function, which is what this function does.
+     */
+    public static factorial (value: DecimalSource, _other?: never): Decimal {
+        return D(value).factorial();
+    }
+
+    /**
+     * The gamma function extends the idea of factorials to non-whole numbers using some calculus.
+     * Gamma(x) is defined as the integral of t^(x-1) * e^-t dt from t = 0 to t = infinity,
+     * and gamma(x) = (x - 1)! for nonnegative integer x, so the factorial for non-whole numbers is defined using the gamma function.
+     */
+    public static gamma (value: DecimalSource, _other?: never): Decimal {
+        return D(value).gamma();
+    }
+
+    /**
+     * Returns the natural (base-e) logarithm of Gamma('value').
+     */
+    public static lngamma (value: DecimalSource, _other?: never): Decimal {
+        return D(value).lngamma();
+    }
+
+    /**
+     * Base-e exponentiation: returns e^'value'.
+     */
+    public static exp (value: DecimalSource): Decimal {
+        return D(value).exp();
+    }
+
+    /**
+     * Squaring a number means multiplying it by itself, a.k.a. raising it to the second power.
+     */
+    public static sqr (value: DecimalSource): Decimal {
+        return D(value).sqr();
+    }
+
+    /**
+     * Square root: finds the Decimal X such that X * X, a.k.a X^2, equals 'value'. Equivalent to X^(1/2).
+     */
+    public static sqrt (value: DecimalSource): Decimal {
+        return D(value).sqrt();
+    }
+
+    /**
+     * Cubing a number means raising it to the third power.
+     */
+    public static cube (value: DecimalSource): Decimal {
+        return D(value).cube();
+    }
+
+    /**
+     * Cube root: finds the Decimal X such that X^3 equals 'value'. Equivalent to X^(1/3).
+     */
+    public static cbrt (value: DecimalSource): Decimal {
+        return D(value).cbrt();
+    }
+
+    /**
+     *
+     * Tetration: The result of exponentiating 'value' to 'value' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
+     *
+     * If payload != 1, then this is 'iterated exponentiation', the result of exping 'payload' to base 'value' 'height' times. https://andydude.github.io/tetration/archives/tetration2/ident.html
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public static tetrate (
+        value: DecimalSource,
+        height = 2,
+        payload: DecimalSource = FC_NN(1, 0, 1),
+        linear = false,
+    ): Decimal {
+        return D(value).tetrate(height, payload, linear);
+    }
+
+    /**
+     * Iterated exponentiation, the result of exping 'payload' to base 'value' 'height' times. https://andydude.github.io/tetration/archives/tetration2/ident.html
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     *
+     * Identical to tetrate.
+     */
+    public static iteratedexp (value: DecimalSource, height = 2, payload = FC_NN(1, 0, 1), linear = false): Decimal {
+        return D(value).iteratedexp(height, payload, linear);
+    }
+
+    /**
+     * iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting 'times' from the number's slog representation. Equivalent to tetrating to a negative height.
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public static iteratedlog (value: DecimalSource, base: DecimalSource = 10, times = 1, linear = false): Decimal {
+        return D(value).iteratedlog(base, times, linear);
+    }
+
+    /**
+     * Adds/removes layers from a Decimal, even fractional layers (e.g. its slog10 representation). Very similar to tetrate base 10 and iterated log base 10.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public static layeradd10 (value: DecimalSource, diff: DecimalSource, linear = false): Decimal {
+        return D(value).layeradd10(diff, linear);
+    }
+
+    /**
+     * layeradd: like adding 'diff' to the number's slog(base) representation. Very similar to tetrate base 'base' and iterated log base 'base'.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public static layeradd (value: DecimalSource, diff: number, base : DecimalSource = 10, linear = false): Decimal {
+        return D(value).layeradd(diff, base, linear);
+    }
+
+    /**
+     * Super-logarithm, one of tetration's inverses, tells you what size power tower you'd have to tetrate 'base' to to get 'value'. https://en.wikipedia.org/wiki/Super-logarithm
+     *
+     * By definition, will never be higher than 1.8e308 in break_eternity.js, since a power tower 1.8e308 numbers tall is the largest representable number.
+     *
+     * Accepts a number of iterations (default is 100), and use binary search to, after making an initial guess, hone in on the true value, assuming tetration as the ground truth.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public static slog (value: DecimalSource, base : DecimalSource = 10, linear = false): Decimal {
+        return D(value).slog(base, 100, linear);
+    }
+
+    /**
+     * The Lambert W function, also called the omega function or product logarithm, is the solution W(x) === x*e^x.
+     * https://en.wikipedia.org/wiki/Lambert_W_function
+     */
+    public static lambertw (value: DecimalSource): Decimal {
+        return D(value).lambertw();
+    }
+
+    /**
+     * The super square-root function - what number, tetrated to height 2, equals 'value'? https://en.wikipedia.org/wiki/Tetration#Super-root
+     */
+    public static ssqrt (value: DecimalSource): Decimal {
+        return D(value).ssqrt();
+    }
+
+    /**
+     * Super-root, one of tetration's inverses - what number, tetrated to height 'degree', equals 'value'? https://en.wikipedia.org/wiki/Tetration#Super-root
+     *
+     * Only works with the linear approximation of tetration, as starting with analytic and then switching to linear would result in inconsistent behavior for super-roots.
+     * This only matters for non-integer degrees.
+     */
+    public static linear_sroot (value: DecimalSource, degree: number): Decimal {
+        return D(value).linear_sroot(degree);
+    }
+
+    /**
+     * Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
+     * https://en.wikipedia.org/wiki/Pentation
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     *
+     * For non-whole pentation heights, the linear approximation of pentation is always used, as there is no defined analytic approximation of pentation.
+     */
+    public static pentate (
+        value: DecimalSource,
+        height = 2,
+        payload: DecimalSource = FC_NN(1, 0, 1),
+        linear = false,
+    ): Decimal {
+        return D(value).pentate(height, payload, linear);
+    }
+
+    /**
+     * The sine function, one of the main two trigonometric functions. Behaves periodically with period 2*pi.
+     */
+    public static sin (value: DecimalSource): Decimal {
+        return D(value).sin();
+    }
+
+    /**
+     * The cosine function, one of the main two trigonometric functions. Behaves periodically with period 2*pi.
+     */
+    public static cos (value: DecimalSource): Decimal {
+        return D(value).cos();
+    }
+
+    /**
+     * The tangent function, equal to sine divided by cosine. Behaves periodically with period pi.
+     */
+    public static tan (value: DecimalSource): Decimal {
+        return D(value).tan();
+    }
+
+    /**
+     * The arcsine function, the inverse of the sine function.
+     */
+    public static asin (value: DecimalSource): Decimal {
+        return D(value).asin();
+    }
+
+    /**
+     * The arccosine function, the inverse of the cosine function.
+     */
+    public static acos (value: DecimalSource): Decimal {
+        return D(value).acos();
+    }
+
+    /**
+     * The arctangent function, the inverse of the tangent function.
+     */
+    public static atan (value: DecimalSource): Decimal {
+        return D(value).atan();
+    }
+
+    /**
+     * Hyperbolic sine: sinh(X) = (e^x - e^-x)/2.
+     */
+    public static sinh (value: DecimalSource): Decimal {
+        return D(value).sinh();
+    }
+
+    /**
+     * Hyperbolic cosine: cosh(x) = (e^x + e^-x)/2.
+     */
+    public static cosh (value: DecimalSource): Decimal {
+        return D(value).cosh();
+    }
+
+    /**
+     * Hyperbolic tangent: tanh(x) = sinh(x)/cosh(x).
+     */
+    public static tanh (value: DecimalSource): Decimal {
+        return D(value).tanh();
+    }
+
+    /**
+     * Hyperbolic arcsine, the inverse of hyperbolic sine.
+     */
+    public static asinh (value: DecimalSource): Decimal {
+        return D(value).asinh();
+    }
+
+    /**
+     * Hyperbolic arccosine, the inverse of hyperbolic cosine.
+     */
+    public static acosh (value: DecimalSource): Decimal {
+        return D(value).acosh();
+    }
+
+    /**
+     * Hyperbolic arcctangent, the inverse of hyperbolic tangent.
+     */
+    public static atanh (value: DecimalSource): Decimal {
+        return D(value).atanh();
+    }
+
+    /**
+     * If you're willing to spend 'resourcesAvailable' and want to buy something
+     * with exponentially increasing cost each purchase (start at priceStart,
+     * multiply by priceRatio, already own currentOwned), how much of it can you buy?
+     * Adapted from Trimps source code.
+     */
 
     public static affordGeometricSeries (
         resourcesAvailable: DecimalSource,
@@ -899,16 +1387,16 @@ class Decimal {
         currentOwned: DecimalSource,
     ): Decimal {
         return this.affordGeometricSeries_core(
-            Decimal.fromValue_noAlloc(resourcesAvailable),
-            Decimal.fromValue_noAlloc(priceStart),
-            Decimal.fromValue_noAlloc(priceRatio),
+            D(resourcesAvailable),
+            D(priceStart),
+            D(priceRatio),
             currentOwned,
         );
     }
     /**
-   * How much resource would it cost to buy (numItems) items if you already have currentOwned,
-   * the initial price is priceStart and it multiplies by priceRatio each purchase?
-   */
+     * How much resource would it cost to buy (numItems) items if you already have currentOwned,
+     * the initial price is priceStart and it multiplies by priceRatio each purchase?
+     */
 
     public static sumGeometricSeries (
         numItems: DecimalSource,
@@ -916,13 +1404,13 @@ class Decimal {
         priceRatio: DecimalSource,
         currentOwned: DecimalSource,
     ): Decimal {
-        return this.sumGeometricSeries_core(numItems, Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceRatio), currentOwned);
+        return this.sumGeometricSeries_core(numItems, D(priceStart), D(priceRatio), currentOwned);
     }
     /**
-   * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
-   * increasing cost each purchase (start at priceStart, add by priceAdd, already own currentOwned),
-   * how much of it can you buy?
-   */
+     * If you're willing to spend 'resourcesAvailable' and want to buy something with additively
+     * increasing cost each purchase (start at priceStart, add by priceAdd, already own currentOwned),
+     * how much of it can you buy?
+     */
 
     public static affordArithmeticSeries (
         resourcesAvailable: DecimalSource,
@@ -931,17 +1419,17 @@ class Decimal {
         currentOwned: DecimalSource,
     ): Decimal {
         return this.affordArithmeticSeries_core(
-            Decimal.fromValue_noAlloc(resourcesAvailable),
-            Decimal.fromValue_noAlloc(priceStart),
-            Decimal.fromValue_noAlloc(priceAdd),
-            Decimal.fromValue_noAlloc(currentOwned),
+            D(resourcesAvailable),
+            D(priceStart),
+            D(priceAdd),
+            D(currentOwned),
         );
     }
     /**
-   * How much resource would it cost to buy (numItems) items if you already have currentOwned,
-   * the initial price is priceStart and it adds priceAdd each purchase?
-   * Adapted from http://www.mathwords.com/a/arithmetic_series.htm
-   */
+     * How much resource would it cost to buy (numItems) items if you already have currentOwned,
+     * the initial price is priceStart and it adds priceAdd each purchase?
+     * Adapted from http://www.mathwords.com/a/arithmetic_series.htm
+     */
 
     public static sumArithmeticSeries (
         numItems: DecimalSource,
@@ -949,35 +1437,35 @@ class Decimal {
         priceAdd: DecimalSource,
         currentOwned: DecimalSource,
     ): Decimal {
-        return this.sumArithmeticSeries_core(Decimal.fromValue_noAlloc(numItems), Decimal.fromValue_noAlloc(priceStart), Decimal.fromValue_noAlloc(priceAdd), Decimal.fromValue_noAlloc(currentOwned));
+        return this.sumArithmeticSeries_core(D(numItems), D(priceStart), D(priceAdd), D(currentOwned));
     }
     /**
-   * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
-   * the lowest efficiency score is the better one to purchase.
-   * From Frozen Cookies:
-   * http://cookieclicker.wikia.com/wiki/Frozen_Cookies_(JavaScript_Add-on)#Efficiency.3F_What.27s_that.3F
-   */
+     * When comparing two purchases that cost (resource) and increase your resource/sec by (deltaRpS),
+     * the lowest efficiency score is the better one to purchase.
+     * From Frozen Cookies:
+     * http://cookieclicker.wikia.com/wiki/Frozen_Cookies_(JavaScript_Add-on)#Efficiency.3F_What.27s_that.3F
+     */
 
     public static efficiencyOfPurchase (
         cost: DecimalSource,
         currentRpS: DecimalSource,
         deltaRpS: DecimalSource,
     ): Decimal {
-        return this.efficiencyOfPurchase_core(Decimal.fromValue_noAlloc(cost), Decimal.fromValue_noAlloc(currentRpS), Decimal.fromValue_noAlloc(deltaRpS));
+        return this.efficiencyOfPurchase_core(D(cost), D(currentRpS), D(deltaRpS));
     }
 
     public static randomDecimalForTesting (maxLayers: number): Decimal {
     // NOTE: This doesn't follow any kind of sane random distribution, so use this for testing purposes only.
     // 5% of the time, return 0
         if (Math.random() * 20 < 1) {
-            return Decimal.fromComponents_noNormalize(0, 0, 0);
+            return FC_NN(0, 0, 0);
         }
 
         const randomsign = Math.random() > 0.5 ? 1 : -1;
 
         // 5% of the time, return 1 or -1
         if (Math.random() * 20 < 1) {
-            return Decimal.fromComponents_noNormalize(randomsign, 0, 1);
+            return FC_NN(randomsign, 0, 1);
         }
 
         // pick a random layer
@@ -993,7 +1481,7 @@ class Decimal {
         if (Math.random() > 0.9) {
             randommag = Math.trunc(randommag);
         }
-        return Decimal.fromComponents(randomsign, layer, randommag);
+        return FC(randomsign, layer, randommag);
     }
 
     public static affordGeometricSeries_core (
@@ -1063,6 +1551,11 @@ class Decimal {
         return cost.div(currentRpS).add(cost.div(deltaRpS));
     }
 
+    /**
+     * Turns the Decimal into a valid Decimal. This function is meant for internal purposes - users of this library should not need to use normalize.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public normalize (): this {
     /*
     PSEUDOCODE:
@@ -1073,22 +1566,38 @@ class Decimal {
     While abs(mag) < LAYER_DOWN (15.954) and layer > 0, layer -= 1, mag = pow(10, mag).
 
     When we're done, all of the following should be true OR one of the numbers is not IsFinite OR layer is not IsInteger (error state):
-    Any 0 is totally zero (0, 0, 0).
+    Any 0 is totally zero (0, 0, 0) and any NaN is totally NaN (NaN, NaN, NaN).
     Anything layer 0 has mag 0 OR mag > 1/9e15 and < 9e15.
     Anything layer 1 or higher has abs(mag) >= 15.954 and < 9e15.
+    Any positive infinity is (1, Infinity, Infinity) and any negative infinity is (-1, -Infinity, -Infinity).
     We will assume in calculations that all Decimals are either erroneous or satisfy these criteria. (Otherwise: Garbage in, garbage out.)
     */
-        if (this.sign === 0 || (this.mag === 0 && this.layer === 0)) {
+
+        // Any 0 is totally 0
+        if (this.sign === 0 || (this.mag === 0 && this.layer === 0) || (this.mag === Number.NEGATIVE_INFINITY && this.layer > 0 && Number.isFinite(this.layer))) {
             this.sign = 0;
             this.mag = 0;
             this.layer = 0;
             return this;
         }
 
+        // extract sign from negative mag at layer 0
         if (this.layer === 0 && this.mag < 0) {
-            // extract sign from negative mag at layer 0
             this.mag = -this.mag;
             this.sign = -this.sign;
+        }
+
+        // Handle infinities
+        if (this.mag === Number.POSITIVE_INFINITY || this.layer === Number.POSITIVE_INFINITY || this.mag === Number.NEGATIVE_INFINITY || this.layer === Number.NEGATIVE_INFINITY) {
+            if (this.sign == 1) {
+                this.mag = Number.POSITIVE_INFINITY;
+                this.layer = Number.POSITIVE_INFINITY;
+            }
+            else if (this.sign == -1) {
+                this.mag = Number.NEGATIVE_INFINITY;
+                this.layer = Number.NEGATIVE_INFINITY;
+            }
+            return this;
         }
 
         // Handle shifting from layer 0 to negative layers.
@@ -1128,9 +1637,20 @@ class Decimal {
             }
         }
 
+        if (Number.isNaN(this.sign) || Number.isNaN(this.layer) || Number.isNaN(this.mag)) {
+            this.sign = Number.NaN;
+            this.layer = Number.NaN;
+            this.mag = Number.NaN;
+        }
+
         return this;
     }
 
+    /**
+     * Turns the given components into a valid Decimal.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromComponents (sign: number, layer: number, mag: number): this {
         this.sign = sign;
         this.layer = layer;
@@ -1140,6 +1660,11 @@ class Decimal {
         return this;
     }
 
+    /**
+     * Turns the given components into a Decimal, but not necessarily a valid one (it's only valid if the components would already create a valid Decimal without normalization). Users of this library should not use this function.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromComponents_noNormalize (sign: number, layer: number, mag: number): this {
         this.sign = sign;
         this.layer = layer;
@@ -1147,6 +1672,11 @@ class Decimal {
         return this;
     }
 
+    /**
+     * Turns the mantissa and exponent into a valid Decimal with value mantissa * 10^exponent.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromMantissaExponent (mantissa: number, exponent: number): this {
         this.layer = 1;
         this.sign = Math.sign(mantissa);
@@ -1157,12 +1687,22 @@ class Decimal {
         return this;
     }
 
+    /**
+     * Turns the mantissa and exponent into a Decimal, but not necessarily a valid one. Users of this library should not use this function.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromMantissaExponent_noNormalize (mantissa: number, exponent: number): this {
     // The idea of 'normalizing' a break_infinity.js style Decimal doesn't really apply. So just do the same thing.
         this.fromMantissaExponent(mantissa, exponent);
         return this;
     }
 
+    /**
+     * Turns the Decimal that this function is called on into a deep copy of the provided value.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromDecimal (value: Decimal): this {
         this.sign = value.sign;
         this.layer = value.layer;
@@ -1170,6 +1710,11 @@ class Decimal {
         return this;
     }
 
+    /**
+     * Converts a floating-point number into a Decimal.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromNumber (value: number): this {
         this.mag = Math.abs(value);
         this.sign = Math.sign(value);
@@ -1178,7 +1723,14 @@ class Decimal {
         return this;
     }
 
-    public fromString (value: string): Decimal {
+    /**
+     * Converts a string into a Decimal.
+     *
+     * If linearhyper4 is true, then strings like "10^^8.5" will use the linear approximation of tetration even for bases <= 10.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
+    public fromString (value: string, linearhyper4: boolean = false): Decimal {
         const originalValue = value;
         const cached = Decimal.fromStringCache.get(originalValue);
         if (cached !== undefined) {
@@ -1190,7 +1742,7 @@ class Decimal {
             value = value.replace(",", ".");
         }
 
-        // Handle x^^^y format.
+        // Handle x^^^y format. Note that no linearhyper5 parameter is needed, as pentation has no analytic approximation.
         const pentationparts = value.split("^^^");
         if (pentationparts.length === 2) {
             const base = parseFloat(pentationparts[0]);
@@ -1204,7 +1756,7 @@ class Decimal {
                 }
             }
             if (isFinite(base) && isFinite(height)) {
-                const result = Decimal.pentate(base, height, payload);
+                const result = Decimal.pentate(base, height, payload, linearhyper4);
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1229,7 +1781,7 @@ class Decimal {
                 }
             }
             if (isFinite(base) && isFinite(height)) {
-                const result = Decimal.tetrate(base, height, payload);
+                const result = Decimal.tetrate(base, height, payload, linearhyper4);
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1274,7 +1826,7 @@ class Decimal {
                 payload = 1;
             }
             if (isFinite(base) && isFinite(height)) {
-                const result = Decimal.tetrate(base, height, payload);
+                const result = Decimal.tetrate(base, height, payload, linearhyper4);
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1297,7 +1849,7 @@ class Decimal {
                 payload = 1;
             }
             if (isFinite(base) && isFinite(height)) {
-                const result = Decimal.tetrate(base, height, payload);
+                const result = Decimal.tetrate(base, height, payload, linearhyper4);
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1322,7 +1874,7 @@ class Decimal {
                 payload = 1;
             }
             if (isFinite(base) && isFinite(height)) {
-                const result = Decimal.tetrate(base, height, payload);
+                const result = Decimal.tetrate(base, height, payload, linearhyper4);
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1431,7 +1983,7 @@ class Decimal {
             this.sign = Math.sign(mantissa);
             this.layer = ecount;
             if (ecount === 2) {
-                const result = Decimal.mul(Decimal.fromComponents(1, 2, exponent), Decimal.fromValue_noAlloc(mantissa));
+                const result = Decimal.mul(FC(1, 2, exponent), D(mantissa));
                 this.sign = result.sign;
                 this.layer = result.layer;
                 this.mag = result.mag;
@@ -1452,6 +2004,11 @@ class Decimal {
         return this;
     }
 
+    /**
+     * The function used by new Decimal() to create a new Decimal. Accepts a DecimalSource: uses fromNumber if given a number, uses fromString if given a string, and uses fromDecimal if given a Decimal.
+     *
+     * Note: this function mutates the Decimal it is called on.
+     */
     public fromValue (value: DecimalSource): Decimal {
         if (value instanceof Decimal) {
             return this.fromDecimal(value);
@@ -1471,7 +2028,16 @@ class Decimal {
         return this;
     }
 
+    /**
+     * Returns the numeric value of the Decimal it's called on. Will return Infinity (or -Infinity for negatives) for Decimals that are larger than Number.MAX_VALUE.
+     */
     public toNumber (): number {
+        if (this.mag === Number.POSITIVE_INFINITY && this.layer === Number.POSITIVE_INFINITY && this.sign === 1) {
+            return Number.POSITIVE_INFINITY;
+        }
+        if (this.mag === Number.NEGATIVE_INFINITY && this.layer === Number.NEGATIVE_INFINITY && this.sign === -1) {
+            return Number.NEGATIVE_INFINITY;
+        }
         if (!Number.isFinite(this.layer)) {
             return Number.NaN;
         }
@@ -1515,11 +2081,16 @@ class Decimal {
         return decimalPlaces(this.mag, places);
     }
 
+    /**
+     * Returns a string representation of the Decimal it's called on.
+     * This string is written as a plain number for most layer 0 numbers, in scientific notation for layer 1 numbers (and layer 0 numbers below 1e-6),
+     * in "ee...X" form for numbers from layers 2 to 5, and in (e^N)X form for layer > 5.
+     */
     public toString (): string {
         if (isNaN(this.layer) || isNaN(this.sign) || isNaN(this.mag)) {
             return "NaN";
         }
-        if (this.mag === Number.POSITIVE_INFINITY || this.layer === Number.POSITIVE_INFINITY) {
+        if (this.mag === Number.POSITIVE_INFINITY || this.layer === Number.POSITIVE_INFINITY || this.mag === Number.NEGATIVE_INFINITY || this.layer === Number.NEGATIVE_INFINITY) {
             return this.sign === 1 ? "Infinity" : "-Infinity";
         }
 
@@ -1596,18 +2167,30 @@ class Decimal {
         }
     }
 
+    /**
+     * Absolute value function: returns 'this' if 'this' >= 0, returns the negative of 'this' if this < 0.
+     */
     public abs (): Decimal {
-        return Decimal.fromComponents_noNormalize(this.sign === 0 ? 0 : 1, this.layer, this.mag);
+        return FC_NN(this.sign === 0 ? 0 : 1, this.layer, this.mag);
     }
 
+    /**
+     * Negates the Decimal it's called on: in other words, when given X, returns -X.
+     */
     public neg (): Decimal {
-        return Decimal.fromComponents_noNormalize(-this.sign, this.layer, this.mag);
+        return FC_NN(-this.sign, this.layer, this.mag);
     }
 
+    /**
+     * Negates the Decimal it's called on: in other words, when given X, returns -X.
+     */
     public negate (): Decimal {
         return this.neg();
     }
 
+    /**
+     * Negates the Decimal it's called on: in other words, when given X, returns -X.
+     */
     public negated (): Decimal {
         return this.neg();
     }
@@ -1616,52 +2199,74 @@ class Decimal {
     //     return this.sign;
     //   }
 
+    /**
+     * Returns the sign of the Decimal it's called on. (Though, since sign is a public data member of Decimal, you might as well just call .sign instead of .sgn())
+     */
     public sgn (): number {
         return this.sign;
     }
 
+    /**
+     * Rounds the Decimal it's called on to the nearest integer.
+     */
     public round (): this | Decimal {
         if (this.mag < 0) {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.round(this.mag));
+            return FC(this.sign, 0, Math.round(this.mag));
         }
         return this;
     }
 
+    /**
+     * "Rounds" the Decimal it's called on to the nearest integer that's less than or equal to it.
+     */
     public floor (): this | Decimal {
         if (this.mag < 0) {
-            return Decimal.dZero;
+            if (this.sign === -1) return Decimal.dNegOne;
+            else return Decimal.dZero;
         }
+        if (this.sign === -1) return this.neg().ceil().neg();
         if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.floor(this.mag));
+            return FC(this.sign, 0, Math.floor(this.mag));
         }
         return this;
     }
 
+    /**
+     * "Rounds" the Decimal it's called on to the nearest integer that's greater than or equal to it.
+     */
     public ceil (): this | Decimal {
         if (this.mag < 0) {
-            return Decimal.dZero;
+            if (this.sign === 1) return Decimal.dOne; // The ceiling function called on something tiny like 10^10^-100 should return 1, since 10^10^-100 is still greater than 0
+            else return Decimal.dZero;
         }
+        if (this.sign === -1) return this.neg().floor().neg();
         if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.ceil(this.mag));
+            return FC(this.sign, 0, Math.ceil(this.mag));
         }
         return this;
     }
 
+    /**
+     * Extracts the integer part of the Decimal and returns it. Behaves like floor on positive numbers, but behaves like ceiling on negative numbers.
+     */
     public trunc (): this | Decimal {
         if (this.mag < 0) {
             return Decimal.dZero;
         }
         if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.trunc(this.mag));
+            return FC(this.sign, 0, Math.trunc(this.mag));
         }
         return this;
     }
 
+    /**
+     * Addition: returns the sum of 'this' and 'value'.
+     */
     public add (value: DecimalSource): this | Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
 
         // inf/nan check
         if (!Number.isFinite(this.layer)) {
@@ -1681,7 +2286,7 @@ class Decimal {
 
         // Special case - Adding a number to its negation produces 0, no matter how large.
         if (this.sign === -decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag) {
-            return Decimal.fromComponents_noNormalize(0, 0, 0);
+            return FC_NN(0, 0, 0);
         }
 
         let a;
@@ -1718,7 +2323,7 @@ class Decimal {
             } else {
                 const magdiff = Math.pow(10, Math.log10(a.mag) - b.mag);
                 const mantissa = b.sign + a.sign * magdiff;
-                return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+                return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
             }
         }
 
@@ -1728,7 +2333,7 @@ class Decimal {
             } else {
                 const magdiff = Math.pow(10, a.mag - Math.log10(b.mag));
                 const mantissa = b.sign + a.sign * magdiff;
-                return Decimal.fromComponents(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
+                return FC(Math.sign(mantissa), 1, Math.log10(b.mag) + Math.log10(Math.abs(mantissa)));
             }
         }
 
@@ -1737,31 +2342,45 @@ class Decimal {
         } else {
             const magdiff = Math.pow(10, a.mag - b.mag);
             const mantissa = b.sign + a.sign * magdiff;
-            return Decimal.fromComponents(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
+            return FC(Math.sign(mantissa), 1, b.mag + Math.log10(Math.abs(mantissa)));
         }
 
-        // eslint-disable-next-line no-unreachable
         throw Error("Bad arguments to add: " + this + ", " + value);
     }
 
+    /**
+     * Addition: returns the sum of 'this' and 'value'.
+     */
     public plus (value: DecimalSource): Decimal {
         return this.add(value);
     }
 
+    /**
+     * Subtraction: returns the difference between 'this' and 'value'.
+     */
     public sub (value: DecimalSource): Decimal {
-        return this.add(Decimal.fromValue_noAlloc(value).neg());
+        return this.add(D(value).neg());
     }
 
+    /**
+     * Subtraction: returns the difference between 'this' and 'value'.
+     */
     public subtract (value: DecimalSource): Decimal {
         return this.sub(value);
     }
 
+    /**
+     * Subtraction: returns the difference between 'this' and 'value'.
+     */
     public minus (value: DecimalSource): Decimal {
         return this.sub(value);
     }
 
+    /**
+     * Multiplication: returns the product of 'this' and 'value'.
+     */
     public mul (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
 
         // inf/nan check
         if (!Number.isFinite(this.layer)) {
@@ -1773,12 +2392,12 @@ class Decimal {
 
         // Special case - if one of the numbers is 0, return 0.
         if (this.sign === 0 || decimal.sign === 0) {
-            return Decimal.fromComponents_noNormalize(0, 0, 0);
+            return FC_NN(0, 0, 0);
         }
 
         // Special case - Multiplying a number by its own reciprocal yields +/- 1, no matter how large.
         if (this.layer === decimal.layer && this.mag === -decimal.mag) {
-            return Decimal.fromComponents_noNormalize(this.sign * decimal.sign, 0, 1);
+            return FC_NN(this.sign * decimal.sign, 0, 1);
         }
 
         let a;
@@ -1802,82 +2421,152 @@ class Decimal {
 
         // Special case: If one of the numbers is layer 3 or higher or one of the numbers is 2+ layers bigger than the other, just take the bigger number.
         if (a.layer >= 3 || a.layer - b.layer >= 2) {
-            return Decimal.fromComponents(a.sign * b.sign, a.layer, a.mag);
+            return FC(a.sign * b.sign, a.layer, a.mag);
         }
 
         if (a.layer === 1 && b.layer === 0) {
-            return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
+            return FC(a.sign * b.sign, 1, a.mag + Math.log10(b.mag));
         }
 
         if (a.layer === 1 && b.layer === 1) {
-            return Decimal.fromComponents(a.sign * b.sign, 1, a.mag + b.mag);
+            return FC(a.sign * b.sign, 1, a.mag + b.mag);
         }
 
         if (a.layer === 2 && b.layer === 1) {
-            const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-                Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
+            const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+                FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
             );
-            return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+            return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
         }
 
         if (a.layer === 2 && b.layer === 2) {
-            const newmag = Decimal.fromComponents(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
-                Decimal.fromComponents(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
+            const newmag = FC(Math.sign(a.mag), a.layer - 1, Math.abs(a.mag)).add(
+                FC(Math.sign(b.mag), b.layer - 1, Math.abs(b.mag)),
             );
-            return Decimal.fromComponents(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
+            return FC(a.sign * b.sign, newmag.layer + 1, newmag.sign * newmag.mag);
         }
 
         throw Error("Bad arguments to mul: " + this + ", " + value);
     }
 
+    /**
+     * Multiplication: returns the product of 'this' and 'value'.
+     */
     public multiply (value: DecimalSource): Decimal {
         return this.mul(value);
     }
 
+    /**
+     * Multiplication: returns the product of 'this' and 'value'.
+     */
     public times (value: DecimalSource): Decimal {
         return this.mul(value);
     }
 
+    /**
+     * Division: returns the quotient of 'this' and 'value'.
+     */
     public div (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.mul(decimal.recip());
     }
 
+    /**
+     * Division: returns the quotient of 'this' and 'value'.
+     */
     public divide (value: DecimalSource): Decimal {
         return this.div(value);
     }
 
+    /**
+     * Division: returns the quotient of 'this' and 'value'.
+     */
     public divideBy (value: DecimalSource): Decimal {
         return this.div(value);
     }
 
+    /**
+     * Division: returns the quotient of 'this' and 'value'.
+     */
     public dividedBy (value: DecimalSource): Decimal {
         return this.div(value);
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the Decimal it's called on.
+     */
     public recip (): Decimal {
         if (this.mag === 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, 1 / this.mag);
+            return FC(this.sign, 0, 1 / this.mag);
         } else {
-            return Decimal.fromComponents(this.sign, this.layer, -this.mag);
+            return FC(this.sign, this.layer, -this.mag);
         }
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the Decimal it's called on.
+     */
     public reciprocal (): Decimal {
         return this.recip();
     }
 
+    /**
+     * Returns the reciprocal (1 / X) of the Decimal it's called on.
+     */
     public reciprocate (): Decimal {
         return this.recip();
     }
 
     /**
-   * -1 for less than value, 0 for equals value, 1 for greater than value
-   */
+     * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
+    // Taken from OmegaNum.js, with a couple touch-ups
+    public mod (value: DecimalSource): Decimal {
+        const decimal = D(value).abs();
+
+        if (decimal.eq(Decimal.dZero)) return Decimal.dZero;
+        const num_this = this.toNumber();
+        const num_decimal = decimal.toNumber();
+        // Special case: To avoid precision issues, if both numbers are valid JS numbers, just call % on those
+        if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
+            return new Decimal(num_this % num_decimal);
+        }
+        if (this.sub(decimal).eq(this)) {
+            // decimal is too small to register to this
+            return Decimal.dZero;
+        }
+        if (decimal.sub(this).eq(decimal)) {
+            // this is too small to register to decimal
+            return this;
+        }
+        if (this.sign == -1) return this.abs().mod(decimal).neg();
+        return this.sub(this.div(decimal).floor().mul(decimal));
+    }
+
+    /**
+     * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
+    public modulo (value: DecimalSource) : Decimal {
+        return this.mod(value);
+    }
+
+    /**
+     * Returns the remainder of this / value: for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+     * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+     */
+    public modular (value: DecimalSource) : Decimal {
+        return this.mod(value);
+    }
+
+    /**
+     * Returns 1 if 'this' > 'value', returns -1 if 'this' < 'value', returns 0 if 'this' == 'value'.
+     */
     public cmp (value: DecimalSource): CompareResult {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         if (this.sign > decimal.sign) {
             return 1;
         }
@@ -1887,8 +2576,12 @@ class Decimal {
         return (this.sign * this.cmpabs(value)) as CompareResult;
     }
 
+    /**
+     * Compares the absolute values of this and value.
+     * Returns 1 if |'this'| > |'value'|, returns -1 if |'this'| < |'value'|, returns 0 if |'this'| == |'value'|.
+     */
     public cmpabs (value: DecimalSource): CompareResult {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         const layera = this.mag > 0 ? this.layer : -this.layer;
         const layerb = decimal.mag > 0 ? decimal.layer : -decimal.layer;
         if (layera > layerb) {
@@ -1906,99 +2599,169 @@ class Decimal {
         return 0;
     }
 
+    /**
+     * Returns 1 if 'this' > 'value', returns -1 if 'this' < 'value', returns 0 if 'this' == 'value'.
+     */
     public compare (value: DecimalSource): CompareResult {
         return this.cmp(value);
     }
 
+    /**
+     * Returns true if the Decimal is an NaN value.
+     */
     public isNan (): boolean {
         return isNaN(this.sign) || isNaN(this.layer) || isNaN(this.mag);
     }
 
+    /**
+     * Returns true if the Decimal is finite (by Decimal standards, not by floating point standards - a humongous Decimal like 10^^10^100 is still finite!)
+     */
     public isFinite (): boolean {
         return isFinite(this.sign) && isFinite(this.layer) && isFinite(this.mag);
     }
 
+    /**
+     * The Decimal equivalent of ==. Returns true if 'this' and 'value' have equal values.
+     */
     public eq (value: DecimalSource): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.sign === decimal.sign && this.layer === decimal.layer && this.mag === decimal.mag;
     }
 
+    /**
+     * Returns true if 'this' and 'value' have equal values.
+     */
     public equals (value: DecimalSource): boolean {
         return this.eq(value);
     }
 
+    /**
+     * The Decimal equivalent of !=. Returns true if 'this' and 'value' do not have equal values.
+     */
     public neq (value: DecimalSource): boolean {
         return !this.eq(value);
     }
 
+    /**
+     * Returns true if 'this' and 'value' do not have equal values.
+     */
     public notEquals (value: DecimalSource): boolean {
         return this.neq(value);
     }
 
+    /**
+     * The Decimal equivalent of <. Returns true if 'this' is less than 'value'.
+     */
     public lt (value: DecimalSource): boolean {
         return this.cmp(value) === -1;
     }
 
+    /**
+     * The Decimal equivalent of <=. Returns true if 'this' is less than or equal to 'value'.
+     */
     public lte (value: DecimalSource): boolean {
         return !this.gt(value);
     }
 
+    /**
+     * The Decimal equivalent of >. Returns true if 'this' is greater than 'value'.
+     */
     public gt (value: DecimalSource): boolean {
         return this.cmp(value) === 1;
     }
 
+    /**
+     * The Decimal equivalent of >=. Returns true if 'this' is greater than or equal to 'value'.
+     */
     public gte (value: DecimalSource): boolean {
         return !this.lt(value);
     }
 
+    /**
+     * Returns whichever of 'this' and 'value' is higher.
+     */
     public max (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.lt(decimal) ? decimal : this;
     }
 
+    /**
+     * Returns whichever of 'this' and 'value' is lower.
+     */
     public min (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.gt(decimal) ? decimal : this;
     }
 
+    /**
+     * Returns whichever of 'this' and 'value' has a larger absolute value.
+     */
     public maxabs (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.cmpabs(decimal) < 0 ? decimal : this;
     }
 
+    /**
+     * Returns whichever of 'this' and 'value' has a smaller absolute value.
+     */
     public minabs (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.cmpabs(decimal) > 0 ? decimal : this;
     }
 
+    /**
+     * A combination of minimum and maximum: the value returned by clamp is normally 'this', but it won't go below 'min' and it won't go above 'max'.
+     * Therefore, if 'this' < 'min', then 'min' is returned, and if 'this' > 'max', then 'max' is returned.
+     */
     public clamp (min: DecimalSource, max: DecimalSource): Decimal {
         return this.max(min).min(max);
     }
 
+    /**
+     * Returns 'this', unless 'this' is less than 'min', in which case 'min' is returned.
+     */
     public clampMin (min: DecimalSource): Decimal {
         return this.max(min);
     }
 
+    /**
+     * Returns 'this', unless 'this' is greater than 'max', in which case 'max' is returned.
+     */
     public clampMax (max: DecimalSource): Decimal {
         return this.min(max);
     }
 
+    /**
+     * Returns 1 if 'this' is greater than 'value', returns -1 if 'this' is less than 'value', returns 0 if 'this' is equal to 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public cmp_tolerance (value: DecimalSource, tolerance: number): CompareResult {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.eq_tolerance(decimal, tolerance) ? 0 : this.cmp(decimal);
     }
 
+    /**
+     * Returns 1 if 'this' is greater than 'value', returns -1 if 'this' is less than 'value', returns 0 if 'this' is equal to 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public compare_tolerance (value: DecimalSource, tolerance: number): CompareResult {
         return this.cmp_tolerance(value, tolerance);
     }
 
     /**
-   * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
-   * For example, if you put in 1e-9, then any number closer to the
-   * larger number than (larger number)*1e-9 will be considered equal.
-   */
+     * Tests whether two Decimals are approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public eq_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value); // https://stackoverflow.com/a/33024979
+        const decimal = D(value); // https://stackoverflow.com/a/33024979
         if (tolerance == null) {
             tolerance = 1e-7;
         }
@@ -2021,38 +2784,87 @@ class Decimal {
         return Math.abs(magA - magB) <= tolerance * Math.max(Math.abs(magA), Math.abs(magB));
     }
 
+    /**
+     * Tests whether two Decimals are approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public equals_tolerance (value: DecimalSource, tolerance: number): boolean {
         return this.eq_tolerance(value, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are not approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public neq_tolerance (value: DecimalSource, tolerance: number): boolean {
         return !this.eq_tolerance(value, tolerance);
     }
 
+    /**
+     * Tests whether two Decimals are not approximately equal, up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public notEquals_tolerance (value: DecimalSource, tolerance: number): boolean {
         return this.neq_tolerance(value, tolerance);
     }
 
+    /**
+     * Returns true if 'this' is less than 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public lt_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return !this.eq_tolerance(decimal, tolerance) && this.lt(decimal);
     }
 
+    /**
+     * Returns true if 'this' is less than or equal to 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public lte_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.eq_tolerance(decimal, tolerance) || this.lt(decimal);
     }
 
+    /**
+     * Returns true if 'this' is greater than 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public gt_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return !this.eq_tolerance(decimal, tolerance) && this.gt(decimal);
     }
 
+    /**
+     * Returns true if 'this' is greater than or equal to 'value'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     public gte_tolerance (value: DecimalSource, tolerance: number): boolean {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.eq_tolerance(decimal, tolerance) || this.gt(decimal);
     }
 
+    /**
+     * "Positive log10": Returns the base-10 logarithm of nonnegative Decimals, but returns 0 for negative Decimals.
+     */
     public pLog10 (): Decimal {
         if (this.lt(Decimal.dZero)) {
             return Decimal.dZero;
@@ -2060,28 +2872,38 @@ class Decimal {
         return this.log10();
     }
 
+    /**
+     * Returns the base-10 logarithm of abs('this').
+     */
     public absLog10 (): Decimal {
         if (this.sign === 0) {
             return Decimal.dNaN;
         } else if (this.layer > 0) {
-            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         } else {
-            return Decimal.fromComponents(1, 0, Math.log10(this.mag));
+            return FC(1, 0, Math.log10(this.mag));
         }
     }
 
+    /**
+     * Base-10 logarithm: returns the Decimal X such that 10^X = 'this'.
+     * For numbers above layer 0, this is equivalent to subtracting 1 from layer and normalizing.
+     */
     public log10 (): Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer > 0) {
-            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         } else {
-            return Decimal.fromComponents(this.sign, 0, Math.log10(this.mag));
+            return FC(this.sign, 0, Math.log10(this.mag));
         }
     }
 
+    /**
+     * Logarithms are one of the inverses of exponentiation: this function finds the Decimal X such that base^X = 'this'.
+     */
     public log (base: DecimalSource): Decimal {
-        base = Decimal.fromValue_noAlloc(base);
+        base = D(base);
         if (this.sign <= 0) {
             return Decimal.dNaN;
         }
@@ -2091,52 +2913,64 @@ class Decimal {
         if (base.sign === 1 && base.layer === 0 && base.mag === 1) {
             return Decimal.dNaN;
         } else if (this.layer === 0 && base.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
+            return FC(this.sign, 0, Math.log(this.mag) / Math.log(base.mag));
         }
 
         return Decimal.div(this.log10(), base.log10());
     }
 
+    /**
+     * Base-2 logarithm: returns the Decimal X such that 2^X = 'this'.
+     */
     public log2 (): Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.log2(this.mag));
+            return FC(this.sign, 0, Math.log2(this.mag));
         } else if (this.layer === 1) {
-            return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362); // log2(10)
+            return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 3.321928094887362); // log2(10)
         } else if (this.layer === 2) {
-            return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247); // -log10(log10(2))
+            return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.5213902276543247); // -log10(log10(2))
         } else {
-            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         }
     }
 
+    /**
+     * Base-e logarithm, also known as the "natural" logarithm: returns the Decimal X such that e^X = 'this'.
+     */
     public ln (): Decimal {
         if (this.sign <= 0) {
             return Decimal.dNaN;
         } else if (this.layer === 0) {
-            return Decimal.fromComponents(this.sign, 0, Math.log(this.mag));
+            return FC(this.sign, 0, Math.log(this.mag));
         } else if (this.layer === 1) {
-            return Decimal.fromComponents(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046); // ln(10)
+            return FC(Math.sign(this.mag), 0, Math.abs(this.mag) * 2.302585092994046); // ln(10)
         } else if (this.layer === 2) {
-            return Decimal.fromComponents(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325); // log10(log10(e))
+            return FC(Math.sign(this.mag), 1, Math.abs(this.mag) + 0.36221568869946325); // log10(log10(e))
         } else {
-            return Decimal.fromComponents(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
+            return FC(Math.sign(this.mag), this.layer - 1, Math.abs(this.mag));
         }
     }
 
+    /**
+     * Logarithms are one of the inverses of exponentiation: this function finds the Decimal X such that base^X = 'this'.
+     */
     public logarithm (base: DecimalSource): Decimal {
         return this.log(base);
     }
 
+    /**
+     * Exponentiation: Returns the result of 'this' ^ 'value' (often written as 'this' ** 'value' in programming languages).
+     */
     public pow (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         const a = this;
         const b = decimal;
 
         // special case: if a is 0, then return 0 (UNLESS b is 0, then return 1)
         if (a.sign === 0) {
-            return b.eq(0) ? Decimal.fromComponents_noNormalize(1, 0, 1) : a;
+            return b.eq(0) ? FC_NN(1, 0, 1) : a;
         }
         // special case: if a is 1, then return 1
         if (a.sign === 1 && a.layer === 0 && a.mag === 1) {
@@ -2144,7 +2978,7 @@ class Decimal {
         }
         // special case: if b is 0, then return 1
         if (b.sign === 0) {
-            return Decimal.fromComponents_noNormalize(1, 0, 1);
+            return FC_NN(1, 0, 1);
         }
         // special case: if b is 1, then return a
         if (b.sign === 1 && b.layer === 0 && b.mag === 1) {
@@ -2165,6 +2999,9 @@ class Decimal {
         return result;
     }
 
+    /**
+     * Raises 10 to the power of 'this', i.e. (10^'this'). For positive numbers above 1, this is equivalent to adding 1 to layer and normalizing.
+     */
     public pow10 (): Decimal {
     /*
     There are four cases we need to consider:
@@ -2184,34 +3021,47 @@ class Decimal {
         if (a.layer === 0) {
             const newmag = Math.pow(10, a.sign * a.mag);
             if (Number.isFinite(newmag) && Math.abs(newmag) >= 0.1) {
-                return Decimal.fromComponents(1, 0, newmag);
-            } else if (a.sign === 0) {
-                return Decimal.dOne;
+                return FC(1, 0, newmag);
             } else {
-                a = Decimal.fromComponents_noNormalize(a.sign, a.layer + 1, Math.log10(a.mag));
+                if (a.sign === 0) {
+                    return Decimal.dOne;
+                } else {
+                    a = FC_NN(a.sign, a.layer + 1, Math.log10(a.mag));
+                }
             }
         }
 
         // handle all 4 layer 1+ cases individually
         if (a.sign > 0 && a.mag >= 0) {
-            return Decimal.fromComponents(a.sign, a.layer + 1, a.mag);
+            return FC(a.sign, a.layer + 1, a.mag);
         }
         if (a.sign < 0 && a.mag >= 0) {
-            return Decimal.fromComponents(-a.sign, a.layer + 1, -a.mag);
+            return FC(-a.sign, a.layer + 1, -a.mag);
         }
         // both the negative mag cases are identical: one +/- rounding error
         return Decimal.dOne;
     }
 
+    /**
+     * Exponentiation: Returns the result of 'value' ^ 'this' (often written as 'value' ** 'this' in programming languages).
+     */
     public pow_base (value: DecimalSource): Decimal {
-        return Decimal.fromValue_noAlloc(value).pow(this);
+        return D(value).pow(this);
     }
 
+    /**
+     * Roots are one of the inverses of exponentiation: this function finds the Decimal X such that X ^ 'value' = 'this'.
+     * Equivalent to 'this' ^ (1 / 'value'), which is written here as this.pow(value.recip()).
+     */
     public root (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value);
+        const decimal = D(value);
         return this.pow(decimal.recip());
     }
 
+    /**
+     * For positive integers, X factorial (written as X!) equals X * (X - 1) * (X - 2) *... * 3 * 2 * 1. 0! equals 1.
+     * This can be extended to real numbers (except for negative integers) via the gamma function, which is what this function does.
+     */
     public factorial (): Decimal {
         if (this.mag < 0) {
             return this.add(1).gamma();
@@ -2224,12 +3074,17 @@ class Decimal {
         }
     }
 
+    /**
+     * The gamma function extends the idea of factorials to non-whole numbers using some calculus.
+     * Gamma(x) is defined as the integral of t^(x-1) * e^-t dt from t = 0 to t = infinity,
+     * and gamma(x) = (x - 1)! for nonnegative integer x, so the factorial for non-whole numbers is defined using the gamma function.
+     */
     // from HyperCalc source code
     public gamma (): Decimal {
         if (this.mag < 0) {
             return this.recip();
         } else if (this.layer === 0) {
-            if (this.lt(Decimal.fromComponents_noNormalize(1, 0, 24))) {
+            if (this.lt(FC_NN(1, 0, 24))) {
                 return Decimal.fromNumber(f_gamma(this.sign * this.mag));
             }
 
@@ -2272,10 +3127,16 @@ class Decimal {
         }
     }
 
+    /**
+     * Returns the natural logarithm of Gamma('this').
+     */
     public lngamma (): Decimal {
         return this.gamma().ln();
     }
 
+    /**
+     * Base-e exponentiation: returns e^'this'.
+     */
     public exp (): Decimal {
         if (this.mag < 0) {
             return Decimal.dOne;
@@ -2283,43 +3144,64 @@ class Decimal {
         if (this.layer === 0 && this.mag <= 709.7) {
             return Decimal.fromNumber(Math.exp(this.sign * this.mag));
         } else if (this.layer === 0) {
-            return Decimal.fromComponents(1, 1, this.sign * Math.log10(Math.E) * this.mag);
+            return FC(1, 1, this.sign * Math.log10(Math.E) * this.mag);
         } else if (this.layer === 1) {
-            return Decimal.fromComponents(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
+            return FC(1, 2, this.sign * (Math.log10(0.4342944819032518) + this.mag));
         } else {
-            return Decimal.fromComponents(1, this.layer + 1, this.sign * this.mag);
+            return FC(1, this.layer + 1, this.sign * this.mag);
         }
     }
 
+    /**
+     * Squaring a number means multiplying it by itself, a.k.a. raising it to the second power.
+     */
     public sqr (): Decimal {
         return this.pow(2);
     }
 
+    /**
+     * Square root: finds the Decimal X such that X * X, a.k.a X^2, equals 'this'. Equivalent to X^(1/2).
+     */
     public sqrt (): Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.sqrt(this.sign * this.mag));
         } else if (this.layer === 1) {
-            return Decimal.fromComponents(1, 2, Math.log10(this.mag) - 0.3010299956639812);
+            return FC(1, 2, Math.log10(this.mag) - 0.3010299956639812);
         } else {
-            const result = Decimal.div(Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag), Decimal.fromComponents_noNormalize(1, 0, 2));
+            const result = Decimal.div(FC_NN(this.sign, this.layer - 1, this.mag), FC_NN(1, 0, 2));
             result.layer += 1;
             result.normalize();
             return result;
         }
     }
 
+    /**
+     * Cubing a number means raising it to the third power.
+     */
     public cube (): Decimal {
         return this.pow(3);
     }
 
+    /**
+     * Cube root: finds the Decimal X such that X^3 equals 'this'. Equivalent to X^(1/3).
+     */
     public cbrt (): Decimal {
         return this.pow(1 / 3);
     }
 
-    // Tetration/tetrate: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
-    // If payload != 1, then this is 'iterated exponentiation', the result of exping (payload) to base (this) (height) times. https://andydude.github.io/tetration/archives/tetration2/ident.html
-    // Works with negative and positive real heights.
-    public tetrate (height = 2, payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false): Decimal {
+
+    /**
+     *
+     * Tetration: The result of exponentiating 'this' to 'this' 'height' times in a row.  https://en.wikipedia.org/wiki/Tetration
+     *
+     * If payload != 1, then this is 'iterated exponentiation', the result of exping 'payload' to base 'this' 'height' times. https://andydude.github.io/tetration/archives/tetration2/ident.html
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
+    public tetrate (height = 2, payload: DecimalSource = FC_NN(1, 0, 1), linear = false): Decimal {
     // x^^1 == x
         if (height === 1) {
             return Decimal.pow(this, payload);
@@ -2373,7 +3255,7 @@ class Decimal {
             return Decimal.iteratedlog(payload, this, -height, linear);
         }
 
-        payload = Decimal.fromValue_noAlloc(payload);
+        payload = D(payload);
         const oldheight = height;
         height = Math.trunc(height);
         const fracheight = oldheight - height;
@@ -2433,7 +3315,7 @@ class Decimal {
             }
             // shortcut
             if (payload.layer - this.layer > 3) {
-                return Decimal.fromComponents_noNormalize(payload.sign, payload.layer + (height - i - 1), payload.mag);
+                return FC_NN(payload.sign, payload.layer + (height - i - 1), payload.mag);
             }
             // give up after 10000 iterations if nothing is happening
             if (i > 10000) {
@@ -2443,19 +3325,35 @@ class Decimal {
         return payload;
     }
 
-    // iteratedexp/iterated exponentiation: - all cases handled in tetrate, so just call it
-    public iteratedexp (height = 2, payload = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false): Decimal {
+    /**
+     * Iterated exponentiation, the result of exping 'payload' to base 'this' 'height' times. https://andydude.github.io/tetration/archives/tetration2/ident.html
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     *
+     * Identical to tetrate.
+     */
+    public iteratedexp (height = 2, payload = FC_NN(1, 0, 1), linear = false): Decimal {
         return this.tetrate(height, payload, linear);
     }
 
-    // iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting (times) from the number's slog representation. Equivalent to tetrating to a negative height.
-    // Works with negative and positive real heights.
+
+    /**
+     * iterated log/repeated log: The result of applying log(base) 'times' times in a row. Approximately equal to subtracting 'times' from the number's slog representation. Equivalent to tetrating to a negative height.
+     *
+     * Works with negative and positive real heights. Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
     public iteratedlog (base: DecimalSource = 10, times = 1, linear = false): Decimal {
         if (times < 0) {
             return Decimal.tetrate(base, -times, this, linear);
         }
 
-        base = Decimal.fromValue_noAlloc(base);
+        base = D(base);
         let result = Decimal.fromDecimal(this);
         const fulltimes = times;
         times = Math.trunc(times);
@@ -2490,9 +3388,18 @@ class Decimal {
         return result;
     }
 
-    // Super-logarithm, one of tetration's inverses, tells you what size power tower you'd have to tetrate base to to get number. By definition, will never be higher than 1.8e308 in break_eternity.js, since a power tower 1.8e308 numbers tall is the largest representable number.
-    // https://en.wikipedia.org/wiki/Super-logarithm
-    // NEW: Accept a number of iterations, and use binary search to, after making an initial guess, hone in on the true value, assuming tetration as the ground truth.
+    /**
+     * Super-logarithm, one of tetration's inverses, tells you what size power tower you'd have to tetrate 'base' to to get 'this'. https://en.wikipedia.org/wiki/Super-logarithm
+     *
+     * By definition, will never be higher than 1.8e308 in break_eternity.js, since a power tower 1.8e308 numbers tall is the largest representable number.
+     *
+     * Accepts a number of iterations (default is 100), and use binary search to, after making an initial guess, hone in on the true value, assuming tetration as the ground truth.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
     public slog (base: DecimalSource = 10, iterations = 100, linear = false): Decimal {
         let step_size = 0.001;
         let has_changed_directions_once = false;
@@ -2526,7 +3433,7 @@ class Decimal {
     }
 
     public slog_internal (base: DecimalSource = 10, linear = false): Decimal {
-        base = Decimal.fromValue_noAlloc(base);
+        base = D(base);
 
         // special cases:
         // slog base 0 or lower is NaN
@@ -2592,7 +3499,7 @@ class Decimal {
     }
 
     public static critical_section (base: number, height: number, grid: number[][], linear = false): number {
-        // this part is simple at least, since it's just 0.1 to 0.9
+    // this part is simple at least, since it's just 0.1 to 0.9
         height *= 10;
         if (height < 0) {
             height = 0;
@@ -2615,18 +3522,18 @@ class Decimal {
         // however, do note http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html can do it for arbitrary heights but not for arbitrary bases (2, e, 10 present)
         for (let i = 0; i < critical_headers.length; ++i) {
             if (critical_headers[i] == base) {
-            // exact match
+                // exact match
                 lower = grid[i][Math.floor(height)];
                 upper = grid[i][Math.ceil(height)];
                 break;
             } else if (critical_headers[i] < base && critical_headers[i + 1] > base) {
-            // interpolate between this and the next
+                // interpolate between this and the next
                 const basefrac =
-              (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
+          (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
                 lower =
-              grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
+          grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
                 upper =
-              grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
+          grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
                 break;
             }
         }
@@ -2644,7 +3551,14 @@ class Decimal {
         }
     }
 
-    // Function for adding/removing layers from a Decimal, even fractional layers (e.g. its slog10 representation).
+    /**
+     * Adds/removes layers from a Decimal, even fractional layers (e.g. its slog10 representation). Very similar to tetrate base 10 and iterated log base 10.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
     // Moved this over to use the same critical section as tetrate/slog.
     public layeradd10 (diff: DecimalSource, linear = false): Decimal {
         diff = Decimal.fromValue_noAlloc(diff).toNumber();
@@ -2656,7 +3570,7 @@ class Decimal {
                 result.mag = 0;
                 result.layer = 0;
             } else if (result.sign === -1 && result.layer == 0) {
-            // bug fix - for stuff like -3.layeradd10(1) we need to move the sign to the mag
+                // bug fix - for stuff like -3.layeradd10(1) we need to move the sign to the mag
                 result.sign = 1;
                 result.mag = -result.mag;
             }
@@ -2712,7 +3626,14 @@ class Decimal {
         return result;
     }
 
-    // layeradd: like adding 'diff' to the number's slog(base) representation. Very similar to tetrate base 'base' and iterated log base 'base'.
+    /**
+     * layeradd: like adding 'diff' to the number's slog(base) representation. Very similar to tetrate base 'base' and iterated log base 'base'.
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     */
     public layeradd (diff: number, base: DecimalSource, linear = false): Decimal {
         const slogthis = this.slog(base).toNumber();
         const slogdest = slogthis + diff;
@@ -2727,8 +3648,10 @@ class Decimal {
         }
     }
 
-    // The Lambert W function, also called the omega function or product logarithm, is the solution W(x) === x*e^x.
-    // https://en.wikipedia.org/wiki/Lambert_W_function
+    /**
+     * The Lambert W function, also called the omega function or product logarithm, is the solution W(x) === x*e^x.
+     * https://en.wikipedia.org/wiki/Lambert_W_function
+     */
     // Some special values, for testing: https://en.wikipedia.org/wiki/Lambert_W_function#Special_values
     public lambertw (): Decimal {
         if (this.lt(-0.3678794411710499)) {
@@ -2743,26 +3666,27 @@ class Decimal {
             return d_lambertw(this);
         }
         if (this.layer >= 3) {
-            return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
+            return FC_NN(this.sign, this.layer - 1, this.mag);
         }
 
         throw "Unhandled behavior in lambertw()";
     }
 
-    // The super square-root function - what number, tetrated to height 2, equals this?
-    // Other sroots are possible to calculate probably through guess and check methods, this one is easy though.
-    // https://en.wikipedia.org/wiki/Tetration#Super-root
+    /**
+     * The super square-root function - what number, tetrated to height 2, equals 'this'? https://en.wikipedia.org/wiki/Tetration#Super-root
+     */
     public ssqrt (): Decimal {
-        if (this.sign == 1 && this.layer >= 3) {
-            return Decimal.fromComponents_noNormalize(this.sign, this.layer - 1, this.mag);
-        }
-        const lnx = this.ln();
-        return lnx.div(lnx.lambertw());
+        return this.linear_sroot(2);
     }
 
-    // Super-root, one of tetration's inverses - what number, tetrated to height (height), equals this?
-    // Only works with the linear approximation, because I don't know the structure of non-linear tetrations for inputs < 1
-    // TODO: Optimize this like how slog is optimized
+    /**
+     * Super-root, one of tetration's inverses - what number, tetrated to height 'degree', equals 'this'? https://en.wikipedia.org/wiki/Tetration#Super-root
+     *
+     * Only works with the linear approximation of tetration, as starting with analytic and then switching to linear would result in inconsistent behavior for super-roots.
+     * This only matters for non-integer degrees.
+     */
+    // Another reason this doesn't support analytic approximation because I don't know the structure of non-linear tetrations for inputs < 1
+    // TODO: Optimize this like how slog is optimized (if it isn't already)
     public linear_sroot (degree: number) : Decimal {
     // 1st-degree super root just returns its input
         if (degree == 1) {
@@ -2773,16 +3697,6 @@ class Decimal {
         }
         if (!this.isFinite()) {
             return Decimal.dNaN;
-        }
-        // ssqrt handles square super-root faster
-        if (degree == 2) {
-            try {
-                // ssqrt uses lambertw which throws an error if the number is too small
-                return this.ssqrt();
-            }
-            catch {
-                return Decimal.dNaN;
-            }
         }
         // Using linear approximation, x^^n = x^n if 0 < n < 1
         if (degree > 0 && degree < 1) {
@@ -2865,19 +3779,19 @@ class Decimal {
             // (stage) is which stage of the loop we're in: stage 1 is finding the minimum, stage 2 means we're between the stages, and stage 3 is finding the maximum.
             // The boundary between the decreasing range and the zero range can be very small, so we want to use layer -1 numbers. Therefore, all numbers involved are log10(recip()) of their actual values.
             let stage = 1;
-            let minimum = Decimal.fromComponents(1, 10, 1);
-            let maximum = Decimal.fromComponents(1, 10, 1);
-            let lower = Decimal.fromComponents(1, 10, 1); // eeeeeeeee-10, which is effectively 0; I would use Decimal.dInf but its reciprocal is NaN
-            let upper = Decimal.fromComponents(1, 1, -16); // ~ 1 - 1e-16
+            let minimum = FC(1, 10, 1);
+            let maximum = FC(1, 10, 1);
+            let lower = FC(1, 10, 1); // eeeeeeeee-10, which is effectively 0; I would use Decimal.dInf but its reciprocal is NaN
+            let upper = FC(1, 1, -16); // ~ 1 - 1e-16
             let prevspan = Decimal.dZero;
-            let difference = Decimal.fromComponents(1, 10, 1);
+            let difference = FC(1, 10, 1);
             let upperBound = upper.pow10().recip();
             let distance = Decimal.dZero;
             let prevPoint = upperBound;
             let nextPoint = upperBound;
             const evenDegree = (Math.ceil(degree) % 2 == 0);
             let range = 0;
-            let lastValid = Decimal.fromComponents(1, 10, 1);
+            let lastValid = FC(1, 10, 1);
             let infLoopDetector = false;
             let previousUpper = Decimal.dZero;
             let decreasingFound = false;
@@ -2886,11 +3800,11 @@ class Decimal {
                     // The minimum has been found. If ceiling(degree) is even, there's no zero range and thus no local maximum, so end the loop here. Otherwise, begin finding the maximum.
                     if (evenDegree) break;
                     else {
-                        lower = Decimal.fromComponents(1, 10, 1);
+                        lower = FC(1, 10, 1);
                         upper = minimum;
                         stage = 3;
-                        difference = Decimal.fromComponents(1, 10, 1);
-                        lastValid = Decimal.fromComponents(1, 10, 1);
+                        difference = FC(1, 10, 1);
+                        lastValid = FC(1, 10, 1);
                     }
                 }
                 infLoopDetector = false;
@@ -2976,7 +3890,7 @@ class Decimal {
                     if (range == -1) decreasingFound = true;
                     if ((stage == 1 && range == 1) || (stage == 3 && range != 0)) {
                         // The upper bound is too high
-                        if (lower.eq(Decimal.fromComponents(1, 10, 1))) {
+                        if (lower.eq(FC(1, 10, 1))) {
                             upper = upper.mul(2);
                         }
                         else {
@@ -2987,7 +3901,7 @@ class Decimal {
                         }
                     }
                     else {
-                        if (lower.eq(Decimal.fromComponents(1, 10, 1))) {
+                        if (lower.eq(FC(1, 10, 1))) {
                             // We've now found an actual lower bound
                             lower = upper;
                             upper = upper.div(2);
@@ -3008,7 +3922,7 @@ class Decimal {
                 }
                 if (upper.gt("1e18")) break;
                 if (!decreasingFound) break; // If there's no decreasing range, then even if an error caused lastValid to gain a value, the minimum can't exist
-                if (lastValid == Decimal.fromComponents(1, 10, 1)) {
+                if (lastValid == FC(1, 10, 1)) {
                     // Whatever we're searching for, it doesn't exist. If there's no minimum, then there's no maximum either, so either way we can end the loop here.
                     break;
                 }
@@ -3019,12 +3933,12 @@ class Decimal {
             // Now we have the minimum and maximum, so it's time to calculate the actual super-root.
             // First, check if the root is in the increasing range.
             lower = minimum;
-            upper = Decimal.fromComponents(1, 1, -18);
+            upper = FC(1, 1, -18);
             let previous = upper;
             let guess = Decimal.dZero;
             let loopGoing = true;
             while (loopGoing) {
-                if (lower.eq(Decimal.fromComponents(1, 10, 1))) guess = upper.mul(2);
+                if (lower.eq(FC(1, 10, 1))) guess = upper.mul(2);
                 else guess = lower.add(upper).div(2);
                 if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this)) upper = guess;
                 else lower = guess;
@@ -3039,17 +3953,17 @@ class Decimal {
             else {
                 // If guess == minimum, we haven't actually found the super-root, the algorithm just kept going down trying to find a super-root that's not in the increasing range.
                 // Check if the root is in the zero range.
-                if (maximum.eq(Decimal.fromComponents(1, 10, 1))) {
+                if (maximum.eq(FC(1, 10, 1))) {
                     // There is no zero range, so the super root doesn't exist
                     return Decimal.dNaN;
                 }
-                lower = Decimal.fromComponents(1, 10, 1);
+                lower = FC(1, 10, 1);
                 upper = maximum;
                 previous = upper;
                 guess = Decimal.dZero;
                 loopGoing = true;
                 while (loopGoing) {
-                    if (lower.eq(Decimal.fromComponents(1, 10, 1))) guess = upper.mul(2);
+                    if (lower.eq(FC(1, 10, 1))) guess = upper.mul(2);
                     else guess = lower.add(upper).div(2);
                     if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this)) upper = guess;
                     else lower = guess;
@@ -3062,10 +3976,19 @@ class Decimal {
         }
     }
 
-    // Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
-    // https://en.wikipedia.org/wiki/Pentation
-    public pentate (height = 2, payload: DecimalSource = Decimal.fromComponents_noNormalize(1, 0, 1), linear = false): Decimal {
-        payload = Decimal.fromValue_noAlloc(payload);
+    /**
+     * Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
+     * https://en.wikipedia.org/wiki/Pentation
+     *
+     * Tetration for non-integer heights does not have a single agreed-upon definition,
+     * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+     * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+     * Analytic approximation is not currently supported for bases > 10.
+     *
+     * For non-whole pentation heights, the linear approximation of pentation is always used, as there is no defined analytic approximation of pentation.
+     */
+    public pentate (height = 2, payload: DecimalSource = FC_NN(1, 0, 1), linear = false): Decimal {
+        payload = D(payload);
         const oldheight = height;
         height = Math.trunc(height);
         const fracheight = oldheight - height;
@@ -3100,6 +4023,9 @@ class Decimal {
     }
 
     // trig functions!
+    /**
+     * The sine function, one of the main two trigonometric functions. Behaves periodically with period 2*pi.
+     */
     public sin (): this | Decimal {
         if (this.mag < 0) {
             return this;
@@ -3107,9 +4033,12 @@ class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.sin(this.sign * this.mag));
         }
-        return Decimal.fromComponents_noNormalize(0, 0, 0);
+        return FC_NN(0, 0, 0);
     }
 
+    /**
+     * The cosine function, one of the main two trigonometric functions. Behaves periodically with period 2*pi.
+     */
     public cos (): Decimal {
         if (this.mag < 0) {
             return Decimal.dOne;
@@ -3117,9 +4046,12 @@ class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.cos(this.sign * this.mag));
         }
-        return Decimal.fromComponents_noNormalize(0, 0, 0);
+        return FC_NN(0, 0, 0);
     }
 
+    /**
+     * The tangent function, equal to sine divided by cosine. Behaves periodically with period pi.
+     */
     public tan (): this | Decimal {
         if (this.mag < 0) {
             return this;
@@ -3127,9 +4059,12 @@ class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.tan(this.sign * this.mag));
         }
-        return Decimal.fromComponents_noNormalize(0, 0, 0);
+        return FC_NN(0, 0, 0);
     }
 
+    /**
+     * The arcsine function, the inverse of the sine function.
+     */
     public asin (): this | Decimal {
         if (this.mag < 0) {
             return this;
@@ -3137,9 +4072,12 @@ class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.asin(this.sign * this.mag));
         }
-        return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+        return FC_NN(Number.NaN, Number.NaN, Number.NaN);
     }
 
+    /**
+     * The arccosine function, the inverse of the cosine function.
+     */
     public acos (): Decimal {
         if (this.mag < 0) {
             return Decimal.fromNumber(Math.acos(this.toNumber()));
@@ -3147,9 +4085,12 @@ class Decimal {
         if (this.layer === 0) {
             return Decimal.fromNumber(Math.acos(this.sign * this.mag));
         }
-        return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+        return FC_NN(Number.NaN, Number.NaN, Number.NaN);
     }
 
+    /**
+     * The arctangent function, the inverse of the tangent function.
+     */
     public atan (): this | Decimal {
         if (this.mag < 0) {
             return this;
@@ -3160,29 +4101,47 @@ class Decimal {
         return Decimal.fromNumber(Math.atan(this.sign * 1.8e308));
     }
 
+    /**
+     * Hyperbolic sine: sinh(X) = (e^x - e^-x)/2.
+     */
     public sinh (): Decimal {
         return this.exp().sub(this.negate().exp()).div(2);
     }
 
+    /**
+     * Hyperbolic cosine: cosh(x) = (e^x + e^-x)/2.
+     */
     public cosh (): Decimal {
         return this.exp().add(this.negate().exp()).div(2);
     }
 
+    /**
+     * Hyperbolic tangent: tanh(x) = sinh(x)/cosh(x).
+     */
     public tanh (): Decimal {
         return this.sinh().div(this.cosh());
     }
 
+    /**
+     * Hyperbolic arcsine, the inverse of hyperbolic sine.
+     */
     public asinh (): Decimal {
         return Decimal.ln(this.add(this.sqr().add(1).sqrt()));
     }
 
+    /**
+     * Hyperbolic arccosine, the inverse of hyperbolic cosine.
+     */
     public acosh (): Decimal {
         return Decimal.ln(this.add(this.sqr().sub(1).sqrt()));
     }
 
+    /**
+     * Hyperbolic arcctangent, the inverse of hyperbolic tangent.
+     */
     public atanh (): Decimal {
         if (this.abs().gte(1)) {
-            return Decimal.fromComponents_noNormalize(Number.NaN, Number.NaN, Number.NaN);
+            return FC_NN(Number.NaN, Number.NaN, Number.NaN);
         }
 
         return Decimal.ln(this.add(1).div(Decimal.fromNumber(1).sub(this))).div(2);
@@ -3226,23 +4185,24 @@ class Decimal {
 
     /* BEGIN MOD */
 
+    public static formats: typeof formats;
+
     /**
      * Smoothly interpolates between the current value and the target value over time
      * using a smoothing factor and deltaTime.
-     *
-     * @param {Decimal} current - The current value to interpolate from.
-     * @param {Decimal} target - The target value to interpolate towards.
-     * @param {Decimal} smoothing - The smoothing factor controlling the interpolation speed.
+     * @param current - The current value to interpolate from.
+     * @param target - The target value to interpolate towards.
+     * @param smoothing - The smoothing factor controlling the interpolation speed.
      *                           A higher value results in slower interpolation.
-     * @param {Decimal} deltaTime - The time elapsed since the last frame in seconds.
-     * @returns {Decimal} - The interpolated value between `current` and `target`.
+     * @param deltaTime - The time elapsed since the last frame in seconds.
+     * @returns - The interpolated value between `current` and `target`.
      */
     public static smoothDamp (current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal { return new Decimal(current).add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime))); };
 
     /**
      * Creates a clone of the E instance.
      * @deprecated
-     * @returns {Decimal} A EClone instance that is a clone of the original.
+     * @returns A EClone instance that is a clone of the original.
      */
     public clone (): Decimal {
         return this;
@@ -3259,53 +4219,13 @@ class Decimal {
     }
 
     /**
-     * Performs modular arithmetic on the DecimalClone instance.
-     * @alias modular
-     * @alias modulo
-     * @param {DecimalSource} other - The number or DecimalClone instance to use for modular arithmetic.
-     * @returns {Decimal} A EClone instance representing the result of the modular operation.
+     * Applies a soft cap to a DecimalClone value using a specified soft cap function.
+     * @param start - The value at which the soft cap starts.
+     * @param power - The power or factor used in the soft cap calculation.
+     * @param mode - The soft cap mode. Use "pow" for power soft cap, "mul" for multiplication soft cap,
+     *                       or "exp" for exponential soft cap.
+     * @returns - The DecimalClone value after applying the soft cap.
      */
-    // Taken from OmegaNum.js, with a couple touch-ups
-    // "Truncated division" modulo, like JavaScript's %
-    public mod (value: DecimalSource): Decimal {
-        const decimal = Decimal.fromValue_noAlloc(value).abs();
-
-        if (decimal.eq(Decimal.dZero)) return Decimal.dZero;
-        const num_this = this.toNumber();
-        const num_decimal = decimal.toNumber();
-        // Special case: To avoid precision issues, if both numbers are valid JS numbers, just call % on those
-        if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
-            return new Decimal(num_this % num_decimal);
-        }
-        if (this.sub(decimal).eq(this)) {
-            // decimal is too small to register to this
-            return Decimal.dZero;
-        }
-        if (decimal.sub(this).eq(decimal)) {
-            // this is too small to register to decimal
-            return this;
-        }
-        if (this.sign == -1) return this.abs().mod(decimal).neg();
-        return this.sub(this.div(decimal).floor().mul(decimal));
-    }
-
-    public modulo (value: DecimalSource) : Decimal {
-        return this.mod(value);
-    }
-
-    public modular (value: DecimalSource) : Decimal {
-        return this.mod(value);
-    }
-
-    /**
-    * Applies a soft cap to a DecimalClone value using a specified soft cap function.
-    *
-    * @param {DecimalSource} start - The value at which the soft cap starts.
-    * @param {number} power - The power or factor used in the soft cap calculation.
-    * @param {string} mode - The soft cap mode. Use "pow" for power soft cap, "mul" for multiplication soft cap,
-    *                       or "exp" for exponential soft cap.
-    * @returns {Decimal} - The DecimalClone value after applying the soft cap.
-    */
     public softcap (start: DecimalSource, power: number, mode: string): Decimal {
         let x = this.clone();
         if (x.gte(start)) {
@@ -3320,25 +4240,24 @@ class Decimal {
     }
 
     /**
-    * Scales a currency value using a specified scaling function.
-    *
-    * @param {DecimalSource} s - The value at which scaling starts.
-    * @param {DecimalSource} p - The scaling factor.
-    * @param {string} mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
-    * @param {boolean} [rev=false] - Whether to reverse the scaling operation (unscaling).
-    * @returns {Decimal} - The scaled currency value.
-    */
+     * Scales a currency value using a specified scaling function.
+     * @param s - The value at which scaling starts.
+     * @param p - The scaling factor.
+     * @param mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
+     * @param [rev] - Whether to reverse the scaling operation (unscaling).
+     * @returns - The scaled currency value.
+     */
     public scale (s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): Decimal {
         s = new Decimal(s);
         p = new Decimal(p);
         let x = this.clone();
         if (x.gte(s)) {
-            if ([0, "pow"].includes(mode)) x = rev ? 
+            if ([0, "pow"].includes(mode)) {x = rev ?
                 x.mul(s.pow(p.sub(1))).root(p) : // (x * s^(p - 1))^(1 / p)
-                x.pow(p).div(s.pow(p.sub(1))); // x^p / s^(p - 1)
-            if ([1, "exp"].includes(mode)) x = rev ? 
+                x.pow(p).div(s.pow(p.sub(1)));} // x^p / s^(p - 1)
+            if ([1, "exp"].includes(mode)) {x = rev ?
                 x.div(s).max(1).log(p).add(s) : // log_p((x / s).max(1)) + s
-                Decimal.pow(p, x.sub(s)).mul(s); // p^(x - s) * s
+                Decimal.pow(p, x.sub(s)).mul(s);} // p^(x - s) * s
         }
         return x;
     }
@@ -3348,39 +4267,38 @@ class Decimal {
 
     /**
      * Formats the E instance with a specified accuracy and maximum decimal places.
-     * @param {number} [acc=2] - The desired accuracy (number of significant figures), defaults to `2`.
-     * @param {number} [max=9] - The maximum number of decimal places to display, defaults to `9`.
-     * @param {string} [type="mixed_sc"] - The type of format, defaults to `"mixed_sc"`.
-     * @returns {string} A string representing the formatted E value.
+     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
+     * @param [max] - The maximum number of decimal places to display, defaults to `9`.
+     * @param [type] - The type of format, defaults to `"mixed_sc"`.
+     * @returns A string representing the formatted E value.
      */
     public format (acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string { return formats.format(this.clone(), acc, max, type); }
     /**
      * Formats the E instance with a specified accuracy and maximum decimal places.
-     * @param {DecimalSource} e - The E instance to format.
-     * @param {number} [acc=2] - The desired accuracy (number of significant figures), defaults to `2`.
-     * @param {number} [max=9] - The maximum number of decimal places to display, defaults to `9`.
-     * @param {string} [type="mixed_sc"] - The type of format, defaults to `"mixed_sc"`.
-     * @returns {string} A string representing the formatted E value.
+     * @param e - The E instance to format.
+     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
+     * @param [max] - The maximum number of decimal places to display, defaults to `9`.
+     * @param [type] - The type of format, defaults to `"mixed_sc"`.
+     * @returns A string representing the formatted E value.
      */
     public static format (e: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string { return formats.format(new Decimal(e), acc, max, type); }
 
     /**
      * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
-     * @param {number} [acc=2] - The desired accuracy (number of significant figures).
-     * @param {number} [max=9] - The maximum number of decimal places to display.
-     * @param {string} [type="st"] - The type of format (default standard)
-     * @returns {string} A string representing the formatted E value.
+     * @param [acc] - The desired accuracy (number of significant figures).
+     * @param [max] - The maximum number of decimal places to display.
+     * @param [type] - The type of format (default standard)
+     * @returns A string representing the formatted E value.
      */
     public formatST (acc: number = 2, max: number = 9, type: FormatType = "st"): string { return formats.format(this.clone(), acc, max, type); }
     public static formatST (value: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "st"): string { return formats.format(new Decimal(value), acc, max, type); }
 
     /**
      * Formats the gain rate using the E instance.
-     * @param {DecimalSource} gain - The gain value to compare
-     * @param {boolean} [mass=false] - Indicates whether the gain represents a mass value.
-     * @param {string} [type="mixed_sc"] - The type of format (default mixed scientific)
-     * @returns {string} A string representing the formatted gain
-     *
+     * @param gain - The gain value to compare
+     * @param [mass] - Indicates whether the gain represents a mass value.
+     * @param [type] - The type of format (default mixed scientific)
+     * @returns A string representing the formatted gain
      * @example
      * const currency = new Decimal(100);
      * const currencyGain = new Decimal(12);
@@ -3392,8 +4310,8 @@ class Decimal {
 
     /**
      * Converts the E instance to a Roman numeral representation.
-     * @param {number|Decimal} [max=5000] - Max before it returns the original
-     * @returns {string|Decimal} A string representing the Roman numeral equivalent of the E value,
+     * @param [max] - Max before it returns the original
+     * @returns A string representing the Roman numeral equivalent of the E value,
      * or the original E instance if it is greater than or equal to 5000 or less than 1.
      */
     public toRoman (max: DecimalSource = 5000): string | Decimal {
@@ -3416,16 +4334,16 @@ class Decimal {
             IX: 9,
             V: 5,
             IV: 4,
-            I: 1
+            I: 1,
         };
-        let str = '';
-        
-        for (let i of Object.keys(roman)) {
-            let q = Math.floor(newNum / (roman as any)[i]);
+        let str = "";
+
+        for (const i of Object.keys(roman)) {
+            const q = Math.floor(newNum / (roman as any)[i]);
             newNum -= q * (roman as any)[i];
             str += i.repeat(q);
         }
-        
+
         return str;
     }
     public static toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
@@ -4021,7 +4939,7 @@ function metric (num: DecimalSource, type: 0 | 1 | 2 | 3): string {
             return {
                 name: x.name,
                 altName: x.altName,
-                value: Decimal.pow(1000, new Decimal(i).add(1))
+                value: Decimal.pow(1000, new Decimal(i).add(1)),
             };
         });
     })([

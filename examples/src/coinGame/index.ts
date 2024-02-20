@@ -109,10 +109,10 @@ coinGame.keyManager.addKey([
 ]);
 
 // Saving and Loading
-// window.addEventListener("beforeunload", () => {
-//     coinGame.dataManager.saveData();
-// });
-// coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
-//     coinGame.dataManager.saveData();
-//     console.log("Auto Saved!");
-// });
+window.addEventListener("beforeunload", () => {
+    coinGame.dataManager.saveData();
+});
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
+    console.log("Auto Saved!");
+});

@@ -20,6 +20,7 @@
 	},
 	"include": ["src/**/*.ts", "src/**/*.tsx"],
 	"exclude": [
-	  	"node_modules"
+	  	"node_modules",
+        "src/E/new/eNew.ts",
 	]
 }
