@@ -74,7 +74,7 @@ declare class game {
     addCurrency(name: string): gameCurrency;
     /**
      * Adds a new currency group to the game.
-     * @deprecated Use {@link addCurrency} instead.
+     * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
      * @param name - The name of the currency group.
      * @param currencies - An array of currency names to add to the group.
      * @returns An array of gameCurrency objects, in the same order as the input array.

@@ -1780,6 +1780,7 @@ var eventManagerDefaultConfig = {
 };
 var eventManager = class _eventManager {
   /**
+   * Creates a new event manager.
    * @param config - The config to use for this event manager.
    */
   constructor(config) {
@@ -1797,7 +1798,7 @@ var eventManager = class _eventManager {
           this.tickerFunction();
         });
       } else {
-        const fps = this.config.fps ? this.config.fps : 30;
+        const fps = this.config.fps ?? 30;
         this.tickerInterval = setInterval(() => {
           this.tickerFunction();
         }, 1e3 / fps);
@@ -1839,6 +1840,20 @@ var eventManager = class _eventManager {
       }, 1e3 / fps);
     } else if (this.config.pixiApp) {
       this.config.pixiApp.ticker.maxFPS = fps;
+    }
+  }
+  /**
+   * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
+   * @param dt - The time to warp by.
+   */
+  timeWarp(dt) {
+    for (const event of Object.values(this.events)) {
+      if (event.type === "interval") {
+        event.intervalLast -= dt;
+      }
+      if (event.type === "timeout") {
+        event.timeCreated -= dt;
+      }
     }
   }
   /**
@@ -2686,21 +2701,41 @@ var dataManager = class {
   }
   /**
    * Sets the data for the given key.
+   * @template s - The key to set the data for.
+   * @template t - The value to set the data to.
    * @param key - The key to set the data for.
    * @param value - The value to set the data to.
-   * @returns - The value that was set.
+   * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
+   * @example
+   * ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+   * const testData = dataManager.setData("test", 5);
+   * console.log(testData.value); // 5
+   * testData.value = 10; // Also sets the data
+   * console.log(testData.value); // 10
    */
   setData(key, value) {
     if (typeof this.data[key] === "undefined" && this.normalData) {
       console.warn("After initializing data, you should not add new properties to data.");
     }
     this.data[key] = value;
-    return this.data[key];
+    const thisData = () => this.data;
+    return {
+      get value() {
+        return thisData()[key];
+      },
+      set value(valueToSet) {
+        thisData()[key] = valueToSet;
+      },
+      setValue(valueToSet) {
+        thisData()[key] = valueToSet;
+      }
+    };
   }
   /**
    * Gets the data for the given key.
+   * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
    * @param key - The key to get the data for.
-   * @returns - The data for the given key.
+   * @returns The data for the given key.
    */
   getData(key) {
     return this.data[key];
@@ -2709,19 +2744,35 @@ var dataManager = class {
    * Sets the static data for the given key.
    * @param key - The key to set the static data for.
    * @param value - The value to set the static data to.
-   * @returns - The value that was set.
+   * @returns A getter for the static data.
    */
   setStatic(key, value) {
     if (typeof this.static[key] === "undefined" && this.normalData) {
       console.warn("After initializing data, you should not add new properties to staticData.");
     }
     this.static[key] = value;
-    return this.static[key];
+    const getter = {
+      // get a () {
+      //     // console.log("Getter called", key, thisStatic[key]);
+      //     return this.static[key] as t | undefined;
+      // },
+      // a: this.static[key] as t | undefined,
+      // get a (): t | undefined {
+      //     throw new Error("Access getter before it is defined");
+      // },
+    };
+    Object.defineProperty(getter, "a", {
+      get: () => {
+        return this.static[key];
+      }
+    });
+    return getter?.a;
   }
   /**
    * Gets the static data for the given key.
+   * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
    * @param key - The key to get the static data for.
-   * @returns - The static data for the given key.
+   * @returns The static data for the given key.
    */
   getStatic(key) {
     return this.static[key];
@@ -2825,9 +2876,9 @@ var dataManager = class {
       throw new Error("dataManager.loadData(): You must call init() before writing to data.");
     if (!dataToParse)
       return null;
-    const [hash, loadedData] = dataToParse;
+    const [, loadedData] = dataToParse;
     function isPlainObject(obj) {
-      return typeof obj === "object" && obj.constructor === Object;
+      return typeof obj === "object" && obj?.constructor === Object;
     }
     function deepMerge(source, target) {
       const out = target;
@@ -2880,10 +2931,10 @@ var dataManager = class {
     function compareArrays(arr1, arr2) {
       return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
     }
-    function convertTemplateClass(templateClass, plain) {
-      let out = plainToInstance(templateClass.class, plain);
+    function convertTemplateClass(templateClassToConvert, plain) {
+      const out = plainToInstance(templateClassToConvert.class, plain);
       if (!out)
-        throw new Error(`Failed to convert ${templateClass.name} to class instance.`);
+        throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
       return out;
     }
     function plainToInstanceRecursive(plain) {
@@ -2892,9 +2943,9 @@ var dataManager = class {
         if (!(plain[key] instanceof Object && plain[key].constructor === Object))
           continue;
         if ((() => {
-          for (const templateClass of templateClasses) {
-            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClass.properties)) {
-              out[key] = convertTemplateClass(templateClass, plain[key]);
+          for (const templateClassR of templateClasses) {
+            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClassR.properties)) {
+              out[key] = convertTemplateClass(templateClassR, plain[key]);
               return false;
             }
           }
@@ -3096,6 +3147,7 @@ var game = class _game {
       currency: new import_currency2.currency()
     });
     this.dataManager.setStatic(name, {
+      // @ts-expect-error - fix this
       currency: new import_currency2.currencyStatic(() => this.dataManager.getData(name).currency)
       // attributes: {},
     });
@@ -3104,23 +3156,13 @@ var game = class _game {
   }
   /**
    * Adds a new currency group to the game.
-   * @deprecated Use {@link addCurrency} instead.
+   * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
    * @param name - The name of the currency group.
    * @param currencies - An array of currency names to add to the group.
    * @returns An array of gameCurrency objects, in the same order as the input array.
    */
   addCurrencyGroup(name, currencies) {
-    this.dataManager.setData(name, {});
-    this.dataManager.setStatic(name, {
-      attributes: {}
-    });
-    const outCurrencies = [];
-    currencies.forEach((currencyName) => {
-      this.dataManager.getData(name)[currencyName] = new import_currency2.currency();
-      this.dataManager.getStatic(name)[currencyName] = new import_currency2.currencyStatic(this.dataManager.getData(name)[currencyName]);
-      outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
-    });
-    return outCurrencies;
+    throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
   }
   /**
    * Adds a new attribute to the game. {@link gameAttribute} is the class.
@@ -3133,8 +3175,8 @@ var game = class _game {
    * const myAttribute = game.addAttribute("myAttribute");
    */
   addAttribute(name, useBoost = true, initial = 0) {
-    this.dataManager.setData(name, new import_attribute2.attribute(initial));
-    this.dataManager.setStatic(name, new import_attribute2.attributeStatic(this.dataManager.getData(name), useBoost, initial));
+    const dataRef = this.dataManager.setData(name, new import_attribute2.attribute(initial));
+    const staticRef = this.dataManager.setStatic(name, new import_attribute2.attributeStatic(this.dataManager.getData(name), useBoost, initial));
     const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
     return classInstance;
   }

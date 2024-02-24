@@ -43,6 +43,7 @@ declare class eventManager {
     /** The config object */
     config: eventManagerConfig;
     /**
+     * Creates a new event manager.
      * @param config - The config to use for this event manager.
      */
     constructor(config?: eventManagerConfig);
@@ -53,6 +54,11 @@ declare class eventManager {
      * @param fps - The new framerate to use.
      */
     changeFps(fps: number): void;
+    /**
+     * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
+     * @param dt - The time to warp by.
+     */
+    timeWarp(dt: number): void;
     /**
      * Adds a new event or changes an existing event to the event system.
      * @param name - The name of the event. If an event with this name already exists, it will be overwritten.

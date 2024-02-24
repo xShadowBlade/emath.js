@@ -2,7 +2,7 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../E/eMain";
-import { configManager, RequiredDeep } from "./configManager";
+import { configManager } from "./configManager";
 import type { Application } from "pixi.js";
 
 interface Event {
@@ -51,9 +51,6 @@ const eventManagerDefaultConfig: eventManagerConfig = {
  */
 class eventManager {
     private events: Record<string, (intervalEvent | timeoutEvent)>;
-    // {
-    //     [key: string]: (intervalEvent | timeoutEvent);
-    // };
     private tickerInterval?: ReturnType<typeof setInterval>;
 
     private static configManager = new configManager(eventManagerDefaultConfig);
@@ -61,6 +58,7 @@ class eventManager {
     public config: eventManagerConfig;
 
     /**
+     * Creates a new event manager.
      * @param config - The config to use for this event manager.
      */
     constructor (config?: eventManagerConfig) {
@@ -72,7 +70,7 @@ class eventManager {
                     this.tickerFunction();
                 });
             } else {
-                const fps = this.config.fps ? this.config.fps : 30;
+                const fps = this.config.fps ?? 30;
                 this.tickerInterval = setInterval(() => {
                     this.tickerFunction();
                 }, 1000 / fps);
@@ -118,6 +116,22 @@ class eventManager {
             }, 1000 / fps);
         } else if (this.config.pixiApp) {
             this.config.pixiApp.ticker.maxFPS = fps;
+        }
+    }
+
+    /**
+     * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
+     * @param dt - The time to warp by.
+     */
+    public timeWarp (dt: number): void {
+        for (const event of Object.values(this.events)) {
+            if (event.type === "interval") {
+                (event as intervalEvent).intervalLast -= dt;
+            }
+            if (event.type === "timeout") {
+                // ! might cause issues
+                (event as timeoutEvent).timeCreated -= dt;
+            }
         }
     }
 

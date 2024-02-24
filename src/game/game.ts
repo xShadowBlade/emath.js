@@ -125,35 +125,52 @@ class game {
             currency: new currency(),
         });
         this.dataManager.setStatic(name, {
+            // @ts-expect-error - fix this
             currency: new currencyStatic(() => this.dataManager.getData(name).currency),
             // attributes: {},
         });
 
+        // @ts-expect-error - fix this
         const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
+
+
+        // const dataRef = this.dataManager.setData(name, {
+        //     currency: new currency(),
+        // });
+        // const staticRef = this.dataManager.setStatic(name, {
+        //     currency: new currencyStatic(dataRef.value.currency),
+        // });
+        // const classInstance = new gameCurrency(() => dataRef.value.currency, () => staticRef.currency as currencyStatic, this, name);
         return classInstance;
     }
 
     /**
      * Adds a new currency group to the game.
-     * @deprecated Use {@link addCurrency} instead.
+     * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
      * @param name - The name of the currency group.
      * @param currencies - An array of currency names to add to the group.
      * @returns An array of gameCurrency objects, in the same order as the input array.
      */
     public addCurrencyGroup (name: string, currencies: string[]): gameCurrency[] {
-        this.dataManager.setData(name, {});
-        this.dataManager.setStatic(name, {
-            attributes: {},
-        });
+        throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
+        // this.dataManager.setData(name, {});
+        // this.dataManager.setStatic(name, {
+        //     attributes: {},
+        // });
 
-        // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
-        const outCurrencies: gameCurrency[] = [];
-        currencies.forEach((currencyName) => {
-            this.dataManager.getData(name)[currencyName] = new currency();
-            this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
-            outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
-        });
-        return outCurrencies;
+        // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
+        // const outCurrencies: gameCurrency[] = [];
+        // // currencies.forEach((currencyName) => {
+        // //     this.dataManager.getData(name)[currencyName] = new currency();
+        // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
+        // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
+        // // });
+        // currencies.forEach((currencyName) => {
+        //     const dataRef = this.dataManager.setData(currencyName, new currency());
+        //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
+        //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
+        // });
+        // return outCurrencies;
     }
 
     /**
@@ -167,10 +184,14 @@ class game {
      * const myAttribute = game.addAttribute("myAttribute");
      */
     public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
-        this.dataManager.setData(name, new attribute(initial));
-        this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
+        const dataRef = this.dataManager.setData(name, new attribute(initial));
+        // @ts-expect-error - fix this
+        const staticRef = this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
+        // const staticRef = this.dataManager.setStatic(name, new attributeStatic(dataRef, useBoost, initial));
 
+        // @ts-expect-error - fix this
         const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
+        // const classInstance = new gameAttribute(() => dataRef as attribute, () => staticRef as attributeStatic, this);
         return classInstance;
     }
 

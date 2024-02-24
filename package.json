@@ -28,6 +28,7 @@
     "unpkg": "./dist/main/eMath.min.js",
     "scripts": {
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
+        "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.config.json\"",
         "build-main": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "doc": "typedoc --options typedoc.config.json",

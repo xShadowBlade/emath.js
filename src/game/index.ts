@@ -1,3 +1,6 @@
+/**
+ * @file Exports the game module
+ */
 // Saving
 import "reflect-metadata";
 

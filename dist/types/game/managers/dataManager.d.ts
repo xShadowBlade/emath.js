@@ -41,30 +41,44 @@ declare class dataManager {
     addEventOnLoad(event: () => void): void;
     /**
      * Sets the data for the given key.
+     * @template s - The key to set the data for.
+     * @template t - The value to set the data to.
      * @param key - The key to set the data for.
      * @param value - The value to set the data to.
-     * @returns - The value that was set.
+     * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
+     * @example
+     * ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+     * const testData = dataManager.setData("test", 5);
+     * console.log(testData.value); // 5
+     * testData.value = 10; // Also sets the data
+     * console.log(testData.value); // 10
      */
-    setData<t>(key: string, value: t): t;
+    setData<s extends string, t>(key: s, value: t): {
+        value: t;
+        /** @deprecated Use the setter instead. */
+        setValue: (valueToSet: t) => void;
+    };
     /**
      * Gets the data for the given key.
+     * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
      * @param key - The key to get the data for.
-     * @returns - The data for the given key.
+     * @returns The data for the given key.
      */
-    getData(key: string): any | undefined;
+    getData(key: string): unknown | undefined;
     /**
      * Sets the static data for the given key.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
-     * @returns - The value that was set.
+     * @returns A getter for the static data.
      */
     setStatic<t>(key: string, value: t): t;
     /**
      * Gets the static data for the given key.
+     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
      * @param key - The key to get the static data for.
-     * @returns - The static data for the given key.
+     * @returns The static data for the given key.
      */
-    getStatic(key: string): any | undefined;
+    getStatic(key: string): unknown | undefined;
     /**
      * Initializes / sets data that is unmodified by the player.
      * This is used to merge the loaded data with the default data.
@@ -84,13 +98,13 @@ declare class dataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    compileData(data?: Record<string, any>): string;
+    compileData(data?: Record<string, unknown>): string;
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    decompileData(data?: string | null): [string, object] | null;
+    decompileData(data?: string | null): [string, Record<string, unknown>] | null;
     /**
      * Validates the given data using a hashing algorithm (md5)
      * @param data - [hash, data] The data to validate.
@@ -118,12 +132,12 @@ declare class dataManager {
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns The loaded data.
      */
-    parseData(dataToParse?: [string, object] | null): object | null;
+    parseData(dataToParse?: [string, Record<string, unknown>] | null): Record<string, unknown> | null;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    loadData(dataToLoad?: [string, object] | null | string): null | boolean;
+    loadData(dataToLoad?: [string, Record<string, unknown>] | null | string): null | boolean;
 }
 export { dataManager };

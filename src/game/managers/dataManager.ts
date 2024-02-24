@@ -10,7 +10,7 @@ import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
 // Recursive plain to class
-import { currency, upgradeData } from "../../classes/currency";
+import { currency } from "../../classes/currency";
 // import { boost, boostObject } from "../../classes/boost";
 import { attribute } from "../../classes/attribute";
 import { Decimal } from "../../E/e";
@@ -36,15 +36,15 @@ class dataManager {
     /**
      * Game data in its initial state.
      */
-    private normalData?: Record<string, any>;
+    private normalData?: Record<string, unknown>;
     /**
      * The current game data.
      */
-    private data: Record<string, any> = {};
+    private data: Record<string, unknown> = {};
     /**
      * The static game data.
      */
-    private static: Record<string, any> = {};
+    private static: Record<string, unknown> = {};
     /**
      * A reference to the game instance.
      */
@@ -75,24 +75,106 @@ class dataManager {
 
     /**
      * Sets the data for the given key.
+     * @template s - The key to set the data for.
+     * @template t - The value to set the data to.
      * @param key - The key to set the data for.
      * @param value - The value to set the data to.
-     * @returns - The value that was set.
+     * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
+     * @example
+     * ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+     * const testData = dataManager.setData("test", 5);
+     * console.log(testData.value); // 5
+     * testData.value = 10; // Also sets the data
+     * console.log(testData.value); // 10
      */
-    public setData<t> (key: string, value: t): t {
+    public setData<s extends string, t> (key: s, value: t):
+        // { [data in s]: t; }
+        {
+            value: t;
+            /** @deprecated Use the setter instead. */
+            setValue: (valueToSet: t) => void;
+        }
+    {
         if (typeof this.data[key] === "undefined" && this.normalData) {
             console.warn("After initializing data, you should not add new properties to data.");
         }
         this.data[key] = value;
-        return this.data[key];
+        // return this.data[key] as t;
+
+        // Create a getter for the data
+        // const thisData = this.data;
+        // const getter = {
+        //     // get a () {
+        //     //     // console.log("Getter called", key, thisData[key]);
+        //     //     return this.data[key] as t | undefined;
+        //     // },
+        //     // a: this.data[key] as t | undefined,
+        //     // get a (): t | undefined {
+        //     //     throw new Error("Access getter before it is defined");
+        //     // },
+        // };
+        // Object.defineProperty(getter, "a", {
+        //     get: () => {
+        //         console.log("Getter called", key, this.data[key]);
+        //         return this.data[key] as t;
+        //     },
+        //     // set: (valueToSet: t) => {
+        //     //     console.log("Setter called", key, valueToSet);
+        //     //     this.data[key] = valueToSet;
+        //     // },
+        // });
+        // // return (getter as { a: t })?.a;
+        const thisData = () => this.data;
+        // return [
+        //     // (getter as { a: t })?.a,
+        //     ({
+        //         get val (): t {
+        //             console.log("Getter called", key, thisData()[key]);
+        //             return thisData()[key] as t;
+        //         },
+        //     })["val"],
+        //     (valueToSet: t) => {
+        //         console.log("Setter called", key, valueToSet);
+        //         this.data[key] = valueToSet;
+        //         console.log("Data: ", this.data[key]);
+        //     },
+        // ];
+
+        // Object destructuring strips the getter and setter
+        // return {
+        //     get [key] (): t {
+        //         // console.log("Getter called", key, thisData()[key]);
+        //         return thisData()[key] as t;
+        //     },
+        //     set [key] (valueToSet: t) {
+        //         // console.log("Setter called", key, valueToSet);
+        //         thisData()[key] = valueToSet;
+        //     },
+        // } as { [data in s]: t; };
+
+        return {
+            get value (): t {
+                // console.log("Getter called", key, thisData()[key]);
+                return thisData()[key] as t;
+            },
+            set value (valueToSet: t) {
+                // console.log("Setter called", key, valueToSet);
+                thisData()[key] = valueToSet;
+            },
+            setValue (valueToSet: t): void {
+                // console.log("Setter called", key, valueToSet);
+                thisData()[key] = valueToSet;
+            },
+        };
     }
 
     /**
      * Gets the data for the given key.
+     * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
      * @param key - The key to get the data for.
-     * @returns - The data for the given key.
+     * @returns The data for the given key.
      */
-    public getData (key: string): any | undefined {
+    public getData (key: string): unknown | undefined {
         return this.data[key];
     }
 
@@ -100,22 +182,43 @@ class dataManager {
      * Sets the static data for the given key.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
-     * @returns - The value that was set.
+     * @returns A getter for the static data.
      */
     public setStatic<t> (key: string, value: t): t {
         if (typeof this.static[key] === "undefined" && this.normalData) {
             console.warn("After initializing data, you should not add new properties to staticData.");
         }
         this.static[key] = value;
-        return this.static[key];
+        // return this.static[key] as t;
+
+        // Create a getter for the static data
+        // const thisStatic = this.static;
+        const getter = {
+            // get a () {
+            //     // console.log("Getter called", key, thisStatic[key]);
+            //     return this.static[key] as t | undefined;
+            // },
+            // a: this.static[key] as t | undefined,
+            // get a (): t | undefined {
+            //     throw new Error("Access getter before it is defined");
+            // },
+        };
+        Object.defineProperty(getter, "a", {
+            get: () => {
+                // console.log("Getter called", key, thisStatic[key]);
+                return this.static[key] as t;
+            },
+        });
+        return (getter as { a: t })?.a;
     }
 
     /**
      * Gets the static data for the given key.
+     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
      * @param key - The key to get the static data for.
-     * @returns - The static data for the given key.
+     * @returns The static data for the given key.
      */
-    public getStatic (key: string): any | undefined {
+    public getStatic (key: string): unknown | undefined {
         return this.static[key];
     }
 
@@ -156,9 +259,9 @@ class dataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [string, object] | null {
+    public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [string, Record<string, unknown>] | null {
         if (!data) return null;
-        const parsedData: [string, object] = JSON.parse(decompressFromBase64 ? decompressFromBase64(data) : atob(data));
+        const parsedData: [string, Record<string, unknown>] = JSON.parse(decompressFromBase64 ? decompressFromBase64(data) : atob(data));
         return parsedData;
     }
 
@@ -228,10 +331,10 @@ class dataManager {
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns The loaded data.
      */
-    public parseData (dataToParse = this.decompileData()): object | null {
+    public parseData (dataToParse = this.decompileData()): Record<string, unknown> | null {
         if (!this.normalData) throw new Error("dataManager.loadData(): You must call init() before writing to data.");
         if (!dataToParse) return null;
-        const [hash, loadedData] = dataToParse;
+        const [, loadedData] = dataToParse;
         // console.log(loadedData);
 
         /**
@@ -239,8 +342,8 @@ class dataManager {
          * @param obj - The object to check.
          * @returns Whether the object is a plain object.
          */
-        function isPlainObject (obj: any): boolean {
-            return typeof obj === "object" && obj.constructor === Object;
+        function isPlainObject (obj: unknown): boolean {
+            return typeof obj === "object" && obj?.constructor === Object;
         }
 
         /**
@@ -250,15 +353,15 @@ class dataManager {
          * @param target - The target object.
          * @returns The merged object.
          */
-        function deepMerge (source: object, target: object): object {
-            const out: object = target;
+        function deepMerge (source: Record<string, unknown>, target: Record<string, unknown>): Record<string, unknown> {
+            const out = target;
             for (const key in source) {
                 if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
                     // If the property is missing from the target, add it
-                    (out as any)[key] = (source as any)[key];
-                } else if (isPlainObject((source as any)[key]) && isPlainObject((target as any)[key])) {
+                    (out as Record<string, unknown>)[key] = (source as Record<string, unknown>)[key];
+                } else if (isPlainObject((source as Record<string, unknown>)[key]) && isPlainObject((target as Record<string, unknown>)[key])) {
                     // Recursive
-                    (out as any)[key] = deepMerge((source as any)[key], (target as any)[key]);
+                    (out as Record<string, unknown>)[key] = deepMerge((source as Record<string, Record<string, unknown>>)[key], (target as Record<string, Record<string, unknown>>)[key]);
                 }
             }
             return out;
@@ -269,7 +372,8 @@ class dataManager {
         interface templateClass {
             name?: string;
             // Class constructor is Function
-            class: any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            class: new (...args: any[]) => any;
             /** If the value is an array, it's an array of the given type */
             // subclasses?: Record<string, any | [any]>;
             properties: string[];
@@ -322,7 +426,7 @@ class dataManager {
          * @param arr2 - The second array.
          * @returns Whether the arrays are the same.
          */
-        function compareArrays (arr1: any[], arr2: any[]): boolean {
+        function compareArrays (arr1: unknown[], arr2: unknown[]): boolean {
             return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
         }
 
@@ -331,15 +435,16 @@ class dataManager {
 
         /**
          * Converts a plain object to a class instance.
-         * @param templateClass - The template class to convert to.
+         * @param templateClassToConvert - The template class to convert to.
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function convertTemplateClass (templateClass: templateClass, plain: object): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function convertTemplateClass (templateClassToConvert: templateClass, plain: Record<string, unknown>): new (...args: any[]) => any {
             // let out: object = plain;
             // Convert the object
-            let out = plainToInstance(templateClass.class, plain);
-            if (!out) throw new Error(`Failed to convert ${templateClass.name} to class instance.`);
+            const out = plainToInstance(templateClassToConvert.class, plain);
+            if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
 
             // if ((out as any).onLoadData) {
             //     // (out as any).onLoadData();
@@ -377,19 +482,19 @@ class dataManager {
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function plainToInstanceRecursive (plain: object): object {
-            const out: object = plain;
+        function plainToInstanceRecursive (plain: Record<string, unknown>): Record<string, unknown> {
+            const out = plain;
             for (const key in plain) {
                 // console.log(key);
                 // If it's not an object, skip it
-                if (!((plain as any)[key] instanceof Object && (plain as any)[key].constructor === Object)) continue;
+                if (!(plain[key] instanceof Object && (plain as Record<string, object>)[key].constructor === Object)) continue;
                 // If it matches a template class, convert it
                 if (((): boolean => {
                     // Iterate through each template class
-                    for (const templateClass of templateClasses) {
+                    for (const templateClassR of templateClasses) {
                         // If the object has the same properties as the template class, convert it
-                        if (compareArrays(Object.getOwnPropertyNames((plain as any)[key]), templateClass.properties)) {
-                            (out as any)[key] = convertTemplateClass(templateClass, (plain as any)[key]);
+                        if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClassR.properties)) {
+                            out[key] = convertTemplateClass(templateClassR, (plain as Record<string, Record<string, unknown>>)[key]);
 
                             // Return false if it matches a template class
                             return false;
@@ -399,7 +504,7 @@ class dataManager {
                     return true;
                 })()) {
                     // If the object doesn't match a template class, convert it recursively
-                    (out as any)[key] = plainToInstanceRecursive((plain as any)[key]);
+                    (out as Record<string, object>)[key] = plainToInstanceRecursive((plain as Record<string, Record<string, unknown>>)[key]);
                 }
             }
             return out;
@@ -423,7 +528,7 @@ class dataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData (dataToLoad: [string, object] | null | string = this.decompileData()): null | boolean {
+    public loadData (dataToLoad: [string, Record<string, unknown>] | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
         if (!dataToLoad) return null;
         // console.log("Loaded data1: ", dataToLoad);
