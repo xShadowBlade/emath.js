@@ -51,7 +51,7 @@
         "@types/node": "^20.10.4",
         "@types/react": "^18.2.48",
         "@typescript-eslint/eslint-plugin": "^6.9.0",
-        "@typescript-eslint/parser": "^6.9.0",
+        "@typescript-eslint/parser": "^7.0.2",
         "break_eternity.js": "^1.4.1",
         "class-transformer": "^0.5.1",
         "concurrently": "^8.2.2",
