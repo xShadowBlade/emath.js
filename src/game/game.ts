@@ -25,6 +25,7 @@ interface gameConfigOptions {
 	name: {
 		title?: string;
 		id: string;
+        version?: string;
 	}
     settings?: {
         framerate?: number;
@@ -37,6 +38,7 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
     name: {
         title: "",
         id: "",
+        version: "0.0.0",
     },
     settings: {
         framerate: 30,
@@ -120,7 +122,7 @@ class game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    public addCurrency (name: string): gameCurrency {
+    public addCurrency<Name extends string> (name: Name): gameCurrency<Name> {
         this.dataManager.setData(name, {
             currency: new currency(),
         });
@@ -151,7 +153,7 @@ class game {
      * @param currencies - An array of currency names to add to the group.
      * @returns An array of gameCurrency objects, in the same order as the input array.
      */
-    public addCurrencyGroup (name: string, currencies: string[]): gameCurrency[] {
+    public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
         throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
         // this.dataManager.setData(name, {});
         // this.dataManager.setStatic(name, {
@@ -201,7 +203,7 @@ class game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    public addReset (currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset {
+    public addReset (currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset): gameReset {
         const reset = new gameReset(currenciesToReset, extender);
         return reset;
     }

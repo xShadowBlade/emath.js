@@ -3,6 +3,7 @@
  */
 import { E, ESource } from "../E/eMain";
 // import { Type, Expose } from "class-transformer";
+import type { Pointer } from "../game/game";
 
 /** An object representing a boost. */
 interface boostsObjectInit {
@@ -10,8 +11,26 @@ interface boostsObjectInit {
     id: string,
     /** The name of the boost. */
     name?: string,
-    /** An optional description of the boost. */
-    desc?: string,
+    /** @deprecated Use {@link description} instead. This will do nothing */
+    desc?: Pointer<string>,
+    /**
+     * An optional description of the boost.
+     * Can be a string or a function that returns a string.
+     * Made into a getter function to allow for dynamic descriptions.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
+     * // ... create boost
+     * const boost = boost.getBoost("boostID");
+     *
+     * // Getter property
+     * console.log(boost.description); // "This is a undefined that returns a undefined"
+     *
+     * // Getter function
+     * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     */
+    // description?: Pointer<string>,
+    description?: ((...args: any[]) => string) | string,
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
@@ -30,9 +49,16 @@ interface boostsObjectInit {
 
 /** Represents an indiviual boost object. */
 class boostObject implements boostsObjectInit {
+    // public id; name; desc; value; order;
     public id: string;
     public name: string;
-    public desc: string;
+    public descriptionFn: (...args: any[]) => string;
+    // eslint-disable-next-line jsdoc/require-returns
+    /** @deprecated Use {@link description} instead */
+    public get desc (): string { return this.description; }
+    public get description (): string {
+        return this.descriptionFn();
+    }
     public value: (input: E) => E;
     public order: number;
 
@@ -42,7 +68,12 @@ class boostObject implements boostsObjectInit {
         // }
         this.id = init.id;
         this.name = init.name ?? "";
-        this.desc = init.desc ?? "";
+        // this.desc = init.desc ?? "";
+        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
+        // this.descriptionFn = init.description || init.desc ?
+        //     (init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : (
+        //         init.desc ? (typeof init.desc === "function" ? init.desc : () => init.desc as string) : () => ""
+        //     ))
         this.value = init.value;
         this.order = init.order ?? 99;
     }

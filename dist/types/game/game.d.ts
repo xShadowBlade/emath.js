@@ -18,6 +18,7 @@ interface gameConfigOptions {
     name: {
         title?: string;
         id: string;
+        version?: string;
     };
     settings?: {
         framerate?: number;
@@ -71,7 +72,7 @@ declare class game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    addCurrency(name: string): gameCurrency;
+    addCurrency<Name extends string>(name: Name): gameCurrency<Name>;
     /**
      * Adds a new currency group to the game.
      * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
@@ -79,7 +80,7 @@ declare class game {
      * @param currencies - An array of currency names to add to the group.
      * @returns An array of gameCurrency objects, in the same order as the input array.
      */
-    addCurrencyGroup(name: string, currencies: string[]): gameCurrency[];
+    addCurrencyGroup(name: string, currencies: string[]): gameCurrency<string>[];
     /**
      * Adds a new attribute to the game. {@link gameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
@@ -97,6 +98,6 @@ declare class game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    addReset(currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset): gameReset;
+    addReset(currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset): gameReset;
 }
 export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig, Pointer };

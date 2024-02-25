@@ -1937,7 +1937,7 @@ var gameCurrency = class {
     this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
     this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
     this.game = gamePointer;
-    this.name = name ?? "";
+    this.name = name;
     this.game?.dataManager.addEventOnLoad(() => {
       this.static.onLoadData();
     });
@@ -2022,7 +2022,8 @@ var gameDefaultConfig = {
   mode: "production",
   name: {
     title: "",
-    id: ""
+    id: "",
+    version: "0.0.0"
   },
   settings: {
     framerate: 30

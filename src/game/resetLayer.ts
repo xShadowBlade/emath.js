@@ -7,7 +7,7 @@ import type { gameCurrency } from "./game";
 /** Represents a game reset. */
 class gameReset {
     /** The currencies to reset. */
-    public currenciesToReset: gameCurrency[];
+    public currenciesToReset: gameCurrency<string>[];
 
     /** The extender for the game reset. */
     public extender?: gameReset;
@@ -20,7 +20,7 @@ class gameReset {
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
      */
-    constructor (currenciesToReset: gameCurrency | gameCurrency[], extender?: gameReset) {
+    constructor (currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset) {
         this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
         this.extender = extender;
     }

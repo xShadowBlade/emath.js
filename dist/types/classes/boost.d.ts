@@ -2,14 +2,32 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
+import type { Pointer } from "../game/game";
 /** An object representing a boost. */
 interface boostsObjectInit {
     /** The ID of the boost. */
     id: string;
     /** The name of the boost. */
     name?: string;
-    /** An optional description of the boost. */
-    desc?: string;
+    /** @deprecated Use {@link description} instead. This will do nothing */
+    desc?: Pointer<string>;
+    /**
+     * An optional description of the boost.
+     * Can be a string or a function that returns a string.
+     * Made into a getter function to allow for dynamic descriptions.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
+     * // ... create boost
+     * const boost = boost.getBoost("boostID");
+     *
+     * // Getter property
+     * console.log(boost.description); // "This is a undefined that returns a undefined"
+     *
+     * // Getter function
+     * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     */
+    description?: ((...args: any[]) => string) | string;
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
@@ -29,7 +47,10 @@ interface boostsObjectInit {
 declare class boostObject implements boostsObjectInit {
     id: string;
     name: string;
-    desc: string;
+    descriptionFn: (...args: any[]) => string;
+    /** @deprecated Use {@link description} instead */
+    get desc(): string;
+    get description(): string;
     value: (input: E) => E;
     order: number;
     constructor(init: boostObject | boostsObjectInit);

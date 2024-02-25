@@ -5967,10 +5967,18 @@ var E = (() => {
 
 // src/classes/boost.ts
 var boostObject = class {
+  // eslint-disable-next-line jsdoc/require-returns
+  /** @deprecated Use {@link description} instead */
+  get desc() {
+    return this.description;
+  }
+  get description() {
+    return this.descriptionFn();
+  }
   constructor(init) {
     this.id = init.id;
     this.name = init.name ?? "";
-    this.desc = init.desc ?? "";
+    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
     this.value = init.value;
     this.order = init.order ?? 99;
   }
@@ -6159,6 +6167,9 @@ __decorateClass([
   Type(() => Decimal)
 ], upgradeData.prototype, "level", 2);
 var upgradeStatic = class {
+  get description() {
+    return this.descriptionFn();
+  }
   get data() {
     return this.dataPointerFn();
   }
@@ -6171,7 +6182,7 @@ var upgradeStatic = class {
     this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
     this.id = init.id;
     this.name = init.name ?? init.id;
-    this.description = init.description ?? "";
+    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
     this.cost = init.cost;
     this.costBulk = init.costBulk;
     this.maxLevel = init.maxLevel ?? E(1);
@@ -6292,12 +6303,7 @@ var currencyStatic = class {
     if (id === void 0) {
       return null;
     }
-    for (let i = 0; i < this.pointer.upgrades.length; i++) {
-      if (this.pointer.upgrades[i].id === id) {
-        upgradeToGet = this.pointer.upgrades[i];
-        break;
-      }
-    }
+    upgradeToGet = this.pointer.upgrades.find((upgrade) => upgrade.id === id) ?? null;
     return upgradeToGet;
   }
   /**
@@ -6313,12 +6319,7 @@ var currencyStatic = class {
     if (id === void 0) {
       return null;
     } else if (typeof id == "string") {
-      for (let i = 0; i < this.upgrades.length; i++) {
-        if (this.upgrades[i].id === id) {
-          upgradeToGet = this.upgrades[i];
-          break;
-        }
-      }
+      upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
     }
     return upgradeToGet;
   }

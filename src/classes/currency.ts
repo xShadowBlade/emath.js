@@ -4,6 +4,7 @@
 import { Type, Expose } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
+import type { Pointer } from "../game/game";
 
 import { boost } from "./boost";
 
@@ -134,8 +135,24 @@ interface upgradeInit {
     /** The name of the upgrade. Defaults to the ID. */
     name?: string,
 
-    /** The description of the upgrade. */
-    description?: string,
+    /**
+     * The description of the upgrade.
+     * Can be a string or a function that returns a string.
+     * Made into a getter function to allow for dynamic descriptions.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
+     * // ... create upgrade
+     * const upgrade = currencyStatic.getUpgrade("upgradeID");
+     *
+     * // Getter property
+     * console.log(upgrade.description); // "This is a undefined that returns a undefined"
+     *
+     * // Getter function
+     * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     */
+    // description?: Pointer<string>,
+    description?: ((...args: any[]) => string) | string,
 
     /**
      * The cost of upgrades at a certain level.
@@ -205,7 +222,11 @@ class upgradeData implements IUpgradeData {
 
 /** Represents the backend for an upgrade. */
 class upgradeStatic implements IUpgradeStatic {
-    public id; name; description; cost; costBulk; maxLevel; effect; el?;
+    public id; name; cost; costBulk; maxLevel; effect; el?;
+    public descriptionFn: (...args: any[]) => string;
+    public get description (): string {
+        return this.descriptionFn();
+    }
 
     protected dataPointerFn: () => upgradeData;
 
@@ -217,13 +238,14 @@ class upgradeStatic implements IUpgradeStatic {
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
-    constructor (init: upgradeInit, dataPointer: (() => upgradeData) | upgradeData) {
+    constructor (init: upgradeInit, dataPointer: Pointer<upgradeData>) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
         // this.data = data;
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
         this.id = init.id;
         this.name = init.name ?? init.id;
-        this.description = init.description ?? "";
+        // this.description = init.description ?? "";
+        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
         this.cost = init.cost;
         this.costBulk = init.costBulk;
         this.maxLevel = init.maxLevel ?? E(1);
@@ -321,7 +343,7 @@ class currencyStatic {
      * @param defaultVal - The default value of the currency.
      * @param defaultBoost - The default boost of the currency.
      */
-    constructor (pointer: currency | (() => currency) = new currency(), defaultVal: ESource = E(0), defaultBoost: ESource = E(1)) {
+    constructor (pointer: Pointer<currency> = new currency(), defaultVal: ESource = E(0), defaultBoost: ESource = E(1)) {
         this.defaultVal = E(defaultVal);
         this.defaultBoost = E(defaultBoost);
 
@@ -394,12 +416,13 @@ class currencyStatic {
         if (id === undefined) {
             return null;
         }
-        for (let i = 0; i < this.pointer.upgrades.length; i++) {
-            if (this.pointer.upgrades[i].id === id) {
-                upgradeToGet = this.pointer.upgrades[i];
-                break;
-            }
-        }
+        // for (let i = 0; i < this.pointer.upgrades.length; i++) {
+        //     if (this.pointer.upgrades[i].id === id) {
+        //         upgradeToGet = this.pointer.upgrades[i];
+        //         break;
+        //     }
+        // }
+        upgradeToGet = this.pointer.upgrades.find((upgrade) => upgrade.id === id) ?? null;
         return upgradeToGet;
     }
 
@@ -421,12 +444,13 @@ class currencyStatic {
         //     upgradeToGet = this.upgrades[id];
         // }
         else if (typeof id == "string") {
-            for (let i = 0; i < this.upgrades.length; i++) {
-                if (this.upgrades[i].id === id) {
-                    upgradeToGet = this.upgrades[i];
-                    break;
-                }
-            }
+            // for (let i = 0; i < this.upgrades.length; i++) {
+            //     if (this.upgrades[i].id === id) {
+            //         upgradeToGet = this.upgrades[i];
+            //         break;
+            //     }
+            // }
+            upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
         }
         return upgradeToGet;
     }
