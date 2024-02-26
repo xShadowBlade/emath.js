@@ -55,7 +55,7 @@
         "break_eternity.js": "^1.4.1",
         "class-transformer": "^0.5.1",
         "concurrently": "^8.2.2",
-        "esbuild": "0.20.0",
+        "esbuild": "0.20.1",
         "eslint": "^8.50.0",
         "eslint-config-prettier": "^9.0.0",
         "eslint-config-react-app": "^7.0.1",
