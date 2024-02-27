@@ -213,7 +213,7 @@ class upgradeData implements IUpgradeData {
     @Expose() public id;
     @Type(() => Decimal) public level;
 
-    constructor (init: upgradeInit) {
+    constructor (init: Pick<upgradeInit, "id" | "level">) {
         init = init ?? {}; // class-transformer bug
         this.id = init.id ?? -1;
         this.level = init.level ? E(init.level) : E(1);
