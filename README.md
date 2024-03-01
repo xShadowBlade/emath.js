@@ -24,17 +24,19 @@ Credits to [MrRedShark77](https://github.com/MrRedShark77/) for the formats and 
 npm install emath.js
 ```
 
-The package has no default exports. Use as the following: (CJS support only in version ^2.0.0)
+The package has no default exports. Use as the following:
 
 ```js
 import { boost, currency, /* import more here */ } from "emath.js";
 ```
 
-Note: If you are using typescript with webpack, import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` instead. This fixes a bug that causes unexpected behavior when working with the E instance.
+> [!WARNING]
+> If you are using typescript with webpack, import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` instead. This fixes a bug that causes unexpected behavior when working with the E instance.
 
 ### Include using CDN
 
-**NOTE: This will not include types**
+> [!NOTE]
+> This will not include types
 
 #### emath.js
 
@@ -52,7 +54,11 @@ Note: If you are using typescript with webpack, import from ``"emath.js/ts"``, `
 
 #### emath.js/game
 
-Note: Development build for this is not yet availible.
+##### Development Build
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.js"></script>
+```
 
 ##### Production/Minified Build
 
@@ -62,13 +68,7 @@ Note: Development build for this is not yet availible.
 
 #### emath.js/pixiGame
 
-Note: Development build for this is not yet availible.
-
-##### Production/Minified Build
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/pixiGame/eMath.pixiGame.min.js"></script>
-```
+> CDN usage for this module is not yet available.
 
 ---
 

@@ -25,64 +25,64 @@ const fs = require("fs/promises");
 "build-pixiGame:cjs": "esbuild src/pixiGame/index.ts --bundle --format=cjs --outfile=dist/pixiGame/eMath.pixiGame.cjs",
 */
 
-const externalIntFiles = [
-    "./src/index.ts",
-    "./src/hookMain.ts",
+// const externalIntFiles = [
+//     "./src/index.ts",
+//     "./src/hookMain.ts",
 
-    // "./src/classes/*",
-    "./src/classes/attribute.ts",
-    "./src/classes/boost.ts",
-    "./src/classes/currency.ts",
-    "./src/classes/grid.ts",
+//     // "./src/classes/*",
+//     "./src/classes/attribute.ts",
+//     "./src/classes/boost.ts",
+//     "./src/classes/currency.ts",
+//     "./src/classes/grid.ts",
 
-    // "./src/E/*",
-    "./src/E/e.ts",
-    "./src/E/eMain.ts",
-    "./src/E/lru-cache.ts",
-];
+//     // "./src/E/*",
+//     "./src/E/e.ts",
+//     "./src/E/eMain.ts",
+//     "./src/E/lru-cache.ts",
+// ];
 
 /**
  */
 const buildOptions = [
     {
-        entryPoints: ["src/index.ts"],
+        entryPoints: ["src/hookMain.ts"],
         outfile: "dist/main/eMath.js",
         format: "umd",
         plugins: [umdWrapper()],
     },
     {
-        entryPoints: ["src/index.ts"],
+        entryPoints: ["src/hookMain.ts"],
         outfile: "dist/main/eMath.min.js",
         format: "iife",
         minify: true,
     },
 
     {
-        entryPoints: ["src/game/index.ts"],
+        entryPoints: ["src/game/hookGame.ts"],
         outfile: "dist/game/eMath.game.js",
         // format: "umd",
         format: "cjs",
-        external: externalIntFiles,
-        // plugins: [umdWrapper()],
+        // external: externalIntFiles,
+        plugins: [umdWrapper()],
     },
     {
-        entryPoints: ["src/game/index.ts"],
+        entryPoints: ["src/game/hookGame.ts"],
         outfile: "dist/game/eMath.game.min.js",
         format: "iife",
         minify: true,
     },
 
     {
-        entryPoints: ["src/pixiGame/index.ts"],
+        entryPoints: ["src/pixiGame/hookPixiGame.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.js",
-        external: ["pixi.js", ...externalIntFiles],
+        // external: ["pixi.js", ...externalIntFiles],
         format: "umd",
         plugins: [umdWrapper()],
     },
     {
-        entryPoints: ["src/pixiGame/index.ts"],
+        entryPoints: ["src/pixiGame/hookPixiGame.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.min.js",
-        external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
+        // external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
         format: "iife",
         minify: true,
     },
@@ -119,9 +119,9 @@ Promise.all(buildOptions.map(async function (option) {
         .then(() => {
             // console.log(option.outfile, result);
             console.log(`${option.outfile}: ${Date.now() - timeInit}ms`);
-            if (["src/game/index.ts", "src/pixiGame/index.ts"].includes(option.entryPoints[0])) {
-                replaceFileImports();
-            }
+            // if (["src/game/index.ts", "src/pixiGame/index.ts"].includes(option.entryPoints[0])) {
+            //     replaceFileImports();
+            // }
             // option.outfile
         })
         // .then(() => console.log(`${option.outfile}: ${Date.now() - timeInit}ms`))

@@ -1,4 +1,4 @@
-import { hookGame } from "../game/hookGame";
+// import { hookGame } from "../game/hookGame";
 import { pixiGame } from "./pixiGame";
 import { sprite } from "./sprite";
 

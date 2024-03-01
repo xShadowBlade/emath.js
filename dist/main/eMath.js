@@ -7,7 +7,7 @@
     } else {
       var m = hasExports ? f() : f();
       var root = hasExports ? exports : g;
-      
+      for(var i in m) root[i] = m[i];
     }}(typeof self !== 'undefined' ? self : this, () => {
   var exports = {};
   var module = { exports };
@@ -1133,25 +1133,12 @@ var require_Reflect = __commonJS({
   }
 });
 
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  E: () => E,
-  FORMATS: () => FORMATS,
-  FormatTypeList: () => FormatTypeList,
-  attribute: () => attribute,
-  attributeStatic: () => attributeStatic,
-  boost: () => boost,
-  boostObject: () => boostObject,
-  calculateUpgrade: () => calculateUpgrade,
-  currency: () => currency,
-  currencyStatic: () => currencyStatic,
-  grid: () => grid,
-  gridCell: () => gridCell,
-  upgradeData: () => upgradeData,
-  upgradeStatic: () => upgradeStatic
+// src/hookMain.ts
+var hookMain_exports = {};
+__export(hookMain_exports, {
+  eMath: () => eMathWeb
 });
-module.exports = __toCommonJS(src_exports);
+module.exports = __toCommonJS(hookMain_exports);
 var import_reflect_metadata = __toESM(require_Reflect());
 
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
@@ -5301,7 +5288,6 @@ var ST_NAMES = [
     ["", "Hc", "DHe", "THt", "TeH", "PHc", "HHe", "HpH", "OHt", "EHc"]
   ]
 ];
-var FormatTypeList = ["st", "sc", "scientific", "omega", "omega_short", "elemental", "old_sc", "eng", "mixed_sc", "layer", "standard", "inf"];
 var FORMATS = {
   /** Omega format */
   omega: {
@@ -5793,7 +5779,9 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
       }
     }
     default:
-      return neg + FORMATS[type].format(ex, acc, max);
+      if (!FORMATS[type])
+        console.error(`Invalid format type "${type}"`);
+      return neg + FORMATS[type]?.format(ex, acc, max);
   }
 }
 function formatGain(amt, gain, type = "mixed_sc") {
@@ -6474,55 +6462,6 @@ var attribute = class {
 __decorateClass([
   Type(() => Decimal)
 ], attribute.prototype, "value", 2);
-var attributeStatic = class {
-  get pointer() {
-    return this.pointerFn;
-  }
-  /**
-   * Constructs a new instance of the Attribute class.
-   * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
-   * @param useBoost - Indicates whether to use boost for the attribute.
-   * @param initial - The initial value of the attribute.
-   */
-  constructor(pointer, useBoost = true, initial = 0) {
-    this.initial = E(initial);
-    pointer = pointer ?? new attribute(this.initial);
-    this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
-    if (useBoost)
-      this.boost = new boost(this.initial);
-  }
-  /**
-   * Updates the value of the attribute.
-   * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
-   */
-  update() {
-    if (this.boost) {
-      this.pointer.value = this.boost.calculate();
-    }
-  }
-  /**
-   * Gets the value of the attribute, and also updates the value stored.
-   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
-   * @returns The calculated value of the attribute.
-   */
-  get value() {
-    if (this.boost) {
-      this.pointer.value = this.boost.calculate();
-    }
-    return this.pointer.value;
-  }
-  /**
-   * Sets the value of the attribute.
-   * NOTE: This setter should not be used when boost is enabled.
-   * @param value - The value to set the attribute to.
-   */
-  set value(value) {
-    if (this.boost) {
-      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
-    }
-    this.pointer.value = value;
-  }
-};
 
 // src/classes/grid.ts
 var gridCell = class {
@@ -6766,14 +6705,6 @@ var eMathWeb = {
   //     dataManager,
   // },
 };
-function hookMain() {
-  if (typeof process !== "object" && typeof window !== "undefined") {
-    window["eMath"] = eMathWeb;
-  }
-}
-
-// src/index.ts
-hookMain();
 /*! Bundled license information:
 
 reflect-metadata/Reflect.js:

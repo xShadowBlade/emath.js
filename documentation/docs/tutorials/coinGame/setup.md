@@ -41,11 +41,13 @@ This code attaches an event listener to the "load" event of the window and, upon
 
 Create a folder in which your game will be located. For this tutorial, we will title it ``coinGame``.
 
-Next, init the project. For a quick setup, run:
+Next, initiate the project. For a quick start, see my [template defaults](https://github.com/xShadowBlade/template-defaults) repo, which will quickly initiate your project with configuration like the one used in this tutorial.
+
+<!-- Next, init the project. For a quick setup, run:
 
 ```bash
 npm init -y
-```
+``` -->
 
 Now, to install ``emath.js``, run:
 

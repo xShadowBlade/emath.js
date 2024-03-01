@@ -3,9 +3,9 @@
  * @description This is the entry point for the library and exports all relevant things.
  */
 import "reflect-metadata";
-import { hookMain } from "./hookMain";
+// import { hookMain } from "./hookMain";
 // Attach eMath to the window object.
-hookMain();
+// hookMain();
 
 // export {
 //     eMath,

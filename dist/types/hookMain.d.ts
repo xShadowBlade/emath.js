@@ -1,3 +1,7 @@
+/**
+ * @file Declares a function that hooks the game to the window object.
+ */
+import "reflect-metadata";
 import { boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
 import { attribute } from "./classes/attribute";
@@ -37,6 +41,4 @@ declare const eMathWeb: {
 /**
  * Attach eMath to the window object
  */
-declare function hookMain(): void;
-export { hookMain };
-export type { eMathWeb };
+export { eMathWeb as eMath };

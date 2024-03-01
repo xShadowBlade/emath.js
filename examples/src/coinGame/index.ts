@@ -1,4 +1,5 @@
 /**
+ * @file
  * In this example, we will create a button
  * that when pressed gives you coins that you can use
  * on an upgrade that gives you more coins on gain.
@@ -16,7 +17,7 @@ const coinGame = new game({
         framerate: 30, // 15 fps for testing
     },
 });
-(window as any).coinGame = coinGame; // For debugging
+(window as typeof window & { coinGame: typeof coinGame }).coinGame = coinGame; // For debugging
 
 // Initialize coins and static coins
 

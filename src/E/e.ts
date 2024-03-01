@@ -4801,7 +4801,8 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
     }
     default:
         // Other formats
-        return neg + FORMATS[type].format(ex, acc, max);
+        if (!FORMATS[type]) console.error(`Invalid format type "${type}"`);
+        return neg + FORMATS[type]?.format(ex, acc, max);
     }
 }
 

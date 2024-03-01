@@ -10,12 +10,12 @@ import type { game, Pointer } from "./game";
 /**
  * Represents a game currency. {@link currency} is the data class and {@link currencyStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
- * @template Name - The name of the currency. This is optional, and you can use it for display purposes.
+ * @template N - The name of the currency. This is optional, and you can use it for display purposes.
  */
-class gameCurrency<Name extends string> {
+class gameCurrency<N extends string> {
     public dataPointer: () => currency;
     public staticPointer: () => currencyStatic;
-    public name: Name;
+    public name: N;
 
     get data (): currency {
         return this.dataPointer();
@@ -33,7 +33,7 @@ class gameCurrency<Name extends string> {
      * @param gamePointer A pointer to the game instance.
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
-    constructor (currencyPointer: Pointer<currency>, staticPointer: Pointer<currencyStatic>, gamePointer: game, name: Name) {
+    constructor (currencyPointer: Pointer<currency>, staticPointer: Pointer<currencyStatic>, gamePointer: game, name: N) {
         // this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
         // this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 

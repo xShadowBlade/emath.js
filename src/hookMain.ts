@@ -1,9 +1,13 @@
+/**
+ * @file Declares a function that hooks the game to the window object.
+ */
+import "reflect-metadata";
 import { E } from "./E/eMain";
 import { boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
 import { attribute } from "./classes/attribute";
 import { grid, gridCell } from "./classes/grid";
-import { skillNode, skillTree } from "classes/skillTree";
+// import { skillNode, skillTree } from "classes/skillTree";
 
 // import { game } from "./game/game";
 // import { keyManager } from "./game/managers/keyManager";
@@ -81,10 +85,10 @@ const eMathWeb = {
 /**
  * Attach eMath to the window object
  */
-function hookMain () {
-    if (typeof process! !== "object" && typeof window! !== "undefined") {
-        (window as any)["eMath"] = eMathWeb;
-    }
-}
-export { hookMain };
-export type { eMathWeb };
+// function hookMain () {
+//     if (typeof process! !== "object" && typeof window! !== "undefined") {
+//         (window as any)["eMath"] = eMathWeb;
+//     }
+// }
+// export { hookMain };
+export { eMathWeb as eMath };
