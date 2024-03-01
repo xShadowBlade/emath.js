@@ -3,6 +3,7 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import type { game } from "../game";
+type UnknownObject = Record<string, unknown>;
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  *
@@ -14,6 +15,10 @@ declare class dataManager {
      * Game data in its initial state.
      */
     private normalData?;
+    /**
+     * Game data in its initial state, as a plain object.
+     */
+    private normalDataPlain?;
     /**
      * The current game data.
      */
@@ -98,13 +103,13 @@ declare class dataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    compileData(data?: Record<string, unknown>): string;
+    compileData(data?: UnknownObject): string;
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    decompileData(data?: string | null): [string, Record<string, unknown>] | null;
+    decompileData(data?: string | null): [string, UnknownObject] | null;
     /**
      * Validates the given data using a hashing algorithm (md5)
      * @param data - [hash, data] The data to validate.
@@ -132,12 +137,12 @@ declare class dataManager {
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns The loaded data.
      */
-    parseData(dataToParse?: [string, Record<string, unknown>] | null): Record<string, unknown> | null;
+    parseData(dataToParse?: [string, UnknownObject] | null): UnknownObject | null;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    loadData(dataToLoad?: [string, Record<string, unknown>] | null | string): null | boolean;
+    loadData(dataToLoad?: [string, UnknownObject] | null | string): null | boolean;
 }
 export { dataManager };

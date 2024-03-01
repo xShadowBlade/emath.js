@@ -40,7 +40,7 @@ interface upgradeInit {
     description?: ((...args: any[]) => string) | string;
     /**
      * The cost of upgrades at a certain level.
-     * @param level - The current level of the upgrade.
+     * @param level - The CURRENT (not next) level of the upgrade.
      * @returns The cost of the upgrade.
      * @example
      * // A cost function that returns twice the level.
@@ -87,7 +87,7 @@ interface IUpgradeData {
 declare class upgradeData implements IUpgradeData {
     id: string;
     level: Decimal;
-    constructor(init: upgradeInit);
+    constructor(init: Pick<upgradeInit, "id" | "level">);
 }
 /** Represents the backend for an upgrade. */
 declare class upgradeStatic implements IUpgradeStatic {

@@ -156,7 +156,7 @@ interface upgradeInit {
 
     /**
      * The cost of upgrades at a certain level.
-     * @param level - The current level of the upgrade.
+     * @param level - The CURRENT (not next) level of the upgrade.
      * @returns The cost of the upgrade.
      * @example
      * // A cost function that returns twice the level.

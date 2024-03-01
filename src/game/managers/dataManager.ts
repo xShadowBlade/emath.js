@@ -382,7 +382,7 @@ class dataManager {
                 }
                 // Special case for currency.upgrades
                 if (source[key] instanceof currency) {
-                    console.log("Merging currency: ", source[key], target[key]);
+                    // console.log("Merging currency: ", source[key], target[key]);
                     interface currencyPlainType {
                         upgrades: {
                             id: string;
@@ -577,12 +577,12 @@ class dataManager {
     public loadData (dataToLoad: [string, UnknownObject] | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
         if (!dataToLoad) return null;
+        const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??
         // console.log("Loaded data1: ", dataToLoad);
         const parsedData = this.parseData(dataToLoad);
         // console.log("Loaded data2: ", dataToLoad);
         if (!parsedData) return null;
 
-        const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??
         // console.log("Loaded data: ", [dataToLoad[0], instanceToPlain(dataToLoad[1])]);
 
         this.data = parsedData;

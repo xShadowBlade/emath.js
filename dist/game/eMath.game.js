@@ -2786,6 +2786,7 @@ var dataManager = class {
    */
   init() {
     this.normalData = this.data;
+    this.normalDataPlain = instanceToPlain(this.data);
   }
   /**
    * Compiles the given game data to a tuple containing the compressed game data and a hash.
@@ -2814,8 +2815,18 @@ var dataManager = class {
   decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     if (!data)
       return null;
-    const parsedData = JSON.parse(import_lz_string.decompressFromBase64 ? (0, import_lz_string.decompressFromBase64)(data) : atob(data));
-    return parsedData;
+    let parsedData;
+    try {
+      parsedData = JSON.parse(import_lz_string.decompressFromBase64 ? (0, import_lz_string.decompressFromBase64)(data) : atob(data));
+      return parsedData;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.error(`Failed to decompile data (corrupted) "${data}":`, error);
+      } else {
+        throw error;
+      }
+      return null;
+    }
   }
   /**
    * Validates the given data using a hashing algorithm (md5)
@@ -2872,7 +2883,7 @@ var dataManager = class {
    * @returns The loaded data.
    */
   parseData(dataToParse = this.decompileData()) {
-    if (!this.normalData)
+    if (!this.normalData || !this.normalDataPlain)
       throw new Error("dataManager.loadData(): You must call init() before writing to data.");
     if (!dataToParse)
       return null;
@@ -2880,23 +2891,33 @@ var dataManager = class {
     function isPlainObject(obj) {
       return typeof obj === "object" && obj?.constructor === Object;
     }
-    function deepMerge(source, target) {
+    function deepMerge(sourcePlain, source, target) {
       const out = target;
-      for (const key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
-          out[key] = source[key];
-        } else if (isPlainObject(source[key]) && isPlainObject(target[key])) {
-          out[key] = deepMerge(source[key], target[key]);
+      for (const key in sourcePlain) {
+        if (Object.prototype.hasOwnProperty.call(sourcePlain, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+          out[key] = sourcePlain[key];
+        }
+        if (source[key] instanceof import_currency.currency) {
+          const sourceCurrency = source[key];
+          const targetCurrency = target[key];
+          for (const upgrade of sourceCurrency.upgrades) {
+            if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
+              targetCurrency.upgrades.push(instanceToPlain(upgrade));
+            }
+          }
+        } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
+          out[key] = deepMerge(sourcePlain[key], source[key], target[key]);
         }
       }
       return out;
     }
-    let loadedDataProcessed = deepMerge(this.normalData, loadedData);
+    let loadedDataProcessed = deepMerge(this.normalDataPlain, this.normalData, loadedData);
     const templateClasses = function(templateClassesInit) {
       const out = [];
       for (const templateClassConvert of templateClassesInit) {
         out.push({
           class: templateClassConvert.class,
+          name: templateClassConvert.name,
           // subclasses: templateClassConvert.subclasses,
           properties: Object.getOwnPropertyNames(instanceToPlain(new templateClassConvert.class()))
         });
@@ -2904,7 +2925,8 @@ var dataManager = class {
       return out;
     }([
       {
-        class: import_attribute.attribute
+        class: import_attribute.attribute,
+        name: "attribute"
         // subclasses: {
         //     value: Decimal,
         // },
@@ -2917,7 +2939,8 @@ var dataManager = class {
       //     },
       // },
       {
-        class: import_currency.currency
+        class: import_currency.currency,
+        name: "currency"
         // subclasses: {
         //     // boost: boost,
         //     upgrades: [upgradeData],
@@ -2925,7 +2948,8 @@ var dataManager = class {
         // },
       },
       {
-        class: import_e.Decimal
+        class: import_e.Decimal,
+        name: "Decimal"
       }
     ]);
     function compareArrays(arr1, arr2) {
@@ -2968,10 +2992,10 @@ var dataManager = class {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad)
       return null;
+    const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData)
       return null;
-    const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
     this.data = parsedData;
     for (const obj of this.eventsOnLoad) {
       obj();
