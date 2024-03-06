@@ -1,3 +1,6 @@
+/**
+ * @file Declares the Decimal class from break_eternity.js
+ */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/no-this-alias */

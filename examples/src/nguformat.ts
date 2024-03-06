@@ -3,7 +3,10 @@
  */
 import { E } from "emath.js";
 
-let a = E(1000);
+// const f = (x: E): E => x.pow(1.005).mul(1.25);
+const f = (x: E): E => x.tetrate(1.01);
+
+let a = E(2);
 
 let interval: ReturnType<typeof setInterval>;
 
@@ -20,7 +23,7 @@ const display = document.getElementById("nguformatDisplay");
 button!.addEventListener("click", () => {
     interval = setInterval(() => {
         // a = a.pow(1.002).mul(1.35);
-        a = a.pow(1.005).mul(1.25);
+        a = f(a);
         const tier = a.absLog10().div(3).sub(1).floor();
         let ct = 1;
         let txt = `${tier.format()} <br> ${a.formatST()}`; // .match(/\d*[a-zA-Z\-]+/
