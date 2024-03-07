@@ -3,17 +3,39 @@
  */
 import { E } from "../../E/eMain";
 import type { Application } from "pixi.js";
+/**
+ * The type of event
+ */
+declare enum eventTypes {
+    interval = "interval",
+    timeout = "timeout"
+}
+/**
+ * The event interface
+ */
 interface Event {
+    /** The name of the event */
     name: string;
-    type: "interval" | "timeout";
+    /** The type of the event */
+    type: eventTypes;
+    /** The delay before the event triggers */
     delay: number;
+    /** The callback function to execute when the event triggers */
     callbackFn: (dt: number) => void;
+    /** The time the event was created */
     timeCreated: number;
 }
+/**
+ * The interval event interface
+ */
 interface intervalEvent extends Event {
-    type: "interval";
+    type: eventTypes.interval;
+    /** The last time the event was executed */
     intervalLast: number;
 }
+/**
+ * The timeout event interface
+ */
 interface timeoutEvent extends Event {
 }
 interface eventManagerConfig {
@@ -77,13 +99,13 @@ declare class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    setEvent(name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
+    setEvent(name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
     /**
      * Adds a new event
      * @deprecated Use {@link eventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
-    addEvent: (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
+    addEvent: (name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
     /**
      * Removes an event from the event system.
      * @param name - The name of the event to remove.
@@ -92,4 +114,4 @@ declare class eventManager {
      */
     removeEvent(name: string): void;
 }
-export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event };
+export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event, eventTypes };

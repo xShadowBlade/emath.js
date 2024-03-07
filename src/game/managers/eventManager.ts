@@ -5,19 +5,45 @@ import { E } from "../../E/eMain";
 import { configManager } from "./configManager";
 import type { Application } from "pixi.js";
 
+/**
+ * The type of event
+ */
+// eslint-disable-next-line no-shadow
+enum eventTypes {
+    interval = "interval",
+    timeout = "timeout",
+}
+
+/**
+ * The event interface
+ */
 interface Event {
+    /** The name of the event */
     name: string;
-    type: "interval" | "timeout";
+    // type: "interval" | "timeout";
+    /** The type of the event */
+    type: eventTypes;
+    /** The delay before the event triggers */
     delay: number;
+    /** The callback function to execute when the event triggers */
     callbackFn: (dt: number) => void;
+    /** The time the event was created */
     timeCreated: number;
 }
 
+/**
+ * The interval event interface
+ */
 interface intervalEvent extends Event {
-    type: "interval";
+    // type: "interval";
+    type: eventTypes.interval;
+    /** The last time the event was executed */
     intervalLast: number;
 }
 
+/**
+ * The timeout event interface
+ */
 interface timeoutEvent extends Event {}
 
 interface eventManagerConfig {
@@ -153,13 +179,13 @@ class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public setEvent (name: string, type: "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
+    public setEvent (name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
         this.events[name] = (() => {
             switch (type) {
             case "interval": {
                 const event: intervalEvent = {
                     name,
-                    type,
+                    type: type as eventTypes.interval,
                     delay: typeof delay === "number" ? delay : delay.toNumber(),
                     callbackFn,
                     timeCreated: Date.now(),
@@ -171,7 +197,7 @@ class eventManager {
             case "timeout": default: {
                 const event: timeoutEvent = {
                     name,
-                    type,
+                    type: type as eventTypes.timeout,
                     delay: typeof delay === "number" ? delay : delay.toNumber(),
                     callbackFn,
                     timeCreated: Date.now(),
@@ -201,4 +227,4 @@ class eventManager {
     }
 };
 
-export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event };
+export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event, eventTypes };

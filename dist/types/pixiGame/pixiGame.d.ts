@@ -3,7 +3,7 @@
  */
 import { game, gameConfigOptions } from "../game/game";
 import { configManager, RequiredDeep } from "../game/managers/configManager";
-import { sprite } from "./sprite";
+import { sprite, collisionShapeType } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";
 interface pixiGameConfig extends gameConfigOptions {
@@ -39,6 +39,6 @@ declare class pixiGame extends game {
      * @param collisionShape - The collision shape to use for the sprite.
      * @returns The sprite object.
      */
-    addSprite(spriteToAdd: Graphics | Sprite, collisionShape?: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line"): sprite;
+    addSprite(spriteToAdd: Graphics | Sprite, collisionShape?: collisionShapeType): sprite;
 }
 export { pixiGame, pixiGameConfig, pixiGameDefaultConfig };

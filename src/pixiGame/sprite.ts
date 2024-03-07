@@ -13,6 +13,8 @@ import Intersects from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
 
+type collisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
+
 /**
  * Represents a game sprite
  */
@@ -20,7 +22,7 @@ class sprite {
     public sprite: Sprite | Graphics;
     public x: number;
     public y: number;
-    public collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
+    public collisionShape: collisionShapeType;
     public intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
 
     protected gameRef: pixiGame;
@@ -33,7 +35,7 @@ class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor (gameRef: pixiGame, spr: Sprite | Graphics, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle") {
+    constructor (gameRef: pixiGame, spr: Sprite | Graphics, collisionShape: collisionShapeType = "Rectangle") {
         this.gameRef = gameRef;
         this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
         this.x = this.sprite.x; // absolute position
@@ -77,4 +79,4 @@ class sprite {
         // } else if (typeof parent == "object") delete this;
     }
 };
-export { sprite };
+export { sprite, collisionShapeType };

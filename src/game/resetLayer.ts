@@ -6,6 +6,9 @@ import type { gameCurrency } from "./game";
 
 /** Represents a game reset. */
 class gameReset {
+    /** The unique identifier for the game reset to prevent infinite loops. */
+    private id: symbol;
+
     /** The currencies to reset. */
     public currenciesToReset: gameCurrency<string>[];
 
@@ -23,21 +26,21 @@ class gameReset {
     constructor (currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset) {
         this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
         this.extender = extender;
+        this.id = Symbol();
     }
 
     /**
      * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
      */
     public reset (): void {
-        if (this.onReset) {
-            this.onReset();
-        }
+        this.onReset?.();
 
         this.currenciesToReset.forEach((currency) => {
             currency.static.reset();
         });
 
-        if (this.extender) {
+        // this.extender?.reset();
+        if (this.extender && this.extender.id !== this.id) {
             this.extender.reset();
         }
     }

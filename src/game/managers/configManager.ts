@@ -4,6 +4,7 @@
 
 /**
  * Represents a configuration object.
+ * @template T - The type of the configuration object.
  */
 class configManager<T> {
     private configOptionTemplate: T;

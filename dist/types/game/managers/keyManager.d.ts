@@ -2,6 +2,9 @@
  * @file Declares classes for managing key bindings.
  */
 import type { Application } from "pixi.js";
+/**
+ * The key binding interface.
+ */
 interface KeyBinding {
     /** The name of the key binding, for use when updating */
     name: string;
@@ -26,6 +29,9 @@ interface KeyBinding {
      */
     onUp?: () => void;
 }
+/**
+ * The key manager configuration interface.
+ */
 interface keyManagerConfig {
     /**
      * Whether or not to automatically add an interval
@@ -41,7 +47,10 @@ interface keyManagerConfig {
     /** The PIXI application to use for the interval, if you want to use it instead of an interval. */
     pixiApp?: Application;
 }
-/** An array of possible keys. (incomplete) */
+/**
+ * An array of possible keys.
+ * @deprecated Incomplete and not used (also afaik arrow keys dont register)
+ */
 declare const keys: string[];
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.
@@ -52,6 +61,7 @@ declare class keyManager {
     private static configManager;
     private tickers;
     private tickerInterval?;
+    /** The key bindings */
     binds: KeyBinding[];
     /**
      * Creates a new key manager.

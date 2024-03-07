@@ -3,7 +3,7 @@
  */
 import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
 import { configManager, RequiredDeep } from "../game/managers/configManager";
-import { sprite } from "./sprite";
+import { sprite, collisionShapeType } from "./sprite";
 import { keyManager } from "../game/managers/keyManager";
 import { eventManager } from "../game/managers/eventManager";
 
@@ -102,7 +102,7 @@ class pixiGame extends game {
      * @param collisionShape - The collision shape to use for the sprite.
      * @returns The sprite object.
      */
-    public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line" = "Rectangle"): sprite {
+    public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: collisionShapeType = "Rectangle"): sprite {
         return new sprite(this, spriteToAdd, collisionShape);
     }
 }

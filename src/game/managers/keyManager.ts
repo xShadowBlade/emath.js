@@ -5,6 +5,9 @@
 import { configManager, RequiredDeep } from "./configManager";
 import type { Application } from "pixi.js";
 
+/**
+ * The key binding interface.
+ */
 interface KeyBinding {
     /** The name of the key binding, for use when updating */
     name: string;
@@ -34,6 +37,9 @@ interface KeyBinding {
     onUp?: () => void;
 }
 
+/**
+ * The key manager configuration interface.
+ */
 interface keyManagerConfig {
     /**
      * Whether or not to automatically add an interval
@@ -58,7 +64,10 @@ const keyManagerDefaultConfig: keyManagerConfig = {
     pixiApp: undefined,
 };
 
-/** An array of possible keys. (incomplete) */
+/**
+ * An array of possible keys.
+ * @deprecated Incomplete and not used (also afaik arrow keys dont register)
+ */
 const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 
 /**
@@ -72,6 +81,7 @@ class keyManager {
     private tickers: ((dt: number) => void)[];
     private tickerInterval?: ReturnType<typeof setInterval>;
 
+    /** The key bindings */
     public binds: KeyBinding[];
 
     /**

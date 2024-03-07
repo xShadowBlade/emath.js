@@ -8255,18 +8255,17 @@ var gameReset = class {
   constructor(currenciesToReset, extender) {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = extender;
+    this.id = Symbol();
   }
   /**
    * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
    */
   reset() {
-    if (this.onReset) {
-      this.onReset();
-    }
+    this.onReset?.();
     this.currenciesToReset.forEach((currency2) => {
       currency2.static.reset();
     });
-    if (this.extender) {
+    if (this.extender && this.extender.id !== this.id) {
       this.extender.reset();
     }
   }

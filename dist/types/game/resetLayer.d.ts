@@ -4,6 +4,8 @@
 import type { gameCurrency } from "./game";
 /** Represents a game reset. */
 declare class gameReset {
+    /** The unique identifier for the game reset to prevent infinite loops. */
+    private id;
     /** The currencies to reset. */
     currenciesToReset: gameCurrency<string>[];
     /** The extender for the game reset. */

@@ -13,16 +13,30 @@ import { configManager, RequiredDeep } from "./managers/configManager";
  * A pointer to a value or a function that returns a value by reference.
  */
 type Pointer<T> = (() => T) | T;
+/**
+ * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
+ */
 interface gameConfigOptions {
+    /** The mode to run the game in. Not used internally. */
     mode?: "development" | "production";
+    /** The name of the game. Not used internally. */
     name: {
+        /** The title of the game.  */
         title?: string;
+        /** The ID of the game. Used for naming saves. */
         id: string;
+        /** The version of the game. Not used internally. */
         version?: string;
     };
+    /** The settings for the game. */
     settings?: {
+        /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
     };
+    /**
+     * Whether or not to automatically initialize the interval-based managers.
+     * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
+     */
     initIntervalBasedManagers?: boolean;
 }
 declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
@@ -31,6 +45,7 @@ declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
  */
 declare class game {
     protected static configManager: configManager<RequiredDeep<gameConfigOptions>>;
+    /** The config object */
     config: typeof game.configManager.options;
     /**
      * The data manager for the game.
