@@ -3,39 +3,18 @@
 /**
  * @file idk use black magic and type gymnastics to make this work or something
  */
-import { DecimalSource, CompareResult } from "break_eternity.js";
+import type { DecimalSource, CompareResult } from "break_eternity.js";
 import { Decimal } from "./declare";
 
 // type RecordClass<C> = Record<keyof C, C[keyof C]>;
 
 interface DecimalAddedMethodsInterface {
-    clone (this: Decimal): Decimal;
-    softcap (this: Decimal, start: DecimalSource, power: number, mode: string): Decimal;
-    scale (this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
-    format (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
-    formatST (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
-    formatGain (this: Decimal, gain: DecimalSource, type?: FormatType): string;
-    toRoman (this: Decimal, max?: DecimalSource): string | Decimal;
-}
-
-// Class and interface merging / Module Augmentation
-declare module "./declare" {
-    interface Decimal extends DecimalAddedMethodsInterface {}
-}
-
-const DecimalAddedMethods: DecimalAddedMethodsInterface = {
-    // formats: typeof FORMATS,
-
-
     /**
      * Creates a clone of the Decimal instance.
      * @deprecated
      * @returns A Decimal instance that is a clone of the original.
      */
-    clone (this: Decimal): Decimal {
-        return this;
-    },
-
+    clone (this: Decimal): Decimal;
     /**
      * Applies a soft cap to a Decimal value using a specified soft cap function.
      * @param start - The value at which the soft cap starts.
@@ -44,6 +23,70 @@ const DecimalAddedMethods: DecimalAddedMethodsInterface = {
      * or "exp" for exponential soft cap.
      * @returns The Decimal value after applying the soft cap.
      */
+    softcap (this: Decimal, start: DecimalSource, power: number, mode: string): Decimal;
+    /**
+     * Scales a currency value using a specified scaling function.
+     * @param s - The value at which scaling starts.
+     * @param p - The scaling factor.
+     * @param mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
+     * @param rev - Whether to reverse the scaling operation
+     * @returns The scaled currency value.
+     */
+    scale (this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    /**
+     * Formats the E instance with a specified accuracy and maximum Decimal places.
+     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
+     * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
+     * @param [type] - The type of format, defaults to `"mixed_sc"`.
+     * @returns A string representing the formatted E value.
+     */
+    format (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
+    /**
+     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * @param [acc] - The desired accuracy (number of significant figures).
+     * @param [max] - The maximum number of Decimal places to display.
+     * @param [type] - The type of format (default standard)
+     * @returns A string representing the formatted E value.
+     */
+    formatST (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
+    /**
+     * Formats the gain rate using the E instance.
+     * @param gain - The gain value to compare
+     * @param [type] - The type of format (default mixed scientific)
+     * @returns A string representing the formatted gain
+     * @example
+     * const currency = new Decimal(100);
+     * const currencyGain = new Decimal(12);
+     * const formatted = currency.formats.formatGain(currencyGain);
+     * console.log(formatted); // should return "(+12/sec)"
+     */
+    formatGain (this: Decimal, gain: DecimalSource, type?: FormatType): string;
+    /**
+     * Converts the E instance to a Roman numeral representation.
+     * @param [max] - Max before it returns the original
+     * @returns A string representing the Roman numeral equivalent of the E value,
+     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     */
+    toRoman (this: Decimal, max?: DecimalSource): string | Decimal;
+}
+
+// Class and interface merging / Module Augmentation
+declare module "./declare" {
+    // eslint-disable-next-line no-shadow
+    /**
+     * @deprecated If you are using `emath.js`, use {@link E} instead
+     */
+    // eslint-disable-next-line no-shadow
+    interface Decimal extends DecimalAddedMethodsInterface {}
+}
+
+const DecimalAddedMethods: DecimalAddedMethodsInterface = {
+    clone (this: Decimal): Decimal {
+        // return this;
+        // console.log(this);
+        return new Decimal(this);
+    },
+
     softcap (this: Decimal, start: DecimalSource, power: number, mode: string): Decimal {
         let x = this.clone();
         if (x.gte(start)) {
@@ -54,14 +97,6 @@ const DecimalAddedMethods: DecimalAddedMethodsInterface = {
         return x;
     },
 
-    /**
-     * Scales a currency value using a specified scaling function.
-     * @param s - The value at which scaling starts.
-     * @param p - The scaling factor.
-     * @param mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
-     * @param rev - Whether to reverse the scaling operation
-     * @returns The scaled currency value.
-     */
     scale (this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): Decimal {
         s = new Decimal(s);
         p = new Decimal(p);
@@ -77,50 +112,18 @@ const DecimalAddedMethods: DecimalAddedMethodsInterface = {
         return x;
     },
 
-    /**
-     * Formats the E instance with a specified accuracy and maximum Decimal places.
-     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
-     * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
-     * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
-     */
     format (this: Decimal, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string {
         return formats.format(this.clone(), acc, max, type);
     },
 
-    /**
-     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
-     * @param [acc] - The desired accuracy (number of significant figures).
-     * @param [max] - The maximum number of Decimal places to display.
-     * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted E value.
-     */
     formatST (this: Decimal, acc: number = 2, max: number = 9, type: FormatType = "st"): string {
         return formats.format(this.clone(), acc, max, type);
     },
 
-    /**
-     * Formats the gain rate using the E instance.
-     * @param gain - The gain value to compare
-     * @param [mass] - Indicates whether the gain represents a mass value.
-     * @param [type] - The type of format (default mixed scientific)
-     * @returns A string representing the formatted gain
-     * @example
-     * const currency = new Decimal(100);
-     * const currencyGain = new Decimal(12);
-     * const formatted = currency.formats.formatGain(currencyGain);
-     * console.log(formatted); // should return "(+12/sec)"
-     */
     formatGain (this: Decimal, gain: DecimalSource, type: FormatType = "mixed_sc"): string {
         return formats.formatGain(this.clone(), gain, type);
     },
 
-    /**
-     * Converts the E instance to a Roman numeral representation.
-     * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000 or less than 1.
-     */
     toRoman (this: Decimal, max: DecimalSource = 5000): string | Decimal {
         max = new Decimal(max);
 
@@ -155,9 +158,22 @@ const DecimalAddedMethods: DecimalAddedMethodsInterface = {
     },
 };
 
-for (const key in DecimalAddedMethods) {
-    (Decimal.prototype as any)[key] = (DecimalAddedMethods as any)[key].bind(Decimal);
+// for (const key in DecimalAddedMethods) {
+//     console.log(key);
+//     (Decimal.prototype as any)[key] = DecimalAddedMethods[key as keyof typeof DecimalAddedMethods].bind(Decimal.prototype);
+// }
+/**
+ * Adds methods to an object
+ * @param obj - The object to add methods to
+ * @param methods - The methods to add
+ */
+function addMethods (obj: Record<string, any>, methods: Record<string, any>): void {
+    for (const key in methods) {
+        // (obj as any)[key] = (methods[key as keyof typeof methods] as (...args: any[]) => any).bind(obj);
+        (obj as any)[key] = methods[key as keyof typeof methods];
+    }
 }
+addMethods(Decimal.prototype, DecimalAddedMethods);
 
 // interface DecimalAddedStaticMethodsInterface {
 //     smoothDamp (current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
@@ -192,7 +208,8 @@ const DecimalAddedStaticMethods = {
      * @returns - The cloned number
      */
     clone (x: Decimal): Decimal {
-        return Decimal.fromComponents(x.sign, x.layer, x.mag);
+        // return Decimal.fromComponents(x.sign, x.layer, x.mag);
+        return x;
     },
 
     softcap (value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal {
@@ -224,77 +241,9 @@ const DecimalAddedStaticMethods = {
 };
 
 for (const key in DecimalAddedStaticMethods) {
-    (Decimal as any)[key] = (DecimalAddedStaticMethods as any)[key].bind(Decimal);
+    // (Decimal as any)[key] = (DecimalAddedStaticMethods as any)[key].bind(Decimal);
+    (Decimal as any)[key] = (DecimalAddedStaticMethods as any)[key];
 }
-// Test of interface merging
-
-// class test1 {
-//     public x: number;
-//     public y: number;
-
-//     constructor (x: number, y: number) {
-//         this.x = x;
-//         this.y = y;
-//     }
-
-//     public getPoint () {
-//         return {
-//             x: this.x,
-//             y: this.y,
-//         };
-//     }
-
-//     // Important to test: returns new instance of the class
-//     public translate (x: number, y: number) {
-//         return new test1(this.x + x, this.y + y);
-//     }
-
-//     public static fromPoint (point: { x: number, y: number }): test1 {
-//         return new test1(point.x, point.y);
-//     }
-// }
-
-// interface test1 {
-//     getX (): number;
-// }
-
-// test1.prototype.getX = function (this: test1): number {
-//     return this.x;
-// };
-
-// const testInstance = new test1(1, 2);
-// const newTestInstance = testInstance.translate(1, 2);
-// newTestInstance.getX();
-
-
-// class test extends Decimal {
-//     constructor (value: DecimalSource) {
-//         super(value);
-//     }
-// }
-
-// bug lol
-
-// Change the return type of every method in Decimal to Decimal & DecimalClone
-// type ReplaceReturnType<T extends (...a: any) => any, TOldReturn, TNewReturn> = (...a: Parameters<T>) =>
-//     ReturnType<T> extends TOldReturn ? TNewReturn : ReturnType<T>;
-//     // ReplaceType<ReturnType<T>, TOldReturn, TNewReturn>;
-// type DecimalWithNewMethods = {
-//     [K in keyof Decimal]: Decimal[K] extends (...a: any) => any ? ReplaceReturnType<Decimal[K], InstanceType<typeof Decimal>, (InstanceType<typeof Decimal> & InstanceType<typeof DecimalClone>)> : Decimal[K];
-// };
-
-// test
-// declare function testFn (a: number): Decimal;
-// type testFnType = ReplaceReturnType<typeof testFn, Decimal, Decimal>;
-
-// // @ts-expect-error - type gymnastics
-// Decimal = Decimal as unknown as DecimalWithNewMethods;
-
-// Change the return type of the constructor to Decimal & DecimalClone
-// type DecimalConstructor = {
-//     new (value: DecimalSource): Decimal & DecimalClone;
-//     (value: DecimalSource): Decimal & DecimalClone;
-// }
 
 /**
  * A function that returns a Decimal instance. Also contains static methods and properties of the Decimal class.
@@ -303,10 +252,16 @@ for (const key in DecimalAddedStaticMethods) {
  */
 // @ts-expect-error Declared as a function, but adds properties later
 const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & { formats: typeof formats } = (() => {
-    const out = (x?: DecimalSource) => E(x);
+    // const out = (x?: DecimalSource) => {
+    //     const instance = new Decimal(x);
+    //     addMethods(instance, DecimalAddedMethods);
+    //     return instance;
+    // };
+    const out = (x?: DecimalSource) => new Decimal(x);
 
     // Copy properties from Decimal to E
-    (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b)) as string[]).forEach((prop) => {
+    (Object.getOwnPropertyNames(Decimal).filter((b) => ![...Object.getOwnPropertyNames(class {}), "arguments", "caller", "callee"].includes(b)) as string[]).forEach((prop) => {
+        // console.log(prop);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (out as any)[prop] = (Decimal as any)[prop];
     });
@@ -315,10 +270,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAdded
 
 type E = Decimal;
 
-// E(2).add(23).format();
-
-console.log("Augmented methods test", E(2).add(23).format());
-console.log("Augmented static methods test", E.format(E(2).add(23)));
+// console.log("clone test", E(5).format());
 
 // Formats
 /** A list of names for the standard notation */
@@ -355,18 +307,18 @@ const FORMATS = {
          */
         format (value: DecimalSource): string {
             value = E(value);
-            const step = Decimal.floor(value.div(1000));
-            const omegaAmount = Decimal.floor(step.div(FORMATS.omega.config.greek.length));
+            const step = E.floor(value.div(1000));
+            const omegaAmount = E.floor(step.div(FORMATS.omega.config.greek.length));
             let lastLetter = FORMATS.omega.config.greek[step.toNumber() % FORMATS.omega.config.greek.length] + toSubscript(value.toNumber() % 1000);
             const beyondGreekArrayBounds = FORMATS.omega.config.greek[step.toNumber() % FORMATS.omega.config.greek.length] === undefined;
             if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
                 lastLetter = "ω";
             }
-            const omegaOrder = Decimal.log(value, 8000).toNumber();
+            const omegaOrder = E.log(value, 8000).toNumber();
             if (omegaAmount.equals(0)) {
                 return lastLetter;
             } else if (omegaAmount.gt(0) && omegaAmount.lte(3)) {
-                const omegas: string[] = [];
+                const omegas = [];
                 for (let i = 0; i < omegaAmount.toNumber(); i++) {
                     omegas.push("ω");
                 }
@@ -378,10 +330,10 @@ const FORMATS = {
             } else if (omegaOrder < 6) {
                 return `ω(${FORMATS.omega.format(omegaAmount)})`;
             }
-            const val = Decimal.pow(8000, omegaOrder % 1);
+            const val = E.pow(8000, omegaOrder % 1);
             const orderStr = omegaOrder < 100
                 ? Math.floor(omegaOrder).toFixed(0)
-                : FORMATS.omega.format(Decimal.floor(omegaOrder));
+                : FORMATS.omega.format(E.floor(omegaOrder));
             return `ω[${orderStr}](${FORMATS.omega.format(val)})`;
         },
     },
@@ -398,18 +350,18 @@ const FORMATS = {
          */
         format (value: DecimalSource): string {
             value = E(value);
-            const step = Decimal.floor(value.div(1000));
-            const omegaAmount = Decimal.floor(step.div(FORMATS.omega_short.config.greek.length));
+            const step = E.floor(value.div(1000));
+            const omegaAmount = E.floor(step.div(FORMATS.omega_short.config.greek.length));
             let lastLetter = FORMATS.omega_short.config.greek[step.toNumber() % FORMATS.omega_short.config.greek.length] + toSubscript(value.toNumber() % 1000);
             const beyondGreekArrayBounds = FORMATS.omega_short.config.greek[step.toNumber() % FORMATS.omega_short.config.greek.length] === undefined;
             if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
                 lastLetter = "ω";
             }
-            const omegaOrder = Decimal.log(value, 8000).toNumber();
+            const omegaOrder = E.log(value, 8000).toNumber();
             if (omegaAmount.equals(0)) {
                 return lastLetter;
             } else if (omegaAmount.gt(0) && omegaAmount.lte(2)) {
-                const omegas: string[] = [];
+                const omegas = [];
                 for (let i = 0; i < omegaAmount.toNumber(); i++) {
                     omegas.push("ω");
                 }
@@ -417,10 +369,10 @@ const FORMATS = {
             } else if (omegaAmount.gt(2) && omegaAmount.lt(10)) {
                 return `ω(${omegaAmount.toFixed(0)})^${lastLetter}`;
             }
-            const val = Decimal.pow(8000, omegaOrder % 1);
+            const val = E.pow(8000, omegaOrder % 1);
             const orderStr = omegaOrder < 100
                 ? Math.floor(omegaOrder).toFixed(0)
-                : FORMATS.omega_short.format(Decimal.floor(omegaOrder));
+                : FORMATS.omega_short.format(E.floor(omegaOrder));
             return `ω[${orderStr}](${FORMATS.omega_short.format(val)})`;
         },
     },
@@ -481,7 +433,7 @@ const FORMATS = {
         abbreviationLength (group: number): number {
             return group == 1 ? 1 : Math.pow(Math.floor(group / 2) + 1, 2) * 2;
         },
-        getAbbreviationAndValue (x: Decimal) {
+        getAbbreviationAndValue (x: E) {
             const abbreviationListUnfloored = x.log(118).toNumber();
             const abbreviationListIndex = Math.floor(abbreviationListUnfloored) + 1;
             const abbreviationLength = FORMATS.elemental.abbreviationLength(abbreviationListIndex);
@@ -491,20 +443,20 @@ const FORMATS = {
             const value = E(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
             return [abbreviation, value];
         },
-        formatElementalPart (abbreviation: string, n: Decimal) {
+        formatElementalPart (abbreviation: string, n: E) {
             if (n.eq(1)) {
                 return abbreviation;
             }
             return `${n} ${abbreviation}`;
         },
-        format (value: Decimal, acc: number): string {
+        format (value: E, acc: number): string {
             if (value.gt(E(118).pow(E(118).pow(E(118).pow(4))))) return "e" + FORMATS.elemental.format(value.log10(), acc);
 
             let log = value.log(118);
             const slog = log.log(118);
             const sslog = slog.log(118).toNumber();
             const max = Math.max(4 - sslog * 2, 1);
-            const parts: any[] = [];
+            const parts = [];
             while (log.gte(1) && parts.length < max) {
                 const [abbreviation, value] = FORMATS.elemental.getAbbreviationAndValue(log);
                 const n = log.div(value).floor();
@@ -663,7 +615,7 @@ const FORMATS = {
     },
 };
 
-// console.log(Decimal);
+// console.log(E);
 
 const INFINITY_NUM = E(2).pow(1024);
 const SUBSCRIPT_NUMBERS = "₀₁₂₃₄₅₆₇₈₉";
@@ -702,7 +654,7 @@ function formatST (ex: DecimalSource, acc: number = 2, max: number = 9, type: "s
  * Format the value into a specific format type
  * @param ex - The value to format
  * @param acc - The desired accuracy (number of significant figures), defaults to `2`.
- * @param max - The maximum number of Decimal places to display, defaults to `9`.
+ * @param max - The maximum number of E places to display, defaults to `9`.
  * @param type - The type of format to use (default "mixed_sc")
  * @returns - The formatted value
  */
@@ -770,7 +722,8 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
     }
     default:
         // Other formats
-        return neg + FORMATS[type].format(ex, acc, max);
+        if (!FORMATS[type]) console.error(`Invalid format type "${type}"`);
+        return neg + FORMATS[type]?.format(ex, acc, max);
     }
 }
 
@@ -823,7 +776,7 @@ function formatTime (ex: DecimalSource, acc: number = 2, type: string = "s"): st
  * @returns - The formatted time
  */
 function formatTimeLong (ex: DecimalSource, ms = false, acc = 0, max = 9, type: FormatType = "mixed_sc"): string {
-    const formatFn = (ex: DecimalSource) => format(ex, acc, max, type);
+    const formatFn = (exf: DecimalSource) => format(exf, acc, max, type);
     ex = E(ex);
     const mls = ex.mul(1000).mod(1000).floor();
     const sec = ex.mod(60).floor();
@@ -879,7 +832,7 @@ function formatMult (ex: DecimalSource, acc: number = 2): string {
  * @returns - The value after being exponentiated
  */
 function expMult (a: DecimalSource, b: DecimalSource, base: number = 10) {
-    return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : E(a);
+    return E.gte(a, 10) ? E.pow(base, E.log(a, base).pow(b)) : E(a);
 }
 
 /**
@@ -897,19 +850,19 @@ function expMult (a: DecimalSource, b: DecimalSource, base: number = 10) {
  * metric(1234, 2); // Returns "1.23"
  * metric(1234, 3); // Returns "Kilo"
  */
-function metric (num: DecimalSource, type: 0 | 1 | 2 | 3): string {
+function metric (num: DecimalSource, type: 0 | 1 | 2 | 3 = 0): string {
     num = E(num);
     interface IAbb {
         name: string;
         altName: string;
-        value: Decimal;
+        value: E;
     }
     const abb = ((abbM: Omit<IAbb, "value">[]): IAbb[] => {
         return abbM.map((x, i) => {
             return {
                 name: x.name,
                 altName: x.altName,
-                value: Decimal.pow(1000, E(i).add(1)),
+                value: E.pow(1000, E(i).add(1)),
             };
         });
     })([
@@ -956,7 +909,7 @@ function metric (num: DecimalSource, type: 0 | 1 | 2 | 3): string {
     ]);
     // console.log("ev", abb);
     let output = "";
-    const abbNum = num.lte(0) ? 0 : Decimal.min(Decimal.log(num, 1000).sub(1), abb.length - 1).floor().toNumber();
+    const abbNum = num.lte(0) ? 0 : E.min(E.log(num, 1000).sub(1), abb.length - 1).floor().toNumber();
     const abbMax = abb[abbNum];
     if (abbNum === 0) {
         switch (type) {
@@ -1014,15 +967,16 @@ const formats = {...FORMATS, ...{
     ev,
 }};
 
+/*
 // Test
-// /*
-const testA = E(Math.random()).mul("1e" + Math.floor(Math.random() * 1e6));
+const testA = E(Math.random()).mul("1e" + Math.floor(Math.random() * 1e3));
 console.log(testA);
-const testB = E(Math.random()).mul("1e" + Math.floor(Math.random() * 1e6));
+const testB = E(Math.random()).mul("1e" + Math.floor(Math.random() * 1e3));
 console.log(testB);
 
 const testFormats = {
     toString: (x: DecimalSource) => E(x).toString(),
+    prototype: (x: DecimalSource) => E(x).format(),
     standard: (x: DecimalSource) => format(x, 2, 9, "st"),
     sc: (x: DecimalSource) => format(x, 2, 9, "sc"),
     default: format,
@@ -1042,16 +996,17 @@ const testFormats = {
     formatReduction,
     formatPercent,
     formatMult,
-    expMult: [expMult],
+    // expMult: [expMult],
 };
 
 console.table(Object.keys(testFormats).map((x) => {
-    let value;
+    let value: string;
+    const formatFn = (testFormats)[x as keyof typeof testFormats];
     try {
-        if (Array.isArray((testFormats as any)[x])) {
-            value = (testFormats as any)[x][0](testA, testB);
+        if (Array.isArray(formatFn)) {
+            value = formatFn[0](testA, testB);
         } else {
-            value = (testFormats as any)[x](testA);
+            value = formatFn(testA);
         }
     } catch (e) {
         console.error(e);
@@ -1063,18 +1018,21 @@ console.table(Object.keys(testFormats).map((x) => {
     };
 }));
 // end test
-// */
+*/
 
-export { formats, FORMATS, ST_NAMES, FormatType, FormatTypeList };
+export { formats, FORMATS, ST_NAMES, FormatTypeList };
 
 // Decimal.formats = formats;
 
+// import { formats, FormatType } from "./formats";
+
 E.formats = formats;
 
-// export default Decimal;
-
-// export { Decimal, DecimalSource };
-
 export { E };
+export type { CompareResult, DecimalSource as ESource, FormatType };
+/**
+ * @deprecated Use {@link E} instead
+ */
+export { Decimal };
 
 // return Decimal;

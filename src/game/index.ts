@@ -7,6 +7,9 @@ import "reflect-metadata";
 // import { hookGame } from "./hookGame";
 // hookGame();
 
+// Module augmentation
+import "../E/eMain";
+
 export * from "./game";
 export * from "./managers/keyManager";
 export * from "./managers/eventManager";

@@ -1,7 +1,119 @@
 /**
- * @file Declares the number formatting functions
+ * @file idk use black magic and type gymnastics to make this work or something
  */
-import { E, ESource } from "./eMain";
+import type { DecimalSource, CompareResult } from "break_eternity.js";
+import { Decimal } from "./declare";
+interface DecimalAddedMethodsInterface {
+    /**
+     * Creates a clone of the Decimal instance.
+     * @deprecated
+     * @returns A Decimal instance that is a clone of the original.
+     */
+    clone(this: Decimal): Decimal;
+    /**
+     * Applies a soft cap to a Decimal value using a specified soft cap function.
+     * @param start - The value at which the soft cap starts.
+     * @param power - The power or factor used in the soft cap calculation.
+     * @param mode - The soft cap mode. Use "pow" for power soft cap, "mul" for multiplication soft cap,
+     * or "exp" for exponential soft cap.
+     * @returns The Decimal value after applying the soft cap.
+     */
+    softcap(this: Decimal, start: DecimalSource, power: number, mode: string): Decimal;
+    /**
+     * Scales a currency value using a specified scaling function.
+     * @param s - The value at which scaling starts.
+     * @param p - The scaling factor.
+     * @param mode - The scaling mode. Use "pow" for power scaling or "exp" for exponential scaling.
+     * @param rev - Whether to reverse the scaling operation
+     * @returns The scaled currency value.
+     */
+    scale(this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    /**
+     * Formats the E instance with a specified accuracy and maximum Decimal places.
+     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
+     * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
+     * @param [type] - The type of format, defaults to `"mixed_sc"`.
+     * @returns A string representing the formatted E value.
+     */
+    format(this: Decimal, acc?: number, max?: number, type?: FormatType): string;
+    /**
+     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * @param [acc] - The desired accuracy (number of significant figures).
+     * @param [max] - The maximum number of Decimal places to display.
+     * @param [type] - The type of format (default standard)
+     * @returns A string representing the formatted E value.
+     */
+    formatST(this: Decimal, acc?: number, max?: number, type?: FormatType): string;
+    /**
+     * Formats the gain rate using the E instance.
+     * @param gain - The gain value to compare
+     * @param [type] - The type of format (default mixed scientific)
+     * @returns A string representing the formatted gain
+     * @example
+     * const currency = new Decimal(100);
+     * const currencyGain = new Decimal(12);
+     * const formatted = currency.formats.formatGain(currencyGain);
+     * console.log(formatted); // should return "(+12/sec)"
+     */
+    formatGain(this: Decimal, gain: DecimalSource, type?: FormatType): string;
+    /**
+     * Converts the E instance to a Roman numeral representation.
+     * @param [max] - Max before it returns the original
+     * @returns A string representing the Roman numeral equivalent of the E value,
+     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     */
+    toRoman(this: Decimal, max?: DecimalSource): string | Decimal;
+}
+declare module "./declare" {
+    /**
+     * @deprecated If you are using `emath.js`, use {@link E} instead
+     */
+    interface Decimal extends DecimalAddedMethodsInterface {
+    }
+}
+declare const DecimalAddedStaticMethods: {
+    /**
+     * Smoothly interpolates between the current value and the target value over time
+     * using a smoothing factor and deltaTime.
+     * @param current - The current value to interpolate from.
+     * @param target - The target value to interpolate towards.
+     * @param smoothing - The smoothing factor controlling the interpolation speed.
+     *                           A higher value results in slower interpolation.
+     * @param deltaTime - The time elapsed since the last frame in seconds.
+     * @returns - The interpolated value between `current` and `target`.
+     */
+    smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
+    /**
+     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * @alias Decimal.normalizeFromComponents
+     * @param x - The number to clone
+     * @returns - The cloned number
+     */
+    clone(x: Decimal): Decimal;
+    softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal;
+    scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    /**
+     * Formats the E instance with a specified accuracy and maximum Decimal places.
+     * @param e - The E instance to format.
+     * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
+     * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
+     * @param [type] - The type of format, defaults to `"mixed_sc"`.
+     * @returns A string representing the formatted E value.
+     */
+    format(e: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
+    formatST(value: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
+    formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType): string;
+    toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
+};
+/**
+ * A function that returns a Decimal instance. Also contains static methods and properties of the Decimal class.
+ * @param x - The value to convert to a Decimal instance.
+ * @returns - The Decimal instance.
+ */
+declare const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & {
+    formats: typeof formats;
+};
+type E = Decimal;
 /** A list of names for the standard notation */
 declare const ST_NAMES: string[][][];
 type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf";
@@ -19,7 +131,7 @@ declare const FORMATS: {
          * @param value - The value to format
          * @returns - The formatted value
          */
-        format(value: ESource): string;
+        format(value: DecimalSource): string;
     };
     /** Short omega format */
     omega_short: {
@@ -32,7 +144,7 @@ declare const FORMATS: {
          * @param value - The value to format
          * @returns - The formatted value
          */
-        format(value: ESource): string;
+        format(value: DecimalSource): string;
     };
     elemental: {
         config: {
@@ -43,7 +155,7 @@ declare const FORMATS: {
         getAbbreviation(group: number, progress: number): string;
         beyondOg(x: number): string;
         abbreviationLength(group: number): number;
-        getAbbreviationAndValue(x: E): (string | import("break_eternity.js").default)[];
+        getAbbreviationAndValue(x: E): (string | Decimal)[];
         formatElementalPart(abbreviation: string, n: E): string;
         format(value: E, acc: number): string;
     };
@@ -55,7 +167,7 @@ declare const FORMATS: {
          * @param acc - The accuracy
          * @returns - The formatted value
          */
-        format(ex: ESource, acc: number): string;
+        format(ex: DecimalSource, acc: number): string;
     };
     /** Engineering format */
     eng: {
@@ -67,7 +179,7 @@ declare const FORMATS: {
          * @example
          * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
          */
-        format(ex: ESource, acc: number): string;
+        format(ex: DecimalSource, acc: number): string;
     };
     mixed_sc: {
         /**
@@ -80,11 +192,11 @@ declare const FORMATS: {
          * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
          * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
          */
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
     layer: {
         layers: string[];
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
     /** Standard (letter abbv) format */
     standard: {
@@ -102,7 +214,7 @@ declare const FORMATS: {
         tier2(x: number): string;
     };
     inf: {
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
 };
 /**
@@ -121,7 +233,7 @@ declare function toSuperscript(value: number): string;
  * Format the value into standard (letter abbv) format
  * @deprecated Use {@link format} instead (with the type "st")
  */
-declare function formatST(ex: ESource, acc?: number, max?: number, type?: "sc" | "st" | FormatType): string;
+declare function formatST(ex: DecimalSource, acc?: number, max?: number, type?: "sc" | "st" | FormatType): string;
 /**
  * Format the value into a specific format type
  * @param ex - The value to format
@@ -130,7 +242,7 @@ declare function formatST(ex: ESource, acc?: number, max?: number, type?: "sc" |
  * @param type - The type of format to use (default "mixed_sc")
  * @returns - The formatted value
  */
-declare function format(ex: ESource, acc?: number, max?: number, type?: FormatType): string;
+declare function format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
 /**
  * Format the gain
  * @param amt - The amount
@@ -141,7 +253,7 @@ declare function format(ex: ESource, acc?: number, max?: number, type?: FormatTy
  * console.log(formatGain(1e20, 1e10)); // (+1.00e10/sec)
  * console.log(formatGain(1e200, 1e210)); // (+10.00 OoMs/sec)
  */
-declare function formatGain(amt: ESource, gain: ESource, type?: FormatType): string;
+declare function formatGain(amt: DecimalSource, gain: DecimalSource, type?: FormatType): string;
 /**
  * Format the time
  * @param ex - The value to format (in seconds)
@@ -149,7 +261,7 @@ declare function formatGain(amt: ESource, gain: ESource, type?: FormatType): str
  * @param type - The type
  * @returns - The formatted time
  */
-declare function formatTime(ex: ESource, acc?: number, type?: string): string;
+declare function formatTime(ex: DecimalSource, acc?: number, type?: string): string;
 /**
  * Format the time long
  * @param ex - The value to format (in seconds)
@@ -159,26 +271,26 @@ declare function formatTime(ex: ESource, acc?: number, type?: string): string;
  * @param type - The type
  * @returns - The formatted time
  */
-declare function formatTimeLong(ex: ESource, ms?: boolean, acc?: number, max?: number, type?: FormatType): string;
+declare function formatTimeLong(ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType): string;
 /**
  * Format the reduction
  * @param ex - The value to format
  * @returns - The formatted reduction
  */
-declare function formatReduction(ex: ESource): string;
+declare function formatReduction(ex: DecimalSource): string;
 /**
  * Format the percent
  * @param ex - The value to format
  * @returns - The formatted percent
  */
-declare function formatPercent(ex: ESource): string;
+declare function formatPercent(ex: DecimalSource): string;
 /**
  * Format the multiplier
  * @param ex - The value to format
  * @param acc - The accuracy
  * @returns - The formatted multiplier
  */
-declare function formatMult(ex: ESource, acc?: number): string;
+declare function formatMult(ex: DecimalSource, acc?: number): string;
 /**
  * Exponential multiplier
  * @param a - The value to exponentiate
@@ -186,7 +298,7 @@ declare function formatMult(ex: ESource, acc?: number): string;
  * @param base - The base
  * @returns - The value after being exponentiated
  */
-declare function expMult(a: ESource, b: ESource, base?: number): import("break_eternity.js").default;
+declare function expMult(a: DecimalSource, b: DecimalSource, base?: number): Decimal;
 /**
  * Converts a number to a metric representation based on the specified type.
  * @param num - The number to convert.
@@ -202,7 +314,7 @@ declare function expMult(a: ESource, b: ESource, base?: number): import("break_e
  * metric(1234, 2); // Returns "1.23"
  * metric(1234, 3); // Returns "Kilo"
  */
-declare function metric(num: ESource, type?: 0 | 1 | 2 | 3): string;
+declare function metric(num: DecimalSource, type?: 0 | 1 | 2 | 3): string;
 /**
  * Format the value into eV (includes metric prefixes)
  * @deprecated Use {@link metric} instead
@@ -210,7 +322,7 @@ declare function metric(num: ESource, type?: 0 | 1 | 2 | 3): string;
  * @param c2 - Whether to include /c^2
  * @returns The formatted value
  */
-declare function ev(num: ESource, c2?: boolean): string;
+declare function ev(num: DecimalSource, c2?: boolean): string;
 declare const formats: {
     toSubscript: typeof toSubscript;
     toSuperscript: typeof toSuperscript;
@@ -236,7 +348,7 @@ declare const formats: {
          * @param value - The value to format
          * @returns - The formatted value
          */
-        format(value: ESource): string;
+        format(value: DecimalSource): string;
     };
     /** Short omega format */
     omega_short: {
@@ -249,7 +361,7 @@ declare const formats: {
          * @param value - The value to format
          * @returns - The formatted value
          */
-        format(value: ESource): string;
+        format(value: DecimalSource): string;
     };
     elemental: {
         config: {
@@ -260,7 +372,7 @@ declare const formats: {
         getAbbreviation(group: number, progress: number): string;
         beyondOg(x: number): string;
         abbreviationLength(group: number): number;
-        getAbbreviationAndValue(x: E): (string | import("break_eternity.js").default)[];
+        getAbbreviationAndValue(x: E): (string | Decimal)[];
         formatElementalPart(abbreviation: string, n: E): string;
         format(value: E, acc: number): string;
     };
@@ -272,7 +384,7 @@ declare const formats: {
          * @param acc - The accuracy
          * @returns - The formatted value
          */
-        format(ex: ESource, acc: number): string;
+        format(ex: DecimalSource, acc: number): string;
     };
     /** Engineering format */
     eng: {
@@ -284,7 +396,7 @@ declare const formats: {
          * @example
          * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
          */
-        format(ex: ESource, acc: number): string;
+        format(ex: DecimalSource, acc: number): string;
     };
     mixed_sc: {
         /**
@@ -297,11 +409,11 @@ declare const formats: {
          * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
          * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
          */
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
     layer: {
         layers: string[];
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
     /** Standard (letter abbv) format */
     standard: {
@@ -319,7 +431,13 @@ declare const formats: {
         tier2(x: number): string;
     };
     inf: {
-        format(ex: ESource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc: number, max: number): string;
     };
 };
-export { formats, FORMATS, ST_NAMES, FormatType, FormatTypeList };
+export { formats, FORMATS, ST_NAMES, FormatTypeList };
+export { E };
+export type { CompareResult, DecimalSource as ESource, FormatType };
+/**
+ * @deprecated Use {@link E} instead
+ */
+export { Decimal };
