@@ -349,10 +349,12 @@ class dataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+     * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
+     * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    public parseData (dataToParse = this.decompileData()): UnknownObject | null {
-        if (!this.normalData || !this.normalDataPlain) throw new Error("dataManager.loadData(): You must call init() before writing to data.");
+    public parseData (dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
+        if (mergeData && (!this.normalData || !this.normalDataPlain)) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
         if (!dataToParse) return null;
         const [, loadedData] = dataToParse;
         // console.log(loadedData);
@@ -405,7 +407,7 @@ class dataManager {
             return out;
         }
         // let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
-        let loadedDataProcessed = deepMerge(this.normalDataPlain, this.normalData, loadedData); // TODO: Fix this
+        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain!, this.normalData!, loadedData); // TODO: Fix this
         // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
         interface templateClass {
             name: string;
@@ -598,3 +600,4 @@ class dataManager {
 }
 
 export { dataManager };
+export type { UnknownObject, ClassType };

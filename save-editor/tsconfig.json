@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+        "jsx": "react",
+		"allowJs": true,
+		"emitDecoratorMetadata": true, // Uncomment if you use emath.js
+        "experimentalDecorators": true, // Uncomment if you use emath.js
+		"target": "ES5",
+		"module": "NodeNext",
+		"strict": true,
+		"lib": ["ESNext", "dom"],
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"moduleResolution": "NodeNext",
+		"baseUrl": "./src",  // Adjust this based on your project structure
+		"outDir": "./dist",  // Adjust this based on your project structure
+		"sourceMap": true
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx", "../src/**/*", "../dist/**/*"],
+	"exclude": [
+	  	"node_modules/"
+	]
+}

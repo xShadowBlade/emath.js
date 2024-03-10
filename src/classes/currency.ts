@@ -27,17 +27,22 @@ function calculateUpgrade (value: ESource, upgrade: upgradeStatic, target: ESour
         return [E(0), E(0)];
     }
 
-    el = upgrade.el ?? el;
+    // Set el from the upgrade object if it exists
+    // el = upgrade.el ?? el;
+    el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
 
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
-        if (el) {
-            const cost = upgrade.cost(upgrade.level);
-            const canAfford = value.gte(cost);
-            return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
-        }
+        // if (el) {
+        //     const cost = upgrade.cost(upgrade.level);
+        //     const canAfford = value.gte(cost);
+        //     return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+        // }
         const cost = upgrade.cost(upgrade.level);
         const canAfford = value.gte(cost);
+        if (el) {
+            return [canAfford ? E(1) : E(0), E(0)];
+        }
         return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
     }
 
@@ -48,11 +53,17 @@ function calculateUpgrade (value: ESource, upgrade: upgradeStatic, target: ESour
         return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
     }
 
+    // If `maxLevel` is undefined and `el` is not set, warn and return 0
+    if (!upgrade.maxLevel && !el) {
+        console.warn(`Upgrade "${upgrade.id}" does not have a maximum level and will not work with the automatic binary search / sum. Use \`el\` instead.`);
+        return [E(0), E(0)];
+    }
+
     /**
-     * Calculates the sum of 'f(n)' from 0 to 'b'.
-     * @param f - The function 'f(n)' to calculate the sum.
+     * Calculates the sum of `f(n)` from 0 to `b`.
+     * @param f - The function `f(n)` to calculate the sum.
      * @param b - The upper limit for the sum.
-     * @returns The calculated sum of 'f(n)'.
+     * @returns The calculated sum of `f(n)`.
      */
     function calculateSum (f: (n: E) => E, b: E): E {
         let sum: E = E();
@@ -63,10 +74,10 @@ function calculateUpgrade (value: ESource, upgrade: upgradeStatic, target: ESour
     }
     // Binary Search
     /**
-     * Finds the highest value of 'b' for which the sum of 'f(n)' from 0 to 'b' is less than or equal to 'a'.
-     * @param f - The function 'f(n)' to calculate the sum.
+     * Finds the highest value of `b` for which the sum of `f(n)` from 0 to `b` is less than or equal to `a`.
+     * @param f - The function `f(n)` to calculate the sum.
      * @param a - The target sum value to compare against.
-     * @returns The highest 'b' value for which the sum is less than or equal to 'a'.
+     * @returns The highest `b` value for which the sum is less than or equal to `a`.
      */
     function findHighestB (f: (n: E) => E, a: E): [E, E] {
         if (el) {
@@ -95,7 +106,7 @@ function calculateUpgrade (value: ESource, upgrade: upgradeStatic, target: ESour
         let right = E(1);
         // let highestB = E(0);
 
-        // Find an upper bound for 'b' by exponentially increasing it
+        // Find an upper bound for `b` by exponentially increasing it
         while (calculateSum(f, right).lt(a)) {
             // highestB = right;
             right = right.mul(2);
@@ -177,27 +188,35 @@ interface upgradeInit {
      */
     costBulk?: (currencyValue: E, level: E, target: E) => [cost: E, amount: E],
 
-    /** The maximum level of the upgrade. Defaults to 1. */
+    /**
+     * The maximum level of the upgrade.
+     * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
+     * Also warning: If not set, the automatic binary search / sum will not work. Use {@link el} instead.
+     */
     maxLevel?: E
 
     /**
-     * The effect of the upgrade.
+     * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
     effect?: (level: E, context: upgradeStatic) => void,
 
-    /** Endless: Flag to exclude the sum calculation and only perform binary search. */
-    el?: boolean,
+    /** Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search. */
+    // el?: boolean | (() => boolean),
+    el?: Pointer<boolean>,
 
     // Below are types that are automatically added
-    /** The default level of the upgrade. Automatically added. */
+    /**
+     * The default level of the upgrade.
+     * Automatically set to `1` if not provided.
+     */
     level?: E;
 }
 
 /** Interface for an upgrade. */
 interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
-    maxLevel: E,
+    maxLevel?: E,
     name: string,
     description: string,
 }
@@ -248,7 +267,7 @@ class upgradeStatic implements IUpgradeStatic {
         this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
         this.cost = init.cost;
         this.costBulk = init.costBulk;
-        this.maxLevel = init.maxLevel ?? E(1);
+        this.maxLevel = init.maxLevel;
         this.effect = init.effect;
         this.el = init.el;
 
@@ -528,7 +547,7 @@ class currencyStatic {
     /**
      * Calculates the cost and how many upgrades you can buy
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     * {@link calculateUpgrade}
+     * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
@@ -585,7 +604,7 @@ class currencyStatic {
 
         target = E(target);
         // console.log("targetC", target);
-        // TODO: Determine the actual quantity to purchase based on 'target' and 'maxLevel'
+        // TODO: Determine the actual quantity to purchase based on `target` and `maxLevel`
         // target =
         //     E.clone(upgrade.level).add(target).lte(upgrade.maxLevel)
         //         ? target

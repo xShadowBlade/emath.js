@@ -3,6 +3,7 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import type { game } from "../game";
+type ClassType = new (...args: any[]) => any;
 type UnknownObject = Record<string, unknown>;
 /**
  * A class that manages game data, including saving, loading, and exporting data.
@@ -135,9 +136,11 @@ declare class dataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+     * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
+     * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    parseData(dataToParse?: [string, UnknownObject] | null): UnknownObject | null;
+    parseData(dataToParse?: [string, UnknownObject] | null, mergeData?: boolean): UnknownObject | null;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
@@ -146,3 +149,4 @@ declare class dataManager {
     loadData(dataToLoad?: [string, UnknownObject] | null | string): null | boolean;
 }
 export { dataManager };
+export type { UnknownObject, ClassType };

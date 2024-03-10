@@ -59,22 +59,29 @@ interface upgradeInit {
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
     costBulk?: (currencyValue: E, level: E, target: E) => [cost: E, amount: E];
-    /** The maximum level of the upgrade. Defaults to 1. */
+    /**
+     * The maximum level of the upgrade.
+     * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
+     * Also warning: If not set, the automatic binary search / sum will not work. Use {@link el} instead.
+     */
     maxLevel?: E;
     /**
-     * The effect of the upgrade.
+     * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
     effect?: (level: E, context: upgradeStatic) => void;
-    /** Endless: Flag to exclude the sum calculation and only perform binary search. */
-    el?: boolean;
-    /** The default level of the upgrade. Automatically added. */
+    /** Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search. */
+    el?: Pointer<boolean>;
+    /**
+     * The default level of the upgrade.
+     * Automatically set to `1` if not provided.
+     */
     level?: E;
 }
 /** Interface for an upgrade. */
 interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
-    maxLevel: E;
+    maxLevel?: E;
     name: string;
     description: string;
 }
@@ -95,9 +102,9 @@ declare class upgradeStatic implements IUpgradeStatic {
     name: string;
     cost: (level: Decimal) => Decimal;
     costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
-    maxLevel: Decimal;
+    maxLevel: Decimal | undefined;
     effect: ((level: Decimal, context: upgradeStatic) => void) | undefined;
-    el?: boolean | undefined;
+    el?: Pointer<boolean> | undefined;
     descriptionFn: (...args: any[]) => string;
     get description(): string;
     protected dataPointerFn: () => upgradeData;
@@ -244,7 +251,7 @@ declare class currencyStatic {
     /**
      * Calculates the cost and how many upgrades you can buy
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-     * {@link calculateUpgrade}
+     * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.
      * @param target - How many to buy
      * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)

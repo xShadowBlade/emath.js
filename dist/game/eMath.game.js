@@ -7049,21 +7049,23 @@ function calculateUpgrade(value, upgrade, target = 1, el = false) {
   if (target.lte(0)) {
     return [E(0), E(0)];
   }
-  el = upgrade.el ?? el;
+  el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
   if (target.eq(1)) {
-    if (el) {
-      const cost2 = upgrade.cost(upgrade.level);
-      const canAfford2 = value.gte(cost2);
-      return [canAfford2 ? E(1) : E(0), canAfford2 ? cost2 : E(0)];
-    }
     const cost = upgrade.cost(upgrade.level);
     const canAfford = value.gte(cost);
+    if (el) {
+      return [canAfford ? E(1) : E(0), E(0)];
+    }
     return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
   }
   if (upgrade.costBulk) {
     const [cost, amount] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost);
     return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
+  }
+  if (!upgrade.maxLevel && !el) {
+    console.warn(`Upgrade "${upgrade.id}" does not have a maximum level and will not work with the automatic binary search / sum. Use \`el\` instead.`);
+    return [E(0), E(0)];
   }
   function calculateSum(f, b) {
     let sum = E();
@@ -7142,7 +7144,7 @@ var upgradeStatic = class {
     this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
     this.cost = init.cost;
     this.costBulk = init.costBulk;
-    this.maxLevel = init.maxLevel ?? E(1);
+    this.maxLevel = init.maxLevel;
     this.effect = init.effect;
     this.el = init.el;
   }
@@ -7348,7 +7350,7 @@ var currencyStatic = class {
   /**
    * Calculates the cost and how many upgrades you can buy
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
-   * {@link calculateUpgrade}
+   * See {@link calculateUpgrade} for more information.
    * @param id - The ID or position of the upgrade to calculate.
    * @param target - How many to buy
    * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
@@ -8049,11 +8051,13 @@ var dataManager = class {
   /**
    * Loads game data and processes it.
    * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+   * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
+   * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
    * @returns The loaded data.
    */
-  parseData(dataToParse = this.decompileData()) {
-    if (!this.normalData || !this.normalDataPlain)
-      throw new Error("dataManager.loadData(): You must call init() before writing to data.");
+  parseData(dataToParse = this.decompileData(), mergeData = true) {
+    if (mergeData && (!this.normalData || !this.normalDataPlain))
+      throw new Error("dataManager.parseData(): You must call init() before writing to data.");
     if (!dataToParse)
       return null;
     const [, loadedData] = dataToParse;
@@ -8080,7 +8084,7 @@ var dataManager = class {
       }
       return out;
     }
-    let loadedDataProcessed = deepMerge(this.normalDataPlain, this.normalData, loadedData);
+    let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
     const templateClasses = function(templateClassesInit) {
       const out = [];
       for (const templateClassConvert of templateClassesInit) {
