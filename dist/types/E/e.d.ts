@@ -1246,6 +1246,8 @@ declare class Decimal {
      * @param gain - The gain value to compare
      * @param [mass] - Indicates whether the gain represents a mass value.
      * @param [type] - The type of format (default mixed scientific)
+     * @param [acc] - The desired accuracy (number of significant figures).
+     * @param [max] - The maximum number of decimal places to display.
      * @returns A string representing the formatted gain
      * @example
      * const currency = new Decimal(100);
@@ -1253,8 +1255,8 @@ declare class Decimal {
      * const formatted = currency.formats.formatGain(currencyGain);
      * console.log(formatted); // should return "(+12/sec)"
      */
-    formatGain(gain: DecimalSource, type?: FormatType): string;
-    static formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType): string;
+    formatGain(gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
+    static formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     /**
      * Converts the E instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
@@ -1397,12 +1399,15 @@ declare function format(ex: DecimalSource, acc?: number, max?: number, type?: Fo
  * Format the gain
  * @param amt - The amount
  * @param gain - The gain
+ * @param type - The type
+ * @param acc - The accuracy
+ * @param max - The maximum value
  * @returns - The formatted gain
  * @example
  * console.log(formatGain(1e20, 1e10)); // (+1.00e10/sec)
  * console.log(formatGain(1e200, 1e210)); // (+10.00 OoMs/sec)
  */
-declare function formatGain(amt: DecimalSource, gain: DecimalSource, type?: FormatType): string;
+declare function formatGain(amt: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
 /**
  * Format the time
  * @param ex - The value to format (in seconds)

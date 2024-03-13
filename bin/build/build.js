@@ -41,7 +41,9 @@ const fs = require("fs/promises");
 //     "./src/E/lru-cache.ts",
 // ];
 
+// TODO: fix hook
 /**
+ * Build options
  */
 const buildOptions = [
     {
@@ -60,8 +62,8 @@ const buildOptions = [
     {
         entryPoints: ["src/game/hookGame.ts"],
         outfile: "dist/game/eMath.game.js",
-        // format: "umd",
-        format: "cjs",
+        format: "umd",
+        // format: "cjs",
         // external: externalIntFiles,
         plugins: [umdWrapper()],
     },
@@ -83,6 +85,19 @@ const buildOptions = [
         entryPoints: ["src/pixiGame/hookPixiGame.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.min.js",
         // external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
+        format: "iife",
+        minify: true,
+    },
+
+    {
+        entryPoints: ["src/presets/hookPresets.ts"],
+        outfile: "dist/presets/eMath.presets.js",
+        format: "umd",
+        plugins: [umdWrapper()],
+    },
+    {
+        entryPoints: ["src/presets/hookPresets.ts"],
+        outfile: "dist/presets/eMath.presets.min.js",
         format: "iife",
         minify: true,
     },
@@ -125,5 +140,8 @@ Promise.all(buildOptions.map(async function (option) {
             // option.outfile
         })
         // .then(() => console.log(`${option.outfile}: ${Date.now() - timeInit}ms`))
-        .catch(() => process.exit(1));
+        .catch((e) => {
+            console.error(`Error building ${option.outfile}: ${e}`);
+            process.exit(1);
+        });
 }));

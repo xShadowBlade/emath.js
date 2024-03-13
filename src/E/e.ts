@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * @file Declares the Decimal class from break_eternity.js
  */
@@ -4299,8 +4300,9 @@ class Decimal {
     /**
      * Formats the gain rate using the E instance.
      * @param gain - The gain value to compare
-     * @param [mass] - Indicates whether the gain represents a mass value.
      * @param [type] - The type of format (default mixed scientific)
+     * @param [acc] - The desired accuracy (number of significant figures).
+     * @param [max] - The maximum number of decimal places to display.
      * @returns A string representing the formatted gain
      * @example
      * const currency = new Decimal(100);
@@ -4308,8 +4310,8 @@ class Decimal {
      * const formatted = currency.formats.formatGain(currencyGain);
      * console.log(formatted); // should return "(+12/sec)"
      */
-    public formatGain (gain: DecimalSource, type: FormatType = "mixed_sc"): string { return formats.formatGain(this.clone(), gain, type); }
-    public static formatGain (value: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc"): string { return formats.formatGain(new Decimal(value), gain, type); }
+    public formatGain (gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string { return formats.formatGain(this.clone(), gain, type, acc, max); }
+    public static formatGain (value: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string { return formats.formatGain(new Decimal(value), gain, type, acc, max); }
 
     /**
      * Converts the E instance to a Roman numeral representation.
@@ -4342,8 +4344,8 @@ class Decimal {
         let str = "";
 
         for (const i of Object.keys(roman)) {
-            const q = Math.floor(newNum / (roman as any)[i]);
-            newNum -= q * (roman as any)[i];
+            const q = Math.floor(newNum / roman[i as keyof typeof roman]);
+            newNum -= q * roman[i as keyof typeof roman];
             str += i.repeat(q);
         }
 
@@ -4362,7 +4364,8 @@ const ST_NAMES = [
         ["", "U", "D", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"],
         ["", "Dc", "Vg", "Tg", "Qag", "Qtg", "Sxg", "Spg", "Ocg", "Nog"],
         ["", "Ce", "De", "Te", "Qae", "Qte", "Sxe", "Spe", "Oce", "Noe"],
-    ], [
+    ],
+    [
         // Higher tiers
         ["", "Mi", "Mc", "Na", "Pc", "Fm", "At", "Zp", "Yc", "Xn"],
         ["", "Me", "Du", "Tr", "Te", "Pe", "He", "Hp", "Ot", "En"],
@@ -4546,7 +4549,7 @@ const FORMATS = {
                 parts.unshift([abbreviation, n]);
             }
             if (parts.length >= max) {
-                // @ts-ignore
+                // @ts-expect-error - x has both string and decimal for some reason
                 return parts.map((x) => FORMATS.elemental.formatElementalPart(x[0], x[1])).join(" + ");
             }
             const formattedMantissa = new Decimal(118).pow(log).toFixed(parts.length === 1 ? 3 : acc);
@@ -4554,10 +4557,10 @@ const FORMATS = {
                 return formattedMantissa;
             }
             if (parts.length === 1) {
-                // @ts-ignore
+                // @ts-expect-error - x has both string and decimal for some reason
                 return `${formattedMantissa} × ${FORMATS.elemental.formatElementalPart(parts[0][0], parts[0][1])}`;
             }
-            // @ts-ignore
+            // @ts-expect-error - x has both string and decimal for some reason
             return `${formattedMantissa} × (${parts.map((x) => FORMATS.elemental.formatElementalPart(x[0], x[1])).join(" + ")})`;
         },
     },
@@ -4611,11 +4614,12 @@ const FORMATS = {
                     return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
                 }
                 const m = ex.div(new Decimal(1000).pow(e.div(3).floor()));
-                // @ts-ignore
-                return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
+
+                return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
             }
         },
     },
+    /** Mixed scientific format */
     mixed_sc: {
         /**
          * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -4634,6 +4638,7 @@ const FORMATS = {
             else return format(ex, acc, max, "sc");
         },
     },
+    /** Layer format */
     layer: {
         layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
         format (ex: DecimalSource, acc: number, max: number): string {
@@ -4677,6 +4682,7 @@ const FORMATS = {
             return r;
         },
     },
+    /** Infinity format */
     inf: {
         format (ex: DecimalSource, acc: number, max: number): string {
             ex = new Decimal(ex);
@@ -4750,7 +4756,7 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
     const e = ex.log10().floor();
     switch (type) {
     case "sc":
-    case "scientific":
+    case "scientific": {
         if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
             const e = ex.log10().ceil();
             const m = ex.div(e.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e));
@@ -4768,43 +4774,44 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
             const be = e.log10().gte(9);
             return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
         }
+    }
     case "st":
-    case "standard":
-    {
+    case "standard": {
         let e3 = ex.log(1e3).floor();
         if (e3.lt(1)) {
             return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
-        } else {
-            const e3_mul = e3.mul(3);
-            const ee = e3.log10().floor();
-            if (ee.gte(3000)) return "e" + format(e, acc, max, "st");
-
-            let final = "";
-            if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
-            else {
-                let ee3 = Math.floor(e3.log(1e3).toNumber());
-                if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
-                e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
-                while (e3.gt(0)) {
-                    const div1000 = e3.div(1e3).floor();
-                    const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
-                    if (mod1000 > 0) {
-                        if (mod1000 == 1 && !ee3) final = "U";
-                        if (ee3) final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
-                        if (mod1000 > 1) final = FORMATS.standard.tier1(mod1000) + final;
-                    }
-                    e3 = div1000;
-                    ee3++;
-                }
-            }
-
-            const m = ex.div(new Decimal(10).pow(e3_mul));
-            return neg + (ee.gte(10) ? "" : (m.toFixed(new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber())) + " ") + final;
         }
+
+        const e3_mul = e3.mul(3);
+        const ee = e3.log10().floor();
+        if (ee.gte(3000)) return "e" + format(e, acc, max, "st");
+
+        let final = "";
+        if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+        else {
+            let ee3 = Math.floor(e3.log(1e3).toNumber());
+            if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
+            e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
+            while (e3.gt(0)) {
+                const div1000 = e3.div(1e3).floor();
+                const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
+                if (mod1000 > 0) {
+                    if (mod1000 == 1 && !ee3) final = "U";
+                    if (ee3) final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
+                    if (mod1000 > 1) final = FORMATS.standard.tier1(mod1000) + final;
+                }
+                e3 = div1000;
+                ee3++;
+            }
+        }
+
+        const m = ex.div(new Decimal(10).pow(e3_mul));
+        const fixedAmt = acc === 2 ? new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber() : acc;
+        return neg + (ee.gte(10) ? "" : (m.toFixed(fixedAmt)) + " ") + final;
     }
     default:
         // Other formats
-        if (!FORMATS[type]) console.error(`Invalid format type "${type}"`);
+        if (!FORMATS[type]) console.error(`Invalid format type "`, type, `"`);
         return neg + FORMATS[type]?.format(ex, acc, max);
     }
 }
@@ -4813,12 +4820,15 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
  * Format the gain
  * @param amt - The amount
  * @param gain - The gain
+ * @param type - The type
+ * @param acc - The accuracy
+ * @param max - The maximum value
  * @returns - The formatted gain
  * @example
  * console.log(formatGain(1e20, 1e10)); // (+1.00e10/sec)
  * console.log(formatGain(1e200, 1e210)); // (+10.00 OoMs/sec)
  */
-function formatGain (amt: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc"): string {
+function formatGain (amt: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string {
     amt = new Decimal(amt);
     gain = new Decimal(gain);
     const next = amt.add(gain);
@@ -4826,9 +4836,9 @@ function formatGain (amt: DecimalSource, gain: DecimalSource, type: FormatType =
     let ooms = next.div(amt);
     if (ooms.gte(10) && amt.gte(1e100)) {
         ooms = ooms.log10().mul(20);
-        rate = "(+" + format(ooms, 2, 9, type) + " OoMs/sec)";
+        rate = "(+" + format(ooms, acc, max, type) + " OoMs/sec)";
     }
-    else rate = "(+" + format(gain, 2, 9, type) + "/sec)";
+    else rate = "(+" + format(gain, acc, max, type) + "/sec)";
     return rate;
 }
 

@@ -6167,6 +6167,8 @@ var Decimal = class {
    * @param gain - The gain value to compare
    * @param [mass] - Indicates whether the gain represents a mass value.
    * @param [type] - The type of format (default mixed scientific)
+   * @param [acc] - The desired accuracy (number of significant figures).
+   * @param [max] - The maximum number of decimal places to display.
    * @returns A string representing the formatted gain
    * @example
    * const currency = new Decimal(100);
@@ -6174,11 +6176,11 @@ var Decimal = class {
    * const formatted = currency.formats.formatGain(currencyGain);
    * console.log(formatted); // should return "(+12/sec)"
    */
-  formatGain(gain, type = "mixed_sc") {
-    return formats.formatGain(this.clone(), gain, type);
+  formatGain(gain, type = "mixed_sc", acc, max) {
+    return formats.formatGain(this.clone(), gain, type, acc, max);
   }
-  static formatGain(value, gain, type = "mixed_sc") {
-    return formats.formatGain(new Decimal(value), gain, type);
+  static formatGain(value, gain, type = "mixed_sc", acc, max) {
+    return formats.formatGain(new Decimal(value), gain, type, acc, max);
   }
   /**
    * Converts the E instance to a Roman numeral representation.
@@ -6753,7 +6755,7 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
       return neg + FORMATS[type]?.format(ex, acc, max);
   }
 }
-function formatGain(amt, gain, type = "mixed_sc") {
+function formatGain(amt, gain, type = "mixed_sc", acc, max) {
   amt = new Decimal(amt);
   gain = new Decimal(gain);
   const next = amt.add(gain);
@@ -6761,9 +6763,9 @@ function formatGain(amt, gain, type = "mixed_sc") {
   let ooms = next.div(amt);
   if (ooms.gte(10) && amt.gte(1e100)) {
     ooms = ooms.log10().mul(20);
-    rate = "(+" + format(ooms, 2, 9, type) + " OoMs/sec)";
+    rate = "(+" + format(ooms, acc, max, type) + " OoMs/sec)";
   } else
-    rate = "(+" + format(gain, 2, 9, type) + "/sec)";
+    rate = "(+" + format(gain, acc, max, type) + "/sec)";
   return rate;
 }
 function formatTime(ex, acc = 2, type = "s") {
