@@ -13,6 +13,7 @@
         "src/game/hookGame.ts",
         "src/pixiGame/hookPixiGame.ts",
         "src/pixiGame/react/**",
+        "src/presets/hookPresets.ts",
     ],
     "out": "./documentation/production/typedoc",
 }
