@@ -53,7 +53,7 @@ declare class dataManager {
      * @param value - The value to set the data to.
      * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
      * @example
-     * ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+     * // ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
      * const testData = dataManager.setData("test", 5);
      * console.log(testData.value); // 5
      * testData.value = 10; // Also sets the data

@@ -1,18 +1,21 @@
 /**
  * @file Declares the gridCell and grid classes.
  */
+
+import type { UnknownObject } from "../game/managers/dataManager";
+
 /** Represents a grid cell with coordinates and properties. */
 class gridCell {
     public x: number;
     public y: number;
-    public properties: object;
+    public properties: UnknownObject;
     /**
      * Initializes a new instance of the grid cell.
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.
      */
-    constructor (x: number, y: number, props?: object) {
+    constructor (x: number, y: number, props?: UnknownObject) {
         this.x = x;
         this.y = y;
         this.properties = props ? props : {};
@@ -25,7 +28,7 @@ class gridCell {
      * @returns The set value.
      */
     public setValue (name: string, value: unknown): typeof value {
-        (this.properties as any)[name] = value;
+        this.properties[name] = value;
         return value;
     }
 
@@ -35,7 +38,7 @@ class gridCell {
      * @returns - The value of the property.
      */
     public getValue (name: string): unknown {
-        return (this.properties as any)[name];
+        return this.properties[name];
     }
 }
 
@@ -55,7 +58,7 @@ class grid {
      * @param y_size - The size of the grid along the y-axis.
      * @param starterProps - The properties to initialize with.
      */
-    constructor (x_size: number, y_size: number, starterProps?: object) {
+    constructor (x_size: number, y_size: number, starterProps?: UnknownObject) {
         this.x_size = x_size;
         this.y_size = y_size;
         this.cells = [];

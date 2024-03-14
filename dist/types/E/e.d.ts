@@ -1244,7 +1244,6 @@ declare class Decimal {
     /**
      * Formats the gain rate using the E instance.
      * @param gain - The gain value to compare
-     * @param [mass] - Indicates whether the gain represents a mass value.
      * @param [type] - The type of format (default mixed scientific)
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of decimal places to display.
@@ -1333,6 +1332,7 @@ declare const FORMATS: {
          */
         format(ex: DecimalSource, acc: number): string;
     };
+    /** Mixed scientific format */
     mixed_sc: {
         /**
          * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -1346,6 +1346,7 @@ declare const FORMATS: {
          */
         format(ex: DecimalSource, acc: number, max: number): string;
     };
+    /** Layer format */
     layer: {
         layers: string[];
         format(ex: DecimalSource, acc: number, max: number): string;
@@ -1365,6 +1366,7 @@ declare const FORMATS: {
          */
         tier2(x: number): string;
     };
+    /** Infinity format */
     inf: {
         format(ex: DecimalSource, acc: number, max: number): string;
     };
@@ -1552,6 +1554,7 @@ declare const formats: {
          */
         format(ex: DecimalSource, acc: number): string;
     };
+    /** Mixed scientific format */
     mixed_sc: {
         /**
          * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -1565,6 +1568,7 @@ declare const formats: {
          */
         format(ex: DecimalSource, acc: number, max: number): string;
     };
+    /** Layer format */
     layer: {
         layers: string[];
         format(ex: DecimalSource, acc: number, max: number): string;
@@ -1584,6 +1588,7 @@ declare const formats: {
          */
         tier2(x: number): string;
     };
+    /** Infinity format */
     inf: {
         format(ex: DecimalSource, acc: number, max: number): string;
     };

@@ -2,7 +2,7 @@
  * @file Declares the main game class.
  */
 
-import { E, ESource } from "../E/eMain";
+import { ESource } from "../E/eMain";
 // import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
 import { attribute, attributeStatic } from "../classes/attribute";
@@ -161,34 +161,34 @@ class game {
         return classInstance;
     }
 
-    /**
-     * Adds a new currency group to the game.
-     * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
-     * @param name - The name of the currency group.
-     * @param currencies - An array of currency names to add to the group.
-     * @returns An array of gameCurrency objects, in the same order as the input array.
-     */
-    public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
-        throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
-        // this.dataManager.setData(name, {});
-        // this.dataManager.setStatic(name, {
-        //     attributes: {},
-        // });
+    // /**
+    //  * Adds a new currency group to the game.
+    //  * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
+    //  * @param name - The name of the currency group.
+    //  * @param currencies - An array of currency names to add to the group.
+    //  * @returns An array of gameCurrency objects, in the same order as the input array.
+    //  */
+    // public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
+    //     throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
+    //     // this.dataManager.setData(name, {});
+    //     // this.dataManager.setStatic(name, {
+    //     //     attributes: {},
+    //     // });
 
-        // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
-        // const outCurrencies: gameCurrency[] = [];
-        // // currencies.forEach((currencyName) => {
-        // //     this.dataManager.getData(name)[currencyName] = new currency();
-        // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
-        // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
-        // // });
-        // currencies.forEach((currencyName) => {
-        //     const dataRef = this.dataManager.setData(currencyName, new currency());
-        //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
-        //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
-        // });
-        // return outCurrencies;
-    }
+    //     // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
+    //     // const outCurrencies: gameCurrency[] = [];
+    //     // // currencies.forEach((currencyName) => {
+    //     // //     this.dataManager.getData(name)[currencyName] = new currency();
+    //     // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
+    //     // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
+    //     // // });
+    //     // currencies.forEach((currencyName) => {
+    //     //     const dataRef = this.dataManager.setData(currencyName, new currency());
+    //     //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
+    //     //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
+    //     // });
+    //     // return outCurrencies;
+    // }
 
     /**
      * Adds a new attribute to the game. {@link gameAttribute} is the class.
@@ -201,8 +201,10 @@ class game {
      * const myAttribute = game.addAttribute("myAttribute");
      */
     public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const dataRef = this.dataManager.setData(name, new attribute(initial));
         // @ts-expect-error - fix this
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const staticRef = this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
         // const staticRef = this.dataManager.setStatic(name, new attributeStatic(dataRef, useBoost, initial));
 

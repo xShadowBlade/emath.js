@@ -39,22 +39,16 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
-// src/presets/hookPresets.ts
-var hookPresets_exports = {};
-__export(hookPresets_exports, {
-  eMathPresets: () => eMathPresetsWeb
-});
-module.exports = __toCommonJS(hookPresets_exports);
-
-// src/presets/gameFormats.ts
-var gameFormats_exports = {};
-__export(gameFormats_exports, {
+// src/presets/index.ts
+var presets_exports = {};
+__export(presets_exports, {
   formatOptions: () => formatOptions,
   formatTimeOptions: () => formatTimeOptions,
   gameFormat: () => gameFormat,
   gameFormatClass: () => gameFormatClass,
   gameFormatGain: () => gameFormatGain
 });
+module.exports = __toCommonJS(presets_exports);
 
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
 var TransformationType;
@@ -4094,7 +4088,6 @@ var Decimal = class {
   /**
    * Formats the gain rate using the E instance.
    * @param gain - The gain value to compare
-   * @param [mass] - Indicates whether the gain represents a mass value.
    * @param [type] - The type of format (default mixed scientific)
    * @param [acc] - The desired accuracy (number of significant figures).
    * @param [max] - The maximum number of decimal places to display.
@@ -4509,10 +4502,11 @@ var FORMATS = {
           return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
         }
         const m = ex.div(new Decimal(1e3).pow(e.div(3).floor()));
-        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
+        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
       }
     }
   },
+  /** Mixed scientific format */
   mixed_sc: {
     /**
      * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -4533,6 +4527,7 @@ var FORMATS = {
         return format(ex, acc, max, "sc");
     }
   },
+  /** Layer format */
   layer: {
     layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
     format(ex, acc, max) {
@@ -4576,6 +4571,7 @@ var FORMATS = {
       return r;
     }
   },
+  /** Infinity format */
   inf: {
     format(ex, acc, max) {
       ex = new Decimal(ex);
@@ -4623,7 +4619,7 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
   const e = ex.log10().floor();
   switch (type) {
     case "sc":
-    case "scientific":
+    case "scientific": {
       if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
         const e2 = ex.log10().ceil();
         const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e2));
@@ -4641,46 +4637,47 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
         const be = e.log10().gte(9);
         return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
       }
+    }
     case "st":
     case "standard": {
       let e3 = ex.log(1e3).floor();
       if (e3.lt(1)) {
         return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
-      } else {
-        const e3_mul = e3.mul(3);
-        const ee = e3.log10().floor();
-        if (ee.gte(3e3))
-          return "e" + format(e, acc, max, "st");
-        let final = "";
-        if (e3.lt(4))
-          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
-        else {
-          let ee3 = Math.floor(e3.log(1e3).toNumber());
-          if (ee3 < 100)
-            ee3 = Math.max(ee3 - 1, 0);
-          e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
-          while (e3.gt(0)) {
-            const div1000 = e3.div(1e3).floor();
-            const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
-            if (mod1000 > 0) {
-              if (mod1000 == 1 && !ee3)
-                final = "U";
-              if (ee3)
-                final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1)
-                final = FORMATS.standard.tier1(mod1000) + final;
-            }
-            e3 = div1000;
-            ee3++;
-          }
-        }
-        const m = ex.div(new Decimal(10).pow(e3_mul));
-        return neg + (ee.gte(10) ? "" : m.toFixed(new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber()) + " ") + final;
       }
+      const e3_mul = e3.mul(3);
+      const ee = e3.log10().floor();
+      if (ee.gte(3e3))
+        return "e" + format(e, acc, max, "st");
+      let final = "";
+      if (e3.lt(4))
+        final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+      else {
+        let ee3 = Math.floor(e3.log(1e3).toNumber());
+        if (ee3 < 100)
+          ee3 = Math.max(ee3 - 1, 0);
+        e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
+        while (e3.gt(0)) {
+          const div1000 = e3.div(1e3).floor();
+          const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
+          if (mod1000 > 0) {
+            if (mod1000 == 1 && !ee3)
+              final = "U";
+            if (ee3)
+              final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
+            if (mod1000 > 1)
+              final = FORMATS.standard.tier1(mod1000) + final;
+          }
+          e3 = div1000;
+          ee3++;
+        }
+      }
+      const m = ex.div(new Decimal(10).pow(e3_mul));
+      const fixedAmt = acc === 2 ? new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber() : acc;
+      return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
     }
     default:
       if (!FORMATS[type])
-        console.error(`Invalid format type "${type}"`);
+        console.error(`Invalid format type "`, type, `"`);
       return neg + FORMATS[type]?.format(ex, acc, max);
   }
 }
@@ -4966,12 +4963,6 @@ var formatTimeOptions = [
     value: "long"
   }
 ].sort((a, b) => a.name.localeCompare(b.name));
-
-// src/presets/hookPresets.ts
-var eMathPresetsWeb = {
-  gameFormats: gameFormats_exports
-  // ...presets,
-};
 if (typeof module.exports == "object" && typeof exports == "object") {
     var __cp = (to, from, except, desc) => {
       if ((from && typeof from === "object") || typeof from === "function") {

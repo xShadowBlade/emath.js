@@ -19,7 +19,7 @@ declare class skillNode implements ISkill {
     description: string;
     cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E];
     required: ISkill[];
-    maxLevel: import("../E/e").Decimal;
+    maxLevel: import("E/e").Decimal;
     effect: ((level: E, context: ISkill) => void) | undefined;
     /**
      * Represents a skill tree node.

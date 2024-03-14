@@ -30,6 +30,7 @@ interface boostsObjectInit {
      * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
     // description?: Pointer<string>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     description?: ((...args: any[]) => string) | string,
     /**
      * The function that calculates the value of the boost.
@@ -52,6 +53,7 @@ class boostObject implements boostsObjectInit {
     // public id; name; desc; value; order;
     public id: string;
     public name: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public descriptionFn: (...args: any[]) => string;
     // eslint-disable-next-line jsdoc/require-returns
     /** @deprecated Use {@link description} instead */

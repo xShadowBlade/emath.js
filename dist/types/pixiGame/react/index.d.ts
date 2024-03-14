@@ -1,4 +1,4 @@
 /**
- * @fileoverview React component for PixiJS game.
+ * @file React component for PixiJS game.
  */
 export {};

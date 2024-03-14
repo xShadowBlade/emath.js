@@ -49,8 +49,9 @@ class gameAttribute {
     }
 }
 
-class gameAttributeGroup {
+// TODO: Add gameAttributeGroup class
+// class gameAttributeGroup {
 
-}
+// }
 
 export { gameAttribute };

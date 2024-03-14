@@ -163,6 +163,7 @@ interface upgradeInit {
      * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
     // description?: Pointer<string>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     description?: ((...args: any[]) => string) | string,
 
     /**
@@ -242,6 +243,7 @@ class upgradeData implements IUpgradeData {
 /** Represents the backend for an upgrade. */
 class upgradeStatic implements IUpgradeStatic {
     public id; name; cost; costBulk; maxLevel; effect; el?;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public descriptionFn: (...args: any[]) => string;
     public get description (): string {
         return this.descriptionFn();

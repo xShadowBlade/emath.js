@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/check-tag-names */
 /**
  * @file CLI build script
  */
@@ -41,65 +42,92 @@ const fs = require("fs/promises");
 //     "./src/E/lru-cache.ts",
 // ];
 
+/**
+ * @typedef {import("esbuild").BuildOptions} BuildOptions
+ */
+
+const dev = {
+    format: "umd",
+    plugins: [umdWrapper()],
+};
+
+const min = {
+    format: "iife",
+    minify: true,
+};
+
 // TODO: fix hook
 /**
  * Build options
+ * @type {BuildOptions[]}
  */
 const buildOptions = [
     {
-        entryPoints: ["src/hookMain.ts"],
+        // entryPoints: ["src/hookMain.ts"],
+        entryPoints: ["src/index.ts"],
         outfile: "dist/main/eMath.js",
-        format: "umd",
-        plugins: [umdWrapper()],
+        // format: "umd",
+        // plugins: [umdWrapper()],
+        ...dev,
     },
     {
         entryPoints: ["src/hookMain.ts"],
         outfile: "dist/main/eMath.min.js",
-        format: "iife",
-        minify: true,
+        // format: "iife",
+        // minify: true,
+        ...min,
     },
 
     {
-        entryPoints: ["src/game/hookGame.ts"],
+        // entryPoints: ["src/game/hookGame.ts"],
+        entryPoints: ["src/game/index.ts"],
         outfile: "dist/game/eMath.game.js",
-        format: "umd",
+        // format: "umd",
         // format: "cjs",
         // external: externalIntFiles,
-        plugins: [umdWrapper()],
+        // plugins: [umdWrapper()],
+        ...dev,
     },
     {
         entryPoints: ["src/game/hookGame.ts"],
         outfile: "dist/game/eMath.game.min.js",
-        format: "iife",
-        minify: true,
+        // format: "iife",
+        // minify: true,
+        ...min,
     },
 
     {
-        entryPoints: ["src/pixiGame/hookPixiGame.ts"],
+        // entryPoints: ["src/pixiGame/hookPixiGame.ts"],
+        entryPoints: ["src/pixiGame/index.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.js",
         // external: ["pixi.js", ...externalIntFiles],
-        format: "umd",
-        plugins: [umdWrapper()],
+        // format: "umd",
+        // plugins: [umdWrapper()],
+        ...dev,
     },
     {
         entryPoints: ["src/pixiGame/hookPixiGame.ts"],
         outfile: "dist/pixiGame/eMath.pixiGame.min.js",
         // external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
-        format: "iife",
-        minify: true,
+        // format: "iife",
+        // minify: true,
+        ...min,
     },
 
     {
-        entryPoints: ["src/presets/hookPresets.ts"],
+        // entryPoints: ["src/presets/hookPresets.ts"],
+        entryPoints: ["src/presets/index.ts"],
         outfile: "dist/presets/eMath.presets.js",
-        format: "umd",
-        plugins: [umdWrapper()],
+        // format: "umd",
+        // plugins: [umdWrapper()],
+        ...dev,
     },
     {
         entryPoints: ["src/presets/hookPresets.ts"],
         outfile: "dist/presets/eMath.presets.min.js",
-        format: "iife",
-        minify: true,
+        // format: "iife",
+        // minify: true,
+        ...min,
     },
 ];
 
@@ -112,36 +140,67 @@ Promise.all(buildOptions.map(async function (option) {
     /**
      * Fix import paths
      */
-    async function replaceFileImports () {
-        const fileData = await fs.readFile(option.outfile, "utf8");
-        // console.log(fileData);
-        const regex = /require\(['"]\.\.\/\.\.\/src\/[\w/]+\.ts['"]\)/g;
-        // const regex = /.{44}/g; // test
-        const replacement = "require(\"../main/emath.js\")";
-        const matches = fileData.match(regex);
-        if (!matches) {
-            return;
-        }
-        // console.log(matches);
-        const fileDataReplaced = fileData.replace(regex, replacement);
-        // console.log(fileDataReplaced);
-        await fs.writeFile(option.outfile, fileDataReplaced);
-    }
+    // async function replaceFileImports () {
+    //     const fileData = await fs.readFile(option.outfile, "utf8");
+    //     // console.log(fileData);
+    //     const regex = /require\(['"]\.\.\/\.\.\/src\/[\w/]+\.ts['"]\)/g;
+    //     // const regex = /.{44}/g; // test
+    //     const replacement = "require(\"../main/emath.js\")";
+    //     const matches = fileData.match(regex);
+    //     if (!matches) {
+    //         return;
+    //     }
+    //     // console.log(matches);
+    //     const fileDataReplaced = fileData.replace(regex, replacement);
+    //     // console.log(fileDataReplaced);
+    //     await fs.writeFile(option.outfile, fileDataReplaced);
+    // }
     // console.log(option.outfile);
     const timeInit = Date.now();
-    esbuild
-        .build(option)
-        .then(() => {
-            // console.log(option.outfile, result);
-            console.log(`${option.outfile}: ${Date.now() - timeInit}ms`);
-            // if (["src/game/index.ts", "src/pixiGame/index.ts"].includes(option.entryPoints[0])) {
-            //     replaceFileImports();
-            // }
-            // option.outfile
-        })
-        // .then(() => console.log(`${option.outfile}: ${Date.now() - timeInit}ms`))
-        .catch((e) => {
-            console.error(`Error building ${option.outfile}: ${e}`);
-            process.exit(1);
-        });
+    if (option.minify) {
+        // If it is a .min.js, append the umdWrapper, then build, then minify
+        let newOption = option;
+        newOption.minify = false;
+        newOption = {
+            ...newOption,
+            ...dev,
+        };
+        esbuild
+            .build(newOption)
+            .then(() => {
+                newOption.minify = true;
+                newOption = {
+                    ...newOption,
+                    entryPoints: [newOption.outfile],
+                    allowOverwrite: true,
+                    minify: true,
+                    plugins: [],
+                    footer: undefined,
+                    banner: undefined,
+                };
+                // console.log(newOption.outfile, newOption);
+                return esbuild.build(newOption);
+            })
+            .then(() => {
+                console.log(`${newOption.outfile} (min): ${Date.now() - timeInit}ms`);
+            });
+    } else {
+        esbuild
+            .build(option)
+            .then(() => {
+                // console.log(option.outfile, result);
+                console.log(`${option.outfile}: ${Date.now() - timeInit}ms`);
+                // if (["src/game/index.ts", "src/pixiGame/index.ts"].includes(option.entryPoints[0])) {
+                //     replaceFileImports();
+                // }
+                // option.outfile
+
+                // If it is a .min.js, run it again
+            })
+            // .then(() => console.log(`${option.outfile}: ${Date.now() - timeInit}ms`))
+            .catch((e) => {
+                console.error(`Error building ${option.outfile}: ${e}`);
+                process.exit(1);
+            });
+    }
 }));

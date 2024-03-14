@@ -1600,13 +1600,21 @@ var require_lz_string = __commonJS({
   }
 });
 
-// src/game/hookGame.ts
-var hookGame_exports = {};
-__export(hookGame_exports, {
-  eMath: () => eMathGameWeb
+// src/game/index.ts
+var game_exports = {};
+__export(game_exports, {
+  dataManager: () => dataManager,
+  eventManager: () => eventManager,
+  eventTypes: () => eventTypes,
+  game: () => game,
+  gameAttribute: () => gameAttribute,
+  gameCurrency: () => gameCurrency,
+  gameDefaultConfig: () => gameDefaultConfig,
+  keyManager: () => keyManager,
+  keys: () => keys
 });
-module.exports = __toCommonJS(hookGame_exports);
-var import_reflect_metadata2 = __toESM(require_Reflect());
+module.exports = __toCommonJS(game_exports);
+var import_reflect_metadata = __toESM(require_Reflect());
 
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
 var TransformationType;
@@ -5455,7 +5463,7 @@ var Decimal = class {
   static tetrate_critical(base, height) {
     return Decimal.critical_section(base, height, critical_tetr_values);
   }
-  static critical_section(base, height, grid2, linear = false) {
+  static critical_section(base, height, grid, linear = false) {
     height *= 10;
     if (height < 0) {
       height = 0;
@@ -5473,13 +5481,13 @@ var Decimal = class {
     let upper = 0;
     for (let i = 0; i < critical_headers.length; ++i) {
       if (critical_headers[i] == base) {
-        lower = grid2[i][Math.floor(height)];
-        upper = grid2[i][Math.ceil(height)];
+        lower = grid[i][Math.floor(height)];
+        upper = grid[i][Math.ceil(height)];
         break;
       } else if (critical_headers[i] < base && critical_headers[i + 1] > base) {
         const basefrac = (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
-        lower = grid2[i][Math.floor(height)] * (1 - basefrac) + grid2[i + 1][Math.floor(height)] * basefrac;
-        upper = grid2[i][Math.ceil(height)] * (1 - basefrac) + grid2[i + 1][Math.ceil(height)] * basefrac;
+        lower = grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
+        upper = grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
         break;
       }
     }
@@ -6165,7 +6173,6 @@ var Decimal = class {
   /**
    * Formats the gain rate using the E instance.
    * @param gain - The gain value to compare
-   * @param [mass] - Indicates whether the gain represents a mass value.
    * @param [type] - The type of format (default mixed scientific)
    * @param [acc] - The desired accuracy (number of significant figures).
    * @param [max] - The maximum number of decimal places to display.
@@ -6580,10 +6587,11 @@ var FORMATS = {
           return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
         }
         const m = ex.div(new Decimal(1e3).pow(e.div(3).floor()));
-        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
+        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
       }
     }
   },
+  /** Mixed scientific format */
   mixed_sc: {
     /**
      * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -6604,6 +6612,7 @@ var FORMATS = {
         return format(ex, acc, max, "sc");
     }
   },
+  /** Layer format */
   layer: {
     layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
     format(ex, acc, max) {
@@ -6647,6 +6656,7 @@ var FORMATS = {
       return r;
     }
   },
+  /** Infinity format */
   inf: {
     format(ex, acc, max) {
       ex = new Decimal(ex);
@@ -6694,7 +6704,7 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
   const e = ex.log10().floor();
   switch (type) {
     case "sc":
-    case "scientific":
+    case "scientific": {
       if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
         const e2 = ex.log10().ceil();
         const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e2));
@@ -6712,46 +6722,47 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
         const be = e.log10().gte(9);
         return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
       }
+    }
     case "st":
     case "standard": {
       let e3 = ex.log(1e3).floor();
       if (e3.lt(1)) {
         return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
-      } else {
-        const e3_mul = e3.mul(3);
-        const ee = e3.log10().floor();
-        if (ee.gte(3e3))
-          return "e" + format(e, acc, max, "st");
-        let final = "";
-        if (e3.lt(4))
-          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
-        else {
-          let ee3 = Math.floor(e3.log(1e3).toNumber());
-          if (ee3 < 100)
-            ee3 = Math.max(ee3 - 1, 0);
-          e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
-          while (e3.gt(0)) {
-            const div1000 = e3.div(1e3).floor();
-            const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
-            if (mod1000 > 0) {
-              if (mod1000 == 1 && !ee3)
-                final = "U";
-              if (ee3)
-                final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1)
-                final = FORMATS.standard.tier1(mod1000) + final;
-            }
-            e3 = div1000;
-            ee3++;
-          }
-        }
-        const m = ex.div(new Decimal(10).pow(e3_mul));
-        return neg + (ee.gte(10) ? "" : m.toFixed(new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber()) + " ") + final;
       }
+      const e3_mul = e3.mul(3);
+      const ee = e3.log10().floor();
+      if (ee.gte(3e3))
+        return "e" + format(e, acc, max, "st");
+      let final = "";
+      if (e3.lt(4))
+        final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+      else {
+        let ee3 = Math.floor(e3.log(1e3).toNumber());
+        if (ee3 < 100)
+          ee3 = Math.max(ee3 - 1, 0);
+        e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
+        while (e3.gt(0)) {
+          const div1000 = e3.div(1e3).floor();
+          const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
+          if (mod1000 > 0) {
+            if (mod1000 == 1 && !ee3)
+              final = "U";
+            if (ee3)
+              final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
+            if (mod1000 > 1)
+              final = FORMATS.standard.tier1(mod1000) + final;
+          }
+          e3 = div1000;
+          ee3++;
+        }
+      }
+      const m = ex.div(new Decimal(10).pow(e3_mul));
+      const fixedAmt = acc === 2 ? new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber() : acc;
+      return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
     }
     default:
       if (!FORMATS[type])
-        console.error(`Invalid format type "${type}"`);
+        console.error(`Invalid format type "`, type, `"`);
       return neg + FORMATS[type]?.format(ex, acc, max);
   }
 }
@@ -7487,6 +7498,10 @@ var attributeStatic = class {
 
 // src/game/managers/configManager.ts
 var configManager = class {
+  /**
+   * Constructs a new configuration manager.
+   * @param configOptionTemplate - The template to use for default values.
+   */
   constructor(configOptionTemplate) {
     this.configOptionTemplate = configOptionTemplate;
   }
@@ -7499,18 +7514,21 @@ var configManager = class {
     if (typeof config === "undefined") {
       return this.configOptionTemplate;
     }
-    const parseObject = (obj, template) => {
+    function parseObject(obj, template) {
       for (const key in template) {
         if (typeof obj[key] === "undefined") {
           obj[key] = template[key];
-        } else if (typeof obj[key] === "object" && typeof template[key] === "object") {
+        } else if (typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
           obj[key] = parseObject(obj[key], template[key]);
         }
       }
       return obj;
-    };
+    }
     return parseObject(config, this.configOptionTemplate);
   }
+  /**
+   * @returns The template to use for default values.
+   */
   get options() {
     return this.configOptionTemplate;
   }
@@ -7661,6 +7679,11 @@ var keyManager = class _keyManager {
 };
 
 // src/game/managers/eventManager.ts
+var eventTypes = /* @__PURE__ */ ((eventTypes2) => {
+  eventTypes2["interval"] = "interval";
+  eventTypes2["timeout"] = "timeout";
+  return eventTypes2;
+})(eventTypes || {});
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30,
@@ -7880,7 +7903,7 @@ var dataManager = class {
    * @param value - The value to set the data to.
    * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
    * @example
-   * ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+   * // ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
    * const testData = dataManager.setData("test", 5);
    * console.log(testData.value); // 5
    * testData.value = 10; // Also sets the data
@@ -8353,16 +8376,33 @@ var game = class _game {
     const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
     return classInstance;
   }
-  /**
-   * Adds a new currency group to the game.
-   * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
-   * @param name - The name of the currency group.
-   * @param currencies - An array of currency names to add to the group.
-   * @returns An array of gameCurrency objects, in the same order as the input array.
-   */
-  addCurrencyGroup(name, currencies) {
-    throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
-  }
+  // /**
+  //  * Adds a new currency group to the game.
+  //  * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
+  //  * @param name - The name of the currency group.
+  //  * @param currencies - An array of currency names to add to the group.
+  //  * @returns An array of gameCurrency objects, in the same order as the input array.
+  //  */
+  // public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
+  //     throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
+  //     // this.dataManager.setData(name, {});
+  //     // this.dataManager.setStatic(name, {
+  //     //     attributes: {},
+  //     // });
+  //     // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
+  //     // const outCurrencies: gameCurrency[] = [];
+  //     // // currencies.forEach((currencyName) => {
+  //     // //     this.dataManager.getData(name)[currencyName] = new currency();
+  //     // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
+  //     // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
+  //     // // });
+  //     // currencies.forEach((currencyName) => {
+  //     //     const dataRef = this.dataManager.setData(currencyName, new currency());
+  //     //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
+  //     //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
+  //     // });
+  //     // return outCurrencies;
+  // }
   /**
    * Adds a new attribute to the game. {@link gameAttribute} is the class.
    * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
@@ -8388,264 +8428,6 @@ var game = class _game {
   addReset(currenciesToReset, extender) {
     const reset = new gameReset(currenciesToReset, extender);
     return reset;
-  }
-};
-
-// src/hookMain.ts
-var import_reflect_metadata = __toESM(require_Reflect());
-
-// src/classes/grid.ts
-var gridCell = class {
-  /**
-   * Initializes a new instance of the grid cell.
-   * @param x - The x-coordinate.
-   * @param y - The y-coordinate.
-   * @param props - The properties to initialize with.
-   */
-  constructor(x, y, props) {
-    this.x = x;
-    this.y = y;
-    this.properties = props ? props : {};
-  }
-  /**
-   * Sets the value of a property on the cell.
-   * @param name - The name of the property.
-   * @param value - The value to set.
-   * @returns The set value.
-   */
-  setValue(name, value) {
-    this.properties[name] = value;
-    return value;
-  }
-  /**
-   * Gets the value of a property on the cell.
-   * @param name - The name of the property.
-   * @returns - The value of the property.
-   */
-  getValue(name) {
-    return this.properties[name];
-  }
-};
-var grid = class {
-  // Add this index signature
-  /**
-   * Initializes a new instance of the grid.
-   * @param x_size - The size of the grid along the x-axis.
-   * @param y_size - The size of the grid along the y-axis.
-   * @param starterProps - The properties to initialize with.
-   */
-  constructor(x_size, y_size, starterProps) {
-    this.x_size = x_size;
-    this.y_size = y_size;
-    this.cells = [];
-    for (let a = 0; a < y_size; a++) {
-      this.cells[a] = [];
-      for (let b = 0; b < x_size; b++) {
-        this.cells[a][b] = new gridCell(b, a, starterProps);
-      }
-    }
-  }
-  /**
-   * Gets an array containing all cells in the grid.
-   * @returns - An array of all cells.
-   */
-  getAll() {
-    const output = [];
-    for (let a = 0; a < this.y_size; a++) {
-      for (let b = 0; b < this.x_size; b++) {
-        output.push(this.cells[a][b]);
-      }
-    }
-    return output;
-  }
-  /**
-   * Returns an array of all grid cells.
-   * @returns An array of all grid cells.
-   * @deprecated Use getAll() instead.
-   */
-  all() {
-    return this.getAll();
-  }
-  /**
-   * Gets an array containing all cells that have the same x coordinate.
-   * @returns - An array of all cells.
-   * @param x - The x coordinate to check.
-   */
-  getAllX(x) {
-    const output = [];
-    for (let i = 0; i < this.y_size; i++) {
-      output.push(this.cells[i][x]);
-    }
-    return output;
-  }
-  /**
-   * Returns an array of all grid cells with the same x coordinate.
-   * @param x The x coordinate to check.
-   * @returns An array of all grid cells with the same x coordinate.
-   * @deprecated Use getAllX() instead.
-   */
-  allX(x) {
-    return this.getAllX(x);
-  }
-  /**
-   * Gets an array containing all cells that have the same y coordinate.
-   * @returns - An array of all cells.
-   * @param y - The y coordinate to check.
-   */
-  getAllY(y) {
-    const output = [];
-    for (let i = 0; this.x_size; i++) {
-      output.push(this.cells[y][i]);
-    }
-    return output;
-  }
-  /**
-   * Returns an array of all grid cells with the same y coordinate.
-   * @param y The y coordinate to check.
-   * @returns An array of all grid cells with the same y coordinate.
-   * @deprecated Use allY() instead.
-   */
-  allY(y) {
-    return this.getAllY(y);
-  }
-  /**
-   * Gets a cell.
-   * @returns - The cell.
-   * @param x - The x coordinate to check.
-   * @param y - The y coordinate to check.
-   */
-  getCell(x, y) {
-    return this.cells[y][x];
-  }
-  /**
-   * Sets the value of a cell in the grid.
-   * @param x The x-coordinate of the cell.
-   * @param y The y-coordinate of the cell.
-   * @param value The value to set for the cell.
-   */
-  setCell(x, y, value) {
-    this.cells[y][x] = value;
-  }
-  /**
-   * Gets an array containing all cells adjacent to a specific cell.
-   * @returns - An array of all cells.
-   * @param x - The x coordinate to check.
-   * @param y - The y coordinate to check.
-   */
-  getAdjacent(x, y) {
-    const output = [];
-    output[0] = this.getCell(x, y + 1);
-    output[1] = this.getCell(x + 1, y);
-    output[2] = this.getCell(x, y - 1);
-    output[3] = this.getCell(x - 1, y + 1);
-    return output;
-  }
-  /**
-   * Gets an array containing all cells diagonal from a specific cell.
-   * @returns - An array of all cells.
-   * @param x - The x coordinate to check.
-   * @param y - The y coordinate to check.
-   */
-  getDiagonal(x, y) {
-    const output = [];
-    output[0] = this.getCell(x - 1, y + 1);
-    output[1] = this.getCell(x + 1, y + 1);
-    output[2] = this.getCell(x + 1, y - 1);
-    output[3] = this.getCell(x - 1, y - 1);
-    return output;
-  }
-  /**
-   * Gets an array containing all cells that surround a cell.
-   * @returns - An array of all cells.
-   * @param x - The x coordinate to check.
-   * @param y - The y coordinate to check.
-   */
-  getEncircling(x, y) {
-    return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
-  }
-  /**
-   * Calculates the distance between two points on the grid.
-   * @deprecated Use your own distance function instead.
-   * @param x1 - The x-coordinate of the first point.
-   * @param y1 - The y-coordinate of the first point.
-   * @param x2 - The x-coordinate of the second point.
-   * @param y2 - The y-coordinate of the second point.
-   * @returns The distance between the two points.
-   */
-  static getDistance(x1, y1, x2, y2) {
-    return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
-  }
-};
-
-// src/hookMain.ts
-var eMathWeb = {
-  /**
-   * @deprecated Use `import { E } from "emath.js"` instead.
-   */
-  E,
-  classes: {
-    /**
-     * @deprecated Use `import { boost } from "emath.js"` instead.
-     */
-    boost,
-    /**
-     * @deprecated Use `import { currency } from "emath.js"` instead.
-     */
-    currency,
-    /**
-     * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-     */
-    currencyStatic,
-    /**
-     * @deprecated Use `import { attribute } from "emath.js"` instead.
-     */
-    attribute,
-    /**
-     * @deprecated Use `import { grid } from "emath.js"` instead.
-     */
-    grid,
-    /**
-     * @deprecated Use `import { gridCell } from "emath.js"` instead.
-     */
-    gridCell
-    // /**
-    //  * @deprecated Use `import { skillNode } from "emath.js"` instead.
-    //  */
-    // skillNode,
-    // /**
-    //  * @deprecated Use `import { skillTree } from "emath.js"` instead.
-    //  */
-    // skillTree,
-  }
-  // /**
-  //  * @deprecated Use `import { game } from "emath.js"` instead.
-  //  */
-  // game,
-  // managers: {
-  //     /**
-  //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
-  //      */
-  //     keyManager,
-  //     /**
-  //      * @deprecated Use `import { eventManager } from "emath.js"` instead.
-  //      */
-  //     eventManager,
-  //     /**
-  //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
-  //      */
-  //     dataManager,
-  // },
-};
-
-// src/game/hookGame.ts
-var eMathGameWeb = {
-  // ...(window as any)["eMath"] as typeof eMathWeb,
-  ...eMathWeb,
-  game,
-  managers: {
-    keyManager,
-    eventManager,
-    dataManager
   }
 };
 /*! Bundled license information:

@@ -1,18 +1,19 @@
 /**
  * @file Declares the gridCell and grid classes.
  */
+import type { UnknownObject } from "../game/managers/dataManager";
 /** Represents a grid cell with coordinates and properties. */
 declare class gridCell {
     x: number;
     y: number;
-    properties: object;
+    properties: UnknownObject;
     /**
      * Initializes a new instance of the grid cell.
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.
      */
-    constructor(x: number, y: number, props?: object);
+    constructor(x: number, y: number, props?: UnknownObject);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
@@ -43,7 +44,7 @@ declare class grid {
      * @param y_size - The size of the grid along the y-axis.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(x_size: number, y_size: number, starterProps?: object);
+    constructor(x_size: number, y_size: number, starterProps?: UnknownObject);
     /**
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.

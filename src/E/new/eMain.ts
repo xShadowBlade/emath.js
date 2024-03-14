@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable */
 /**
  * @file idk use black magic and type gymnastics to make this work or something
  */
@@ -458,9 +459,9 @@ const FORMATS = {
             const max = Math.max(4 - sslog * 2, 1);
             const parts = [];
             while (log.gte(1) && parts.length < max) {
-                const [abbreviation, value] = FORMATS.elemental.getAbbreviationAndValue(log);
-                const n = log.div(value).floor();
-                log = log.sub(n.mul(value));
+                const [abbreviation, valueAb] = FORMATS.elemental.getAbbreviationAndValue(log);
+                const n = log.div(valueAb).floor();
+                log = log.sub(n.mul(valueAb));
                 parts.unshift([abbreviation, n]);
             }
             if (parts.length >= max) {
@@ -670,9 +671,9 @@ function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: Form
     case "sc":
     case "scientific":
         if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
-            const e = ex.log10().ceil();
-            const m = ex.div(e.eq(-1) ? E(0.1) : E(10).pow(e));
-            const be = e.mul(-1).max(1).log10().gte(9);
+            const e1 = ex.log10().ceil();
+            const m = ex.div(e1.eq(-1) ? E(0.1) : E(10).pow(e1));
+            const be = e1.mul(-1).max(1).log10().gte(9);
             return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
         } else if (e.lt(max)) {
             const a = Math.max(Math.min(acc - e.toNumber(), acc), 0);

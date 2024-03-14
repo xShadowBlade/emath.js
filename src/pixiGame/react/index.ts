@@ -1,5 +1,5 @@
 /**
- * @fileoverview React component for PixiJS game.
+ * @file React component for PixiJS game.
  */
 // import * as React from "react";
 // import { sprite } from "../sprite";

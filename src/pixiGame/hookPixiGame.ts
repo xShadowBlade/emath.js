@@ -1,9 +1,13 @@
+/**
+ * @file Hooks the pixiGame package into the eMath.js game package.
+ * @deprecated This file is deprecated in favor of importing directly from the pixiGame package.
+ */
 // import { hookGame } from "../game/hookGame";
-import { pixiGame } from "./pixiGame";
-import { sprite } from "./sprite";
+// import { pixiGame } from "./pixiGame";
+// import { sprite } from "./sprite";
 
 /**
- *
+ * Hooks the pixiGame package into the eMath.js game package.
  */
 export function hookPixiGame () {
     if (!(typeof process! !== "object" && typeof window! !== "undefined")) {

@@ -2,7 +2,7 @@
  * @file Game formats class.
  */
 import { ESource, FormatType } from "../E/eMain";
-import type { Pointer } from "game";
+import type { Pointer } from "../game/game";
 /**
  * Interface for format gain settings.
  */
@@ -79,10 +79,15 @@ declare class gameFormatClass {
      */
     multi: (x: ESource) => string;
 }
+/**
+ * Interface for format options.
+ * @template T - The type of the format option.
+ */
 interface FormatOption<T = FormatType> {
     name: string;
     value: T;
 }
+/** Type for time formats */
 type FormatTimeType = "short" | "long";
 /**
  * A list of format options with their display names and values.
@@ -92,4 +97,5 @@ declare const formatOptions: FormatOption[];
  * A list of format options with their display names and values for time.
  */
 declare const formatTimeOptions: FormatOption<FormatTimeType>[];
-export { gameFormatClass, formatOptions, formatTimeOptions, FormatGainSettings, FormatSettings, FormatTimeType, FormatOption, gameFormat, gameFormatGain };
+export { gameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };

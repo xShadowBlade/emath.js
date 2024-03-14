@@ -1133,12 +1133,25 @@ var require_Reflect = __commonJS({
   }
 });
 
-// src/hookMain.ts
-var hookMain_exports = {};
-__export(hookMain_exports, {
-  eMath: () => eMathWeb
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  E: () => E,
+  FORMATS: () => FORMATS,
+  FormatTypeList: () => FormatTypeList,
+  attribute: () => attribute,
+  attributeStatic: () => attributeStatic,
+  boost: () => boost,
+  boostObject: () => boostObject,
+  calculateUpgrade: () => calculateUpgrade,
+  currency: () => currency,
+  currencyStatic: () => currencyStatic,
+  grid: () => grid,
+  gridCell: () => gridCell,
+  upgradeData: () => upgradeData,
+  upgradeStatic: () => upgradeStatic
 });
-module.exports = __toCommonJS(hookMain_exports);
+module.exports = __toCommonJS(src_exports);
 var import_reflect_metadata = __toESM(require_Reflect());
 
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
@@ -5196,7 +5209,6 @@ var Decimal = class {
   /**
    * Formats the gain rate using the E instance.
    * @param gain - The gain value to compare
-   * @param [mass] - Indicates whether the gain represents a mass value.
    * @param [type] - The type of format (default mixed scientific)
    * @param [acc] - The desired accuracy (number of significant figures).
    * @param [max] - The maximum number of decimal places to display.
@@ -5290,6 +5302,7 @@ var ST_NAMES = [
     ["", "Hc", "DHe", "THt", "TeH", "PHc", "HHe", "HpH", "OHt", "EHc"]
   ]
 ];
+var FormatTypeList = ["st", "sc", "scientific", "omega", "omega_short", "elemental", "old_sc", "eng", "mixed_sc", "layer", "standard", "inf"];
 var FORMATS = {
   /** Omega format */
   omega: {
@@ -5611,10 +5624,11 @@ var FORMATS = {
           return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
         }
         const m = ex.div(new Decimal(1e3).pow(e.div(3).floor()));
-        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))))) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
+        return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
       }
     }
   },
+  /** Mixed scientific format */
   mixed_sc: {
     /**
      * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -5635,6 +5649,7 @@ var FORMATS = {
         return format(ex, acc, max, "sc");
     }
   },
+  /** Layer format */
   layer: {
     layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
     format(ex, acc, max) {
@@ -5678,6 +5693,7 @@ var FORMATS = {
       return r;
     }
   },
+  /** Infinity format */
   inf: {
     format(ex, acc, max) {
       ex = new Decimal(ex);
@@ -5725,7 +5741,7 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
   const e = ex.log10().floor();
   switch (type) {
     case "sc":
-    case "scientific":
+    case "scientific": {
       if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
         const e2 = ex.log10().ceil();
         const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e2));
@@ -5743,46 +5759,47 @@ function format(ex, acc = 2, max = 9, type = "mixed_sc") {
         const be = e.log10().gte(9);
         return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
       }
+    }
     case "st":
     case "standard": {
       let e3 = ex.log(1e3).floor();
       if (e3.lt(1)) {
         return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
-      } else {
-        const e3_mul = e3.mul(3);
-        const ee = e3.log10().floor();
-        if (ee.gte(3e3))
-          return "e" + format(e, acc, max, "st");
-        let final = "";
-        if (e3.lt(4))
-          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
-        else {
-          let ee3 = Math.floor(e3.log(1e3).toNumber());
-          if (ee3 < 100)
-            ee3 = Math.max(ee3 - 1, 0);
-          e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
-          while (e3.gt(0)) {
-            const div1000 = e3.div(1e3).floor();
-            const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
-            if (mod1000 > 0) {
-              if (mod1000 == 1 && !ee3)
-                final = "U";
-              if (ee3)
-                final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1)
-                final = FORMATS.standard.tier1(mod1000) + final;
-            }
-            e3 = div1000;
-            ee3++;
-          }
-        }
-        const m = ex.div(new Decimal(10).pow(e3_mul));
-        return neg + (ee.gte(10) ? "" : m.toFixed(new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber()) + " ") + final;
       }
+      const e3_mul = e3.mul(3);
+      const ee = e3.log10().floor();
+      if (ee.gte(3e3))
+        return "e" + format(e, acc, max, "st");
+      let final = "";
+      if (e3.lt(4))
+        final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+      else {
+        let ee3 = Math.floor(e3.log(1e3).toNumber());
+        if (ee3 < 100)
+          ee3 = Math.max(ee3 - 1, 0);
+        e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
+        while (e3.gt(0)) {
+          const div1000 = e3.div(1e3).floor();
+          const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
+          if (mod1000 > 0) {
+            if (mod1000 == 1 && !ee3)
+              final = "U";
+            if (ee3)
+              final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
+            if (mod1000 > 1)
+              final = FORMATS.standard.tier1(mod1000) + final;
+          }
+          e3 = div1000;
+          ee3++;
+        }
+      }
+      const m = ex.div(new Decimal(10).pow(e3_mul));
+      const fixedAmt = acc === 2 ? new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber() : acc;
+      return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
     }
     default:
       if (!FORMATS[type])
-        console.error(`Invalid format type "${type}"`);
+        console.error(`Invalid format type "`, type, `"`);
       return neg + FORMATS[type]?.format(ex, acc, max);
   }
 }
@@ -6466,6 +6483,55 @@ var attribute = class {
 __decorateClass([
   Type(() => Decimal)
 ], attribute.prototype, "value", 2);
+var attributeStatic = class {
+  get pointer() {
+    return this.pointerFn;
+  }
+  /**
+   * Constructs a new instance of the Attribute class.
+   * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
+   * @param useBoost - Indicates whether to use boost for the attribute.
+   * @param initial - The initial value of the attribute.
+   */
+  constructor(pointer, useBoost = true, initial = 0) {
+    this.initial = E(initial);
+    pointer = pointer ?? new attribute(this.initial);
+    this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+    if (useBoost)
+      this.boost = new boost(this.initial);
+  }
+  /**
+   * Updates the value of the attribute.
+   * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
+   */
+  update() {
+    if (this.boost) {
+      this.pointer.value = this.boost.calculate();
+    }
+  }
+  /**
+   * Gets the value of the attribute, and also updates the value stored.
+   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
+   * @returns The calculated value of the attribute.
+   */
+  get value() {
+    if (this.boost) {
+      this.pointer.value = this.boost.calculate();
+    }
+    return this.pointer.value;
+  }
+  /**
+   * Sets the value of the attribute.
+   * NOTE: This setter should not be used when boost is enabled.
+   * @param value - The value to set the attribute to.
+   */
+  set value(value) {
+    if (this.boost) {
+      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+    }
+    this.pointer.value = value;
+  }
+};
 
 // src/classes/grid.ts
 var gridCell = class {
@@ -6648,66 +6714,6 @@ var grid = class {
   static getDistance(x1, y1, x2, y2) {
     return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
   }
-};
-
-// src/hookMain.ts
-var eMathWeb = {
-  /**
-   * @deprecated Use `import { E } from "emath.js"` instead.
-   */
-  E,
-  classes: {
-    /**
-     * @deprecated Use `import { boost } from "emath.js"` instead.
-     */
-    boost,
-    /**
-     * @deprecated Use `import { currency } from "emath.js"` instead.
-     */
-    currency,
-    /**
-     * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
-     */
-    currencyStatic,
-    /**
-     * @deprecated Use `import { attribute } from "emath.js"` instead.
-     */
-    attribute,
-    /**
-     * @deprecated Use `import { grid } from "emath.js"` instead.
-     */
-    grid,
-    /**
-     * @deprecated Use `import { gridCell } from "emath.js"` instead.
-     */
-    gridCell
-    // /**
-    //  * @deprecated Use `import { skillNode } from "emath.js"` instead.
-    //  */
-    // skillNode,
-    // /**
-    //  * @deprecated Use `import { skillTree } from "emath.js"` instead.
-    //  */
-    // skillTree,
-  }
-  // /**
-  //  * @deprecated Use `import { game } from "emath.js"` instead.
-  //  */
-  // game,
-  // managers: {
-  //     /**
-  //      * @deprecated Use `import { keyManager } from "emath.js"` instead.
-  //      */
-  //     keyManager,
-  //     /**
-  //      * @deprecated Use `import { eventManager } from "emath.js"` instead.
-  //      */
-  //     eventManager,
-  //     /**
-  //      * @deprecated Use `import { dataManager } from "emath.js"` instead.
-  //      */
-  //     dataManager,
-  // },
 };
 /*! Bundled license information:
 

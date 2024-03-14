@@ -36,31 +36,15 @@ import { boost, currency, /* import more here */ } from "emath.js";
 ### Include using CDN
 
 > [!NOTE]
-> This will not include types
+> There is no development build for CDN, as it is used for nodejs.
 
 #### emath.js
-
-##### Development Build
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.js"></script>
-```
-
-##### Production/Minified Build
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.min.js"></script>
 ```
 
 #### emath.js/game
-
-##### Development Build
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.js"></script>
-```
-
-##### Production/Minified Build
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.min.js"></script>

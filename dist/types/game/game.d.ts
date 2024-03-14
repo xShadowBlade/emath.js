@@ -89,14 +89,6 @@ declare class game {
      */
     addCurrency<Name extends string>(name: Name): gameCurrency<Name>;
     /**
-     * Adds a new currency group to the game.
-     * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
-     * @param name - The name of the currency group.
-     * @param currencies - An array of currency names to add to the group.
-     * @returns An array of gameCurrency objects, in the same order as the input array.
-     */
-    addCurrencyGroup(name: string, currencies: string[]): gameCurrency<string>[];
-    /**
      * Adds a new attribute to the game. {@link gameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the attribute.
