@@ -1,9 +1,10 @@
 /**
  * @file Declares the attribute and attributeStatic classes.
  */
+import "reflect-metadata"; // Required for class-transformer
+import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
-import { Type } from "class-transformer";
 import { Decimal } from "../E/e";
 
 /**

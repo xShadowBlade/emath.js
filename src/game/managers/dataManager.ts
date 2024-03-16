@@ -7,6 +7,7 @@ import type { game } from "../game";
 import { compressToBase64, decompressFromBase64 } from "lz-string";
 
 // Saver
+import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
 // Recursive plain to class

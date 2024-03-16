@@ -1,23 +1,67 @@
+/**
+ * @file Declares the currency class and its related classes (upgrade)
+ */
+import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/game";
 import { boost } from "./boost";
 /**
+ * Represents different methods to calculate the mean.
+ * Mode 1 `"arithmetic"` `(a+b)/2` is the default and a bit faster.
+ * Mode 2 `"geometric"` `sqrt(ab)` is more accurate.
+ */
+type MeanMode = "arithmetic" | "geometric" | 1 | 2;
+/**
+ * Approximates the inverse of a function at `n` using the bisection / binary search method.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing.
+ * @param n - The value to approximate the inverse at.
+ * @param mode - The mode/mean method to use. See {@link MeanMode}
+ * @param iterations - The amount of iterations to perform. Defaults to `15`.
+ * @param target - The target value to reach. If not provided, it defaults to `n`.
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
+ */
+declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number, target?: ESource): {
+    value: Decimal;
+    lowerBound: Decimal;
+    upperBound: Decimal;
+    iterations: number;
+} | {
+    value: Decimal;
+    lowerBound: Decimal;
+    upperBound: Decimal;
+};
+/**
+ * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
+ * @param f - The function `f(n)` to calculate the sum.
+ * @param b - The upper limit for the sum.
+ * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
+ * @param epsilon - The maximum error tolerance.
+ * @returns The calculated sum of `f(n)`.
+ */
+declare function calculateSum(f: (n: E) => E, b: E, a?: number, epsilon?: E): E;
+/**
  * Calculates the cost and how many upgrades you can buy
- *
- * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+ * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
+ * The priority is: `target === 1` > `costBulk` > `el`
  * @param value - The current value of the currency.
  * @param upgrade - The upgrade object to calculate.
- * @param target - How many to buy
+ * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
+ * @param end - The ending level or quantity to reach for the upgrade.
+ * @param mode - The mode/mean method to use. See {@link MeanMode}
+ * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-declare function calculateUpgrade(value: ESource, upgrade: upgradeStatic, target?: ESource, el?: boolean): [amount: E, cost: E];
+declare function calculateUpgrade(value: ESource, upgrade: upgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
 /**
  * Interface for initializing an upgrade.
  */
-interface upgradeInit {
-    /** The ID of the upgrade. */
+interface UpgradeInit {
+    /**
+     * The ID of the upgrade.
+     * Used to retrieve the upgrade later.
+     */
     id: string;
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
@@ -28,7 +72,9 @@ interface upgradeInit {
      * @example
      * // A dynamic description that returns a string
      * const description = (a, b) => `This is a ${a} that returns a ${b}`;
-     * // ... create upgrade
+     *
+     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     *
      * const upgrade = currencyStatic.getUpgrade("upgradeID");
      *
      * // Getter property
@@ -40,15 +86,17 @@ interface upgradeInit {
     description?: ((...args: any[]) => string) | string;
     /**
      * The cost of upgrades at a certain level.
-     * @param level - The CURRENT (not next) level of the upgrade.
-     * @returns The cost of the upgrade.
+     * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
+     * Also, if you do not set your own `costBulk` function, the function should always be greater than the level.
+     * @param level - The CURRENT (not next) level of the upgrade. It will always be a positive integer.
+     * @returns The cost of the upgrade. It should be a non-negative integer greater than or equal to 0.
      * @example
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
      */
     cost: (level: E) => E;
     /**
-     * The cost of buying a bulk of upgrades at a certain level.
+     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function)
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade.
      * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
@@ -62,7 +110,6 @@ interface upgradeInit {
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
-     * Also warning: If not set, the automatic binary search / sum will not work. Use {@link el} instead.
      */
     maxLevel?: E;
     /**
@@ -71,8 +118,12 @@ interface upgradeInit {
      * @param context - The upgrade object.
      */
     effect?: (level: E, context: upgradeStatic) => void;
-    /** Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search. */
-    el?: Pointer<boolean>;
+    /**
+     * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
+     * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
+     * (but you should use a getter function instead)
+     */
+    el?: boolean | (() => boolean);
     /**
      * The default level of the upgrade.
      * Automatically set to `1` if not provided.
@@ -80,21 +131,27 @@ interface upgradeInit {
     level?: E;
 }
 /** Interface for an upgrade. */
-interface IUpgradeStatic extends Omit<upgradeInit, "level"> {
+interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
     maxLevel?: E;
     name: string;
     description: string;
+    /**
+     * A function that returns a description of the upgrade.
+     * @param args - Arguments to pass to the description function.
+     * @returns The description of the upgrade.
+     */
+    descriptionFn: (...args: any[]) => string;
 }
 /** Interface for upgrade data. */
-interface IUpgradeData {
-    id: string | number;
+interface IUpgradeData extends Pick<UpgradeInit, "id" | "level"> {
+    id: string;
     level: E;
 }
 /** Represents the frontend for an upgrade. */
 declare class upgradeData implements IUpgradeData {
     id: string;
     level: Decimal;
-    constructor(init: Pick<upgradeInit, "id" | "level">);
+    constructor(init: Pick<UpgradeInit, "id" | "level">);
 }
 /** Represents the backend for an upgrade. */
 declare class upgradeStatic implements IUpgradeStatic {
@@ -104,16 +161,19 @@ declare class upgradeStatic implements IUpgradeStatic {
     costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
     maxLevel: Decimal | undefined;
     effect: ((level: Decimal, context: upgradeStatic) => void) | undefined;
-    el?: Pointer<boolean> | undefined;
+    el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
     get description(): string;
+    /**
+     * @returns The data of the upgrade.
+     */
     protected dataPointerFn: () => upgradeData;
     get data(): upgradeData;
     /**
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
-    constructor(init: upgradeInit, dataPointer: Pointer<upgradeData>);
+    constructor(init: UpgradeInit, dataPointer: Pointer<upgradeData>);
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
@@ -232,7 +292,7 @@ declare class currencyStatic {
      *     }
      * });
      */
-    addUpgrade(upgrades: upgradeInit | upgradeInit[], runEffectInstantly?: boolean): void;
+    addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly?: boolean): void;
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
@@ -247,42 +307,44 @@ declare class currencyStatic {
      *     }
      * });
      */
-    updateUpgrade(id: string, upgrade: upgradeInit): void;
+    updateUpgrade(id: string, upgrade: UpgradeInit): void;
     /**
      * Calculates the cost and how many upgrades you can buy
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
      * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.
-     * @param target - How many to buy
-     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
-     * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+     * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: string, target?: ESource, el?: boolean): [amount: E, cost: E];
+    calculateUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
      * @param id - Index or ID of the upgrade
      * @param target - How many before the next upgrade
-     * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns The cost of the next upgrade.
      * @example
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: string, target?: ESource, el?: boolean): E;
+    getNextCost(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
-     * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
      * @param target - The target level or quantity to reach for the upgrade.
-     * This represents how many upgrades to buy or upgrade.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      * @example
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: string, target?: ESource): boolean;
+    buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
-export { currency, currencyStatic, upgradeInit, IUpgradeStatic, upgradeData, upgradeStatic, IUpgradeData, calculateUpgrade };
+export { currency, currencyStatic, UpgradeInit, IUpgradeStatic, upgradeData, upgradeStatic, IUpgradeData, calculateUpgrade, inverseFunctionApprox, calculateSum, MeanMode };

@@ -1143,16 +1143,18 @@ __export(src_exports, {
   attributeStatic: () => attributeStatic,
   boost: () => boost,
   boostObject: () => boostObject,
+  calculateSum: () => calculateSum,
   calculateUpgrade: () => calculateUpgrade,
   currency: () => currency,
   currencyStatic: () => currencyStatic,
   grid: () => grid,
   gridCell: () => gridCell,
+  inverseFunctionApprox: () => inverseFunctionApprox,
   upgradeData: () => upgradeData,
   upgradeStatic: () => upgradeStatic
 });
 module.exports = __toCommonJS(src_exports);
-var import_reflect_metadata = __toESM(require_Reflect());
+var import_reflect_metadata3 = __toESM(require_Reflect());
 
 // node_modules/class-transformer/esm5/enums/transformation-type.enum.js
 var TransformationType;
@@ -6093,74 +6095,99 @@ var boost = class {
 };
 
 // src/classes/currency.ts
-function calculateUpgrade(value, upgrade, target = 1, el = false) {
+var import_reflect_metadata = __toESM(require_Reflect());
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target) {
+  let lowerBound = E(1);
+  let upperBound = E(target ?? n);
+  if (f(upperBound).lt(n)) {
+    if (!target)
+      console.warn("The function is not monotonically increasing. (f(n) < n)");
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  let i = 0;
+  for (; i < iterations; i++) {
+    let mid;
+    switch (mode) {
+      case "arithmetic":
+      case 1:
+        mid = lowerBound.add(upperBound).div(2);
+        break;
+      case "geometric":
+      case 2:
+        mid = lowerBound.mul(upperBound).sqrt();
+        break;
+    }
+    const midValue = f(mid);
+    if (midValue.eq(n)) {
+      return {
+        value: mid,
+        lowerBound: mid,
+        upperBound: mid
+      };
+    } else if (midValue.lt(n)) {
+      lowerBound = mid;
+    } else {
+      upperBound = mid;
+    }
+  }
+  const out = {
+    value: lowerBound,
+    lowerBound,
+    upperBound,
+    iterations: i
+  };
+  return out;
+}
+function calculateSum(f, b, a = 0, epsilon) {
+  epsilon = epsilon ?? E("1e-6");
+  let sum = E();
+  for (let n = E(a); n.lte(b); n = n.add(1)) {
+    if (f(n).div(n).lt(epsilon))
+      break;
+    sum = sum.add(f(n));
+  }
+  return sum;
+}
+function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
-  target = E(target);
+  start = E(start ?? upgrade.level);
+  end = E(end ?? value);
+  const target = end.sub(start);
   if (target.lte(0)) {
     return [E(0), E(0)];
   }
   el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
   if (target.eq(1)) {
-    const cost = upgrade.cost(upgrade.level);
-    const canAfford = value.gte(cost);
+    const cost2 = upgrade.cost(upgrade.level);
+    const canAfford = value.gte(cost2);
     if (el) {
       return [canAfford ? E(1) : E(0), E(0)];
     }
-    return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+    return [canAfford ? E(1) : E(0), canAfford ? cost2 : E(0)];
   }
   if (upgrade.costBulk) {
-    const [cost, amount] = upgrade.costBulk(value, upgrade.level, target);
-    const canAfford = value.gte(cost);
-    return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
+    const [cost2, amount] = upgrade.costBulk(value, upgrade.level, target);
+    const canAfford = value.gte(cost2);
+    return [canAfford ? amount : E(0), canAfford ? cost2 : E(0)];
   }
-  if (!upgrade.maxLevel && !el) {
-    console.warn(`Upgrade "${upgrade.id}" does not have a maximum level and will not work with the automatic binary search / sum. Use \`el\` instead.`);
-    return [E(0), E(0)];
+  if (el) {
+    const costTargetFn = (level) => upgrade.cost(level.add(start));
+    const maxLevelAffordable2 = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
+    const cost2 = upgrade.cost(maxLevelAffordable2);
+    return [maxLevelAffordable2, cost2];
   }
-  function calculateSum(f, b) {
-    let sum = E();
-    for (let n = E(0); n.lte(b); n = n.add(1)) {
-      sum = sum.add(f(n));
-    }
-    return sum;
-  }
-  function findHighestB(f, a) {
-    if (el) {
-      let left2 = E(0);
-      let right2 = target;
-      let result = E(0);
-      while (left2.lessThanOrEqualTo(right2)) {
-        const mid = left2.plus(right2).dividedBy(2).floor();
-        const valueF = f(mid);
-        if (valueF.lte(a)) {
-          result = mid;
-          left2 = mid.plus(1);
-        } else {
-          right2 = mid.minus(1);
-        }
-      }
-      return [result, result.gt(0) ? f(result) : E(0)];
-    }
-    let left = E(0);
-    let right = E(1);
-    while (calculateSum(f, right).lt(a)) {
-      right = right.mul(2);
-    }
-    while (left.lt(right)) {
-      const mid = E.floor(left.add(right).div(2));
-      const sum = calculateSum(f, mid);
-      if (sum.lt(a)) {
-        left = mid.add(1);
-      } else {
-        right = mid;
-      }
-    }
-    return [left, left.gt(0) ? calculateSum(f, left.sub(1)) : E(0)];
-  }
-  return findHighestB(
-    (level) => upgrade.cost(upgrade.level.add(level)),
-    value
-  );
+  const maxLevelAffordable = inverseFunctionApprox(
+    (level) => calculateSum(upgrade.cost, level),
+    value,
+    mode,
+    iterations
+  ).value.floor();
+  const cost = calculateSum(upgrade.cost, maxLevelAffordable);
+  return [maxLevelAffordable, cost];
 }
 var upgradeData = class {
   constructor(init) {
@@ -6402,75 +6429,74 @@ var currencyStatic = class {
    * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
    * See {@link calculateUpgrade} for more information.
    * @param id - The ID or position of the upgrade to calculate.
-   * @param target - How many to buy
-   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
-   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+   * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
    * @example
    * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
-  calculateUpgrade(id, target = 1, el = false) {
+  // public calculateUpgrade (id: string, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
+  calculateUpgrade(id, target, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return [E(0), E(0)];
     }
-    return calculateUpgrade(this.value, upgrade, target, el);
+    return calculateUpgrade(this.value, upgrade, upgrade.level, target ? upgrade.level.add(target) : void 0, mode, iterations);
   }
   /**
    * Calculates how much is needed for the next upgrade.
    * @param id - Index or ID of the upgrade
    * @param target - How many before the next upgrade
-   * @param el - Endless: Flag to exclude the sum calculation and only perform binary search.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
    * @returns The cost of the next upgrade.
    * @example
    * // Calculate the cost of the next healthBoost upgrade
    * const nextCost = currency.getNextCost("healthBoost");
    */
-  getNextCost(id, target = 0, el = false) {
+  getNextCost(id, target = 0, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return E(0);
     }
-    const amount = calculateUpgrade(this.value, upgrade, target, el)[1];
+    const amount = calculateUpgrade(this.value, upgrade, upgrade.level, upgrade.level.add(target), mode, iterations)[1];
     const nextCost = upgrade.cost(upgrade.level.add(amount));
     return nextCost;
   }
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
    * @param id - The ID or position of the upgrade to buy or upgrade.
-   * If a string is provided, it is treated as the upgrade's ID. If a number is provided, it is treated as the upgrade's array position (starting from 0).
    * @param target - The target level or quantity to reach for the upgrade.
-   * This represents how many upgrades to buy or upgrade.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    * @example
    * // Attempt to buy up to 10 healthBoost upgrades at once
    * currency.buyUpgrade("healthBoost", 10);
    */
-  buyUpgrade(id, target = 1) {
+  buyUpgrade(id, target = 1, mode, iterations) {
     const upgrade = this.getUpgrade(id);
-    if (upgrade === null)
-      return false;
-    target = E(target);
-    const maxAffordableQuantity = calculateUpgrade(
-      this.value,
-      upgrade,
-      target
-    );
-    if (maxAffordableQuantity[0].lte(0)) {
+    if (upgrade === null) {
+      console.warn(`Upgrade "${id}" not found.`);
       return false;
     }
-    this.pointer.value = this.pointer.value.sub(maxAffordableQuantity[1]);
-    upgrade.level = upgrade.level.add(maxAffordableQuantity[0]);
-    if (typeof upgrade.effect === "function") {
-      upgrade.effect(upgrade.level, upgrade);
+    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+    if (amount.lte(0)) {
+      return false;
     }
+    this.pointer.value = this.pointer.value.sub(cost);
+    upgrade.level = upgrade.level.add(amount);
+    upgrade.effect?.(upgrade.level, upgrade);
     return true;
   }
 };
 
 // src/classes/attribute.ts
+var import_reflect_metadata2 = __toESM(require_Reflect());
 var attribute = class {
   /**
    * Constructs a static attribute with an initial effect.

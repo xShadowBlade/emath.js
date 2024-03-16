@@ -14,13 +14,17 @@ import type { Application } from "pixi.js";
 // const PIXI = loadPIXI();
 // const { Application } = PIXI;
 
+/** The configuration options for the game. */
 interface pixiGameConfig extends gameConfigOptions {
+    /** The PIXI-specific config */
     pixi: {
-        app: InstanceType<typeof Application> | null;
+        /** The PIXI app to use for the game. */
+        app: Application | null;
     }
 }
 
-const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig> = {
+/** The default configuration for the game. */
+const pixiGameDefaultConfig: pixiGameConfig & RequiredDeep<gameConfigOptions> = {
     ...gameDefaultConfig,
     initIntervalBasedManagers: false,
     pixi: {
@@ -36,13 +40,18 @@ class pixiGame extends game {
     protected static configManager = new configManager(pixiGameDefaultConfig);
 
     /** The configuration for the game. */
-    public config: RequiredDeep<pixiGameConfig>;
+    // public config: RequiredDeep<pixiGameConfig>;
+    public config: typeof pixiGameDefaultConfig;
 
-    /** The key manager for the game. */
+    /** The PIXI-specific properties for the game. */
     public PIXI: {
-        app: InstanceType<typeof Application>,
+        /** The PIXI app to use for the game. */
+        app: Application,
+        /** The camera position. */
         camera: {
+            /** The x position of the camera. */
             x: number,
+            /** The y position of the camera. */
             y: number
         },
     };
@@ -57,8 +66,7 @@ class pixiGame extends game {
 
         // Setup PIXI
         if (!this.config.pixi.app) throw new Error(`No PIXI app was provided in config: ${JSON.stringify(this.config)}`);
-        // @ts-expect-error - PIXI types are wrong
-        const app = this.config.pixi.app as InstanceType<typeof Application>;
+        const app = this.config.pixi.app;
 
         // if (this.config.pixi.app instanceof Application) {
         //     app = this.config.pixi.app;

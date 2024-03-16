@@ -3,6 +3,7 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import type { game } from "../game";
+import "reflect-metadata";
 type ClassType = new (...args: any[]) => any;
 type UnknownObject = Record<string, unknown>;
 /**

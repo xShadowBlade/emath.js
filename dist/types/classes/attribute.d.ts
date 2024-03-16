@@ -1,6 +1,7 @@
 /**
  * @file Declares the attribute and attributeStatic classes.
  */
+import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { boost } from "../classes/boost";
 /**

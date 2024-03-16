@@ -2,10 +2,10 @@
  * @file Skill tree class
  */
 import { E, ESource } from "../E/eMain";
-import { calculateUpgrade } from "./currency";
+// import { calculateUpgrade } from "./currency";
 import type { currencyStatic, IUpgradeStatic } from "./currency";
 
-interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost"> {
+interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
     cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E];
     costBulk?: [currency: currencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
     required: ISkill[];

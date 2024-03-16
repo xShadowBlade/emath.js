@@ -6,25 +6,33 @@ import { configManager, RequiredDeep } from "../game/managers/configManager";
 import { sprite, collisionShapeType } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";
+/** The configuration options for the game. */
 interface pixiGameConfig extends gameConfigOptions {
+    /** The PIXI-specific config */
     pixi: {
-        app: InstanceType<typeof Application> | null;
+        /** The PIXI app to use for the game. */
+        app: Application | null;
     };
 }
-declare const pixiGameDefaultConfig: RequiredDeep<pixiGameConfig>;
+/** The default configuration for the game. */
+declare const pixiGameDefaultConfig: pixiGameConfig & RequiredDeep<gameConfigOptions>;
 /**
  * Represents a game instance with PIXI-specific methods and properties.
  * Uses PIXI.js time-based game loop.
  */
 declare class pixiGame extends game {
-    protected static configManager: configManager<RequiredDeep<pixiGameConfig>>;
+    protected static configManager: configManager<pixiGameConfig & RequiredDeep<gameConfigOptions>>;
     /** The configuration for the game. */
-    config: RequiredDeep<pixiGameConfig>;
-    /** The key manager for the game. */
+    config: typeof pixiGameDefaultConfig;
+    /** The PIXI-specific properties for the game. */
     PIXI: {
-        app: InstanceType<typeof Application>;
+        /** The PIXI app to use for the game. */
+        app: Application;
+        /** The camera position. */
         camera: {
+            /** The x position of the camera. */
             x: number;
+            /** The y position of the camera. */
             y: number;
         };
     };

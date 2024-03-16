@@ -14,10 +14,12 @@ interface KeyBinding {
     fn?: (dt: number) => void;
     /**
      * A function that is executed every frame while the binding is being pressed.
+     * @param dt - The time since the last frame, in milliseconds.
      */
     onDownContinuous?: (dt: number) => void;
     /**
      * The function executed when the binding is pressed down.
+     * Uses the default "mousedown" event
      */
     onDown?: () => void;
     /**

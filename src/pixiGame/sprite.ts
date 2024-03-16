@@ -9,22 +9,28 @@
 // import React, { useEffect } from "react";
 // import { Sprite as PixiSprite } from "@pixi/react";
 // import { loadPIXI } from "./loadPIXI.js";
-import Intersects from "./pixi-intersects.js";
+import Intersects, { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
 import type { pixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
 
-type collisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Shape" | "Line";
+type collisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
 
 /**
  * Represents a game sprite
  */
 class sprite {
+    /** The pixi sprite */
     public sprite: Sprite | Graphics;
+    /** The x position of the sprite */
     public x: number;
+    /** The y position of the sprite */
     public y: number;
+    /** The type of collision shape to use for the sprite */
     public collisionShape: collisionShapeType;
-    public intersects: typeof Intersects.Shape | typeof Intersects.Circle | typeof Intersects.Polygon | typeof Intersects.Rectangle;
+    /** The collision shape of the sprite */
+    protected intersects: Shape | Circle | Polygon | Rectangle;
 
+    /** The game reference */
     protected gameRef: pixiGame;
 
     /**
@@ -57,9 +63,9 @@ class sprite {
      * @param other - The other sprite to check for collision with.
      * @returns True if a collision occurs, otherwise false.
      */
-    public collides (other: this): boolean {
-        // @ts-expect-error - collisionShape is a string, but we want to use it as a type
-        return this.intersects[`collides${other.collisionShape}`](other.intersects);
+    public collides (other: sprite): boolean {
+        if (this.x === Infinity || other.x === Infinity) return false; // buggy collision detection
+        return Boolean(this.intersects[`collides${other.collisionShape}`](other.intersects));
     }
 
     /**
