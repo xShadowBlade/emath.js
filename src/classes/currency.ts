@@ -727,7 +727,8 @@ class CurrencyStatic<U extends string[] = string[]> {
     }
 }
 
-export { Currency as currency, CurrencyStatic as currencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as upgradeData, UpgradeStatic as upgradeStatic, IUpgradeData };
+// export { Currency as Currency, CurrencyStatic as CurrencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as UpgradeData, UpgradeStatic as UpgradeStatic, IUpgradeData };
+export { Currency, CurrencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData, UpgradeStatic, IUpgradeData };
 // export { MeanMode, calculateUpgrade, inverseFunctionApprox, calculateSum, calculateSumLoop, calculateSumApprox };
 
 // Test

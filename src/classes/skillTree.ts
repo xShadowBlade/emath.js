@@ -3,11 +3,11 @@
  */
 import { E, ESource } from "../E/eMain";
 // import { calculateUpgrade } from "./currency";
-import type { currencyStatic, IUpgradeStatic } from "./currency";
+import type { CurrencyStatic, IUpgradeStatic } from "./currency";
 
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
-    cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E];
-    costBulk?: [currency: currencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
+    cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
+    costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
     required: ISkill[];
     effect?: (level: E, context: ISkill) => void;
 }
@@ -32,7 +32,7 @@ class skillNode implements ISkill {
     constructor (
         id: string,
         name: string,
-        cost: [currency: currencyStatic, cost: (level: E, context: ISkill) => E],
+        cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E],
         description?: string,
         effect?: (level: E, context: ISkill) => void,
         maxLevel?: ESource,

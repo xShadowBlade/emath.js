@@ -4,7 +4,7 @@
 
 import { ESource } from "../E/eMain";
 // import { boost } from "../classes/boost";
-import { currency, currencyStatic } from "../classes/currency";
+import { Currency, CurrencyStatic } from "../classes/currency";
 import { Attribute, AttributeStatic } from "../classes/attribute";
 import { KeyManager } from "./managers/keyManager";
 import { EventManager } from "./managers/eventManager";
@@ -139,11 +139,11 @@ class Game {
      */
     public addCurrency<Name extends string> (name: Name): GameCurrency<Name> {
         this.dataManager.setData(name, {
-            currency: new currency(),
+            currency: new Currency(),
         });
         this.dataManager.setStatic(name, {
             // @ts-expect-error - fix this
-            currency: new currencyStatic(() => this.dataManager.getData(name).currency),
+            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency),
             // attributes: {},
         });
 

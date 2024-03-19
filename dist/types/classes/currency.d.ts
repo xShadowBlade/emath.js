@@ -332,4 +332,4 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
-export { Currency as currency, CurrencyStatic as currencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as upgradeData, UpgradeStatic as upgradeStatic, IUpgradeData };
+export { Currency, CurrencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData, UpgradeStatic, IUpgradeData };

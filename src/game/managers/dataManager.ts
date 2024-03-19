@@ -8,7 +8,7 @@ import { compressToBase64, decompressFromBase64 } from "lz-string";
 import type { Game } from "../game";
 
 // Recursive plain to class
-import { currency } from "../../classes/currency";
+import { Currency } from "../../classes/currency";
 // import { boost, boostObject } from "../../classes/boost";
 import { Attribute } from "../../classes/attribute";
 // import { Decimal } from "../../E/old/e";
@@ -33,7 +33,7 @@ type UnknownObject = Record<string, unknown>;
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  *
- * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
+ * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 class DataManager {
@@ -383,7 +383,7 @@ class DataManager {
                     out[key] = sourcePlain[key];
                 }
                 // Special case for currency.upgrades
-                if (source[key] instanceof currency) {
+                if (source[key] instanceof Currency) {
                     // console.log("Merging currency: ", source[key], target[key]);
                     interface currencyPlainType {
                         upgrades: {
@@ -391,7 +391,7 @@ class DataManager {
                             level: unknown; // irrelevant so unknown
                         }[]
                     }
-                    const sourceCurrency = source[key] as currency;
+                    const sourceCurrency = source[key] as Currency;
                     const targetCurrency = target[key] as currencyPlainType;
                     for (const upgrade of sourceCurrency.upgrades) {
                         if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
@@ -446,7 +446,7 @@ class DataManager {
             //     },
             // },
             {
-                class: currency,
+                class: Currency,
                 name: "currency",
                 // subclasses: {
                 //     // boost: boost,

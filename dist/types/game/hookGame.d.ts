@@ -16,8 +16,8 @@ declare const eMathGameWeb: {
     E: ((x?: import("index").ESource | undefined) => import("E/e").Decimal) & typeof import("E/e").Decimal;
     classes: {
         boost: typeof import("index").Boost;
-        currency: typeof import("index").currency;
-        currencyStatic: typeof import("index").currencyStatic;
+        currency: typeof import("index").Currency;
+        currencyStatic: typeof import("index").CurrencyStatic;
         attribute: typeof import("index").Attribute;
         grid: typeof import("index").Grid;
         gridCell: typeof import("index").GridCell;

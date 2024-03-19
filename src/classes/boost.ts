@@ -144,7 +144,7 @@ class Boost {
 
     /**
      * Gets a boost object by its ID.
-     * @deprecated Use {@link boost.getBoosts} instead.
+     * @deprecated Use {@link getBoosts} instead.
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */

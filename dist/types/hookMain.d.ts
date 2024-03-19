@@ -3,7 +3,7 @@
  */
 import "reflect-metadata";
 import { Boost } from "./classes/boost";
-import { currency, currencyStatic } from "./classes/currency";
+import { Currency, CurrencyStatic } from "./classes/currency";
 import { Attribute } from "./classes/attribute";
 import { Grid, GridCell } from "./classes/grid";
 declare const eMathWeb: {
@@ -19,11 +19,11 @@ declare const eMathWeb: {
         /**
          * @deprecated Use `import { currency } from "emath.js"` instead.
          */
-        currency: typeof currency;
+        currency: typeof Currency;
         /**
          * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
          */
-        currencyStatic: typeof currencyStatic;
+        currencyStatic: typeof CurrencyStatic;
         /**
          * @deprecated Use `import { attribute } from "emath.js"` instead.
          */

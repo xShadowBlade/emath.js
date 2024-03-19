@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import { E } from "./E/eMain";
 import { Boost } from "./classes/boost";
-import { currency, currencyStatic } from "./classes/currency";
+import { Currency, CurrencyStatic } from "./classes/currency";
 import { Attribute } from "./classes/attribute";
 import { Grid, GridCell } from "./classes/grid";
 // import { skillNode, skillTree } from "classes/skillTree";
@@ -27,12 +27,12 @@ const eMathWeb = {
         /**
          * @deprecated Use `import { currency } from "emath.js"` instead.
          */
-        currency,
+        currency: Currency,
 
         /**
          * @deprecated Use `import { currencyStatic } from "emath.js"` instead.
          */
-        currencyStatic,
+        currencyStatic: CurrencyStatic,
 
         /**
          * @deprecated Use `import { attribute } from "emath.js"` instead.
