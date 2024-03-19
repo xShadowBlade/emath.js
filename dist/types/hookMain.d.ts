@@ -10,7 +10,7 @@ declare const eMathWeb: {
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.
      */
-    E: ((x?: import("E/e").DecimalSource | undefined) => import("E/e").Decimal) & typeof import("E/e").Decimal;
+    E: ((x?: import("./E/e").DecimalSource | undefined) => import("./E/e").Decimal) & typeof import("./E/e").Decimal;
     classes: {
         /**
          * @deprecated Use `import { boost } from "emath.js"` instead.

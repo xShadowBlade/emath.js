@@ -5,10 +5,10 @@
  * on an upgrade that gives you more coins on gain.
  */
 import { E } from "emath.js";
-import { game } from "emath.js/game";
+import { Game } from "emath.js/game";
 
 // Initialize game
-const coinGame = new game({
+const coinGame = new Game({
     name: {
         title: "Coin Game",
         id: "coinGame",
@@ -25,7 +25,7 @@ const coins = coinGame.addCurrency("coins");
 
 // Upgrades
 coins.static.addUpgrade({
-    id: "boostUpg1Coins", // Unique ID
+    id: "upg1Coins", // Unique ID
     name: "Basic Coin Boost",
     cost: level => level.mul(10), // Cost of 10 times the level
     costBulk: (coinsAmt, level, target) => { // Math - Optional, if not defined, it will use a binary search to find the max affordable. (slow for large numbers)
@@ -83,13 +83,13 @@ const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
 function updateDisplayUpgrade () {
-    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("boostUpg1Coins", 25)[0]} Upgrades for ${coins.static.calculateUpgrade("boostUpg1Coins", 25)[1]} Coins (b)`;
+    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins", 25)[0]} Upgrades for ${coins.static.calculateUpgrade("upg1Coins", 25)[1]} Coins (b)`;
 }
 updateDisplayUpgrade();
 
 /** Function to buy upgrades */
 function buyUpgrades () {
-    coins.static.buyUpgrade("boostUpg1Coins", 25);
+    coins.static.buyUpgrade("upg1Coins", 25);
     updateDisplayUpgrade();
     updateDisplay();
 }

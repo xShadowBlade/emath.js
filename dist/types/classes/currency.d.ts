@@ -112,17 +112,33 @@ interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "
 type DecimalJSONString = `${number}/${number}/${number}`;
 /**
  * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "${id}/el/${level: {@link DecimalJSONString}}"
+ * In the form of: "el/${level: {@link DecimalJSONString}}"
  */
-type UpgradeCachedELName = `${string}/el/${DecimalJSONString}`;
+type UpgradeCachedELName = `el/${DecimalJSONString}`;
 /**
  * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "${id}/sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
  */
-type UpgradeCachedSumName = `${string}/sum/${DecimalJSONString}/${DecimalJSONString}`;
+type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
 /** Interface for an upgrade that is cached. */
+interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "id" | "el"> {
+    el: EL;
+}
 /** Interface for an upgrade that is cached. (EL) */
+interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
+    level: E;
+    /** The cost of the upgrade at level (el) */
+    cost: E;
+}
 /** Interface for an upgrade that is cached. (Not EL) */
+interface UpgradeCachedSum extends UpgradeCached<false> {
+    start: E;
+    end: E;
+    /**
+     * The cost of the upgrade from start to end. (summation)
+     */
+    cost: E;
+}
 /** Represents the frontend for an upgrade. */
 declare class UpgradeData<N extends string = string> implements IUpgradeData<N> {
     id: N;
@@ -139,7 +155,20 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
     effect: ((level: Decimal, context: UpgradeStatic<N>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
+    /** The default size of the cache. Should be one less than a power of 2. */
+    static cacheSize: number;
+    /** The cache to store the values of certain upgrade levels */
+    cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
     get description(): string;
+    /**
+     * Gets the cached data of the upgrade.
+     * @param type - The type of the cache. "sum" or "el"
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
+     * @returns The data of the upgrade.
+     */
+    getCached(type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
+    getCached(type: "el", start: ESource): UpgradeCachedEL | undefined;
     /**
      * @returns The data of the upgrade.
      */
@@ -148,8 +177,9 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
     /**
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
      */
-    constructor(init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>);
+    constructor(init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number);
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
@@ -181,10 +211,6 @@ declare class Currency {
 declare class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
     upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
-    /** A cache for upgrades. */
-    protected upgradeCache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, undefined>;
-    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
-    protected static cacheSize: number;
     /** A function that returns the pointer of the data */
     protected pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
@@ -239,6 +265,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     private pointerAddUpgrade;
     /**
      * Retrieves an upgrade object based on the provided id.
+     * @deprecated Use the return value of {@link pointerAddUpgrade} instead.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
@@ -256,6 +283,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+     * @returns The added upgrades.
      * @example
      * currenct.addUpgrade({
      *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
@@ -277,7 +305,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly?: boolean): void;
+    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly?: boolean): Record<string, UpgradeStatic<string>>;
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.

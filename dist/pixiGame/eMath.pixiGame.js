@@ -6994,7 +6994,7 @@ var Boost = class {
   }
   /**
    * Gets a boost object by its ID.
-   * @deprecated Use {@link boost.getBoosts} instead.
+   * @deprecated Use {@link getBoosts} instead.
    * @param id - The ID of the boost to retrieve.
    * @returns The boost object if found, or null if not found.
    */
@@ -7182,6 +7182,16 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
   const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
   return [maxLevelAffordable, cost];
 }
+function decimalToJSONString(n) {
+  n = E(n);
+  return `${n.sign}/${n.mag}/${n.layer}`;
+}
+function upgradeToCacheNameSum(start, end) {
+  return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}`;
+}
+function upgradeToCacheNameEL(level) {
+  return `el/${decimalToJSONString(level)}`;
+}
 var UpgradeData = class {
   constructor(init) {
     init = init ?? {};
@@ -7195,9 +7205,20 @@ __decorateClass([
 __decorateClass([
   Type(() => Decimal)
 ], UpgradeData.prototype, "level", 2);
-var UpgradeStatic = class {
+var UpgradeStatic = class _UpgradeStatic {
+  static {
+    /** The default size of the cache. Should be one less than a power of 2. */
+    this.cacheSize = 127;
+  }
   get description() {
     return this.descriptionFn();
+  }
+  getCached(type, start, end) {
+    if (type === "sum") {
+      return this.cache.get(upgradeToCacheNameSum(start, end));
+    } else {
+      return this.cache.get(upgradeToCacheNameEL(start));
+    }
   }
   get data() {
     return this.dataPointerFn();
@@ -7205,10 +7226,12 @@ var UpgradeStatic = class {
   /**
    * @param init - The upgrade object to initialize.
    * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
    */
-  constructor(init, dataPointer) {
+  constructor(init, dataPointer, cacheSize) {
     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
     this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+    this.cache = new LRUCache(cacheSize ?? _UpgradeStatic.cacheSize);
     this.id = init.id;
     this.name = init.name ?? init.id;
     this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
@@ -7245,11 +7268,7 @@ __decorateClass([
 __decorateClass([
   Type(() => UpgradeData)
 ], Currency.prototype, "upgrades", 2);
-var CurrencyStatic = class _CurrencyStatic {
-  static {
-    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
-    this.cacheSize = 127;
-  }
+var CurrencyStatic = class {
   /** @returns The pointer of the data. */
   get pointer() {
     return this.pointerFn();
@@ -7282,7 +7301,6 @@ var CurrencyStatic = class _CurrencyStatic {
     this.upgrades = this.upgrades;
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
     this.boost = new Boost(this.defaultBoost);
-    this.upgradeCache = new LRUCache(_CurrencyStatic.cacheSize);
     this.pointer.value = this.defaultVal;
   }
   /**
@@ -7333,10 +7351,11 @@ var CurrencyStatic = class _CurrencyStatic {
   pointerAddUpgrade(upgrades1) {
     const upgrades2 = new UpgradeData(upgrades1);
     this.pointer.upgrades.push(upgrades2);
-    return upgrades1;
+    return upgrades2;
   }
   /**
    * Retrieves an upgrade object based on the provided id.
+   * @deprecated Use the return value of {@link pointerAddUpgrade} instead.
    * @param id - The id of the upgrade to retrieve.
    * @returns The upgrade object if found, otherwise null.
    */
@@ -7364,6 +7383,7 @@ var CurrencyStatic = class _CurrencyStatic {
    * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
    * @param upgrades - An array of upgrade objects.
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+   * @returns The added upgrades.
    * @example
    * currenct.addUpgrade({
    *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
@@ -7393,18 +7413,15 @@ var CurrencyStatic = class _CurrencyStatic {
         upgrades = [upgrades];
       }
     }
-    const upgradesDefault = {};
+    const addedUpgradeList = {};
     for (const upgrade of upgrades) {
-      this.pointerAddUpgrade(upgrade);
-      const currentLength = this.pointer.upgrades.length;
-      const upgrade1 = new UpgradeStatic(
-        upgrade,
-        () => this.pointerGetUpgrade(upgrade.id) ?? this.pointer.upgrades[currentLength - 1]
-      );
-      if (upgrade1.effect && runEffectInstantly)
-        upgrade1.effect(upgrade1.level, upgrade1);
-      upgradesDefault[upgrade.id] = upgrade1;
+      const addedUpgradeData = this.pointerAddUpgrade(upgrade);
+      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+      if (addedUpgradeStatic.effect && runEffectInstantly)
+        addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
+      addedUpgradeList[upgrade.id] = addedUpgradeStatic;
     }
+    return addedUpgradeList;
   }
   /**
    * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.

@@ -34,12 +34,12 @@ interface GameConfigOptions {
 		id: string;
         /** The version of the game. Not used internally. */
         version?: string;
-	}
+	};
     /** The settings for the game. */
     settings?: {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
-    }
+    };
     /**
      * Whether or not to automatically initialize the interval-based managers.
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.

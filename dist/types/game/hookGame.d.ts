@@ -13,14 +13,14 @@ declare const eMathGameWeb: {
         eventManager: typeof EventManager;
         dataManager: typeof DataManager;
     };
-    E: ((x?: import("index").ESource | undefined) => import("E/e").Decimal) & typeof import("E/e").Decimal;
+    E: ((x?: import("..").ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
     classes: {
-        boost: typeof import("index").Boost;
-        currency: typeof import("index").Currency;
-        currencyStatic: typeof import("index").CurrencyStatic;
-        attribute: typeof import("index").Attribute;
-        grid: typeof import("index").Grid;
-        gridCell: typeof import("index").GridCell;
+        boost: typeof import("..").Boost;
+        currency: typeof import("..").Currency;
+        currencyStatic: typeof import("..").CurrencyStatic;
+        attribute: typeof import("..").Attribute;
+        grid: typeof import("..").Grid;
+        gridCell: typeof import("..").GridCell;
     };
 };
 /**

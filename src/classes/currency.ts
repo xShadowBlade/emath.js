@@ -41,21 +41,55 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
     // Set el from the upgrade object if it exists
     el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
 
+    // Get the cache
+    const cached = el ? upgrade.getCached("el", start) : upgrade.getCached("sum", start, end);
+    if (cached) {
+        const { cost } = cached;
+        if (value.gte(cost)) {
+            if (el) {
+                const cachedEL = cached as UpgradeCachedEL;
+                return [cachedEL.level, E(0)];
+            }
+            const cachedSum = cached as UpgradeCachedSum;
+            return [cachedSum.end.sub(cachedSum.start), cost];
+        }
+    }
+
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
         const cost = upgrade.cost(upgrade.level);
         const canAfford = value.gte(cost);
+        let out: [E, E] = [E(0), E(0)];
         if (el) {
-            return [canAfford ? E(1) : E(0), E(0)];
+            // return [canAfford ? E(1) : E(0), E(0)];
+            out[0] = canAfford ? E(1) : E(0);
+
+            // Set the cache
+            upgrade.setCached("el", start, cost);
+            return out;
+        } else {
+            out = [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
+
+            // Set the cache
+            upgrade.setCached("sum", start, end, cost);
+            return out;
         }
-        return [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
     }
 
     // Special case: If costBulk exists, use it
     if (upgrade.costBulk) {
-        const [cost, amount] = upgrade.costBulk(value, upgrade.level, target);
+        const [amount, cost] = upgrade.costBulk(value, upgrade.level, target);
         const canAfford = value.gte(cost);
-        return [canAfford ? amount : E(0), canAfford ? cost : E(0)];
+        const out: [E, E] = [canAfford ? amount : E(0), canAfford && !el ? cost : E(0)];
+
+        // Set the cache
+        if (el) {
+            upgrade.setCached("el", start, cost);
+        } else {
+            upgrade.setCached("sum", start, end, cost);
+        }
+
+        return out;
     }
 
     // Special case for endless upgrades
@@ -64,6 +98,10 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
         const maxLevelAffordable = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
         // const cost = upgrade.cost(maxLevelAffordable);
         const cost = E(0);
+
+        // Set the cache
+        upgrade.setCached("el", start, cost);
+
         return [maxLevelAffordable, cost];
     }
 
@@ -75,6 +113,10 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
         iterations,
     ).value.floor();
     const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
+
+    // Set the cache
+    upgrade.setCached("sum", start, end, cost);
+
     return [maxLevelAffordable, cost];
 }
 
@@ -87,10 +129,10 @@ interface UpgradeInit<N extends string = string> {
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: N,
+    readonly id: N;
 
     /** The name of the upgrade. Defaults to the ID. */
-    name?: string,
+    name?: string;
 
     /**
      * The description of the upgrade.
@@ -112,7 +154,7 @@ interface UpgradeInit<N extends string = string> {
      */
     // description?: Pointer<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    description?: ((...args: any[]) => string) | string,
+    description?: ((...args: any[]) => string) | string;
 
     /**
      * The cost of upgrades at a certain level.
@@ -124,10 +166,12 @@ interface UpgradeInit<N extends string = string> {
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
      */
-    cost: (level: E) => E,
+    cost: (level: E) => E;
 
     /**
-     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function)
+     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
+     * EL is automatically applied to the cost.
+     * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade.
      * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
@@ -137,27 +181,27 @@ interface UpgradeInit<N extends string = string> {
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: E, level: E, target: E) => [cost: E, amount: E],
+    costBulk?: (currencyValue: E, level: E, target: E) => [amount: E, cost: E];
 
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
      */
-    maxLevel?: E
+    maxLevel?: E;
 
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: UpgradeStatic<N>) => void,
+    effect?: (level: E, context: UpgradeStatic<N>) => void;
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
      * (but you should use a getter function instead)
      */
-    el?: boolean | (() => boolean),
+    el?: boolean | (() => boolean);
     // el?: Pointer<boolean>,
 
     // Below are types that are automatically added
@@ -173,16 +217,16 @@ interface UpgradeInit<N extends string = string> {
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
-    maxLevel?: E,
-    name: string,
-    description: string,
+    maxLevel?: E;
+    name: string;
+    description: string;
 
     /**
      * A function that returns a description of the upgrade.
      * @param args - Arguments to pass to the description function.
      * @returns The description of the upgrade.
      */
-    descriptionFn: (...args: any[]) => string,
+    descriptionFn: (...args: any[]) => string;
 }
 
 /**
@@ -200,14 +244,14 @@ interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "
 type DecimalJSONString = `${number}/${number}/${number}`;
 /**
  * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "${id}/el/${level: {@link DecimalJSONString}}"
+ * In the form of: "el/${level: {@link DecimalJSONString}}"
  */
-type UpgradeCachedELName = `${string}/el/${DecimalJSONString}`;
+type UpgradeCachedELName = `el/${DecimalJSONString}`;
 /**
  * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "${id}/sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
  */
-type UpgradeCachedSumName = `${string}/sum/${DecimalJSONString}/${DecimalJSONString}`;
+type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
 
 /**
  * Converts a decimal number to a JSON string.
@@ -221,51 +265,48 @@ function decimalToJSONString (n: ESource): DecimalJSONString {
 
 /**
  * Converts an upgrade to a cache name (sum)
- * @param upgrade - The upgrade to convert or id of the upgrade.
  * @param start - The starting level of the upgrade.
  * @param end - The ending level or quantity to reach for the upgrade.
  * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
  */
-function upgradeToCacheNameSum (upgrade: UpgradeStatic<string> | string, start: ESource, end: ESource): UpgradeCachedSumName {
+function upgradeToCacheNameSum (start: ESource, end: ESource): UpgradeCachedSumName {
     // return `${upgrade.id}/sum/${start.toString()}/${end.toString()}/${cost.toString()}` as UpgradeCachedSumName;
-    const id = typeof upgrade === "string" ? upgrade : upgrade.id;
-    return `${id}/sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
+    return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
 }
 
 /**
  * Converts an upgrade to a cache name (EL)
- * @param upgrade - The upgrade to convert or id of the upgrade.
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
-function upgradeToCacheNameEL (upgrade: UpgradeStatic<string> | string, level: ESource): UpgradeCachedELName {
+function upgradeToCacheNameEL (level: ESource): UpgradeCachedELName {
     // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
-    const id = typeof upgrade === "string" ? upgrade : upgrade.id;
-    return `${id}/el/${decimalToJSONString(level)}` as UpgradeCachedELName;
+    return `el/${decimalToJSONString(level)}` as UpgradeCachedELName;
 }
 
 /** Interface for an upgrade that is cached. */
-// interface UpgradeCached<el extends boolean = false> extends Pick<UpgradeInit, "id" | "el">{
-//     el: el,
-// }
+interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "id" | "el">{
+    el: EL;
+}
 
 /** Interface for an upgrade that is cached. (EL) */
-// interface UpgradeCachedEL extends Pick<UpgradeInit, "id" | "el" | "level"> {
-//     el: true,
-//     level: E,
+interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
+    level: E;
 
-//     /** The cost of the upgrade at level (el) */
-//     cost: E,
-// }
+    /** The cost of the upgrade at level (el) */
+    cost: E;
+}
 
 /** Interface for an upgrade that is cached. (Not EL) */
-// interface UpgradeCachedSum extends Pick<UpgradeInit, "id" | "el" | "level"> {
-//     el: false,
-//     level: E,
+interface UpgradeCachedSum extends UpgradeCached<false> {
+    start: E;
+    end: E;
 
-//     /** The cost of the upgrade at level */
-//     cost: E,
-// }
+    /**
+     * The cost of the upgrade from start to end. (summation)
+     */
+    cost: E;
+}
 
 /** Represents the frontend for an upgrade. */
 class UpgradeData<N extends string = string> implements IUpgradeData<N> {
@@ -283,8 +324,63 @@ class UpgradeData<N extends string = string> implements IUpgradeData<N> {
 class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn;
 
+    /** The default size of the cache. Should be one less than a power of 2. */
+    public static cacheSize: number = 63;
+
+    /** The cache to store the values of certain upgrade levels */
+    public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
+
     public get description (): string {
         return this.descriptionFn();
+    }
+
+    /**
+     * Gets the cached data of the upgrade.
+     * @param type - The type of the cache. "sum" or "el"
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
+     * @returns The data of the upgrade.
+     */
+    public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined
+    public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined
+    public getCached (type: "sum" | "el", start: ESource, end?: ESource) {
+        if (type === "sum") {
+            return this.cache.get(upgradeToCacheNameSum(start, end!));
+        } else {
+            return this.cache.get(upgradeToCacheNameEL(start));
+        }
+    }
+
+    /**
+     * Sets the cached data of the upgrade.
+     * @param type - The type of the cache. "sum" or "el"
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
+     * @param cost - The cost of the upgrade.
+     */
+    public setCached (type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum
+    public setCached (type: "el", level: ESource, cost: ESource): UpgradeCachedEL
+    public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource) {
+        const data = type === "sum" ? {
+            id: this.id,
+            el: false,
+            start: E(start),
+            end: E(endOrStart),
+            cost: E(costSum),
+        } : {
+            id: this.id,
+            el: true,
+            level: E(start),
+            cost: E(endOrStart),
+        };
+
+        if (type === "sum") {
+            this.cache.set(upgradeToCacheNameSum(start, endOrStart!), data as UpgradeCachedSum);
+        } else {
+            this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
+        }
+
+        return data as UpgradeCachedEL | UpgradeCachedSum;
     }
 
     /**
@@ -299,10 +395,12 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     /**
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
      */
-    constructor (init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>) {
+    constructor (init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+        this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
         this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
@@ -369,13 +467,6 @@ class CurrencyStatic<U extends string[] = string[]> {
     //     [Symbol.iterator]: IterableIterator<UpgradeStatic>;
     // };
 
-    /** A cache for upgrades. */
-    // protected upgradeCache = new LRUCache<string, UpgradeCached>(100);
-    protected upgradeCache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, undefined>;
-
-    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
-    protected static cacheSize: number = 127;
-
     /** A function that returns the pointer of the data */
     protected pointerFn: (() => Currency);
 
@@ -433,7 +524,7 @@ class CurrencyStatic<U extends string[] = string[]> {
 
         this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
         this.boost = new Boost(this.defaultBoost);
-        this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
+        // this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
 
         this.pointer.value = this.defaultVal;
     }
@@ -487,14 +578,15 @@ class CurrencyStatic<U extends string[] = string[]> {
      * @param upgrades1 Upgrade to add
      * @returns The upgrade object.
      */
-    private pointerAddUpgrade (upgrades1: UpgradeInit<U[number]>): UpgradeInit<U[number]> {
+    private pointerAddUpgrade (upgrades1: UpgradeInit<U[number]>): UpgradeData<U[number]> {
         const upgrades2 = new UpgradeData(upgrades1);
         this.pointer.upgrades.push(upgrades2);
-        return upgrades1;
+        return upgrades2;
     };
 
     /**
      * Retrieves an upgrade object based on the provided id.
+     * @deprecated Use the return value of {@link pointerAddUpgrade} instead.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
@@ -550,8 +642,9 @@ class CurrencyStatic<U extends string[] = string[]> {
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+     * @returns The added upgrades.
      * @example
-     * currenct.addUpgrade({
+     * currency.addUpgrade({
      *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
      *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
      *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
@@ -571,15 +664,17 @@ class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly: boolean = true): void {
-        // if (!Array.isArray(upgrades)) upgrades = [upgrades];
-        if (!Array.isArray(upgrades)) {
-            if (typeof upgrades === "object") {
-                upgrades = Object.values(upgrades);
-            } else {
-                upgrades = [upgrades];
-            }
-        }
+    public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly: boolean = true): UpgradeStatic<string>[] {
+        if (!Array.isArray(upgrades)) upgrades = [upgrades];
+        // if (!Array.isArray(upgrades)) {
+        //     if (typeof upgrades === "object") {
+        //         upgrades = Object.values(upgrades);
+        //     } else {
+        //         upgrades = [upgrades];
+        //     }
+        // }
+
+        console.log(upgrades);
 
         // Adds standard
         // const upgradesDefault: UpgradeStatic[] = [];
@@ -599,19 +694,22 @@ class CurrencyStatic<U extends string[] = string[]> {
         // this.upgrades = this.upgrades.concat(upgradesDefault);
 
         // Adds standard (object instead of array)
-        const upgradesDefault: Record<string, UpgradeStatic<string>> = {};
+        const addedUpgradeList: Record<string, UpgradeStatic<string>> = {};
         for (const upgrade of upgrades) {
-            // if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
-            this.pointerAddUpgrade(upgrade);
-            const currentLength = this.pointer.upgrades.length;
-            const upgrade1 = new UpgradeStatic(upgrade, () =>
-                this.pointerGetUpgrade(upgrade.id) as UpgradeData<string>
-                ??
-                this.pointer.upgrades[currentLength - 1],
-            );
-            if (upgrade1.effect && runEffectInstantly) upgrade1.effect(upgrade1.level, upgrade1);
-            upgradesDefault[upgrade.id] = upgrade1;
+            // console.log(upgrade.id);
+
+            const addedUpgradeData = this.pointerAddUpgrade(upgrade);
+            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+
+            if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
+            addedUpgradeList[upgrade.id] = addedUpgradeStatic;
+            (this.upgrades as Record<string, UpgradeStatic>)[upgrade.id] = addedUpgradeStatic;
         }
+
+        console.log(addedUpgradeList);
+
+        // return addedUpgradeList;
+        return Object.values(addedUpgradeList);
     }
 
     /**
@@ -639,8 +737,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     }
 
     /**
-     * Calculates the cost and how many upgrades you can buy
-     * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+     * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.

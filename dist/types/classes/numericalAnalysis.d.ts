@@ -19,9 +19,9 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
  */
 declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number, target?: ESource): {
-    value: import("E/e").Decimal;
-    lowerBound: import("E/e").Decimal;
-    upperBound: import("E/e").Decimal;
+    value: import("../E/e").Decimal;
+    lowerBound: import("../E/e").Decimal;
+    upperBound: import("../E/e").Decimal;
 };
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.

@@ -1,0 +1,3 @@
+cd examples
+node
+cd ..

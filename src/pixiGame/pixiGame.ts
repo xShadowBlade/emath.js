@@ -20,7 +20,7 @@ interface PixiGameConfig extends GameConfigOptions {
     pixi: {
         /** The PIXI app to use for the game. */
         app: Application | null;
-    }
+    };
 }
 
 /** The default configuration for the game. */
@@ -46,14 +46,14 @@ class PixiGame extends Game {
     /** The PIXI-specific properties for the game. */
     public PIXI: {
         /** The PIXI app to use for the game. */
-        app: Application,
+        app: Application;
         /** The camera position. */
         camera: {
             /** The x position of the camera. */
-            x: number,
+            x: number;
             /** The y position of the camera. */
-            y: number
-        },
+            y: number;
+        };
     };
 
     /**

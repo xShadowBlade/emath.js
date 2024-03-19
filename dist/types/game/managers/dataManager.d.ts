@@ -9,7 +9,7 @@ type UnknownObject = Record<string, unknown>;
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  *
- * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
+ * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 declare class DataManager {

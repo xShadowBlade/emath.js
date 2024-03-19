@@ -8,11 +8,11 @@ import type { Pointer } from "../game/game";
 /** An object representing a boost. */
 interface BoostsObjectInit {
     /** The ID of the boost. */
-    id: string,
+    id: string;
     /** The name of the boost. */
-    name?: string,
+    name?: string;
     /** @deprecated Use {@link description} instead. This will do nothing */
-    desc?: Pointer<string>,
+    desc?: Pointer<string>;
     /**
      * An optional description of the boost.
      * Can be a string or a function that returns a string.
@@ -31,7 +31,7 @@ interface BoostsObjectInit {
      */
     // description?: Pointer<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    description?: ((...args: any[]) => string) | string,
+    description?: ((...args: any[]) => string) | string;
     /**
      * The function that calculates the value of the boost.
      * @param input The input value.
@@ -43,9 +43,9 @@ interface BoostsObjectInit {
      * // A boost that multiplies the input value by 2.
      * (input) => input.mul(2)
      */
-    value: (input: E) => E,
+    value: (input: E) => E;
     /** The order at which the boost is applied. Lower orders are applied first. */
-    order?: number,
+    order?: number;
 }
 
 /** Represents an indiviual boost object. */
