@@ -2,24 +2,24 @@
  * @file Declares the game currency class.
  */
 import { E } from "../E/eMain";
-import { attribute, attributeStatic } from "../classes/attribute";
-import type { game, Pointer } from "./game";
+import { Attribute, AttributeStatic } from "../classes/attribute";
+import type { Game, Pointer } from "./game";
 /**
- * Represents a game attribute. {@link attribute} is the data class and {@link attributeStatic} is the static class where all the useful functions are.
+ * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
  * WIP
  */
-declare class gameAttribute {
-    data: attribute;
-    static: attributeStatic;
-    game?: game;
+declare class GameAttribute {
+    data: Attribute;
+    static: AttributeStatic;
+    game?: Game;
     /**
      * Creates a new instance of the attribute class.
      * @param attributePointer - A function that returns the current attribute value.
      * @param staticPointer - A function that returns the static data for the attribute.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor(attributePointer: Pointer<attribute>, staticPointer: Pointer<attributeStatic>, gamePointer?: game);
+    constructor(attributePointer: Pointer<Attribute>, staticPointer: Pointer<AttributeStatic>, gamePointer?: Game);
     /**
      * Gets the value of the attribute.
      * NOTE: This getter is sometimes inaccurate.
@@ -33,4 +33,4 @@ declare class gameAttribute {
      */
     set value(value: E);
 }
-export { gameAttribute };
+export { GameAttribute };

@@ -1136,22 +1136,19 @@ var require_Reflect = __commonJS({
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
+  Attribute: () => Attribute,
+  AttributeStatic: () => AttributeStatic,
+  Boost: () => Boost,
   E: () => E,
   FORMATS: () => FORMATS,
   FormatTypeList: () => FormatTypeList,
-  attribute: () => attribute,
-  attributeStatic: () => attributeStatic,
-  boost: () => boost,
-  boostObject: () => boostObject,
-  calculateSum: () => calculateSum,
-  calculateUpgrade: () => calculateUpgrade,
-  currency: () => currency,
-  currencyStatic: () => currencyStatic,
-  grid: () => grid,
-  gridCell: () => gridCell,
-  inverseFunctionApprox: () => inverseFunctionApprox,
-  upgradeData: () => upgradeData,
-  upgradeStatic: () => upgradeStatic
+  Grid: () => Grid,
+  GridCell: () => GridCell,
+  boostObject: () => BoostObject,
+  currency: () => Currency,
+  currencyStatic: () => CurrencyStatic,
+  upgradeData: () => UpgradeData,
+  upgradeStatic: () => UpgradeStatic
 });
 module.exports = __toCommonJS(src_exports);
 var import_reflect_metadata3 = __toESM(require_Reflect());
@@ -1412,13 +1409,13 @@ function Type(typeFunction, options) {
 // src/E/lru-cache.ts
 var LRUCache = class {
   /**
-  * @param maxSize The maximum size for this cache. We recommend setting this
-  * to be one less than a power of 2, as most hashtables - including V8's
-  * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
-  * - uses powers of two for hashtable sizes. It can't exactly be a power of
-  * two, as a .set() call could temporarily set the size of the map to be
-  * maxSize + 1.
-  */
+   * @param maxSize The maximum size for this cache. We recommend setting this
+   * to be one less than a power of 2, as most hashtables - including V8's
+   * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
+   * - uses powers of two for hashtable sizes. It can't exactly be a power of
+   * two, as a .set() call could temporarily set the size of the map to be
+   * maxSize + 1.
+   */
   constructor(maxSize) {
     this.map = /* @__PURE__ */ new Map();
     // Invariant: Exactly one of the below is true before and after calling a
@@ -1434,11 +1431,11 @@ var LRUCache = class {
     return this.map.size;
   }
   /**
-  * Gets the specified key from the cache, or undefined if it is not in the
-  * cache.
-  * @param key The key to get.
-  * @returns The cached value, or undefined if key is not in the cache.
-  */
+   * Gets the specified key from the cache, or undefined if it is not in the
+   * cache.
+   * @param key The key to get.
+   * @returns The cached value, or undefined if key is not in the cache.
+   */
   get(key) {
     const node = this.map.get(key);
     if (node === void 0) {
@@ -1459,12 +1456,11 @@ var LRUCache = class {
     return node.value;
   }
   /**
-  * Sets an entry in the cache.
-  *
-  * @param key The key of the entry.
-  * @param value The value of the entry.
-  * @throws Error, if the map already contains the key.
-  */
+   * Sets an entry in the cache.
+   * @param key The key of the entry.
+   * @param value The value of the entry.
+   * @throws Error, if the map already contains the key.
+   */
   set(key, value) {
     if (this.maxSize < 1) {
       return;
@@ -4501,7 +4497,7 @@ var Decimal = class {
   static tetrate_critical(base, height) {
     return Decimal.critical_section(base, height, critical_tetr_values);
   }
-  static critical_section(base, height, grid2, linear = false) {
+  static critical_section(base, height, grid, linear = false) {
     height *= 10;
     if (height < 0) {
       height = 0;
@@ -4519,13 +4515,13 @@ var Decimal = class {
     let upper = 0;
     for (let i = 0; i < critical_headers.length; ++i) {
       if (critical_headers[i] == base) {
-        lower = grid2[i][Math.floor(height)];
-        upper = grid2[i][Math.ceil(height)];
+        lower = grid[i][Math.floor(height)];
+        upper = grid[i][Math.ceil(height)];
         break;
       } else if (critical_headers[i] < base && critical_headers[i + 1] > base) {
         const basefrac = (base - critical_headers[i]) / (critical_headers[i + 1] - critical_headers[i]);
-        lower = grid2[i][Math.floor(height)] * (1 - basefrac) + grid2[i + 1][Math.floor(height)] * basefrac;
-        upper = grid2[i][Math.ceil(height)] * (1 - basefrac) + grid2[i + 1][Math.ceil(height)] * basefrac;
+        lower = grid[i][Math.floor(height)] * (1 - basefrac) + grid[i + 1][Math.floor(height)] * basefrac;
+        upper = grid[i][Math.ceil(height)] * (1 - basefrac) + grid[i + 1][Math.ceil(height)] * basefrac;
         break;
       }
     }
@@ -5975,7 +5971,7 @@ var E = (() => {
 })();
 
 // src/classes/boost.ts
-var boostObject = class {
+var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
   /** @deprecated Use {@link description} instead */
   get desc() {
@@ -5992,7 +5988,7 @@ var boostObject = class {
     this.order = init.order ?? 99;
   }
 };
-var boost = class {
+var Boost = class {
   /**
    * Constructs a new boost manager.
    * @param baseEffect - The base effect value to which boosts are applied.
@@ -6009,7 +6005,7 @@ var boost = class {
     this.boostArray = [];
     if (boosts) {
       boosts.forEach((boostObj) => {
-        this.boostArray.push(new boostObject(boostObj));
+        this.boostArray.push(new BoostObject(boostObj));
       });
     }
   }
@@ -6059,18 +6055,18 @@ var boost = class {
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
+        this.boostArray.push(new BoostObject({ id, name, desc, value, order }));
       } else {
-        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
+        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, desc, value, order });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
       for (let i = 0; i < arg1.length; i++) {
         const bCheck = this.getBoosts(arg1[i].id, true);
         if (!bCheck[0][0]) {
-          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+          this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
         } else {
-          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
         }
       }
     }
@@ -6096,7 +6092,10 @@ var boost = class {
 
 // src/classes/currency.ts
 var import_reflect_metadata = __toESM(require_Reflect());
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target) {
+
+// src/classes/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 15;
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, target) {
   let lowerBound = E(1);
   let upperBound = E(target ?? n);
   if (f(upperBound).lt(n)) {
@@ -6108,8 +6107,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target
       upperBound
     };
   }
-  let i = 0;
-  for (; i < iterations; i++) {
+  for (let i = 0; i < iterations; i++) {
     let mid;
     switch (mode) {
       case "arithmetic":
@@ -6137,21 +6135,47 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target
   const out = {
     value: lowerBound,
     lowerBound,
-    upperBound,
-    iterations: i
+    upperBound
   };
   return out;
 }
-function calculateSum(f, b, a = 0, epsilon) {
-  epsilon = epsilon ?? E("1e-6");
+function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
   let sum = E();
-  for (let n = E(a); n.lte(b); n = n.add(1)) {
-    if (f(n).div(n).lt(epsilon))
+  let n = E(b);
+  for (; n.gte(a); n = n.sub(1)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    const diff = initSum.div(sum);
+    if (diff.lte(1) && diff.gt(E(1).sub(epsilon)))
       break;
-    sum = sum.add(f(n));
+  }
+  console.log({ sum, iterations: E(b).sub(n).add(a) });
+  return sum;
+}
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+  a = E(a);
+  b = E(b);
+  let sum = E(0);
+  const intervalWidth = b.sub(a).div(iterations);
+  for (let i = 0; i < iterations; i++) {
+    const x0 = a.add(intervalWidth.mul(i));
+    const x1 = a.add(intervalWidth.mul(i + 1));
+    sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
   }
   return sum;
 }
+function calculateSum(f, b, a = 0, epsilon, iterations) {
+  a = E(a);
+  b = E(b);
+  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
+    return calculateSumLoop(f, b, a, epsilon);
+  } else {
+    return calculateSumApprox(f, b, a, iterations);
+  }
+}
+
+// src/classes/currency.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -6177,32 +6201,32 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
     const maxLevelAffordable2 = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
-    const cost2 = upgrade.cost(maxLevelAffordable2);
+    const cost2 = E(0);
     return [maxLevelAffordable2, cost2];
   }
   const maxLevelAffordable = inverseFunctionApprox(
-    (level) => calculateSum(upgrade.cost, level),
+    (level) => calculateSum(upgrade.cost, level, start),
     value,
     mode,
     iterations
   ).value.floor();
-  const cost = calculateSum(upgrade.cost, maxLevelAffordable);
+  const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
   return [maxLevelAffordable, cost];
 }
-var upgradeData = class {
+var UpgradeData = class {
   constructor(init) {
     init = init ?? {};
-    this.id = init.id ?? -1;
+    this.id = init.id;
     this.level = init.level ? E(init.level) : E(1);
   }
 };
 __decorateClass([
   Expose()
-], upgradeData.prototype, "id", 2);
+], UpgradeData.prototype, "id", 2);
 __decorateClass([
   Type(() => Decimal)
-], upgradeData.prototype, "level", 2);
-var upgradeStatic = class {
+], UpgradeData.prototype, "level", 2);
+var UpgradeStatic = class {
   get description() {
     return this.descriptionFn();
   }
@@ -6236,7 +6260,7 @@ var upgradeStatic = class {
     this.data.level = E(n);
   }
 };
-var currency = class {
+var Currency = class {
   // /** A boost object that affects the currency gain. */
   // @Expose()
   // public boost: boost;
@@ -6248,11 +6272,16 @@ var currency = class {
 };
 __decorateClass([
   Type(() => Decimal)
-], currency.prototype, "value", 2);
+], Currency.prototype, "value", 2);
 __decorateClass([
-  Type(() => upgradeData)
-], currency.prototype, "upgrades", 2);
-var currencyStatic = class {
+  Type(() => UpgradeData)
+], Currency.prototype, "upgrades", 2);
+var CurrencyStatic = class _CurrencyStatic {
+  static {
+    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
+    this.cacheSize = 127;
+  }
+  /** @returns The pointer of the data. */
   get pointer() {
     return this.pointerFn();
   }
@@ -6260,23 +6289,31 @@ var currencyStatic = class {
    * Updates / applies effects to the currency on load.
    */
   onLoadData() {
-    for (const upgrade of this.upgrades) {
-      if (upgrade.effect) {
-        upgrade.effect(upgrade.level, upgrade);
-      }
+    for (const upgrade of Object.values(this.upgrades)) {
+      upgrade.effect?.(upgrade.level, upgrade);
     }
   }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param defaultVal - The default value of the currency.
-   * @param defaultBoost - The default boost of the currency.
+   * @param upgrades - An array of upgrade objects.
+   * @param defaults - The default value and boost of the currency.
    */
-  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
-    this.defaultVal = E(defaultVal);
-    this.defaultBoost = E(defaultBoost);
-    this.upgrades = [];
+  constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
+    this.defaultVal = defaults.defaultVal;
+    this.defaultBoost = defaults.defaultBoost;
+    this.upgrades = {
+      // *[Symbol.iterator] () {
+      //     for (const upgrade of Object.values(this)) {
+      //         yield upgrade;
+      //     }
+      // },
+    };
+    if (upgrades)
+      this.addUpgrade(upgrades);
+    this.upgrades = this.upgrades;
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = new boost(defaultBoost);
+    this.boost = new Boost(this.defaultBoost);
+    this.upgradeCache = new LRUCache(_CurrencyStatic.cacheSize);
     this.pointer.value = this.defaultVal;
   }
   /**
@@ -6301,9 +6338,9 @@ var currencyStatic = class {
     if (resetCurrency)
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
-      this.upgrades.forEach((upgrade) => {
+      for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = E(0);
-      });
+      }
     }
     ;
   }
@@ -6325,7 +6362,7 @@ var currencyStatic = class {
    * @returns The upgrade object.
    */
   pointerAddUpgrade(upgrades1) {
-    const upgrades2 = new upgradeData(upgrades1);
+    const upgrades2 = new UpgradeData(upgrades1);
     this.pointer.upgrades.push(upgrades2);
     return upgrades1;
   }
@@ -6350,14 +6387,9 @@ var currencyStatic = class {
    * const upgrade = currency.getUpgrade("healthBoost");
    * console.log(upgrade); // upgrade object
    */
+  // public getUpgrade (id: string): UpgradeStatic | null {
   getUpgrade(id) {
-    let upgradeToGet = null;
-    if (id === void 0) {
-      return null;
-    } else if (typeof id == "string") {
-      upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-    }
-    return upgradeToGet;
+    return this.upgrades[id] ?? null;
   }
   /**
    * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
@@ -6385,21 +6417,25 @@ var currencyStatic = class {
    * });
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades))
-      upgrades = [upgrades];
-    const upgradesDefault = [];
-    for (let i = 0; i < upgrades.length; i++) {
-      this.pointerAddUpgrade(upgrades[i]);
-      const currentLength = this.pointer.upgrades.length;
-      const upgrade = new upgradeStatic(
-        upgrades[i],
-        () => this.pointerGetUpgrade(upgrades[i].id) ?? this.pointer.upgrades[currentLength - 1]
-      );
-      if (upgrade.effect && runEffectInstantly)
-        upgrade.effect(upgrade.level, upgrade);
-      upgradesDefault.push(upgrade);
+    if (!Array.isArray(upgrades)) {
+      if (typeof upgrades === "object") {
+        upgrades = Object.values(upgrades);
+      } else {
+        upgrades = [upgrades];
+      }
     }
-    this.upgrades = this.upgrades.concat(upgradesDefault);
+    const upgradesDefault = {};
+    for (const upgrade of upgrades) {
+      this.pointerAddUpgrade(upgrade);
+      const currentLength = this.pointer.upgrades.length;
+      const upgrade1 = new UpgradeStatic(
+        upgrade,
+        () => this.pointerGetUpgrade(upgrade.id) ?? this.pointer.upgrades[currentLength - 1]
+      );
+      if (upgrade1.effect && runEffectInstantly)
+        upgrade1.effect(upgrade1.level, upgrade1);
+      upgradesDefault[upgrade.id] = upgrade1;
+    }
   }
   /**
    * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
@@ -6470,7 +6506,7 @@ var currencyStatic = class {
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
    * @param id - The ID or position of the upgrade to buy or upgrade.
-   * @param target - The target level or quantity to reach for the upgrade.
+   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
@@ -6478,7 +6514,7 @@ var currencyStatic = class {
    * // Attempt to buy up to 10 healthBoost upgrades at once
    * currency.buyUpgrade("healthBoost", 10);
    */
-  buyUpgrade(id, target = 1, mode, iterations) {
+  buyUpgrade(id, target, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
@@ -6497,7 +6533,7 @@ var currencyStatic = class {
 
 // src/classes/attribute.ts
 var import_reflect_metadata2 = __toESM(require_Reflect());
-var attribute = class {
+var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
    * @param initial - The inital value of the attribute.
@@ -6508,8 +6544,8 @@ var attribute = class {
 };
 __decorateClass([
   Type(() => Decimal)
-], attribute.prototype, "value", 2);
-var attributeStatic = class {
+], Attribute.prototype, "value", 2);
+var AttributeStatic = class {
   get pointer() {
     return this.pointerFn;
   }
@@ -6521,10 +6557,10 @@ var attributeStatic = class {
    */
   constructor(pointer, useBoost = true, initial = 0) {
     this.initial = E(initial);
-    pointer = pointer ?? new attribute(this.initial);
+    pointer = pointer ?? new Attribute(this.initial);
     this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
     if (useBoost)
-      this.boost = new boost(this.initial);
+      this.boost = new Boost(this.initial);
   }
   /**
    * Updates the value of the attribute.
@@ -6560,7 +6596,7 @@ var attributeStatic = class {
 };
 
 // src/classes/grid.ts
-var gridCell = class {
+var GridCell = class {
   /**
    * Initializes a new instance of the grid cell.
    * @param x - The x-coordinate.
@@ -6591,7 +6627,7 @@ var gridCell = class {
     return this.properties[name];
   }
 };
-var grid = class {
+var Grid = class {
   // Add this index signature
   /**
    * Initializes a new instance of the grid.
@@ -6606,7 +6642,7 @@ var grid = class {
     for (let a = 0; a < y_size; a++) {
       this.cells[a] = [];
       for (let b = 0; b < x_size; b++) {
-        this.cells[a][b] = new gridCell(b, a, starterProps);
+        this.cells[a][b] = new GridCell(b, a, starterProps);
       }
     }
   }

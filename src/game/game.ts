@@ -5,15 +5,15 @@
 import { ESource } from "../E/eMain";
 // import { boost } from "../classes/boost";
 import { currency, currencyStatic } from "../classes/currency";
-import { attribute, attributeStatic } from "../classes/attribute";
-import { keyManager } from "./managers/keyManager";
-import { eventManager } from "./managers/eventManager";
-import { dataManager } from "./managers/dataManager";
-import { gameCurrency } from "./gameCurrency";
-import { gameAttribute } from "./gameAttribute";
-import { gameReset } from "./resetLayer";
+import { Attribute, AttributeStatic } from "../classes/attribute";
+import { KeyManager } from "./managers/keyManager";
+import { EventManager } from "./managers/eventManager";
+import { DataManager } from "./managers/dataManager";
+import { GameCurrency } from "./gameCurrency";
+import { GameAttribute } from "./gameAttribute";
+import { GameReset } from "./resetLayer";
 
-import { configManager, RequiredDeep } from "./managers/configManager";
+import { ConfigManager, RequiredDeep } from "./managers/configManager";
 
 /**
  * A pointer to a value or a function that returns a value by reference.
@@ -23,7 +23,7 @@ type Pointer<T> = (() => T) | T;
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
  */
-interface gameConfigOptions {
+interface GameConfigOptions {
     /** The mode to run the game in. Not used internally. */
 	mode?: "development" | "production";
     /** The name of the game. Not used internally. */
@@ -47,7 +47,7 @@ interface gameConfigOptions {
     initIntervalBasedManagers?: boolean;
 }
 
-const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
+const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
     mode: "production",
     name: {
         title: "",
@@ -63,10 +63,10 @@ const gameDefaultConfig: RequiredDeep<gameConfigOptions> = {
 /**
  * Represents a game instance.
  */
-class game {
-    protected static configManager = new configManager(gameDefaultConfig);
+class Game {
+    protected static configManager = new ConfigManager(gameDefaultConfig);
     /** The config object */
-    public config: typeof game.configManager.options;
+    public config: typeof Game.configManager.options;
 
     // public data: gameData;
     // public static: gameStatic;
@@ -75,13 +75,13 @@ class game {
      * The data manager for the game.
      * As of v5.0.0, all data is stored here.
      */
-    public dataManager: dataManager;
+    public dataManager: DataManager;
 
     /** The key manager for the game. */
-    public keyManager: keyManager;
+    public keyManager: KeyManager;
 
     /** The event manager for the game. */
-    public eventManager: eventManager;
+    public eventManager: EventManager;
 
     protected tickers: ((dt: number) => void)[];
 
@@ -97,16 +97,16 @@ class game {
      *     // Additional options here
      * });
      */
-    constructor (config?: gameConfigOptions) {
-        this.config = game.configManager.parse(config);
+    constructor (config?: GameConfigOptions) {
+        this.config = Game.configManager.parse(config);
         // this.data = new gameData();
         // this.static = new gameStatic();
-        this.dataManager = new dataManager(this); // Init separately
-        this.keyManager = new keyManager({
+        this.dataManager = new DataManager(this); // Init separately
+        this.keyManager = new KeyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
-        this.eventManager = new eventManager({
+        this.eventManager = new EventManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
@@ -128,7 +128,7 @@ class game {
     }
 
     /**
-     * Adds a new currency section to the game. {@link gameCurrency} is the class.
+     * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
@@ -137,7 +137,7 @@ class game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    public addCurrency<Name extends string> (name: Name): gameCurrency<Name> {
+    public addCurrency<Name extends string> (name: Name): GameCurrency<Name> {
         this.dataManager.setData(name, {
             currency: new currency(),
         });
@@ -148,7 +148,7 @@ class game {
         });
 
         // @ts-expect-error - fix this
-        const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
+        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
 
 
         // const dataRef = this.dataManager.setData(name, {
@@ -191,7 +191,7 @@ class game {
     // }
 
     /**
-     * Adds a new attribute to the game. {@link gameAttribute} is the class.
+     * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the attribute.
      * @param useBoost - Indicates whether to use boost for the attribute.
@@ -200,16 +200,16 @@ class game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): gameAttribute {
+    public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): GameAttribute {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const dataRef = this.dataManager.setData(name, new attribute(initial));
+        const dataRef = this.dataManager.setData(name, new Attribute(initial));
         // @ts-expect-error - fix this
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const staticRef = this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
+        const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
         // const staticRef = this.dataManager.setStatic(name, new attributeStatic(dataRef, useBoost, initial));
 
         // @ts-expect-error - fix this
-        const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
+        const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
         // const classInstance = new gameAttribute(() => dataRef as attribute, () => staticRef as attributeStatic, this);
         return classInstance;
     }
@@ -220,10 +220,11 @@ class game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    public addReset (currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset): gameReset {
-        const reset = new gameReset(currenciesToReset, extender);
+    public addReset (currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset): GameReset {
+        const reset = new GameReset(currenciesToReset, extender);
         return reset;
     }
 }
 
-export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig, Pointer };
+// export { Game as Game, gameCurrency, gameAttribute, GameConfigOptions as gameConfigOptions, gameDefaultConfig, Pointer };
+export { Game, GameConfigOptions, gameDefaultConfig, Pointer };

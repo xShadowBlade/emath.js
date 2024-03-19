@@ -3,10 +3,10 @@
  */
 import "reflect-metadata";
 import { E } from "./E/eMain";
-import { boost } from "./classes/boost";
+import { Boost } from "./classes/boost";
 import { currency, currencyStatic } from "./classes/currency";
-import { attribute } from "./classes/attribute";
-import { grid, gridCell } from "./classes/grid";
+import { Attribute } from "./classes/attribute";
+import { Grid, GridCell } from "./classes/grid";
 // import { skillNode, skillTree } from "classes/skillTree";
 
 // import { game } from "./game/game";
@@ -22,7 +22,7 @@ const eMathWeb = {
         /**
          * @deprecated Use `import { boost } from "emath.js"` instead.
          */
-        boost,
+        boost: Boost,
 
         /**
          * @deprecated Use `import { currency } from "emath.js"` instead.
@@ -37,17 +37,17 @@ const eMathWeb = {
         /**
          * @deprecated Use `import { attribute } from "emath.js"` instead.
          */
-        attribute,
+        attribute: Attribute,
 
         /**
          * @deprecated Use `import { grid } from "emath.js"` instead.
          */
-        grid,
+        grid: Grid,
 
         /**
          * @deprecated Use `import { gridCell } from "emath.js"` instead.
          */
-        gridCell,
+        gridCell: GridCell,
 
         // /**
         //  * @deprecated Use `import { skillNode } from "emath.js"` instead.

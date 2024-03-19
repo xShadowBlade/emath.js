@@ -2,8 +2,8 @@
  * @file Declares classes and functions for managing game data.
  * Ex. Saving, loading, exporting, etc.
  */
-import type { game } from "../game";
 import "reflect-metadata";
+import type { Game } from "../game";
 type ClassType = new (...args: any[]) => any;
 type UnknownObject = Record<string, unknown>;
 /**
@@ -12,7 +12,7 @@ type UnknownObject = Record<string, unknown>;
  * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
-declare class dataManager {
+declare class DataManager {
     /**
      * Game data in its initial state.
      */
@@ -39,7 +39,7 @@ declare class dataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor(gameRef: game | (() => game));
+    constructor(gameRef: Game | (() => Game));
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.
@@ -149,5 +149,5 @@ declare class dataManager {
      */
     loadData(dataToLoad?: [string, UnknownObject] | null | string): null | boolean;
 }
-export { dataManager };
+export { DataManager };
 export type { UnknownObject, ClassType };

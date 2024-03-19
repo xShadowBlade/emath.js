@@ -4,7 +4,7 @@
 import { E, ESource } from "../E/eMain";
 import type { Pointer } from "../game/game";
 /** An object representing a boost. */
-interface boostsObjectInit {
+interface BoostsObjectInit {
     /** The ID of the boost. */
     id: string;
     /** The name of the boost. */
@@ -44,7 +44,7 @@ interface boostsObjectInit {
     order?: number;
 }
 /** Represents an indiviual boost object. */
-declare class boostObject implements boostsObjectInit {
+declare class BoostObject implements BoostsObjectInit {
     id: string;
     name: string;
     descriptionFn: (...args: any[]) => string;
@@ -53,14 +53,14 @@ declare class boostObject implements boostsObjectInit {
     get description(): string;
     value: (input: E) => E;
     order: number;
-    constructor(init: boostObject | boostsObjectInit);
+    constructor(init: BoostObject | BoostsObjectInit);
 }
 /**
  * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
  */
-declare class boost {
+declare class Boost {
     /** An array of boost objects. */
-    boostArray: boostObject[];
+    boostArray: BoostObject[];
     /** The base effect value. */
     baseEffect: E;
     /**
@@ -68,7 +68,7 @@ declare class boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: ESource, boosts?: boostsObjectInit | boostsObjectInit[]);
+    constructor(baseEffect?: ESource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
@@ -84,15 +84,15 @@ declare class boost {
      * // Get all boosts with the ID "healthBoost" or "manaBoost"
      * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
-    getBoosts(id: string | RegExp): boostObject[];
-    getBoosts(id: string | RegExp, index: boolean): [boostObject[], number[]];
+    getBoosts(id: string | RegExp): BoostObject[];
+    getBoosts(id: string | RegExp, index: boolean): [BoostObject[], number[]];
     /**
      * Gets a boost object by its ID.
      * @deprecated Use {@link boost.getBoosts} instead.
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    getBoost(id: string): boostObject | null;
+    getBoost(id: string): BoostObject | null;
     /**
      * Removes a boost by its ID. Only removes the first instance of the id.
      * @param id - The ID of the boost to remove.
@@ -125,14 +125,14 @@ declare class boost {
      *     value: (input) => input.mul(2),
      * });
      */
-    setBoost(boostObj: boostsObjectInit | boostsObjectInit[]): void;
+    setBoost(boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     /**
      * @alias setBoost
      * @deprecated Use {@link setBoost} instead.
      */
     addBoost: {
         (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
-        (boostObj: boostsObjectInit | boostsObjectInit[]): void;
+        (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     };
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
@@ -144,4 +144,4 @@ declare class boost {
      */
     calculate(base?: ESource): E;
 }
-export { boost, boostObject, boostsObjectInit };
+export { Boost, BoostObject as boostObject, BoostsObjectInit as boostsObjectInit };

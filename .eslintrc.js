@@ -50,6 +50,7 @@ if (fs.existsSync("../../template-defaults/eslintrules.json")) {
         "@typescript-eslint/no-unused-vars": "warn",
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/member-delimiter-style": "warn",
 
         "jsdoc/require-param-type": "off",
         "jsdoc/require-returns-type": "off",

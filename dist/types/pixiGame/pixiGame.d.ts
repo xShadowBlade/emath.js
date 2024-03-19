@@ -1,13 +1,13 @@
 /**
  * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
  */
-import { game, gameConfigOptions } from "../game/game";
-import { configManager, RequiredDeep } from "../game/managers/configManager";
-import { sprite, collisionShapeType } from "./sprite";
+import { Game, GameConfigOptions } from "../game/game";
+import { ConfigManager, RequiredDeep } from "../game/managers/configManager";
+import { GameSprite, CollisionShapeType } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";
 /** The configuration options for the game. */
-interface pixiGameConfig extends gameConfigOptions {
+interface PixiGameConfig extends GameConfigOptions {
     /** The PIXI-specific config */
     pixi: {
         /** The PIXI app to use for the game. */
@@ -15,13 +15,13 @@ interface pixiGameConfig extends gameConfigOptions {
     };
 }
 /** The default configuration for the game. */
-declare const pixiGameDefaultConfig: pixiGameConfig & RequiredDeep<gameConfigOptions>;
+declare const pixiGameDefaultConfig: PixiGameConfig & RequiredDeep<GameConfigOptions>;
 /**
  * Represents a game instance with PIXI-specific methods and properties.
  * Uses PIXI.js time-based game loop.
  */
-declare class pixiGame extends game {
-    protected static configManager: configManager<pixiGameConfig & RequiredDeep<gameConfigOptions>>;
+declare class PixiGame extends Game {
+    protected static configManager: ConfigManager<PixiGameConfig & RequiredDeep<GameConfigOptions>>;
     /** The configuration for the game. */
     config: typeof pixiGameDefaultConfig;
     /** The PIXI-specific properties for the game. */
@@ -40,13 +40,13 @@ declare class pixiGame extends game {
      * Creates a new instance of the pixiGame class.
      * @param config - The configuration for the game.
      */
-    constructor(config?: pixiGameConfig);
+    constructor(config?: PixiGameConfig);
     /**
      * Adds a sprite to the game.
      * @param spriteToAdd - The sprite to add.
      * @param collisionShape - The collision shape to use for the sprite.
      * @returns The sprite object.
      */
-    addSprite(spriteToAdd: Graphics | Sprite, collisionShape?: collisionShapeType): sprite;
+    addSprite(spriteToAdd: Graphics | Sprite, collisionShape?: CollisionShapeType): GameSprite;
 }
-export { pixiGame, pixiGameConfig, pixiGameDefaultConfig };
+export { PixiGame, PixiGameConfig, pixiGameDefaultConfig };

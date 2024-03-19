@@ -1,4 +1,7 @@
 /**
+ * @file Defines a LRU cache.
+ */
+/**
  * A LRU cache intended for caching pure functions.
  */
 export declare class LRUCache<K, V> {
@@ -25,7 +28,6 @@ export declare class LRUCache<K, V> {
     get(key: K): V | undefined;
     /**
      * Sets an entry in the cache.
-     *
      * @param key The key of the entry.
      * @param value The value of the entry.
      * @throws Error, if the map already contains the key.

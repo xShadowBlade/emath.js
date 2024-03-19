@@ -2,7 +2,7 @@
  * @file Declares classes for managing key bindings.
  */
 
-import { configManager } from "./configManager";
+import { ConfigManager } from "./configManager";
 import type { Application } from "pixi.js";
 
 /**
@@ -42,7 +42,7 @@ interface KeyBinding {
 /**
  * The key manager configuration interface.
  */
-interface keyManagerConfig {
+interface KeyManagerConfig {
     /**
      * Whether or not to automatically add an interval
      * that checks and calls for keybindings.
@@ -60,7 +60,7 @@ interface keyManagerConfig {
     pixiApp?: Application;
 }
 
-const keyManagerDefaultConfig: keyManagerConfig = {
+const keyManagerDefaultConfig: KeyManagerConfig = {
     autoAddInterval: true,
     fps: 30,
     pixiApp: undefined,
@@ -75,10 +75,10 @@ const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".s
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.
  */
-class keyManager {
+class KeyManager {
     private keysPressed: string[];
-    private config: keyManagerConfig;
-    private static configManager = new configManager(keyManagerDefaultConfig);
+    private config: KeyManagerConfig;
+    private static configManager = new ConfigManager(keyManagerDefaultConfig);
 
     private tickers: ((dt: number) => void)[];
     private tickerInterval?: ReturnType<typeof setInterval>;
@@ -90,12 +90,12 @@ class keyManager {
      * Creates a new key manager.
      * @param config - The configuration for the key manager.
      */
-    constructor (config?: keyManagerConfig) {
+    constructor (config?: KeyManagerConfig) {
         this.keysPressed = [];
         this.binds = [];
         this.tickers = [];
 
-        this.config = keyManager.configManager.parse(config);
+        this.config = KeyManager.configManager.parse(config);
 
         if (this.config.autoAddInterval) {
             if (this.config.pixiApp) {
@@ -166,7 +166,7 @@ class keyManager {
      * @param event - The event to add the key from.
      * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
      */
-    private logKey (this: keyManager, event: KeyboardEvent, type: boolean): void {
+    private logKey (event: KeyboardEvent, type: boolean): void {
         const key = event.key;
         if (type && !this.keysPressed.includes(key)) this.keysPressed.push(key); else if (!type && this.keysPressed.includes(key)) this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
     };
@@ -267,4 +267,4 @@ class keyManager {
 
 // keys.addKey("Debug - Reload", "`", () => window.location.reload());
 
-export { keyManager, keyManagerConfig, KeyBinding, keys };
+export { KeyManager, KeyManagerConfig, KeyBinding, keys };

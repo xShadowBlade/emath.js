@@ -7,102 +7,9 @@ import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/game";
 
-import { boost } from "./boost";
-
-/**
- * Represents different methods to calculate the mean.
- * Mode 1 `"arithmetic"` `(a+b)/2` is the default and a bit faster.
- * Mode 2 `"geometric"` `sqrt(ab)` is more accurate.
- */
-type MeanMode = "arithmetic" | "geometric" | 1 | 2;
-
-/**
- * Approximates the inverse of a function at `n` using the bisection / binary search method.
- * @param f - The function to approximate the inverse of. It must be monotonically increasing.
- * @param n - The value to approximate the inverse at.
- * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param target - The target value to reach. If not provided, it defaults to `n`.
- * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
- */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = 15, target?: ESource) {
-    // Set the initial bounds
-    let lowerBound = E(1);
-    // let upperBound = E(n);
-    let upperBound = E(target ?? n);
-    // if (f(E(n)).lt(n)) {
-    //     throw new Error("The function is not monotonically increasing. (f(n) < n)");
-    // }
-    if (f(upperBound).lt(n)) {
-        if (!target) console.warn("The function is not monotonically increasing. (f(n) < n)");
-        return {
-            value: upperBound,
-            lowerBound: upperBound,
-            upperBound: upperBound,
-        };
-    }
-
-    // console.log({ lowerBound, upperBound, iterations });
-    let i = 0;
-    // Perform the bisection / binary search
-    for (; i < iterations; i++) {
-        let mid: E;
-        switch (mode) {
-        case "arithmetic":
-        case 1:
-            mid = lowerBound.add(upperBound).div(2);
-            break;
-        case "geometric":
-        case 2:
-            mid = lowerBound.mul(upperBound).sqrt();
-            break;
-        // case "pow":
-        //     mid = lowerBound.pow(upperBound).ssqrt();
-        }
-
-        const midValue = f(mid);
-        if (midValue.eq(n)) {
-            return {
-                value: mid,
-                lowerBound: mid,
-                upperBound: mid,
-            };
-        } else if (midValue.lt(n)) {
-            lowerBound = mid;
-        } else {
-            upperBound = mid;
-        }
-    }
-
-    const out = {
-        value: lowerBound,
-        lowerBound,
-        upperBound,
-        iterations: i,
-    };
-
-    // console.log(out);
-
-    return out;
-}
-
-/**
- * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
- * @param f - The function `f(n)` to calculate the sum.
- * @param b - The upper limit for the sum.
- * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param epsilon - The maximum error tolerance.
- * @returns The calculated sum of `f(n)`.
- */
-function calculateSum (f: (n: E) => E, b: E, a = 0, epsilon?: E): E {
-    epsilon = epsilon ?? E("1e-6");
-    let sum: E = E();
-    for (let n = E(a); n.lte(b); n = n.add(1)) {
-        if (f(n).div(n).lt(epsilon)) break;
-        sum = sum.add(f(n));
-    }
-    return sum;
-}
+import { Boost } from "./boost";
+import { LRUCache } from "../E/lru-cache";
+import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -117,7 +24,7 @@ function calculateSum (f: (n: E) => E, b: E, a = 0, epsilon?: E): E {
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: ESource, upgrade: upgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
+function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
     end = E(end ?? value);
@@ -155,37 +62,32 @@ function calculateUpgrade (value: ESource, upgrade: upgradeStatic, start?: ESour
     if (el) {
         const costTargetFn = (level: E) => upgrade.cost(level.add(start!));
         const maxLevelAffordable = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
-        const cost = upgrade.cost(maxLevelAffordable);
+        // const cost = upgrade.cost(maxLevelAffordable);
+        const cost = E(0);
         return [maxLevelAffordable, cost];
     }
 
-    // If `maxLevel` is undefined and `el` is not set, warn and return 0
-    // if (!upgrade.maxLevel && !el) {
-    //     console.warn(`Upgrade "${upgrade.id}" does not have a maximum level and will not work with the automatic binary search / sum. Use \`el\` instead.`);
-    //     return [E(0), E(0)];
-    // }
-
     // Binary Search with sum calculation
-
     const maxLevelAffordable = inverseFunctionApprox(
-        (level: E) => calculateSum(upgrade.cost, level),
+        (level: E) => calculateSum(upgrade.cost, level, start),
         value,
         mode,
         iterations,
     ).value.floor();
-    const cost = calculateSum(upgrade.cost, maxLevelAffordable);
+    const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
     return [maxLevelAffordable, cost];
 }
 
 /**
  * Interface for initializing an upgrade.
+ * @template N - The ID of the upgrade.
  */
-interface UpgradeInit {
+interface UpgradeInit<N extends string = string> {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    id: string,
+    readonly id: N,
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string,
@@ -248,7 +150,7 @@ interface UpgradeInit {
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: upgradeStatic) => void,
+    effect?: (level: E, context: UpgradeStatic<N>) => void,
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
@@ -266,8 +168,11 @@ interface UpgradeInit {
     level?: E;
 }
 
-/** Interface for an upgrade. */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
+/**
+ * Interface for an upgrade.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
     maxLevel?: E,
     name: string,
     description: string,
@@ -280,27 +185,103 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
     descriptionFn: (...args: any[]) => string,
 }
 
-/** Interface for upgrade data. */
-interface IUpgradeData extends Pick<UpgradeInit, "id" | "level"> {
-    id: string,
-    level: E
+/**
+ * Interface for upgrade data.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "id" | "level"> {
+    // id: string,
+    // level: E
 }
 
+/**
+ * Represents a decimal number in the form of a string. `sign/mag/layer`
+ */
+type DecimalJSONString = `${number}/${number}/${number}`;
+/**
+ * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
+ * In the form of: "${id}/el/${level: {@link DecimalJSONString}}"
+ */
+type UpgradeCachedELName = `${string}/el/${DecimalJSONString}`;
+/**
+ * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
+ * In the form of: "${id}/sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ */
+type UpgradeCachedSumName = `${string}/sum/${DecimalJSONString}/${DecimalJSONString}`;
+
+/**
+ * Converts a decimal number to a JSON string.
+ * @param n - The decimal number to convert.
+ * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
+ */
+function decimalToJSONString (n: ESource): DecimalJSONString {
+    n = E(n);
+    return `${n.sign}/${n.mag}/${n.layer}` as DecimalJSONString;
+}
+
+/**
+ * Converts an upgrade to a cache name (sum)
+ * @param upgrade - The upgrade to convert or id of the upgrade.
+ * @param start - The starting level of the upgrade.
+ * @param end - The ending level or quantity to reach for the upgrade.
+ * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
+ */
+function upgradeToCacheNameSum (upgrade: UpgradeStatic<string> | string, start: ESource, end: ESource): UpgradeCachedSumName {
+    // return `${upgrade.id}/sum/${start.toString()}/${end.toString()}/${cost.toString()}` as UpgradeCachedSumName;
+    const id = typeof upgrade === "string" ? upgrade : upgrade.id;
+    return `${id}/sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
+}
+
+/**
+ * Converts an upgrade to a cache name (EL)
+ * @param upgrade - The upgrade to convert or id of the upgrade.
+ * @param level - The level of the upgrade.
+ * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
+ */
+function upgradeToCacheNameEL (upgrade: UpgradeStatic<string> | string, level: ESource): UpgradeCachedELName {
+    // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
+    const id = typeof upgrade === "string" ? upgrade : upgrade.id;
+    return `${id}/el/${decimalToJSONString(level)}` as UpgradeCachedELName;
+}
+
+/** Interface for an upgrade that is cached. */
+// interface UpgradeCached<el extends boolean = false> extends Pick<UpgradeInit, "id" | "el">{
+//     el: el,
+// }
+
+/** Interface for an upgrade that is cached. (EL) */
+// interface UpgradeCachedEL extends Pick<UpgradeInit, "id" | "el" | "level"> {
+//     el: true,
+//     level: E,
+
+//     /** The cost of the upgrade at level (el) */
+//     cost: E,
+// }
+
+/** Interface for an upgrade that is cached. (Not EL) */
+// interface UpgradeCachedSum extends Pick<UpgradeInit, "id" | "el" | "level"> {
+//     el: false,
+//     level: E,
+
+//     /** The cost of the upgrade at level */
+//     cost: E,
+// }
+
 /** Represents the frontend for an upgrade. */
-class upgradeData implements IUpgradeData {
-    @Expose() public id;
+class UpgradeData<N extends string = string> implements IUpgradeData<N> {
+    @Expose() public id: N;
     @Type(() => Decimal) public level;
 
-    constructor (init: Pick<UpgradeInit, "id" | "level">) {
+    constructor (init: Pick<UpgradeInit<N>, "id" | "level">) {
         init = init ?? {}; // class-transformer bug
-        this.id = init.id ?? -1;
+        this.id = init.id;
         this.level = init.level ? E(init.level) : E(1);
     }
 }
 
 /** Represents the backend for an upgrade. */
-class upgradeStatic implements IUpgradeStatic {
-    public id; name; cost; costBulk; maxLevel; effect; el?; descriptionFn;
+class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
+    public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn;
 
     public get description (): string {
         return this.descriptionFn();
@@ -309,9 +290,9 @@ class upgradeStatic implements IUpgradeStatic {
     /**
      * @returns The data of the upgrade.
      */
-    protected dataPointerFn: () => upgradeData;
+    protected dataPointerFn: () => UpgradeData<N>;
 
-    public get data (): upgradeData {
+    public get data (): UpgradeData<N> {
         return this.dataPointerFn();
     }
 
@@ -319,7 +300,7 @@ class upgradeStatic implements IUpgradeStatic {
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
-    constructor (init: UpgradeInit, dataPointer: Pointer<upgradeData>) {
+    constructor (init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
         this.id = init.id;
@@ -337,6 +318,7 @@ class upgradeStatic implements IUpgradeStatic {
      * @returns The current level of the upgrade.
      */
     get level (): E {
+        // many fallbacks for some reason
         return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
     }
     set level (n: ESource) {
@@ -348,14 +330,14 @@ class upgradeStatic implements IUpgradeStatic {
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  */
-class currency {
+class Currency {
     /** The current value of the currency. */
     @Type(() => Decimal)
     public value: E;
 
     /** An array that represents upgrades and their levels. */
-    @Type(() => upgradeData)
-    public upgrades: upgradeData[];
+    @Type(() => UpgradeData)
+    public upgrades: UpgradeData<string>[];
 
     // /** A boost object that affects the currency gain. */
     // @Expose()
@@ -372,18 +354,32 @@ class currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
+ * @template U - An array that represents the names of the upgrades.
  * @example
  * const currency = new currencyStatic();
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
-class currencyStatic {
+class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
-    public upgrades: upgradeStatic[];
+    // public upgrades: upgradeStatic[];
+    public upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
+    // public upgrades: {
+    //     [id: string]: UpgradeStatic;
+    //     [Symbol.iterator]: IterableIterator<UpgradeStatic>;
+    // };
+
+    /** A cache for upgrades. */
+    // protected upgradeCache = new LRUCache<string, UpgradeCached>(100);
+    protected upgradeCache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, undefined>;
+
+    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
+    protected static cacheSize: number = 127;
 
     /** A function that returns the pointer of the data */
-    protected pointerFn: (() => currency);
+    protected pointerFn: (() => Currency);
 
+    /** @returns The pointer of the data. */
     protected get pointer () { return this.pointerFn(); }
 
     /**
@@ -391,34 +387,53 @@ class currencyStatic {
      */
     public onLoadData () {
         // console.log("onLoadData", this.upgrades);
-        for (const upgrade of this.upgrades) {
-            if (upgrade.effect) {
-                upgrade.effect(upgrade.level, upgrade);
-            }
+        // for (const upgrade of this.upgrades) {
+        //     if (upgrade.effect) {
+        //         upgrade.effect(upgrade.level, upgrade);
+        //     }
+        // }
+        for (const upgrade of Object.values(this.upgrades)) {
+            upgrade.effect?.(upgrade.level, upgrade);
         }
     }
 
     /** A boost object that affects the currency gain. */
-    public boost: boost;
+    public boost: Boost;
 
     /** The default value of the currency. */
-    public defaultVal: E;
+    public readonly defaultVal: E;
 
     /** The default boost of the currency. */
-    public defaultBoost: E;
+    public readonly defaultBoost: E;
 
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
-     * @param defaultVal - The default value of the currency.
-     * @param defaultBoost - The default boost of the currency.
+     * @param upgrades - An array of upgrade objects.
+     * @param defaults - The default value and boost of the currency.
      */
-    constructor (pointer: Pointer<currency> = new currency(), defaultVal: ESource = E(0), defaultBoost: ESource = E(1)) {
-        this.defaultVal = E(defaultVal);
-        this.defaultBoost = E(defaultBoost);
+    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: UpgradeInit<U[number]>[], defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
+        // this.defaultVal = E(defaultVal);
+        // this.defaultBoost = E(defaultBoost);
+        this.defaultVal = defaults.defaultVal;
+        this.defaultBoost = defaults.defaultBoost;
 
-        this.upgrades = [];
+        // this.upgrades = [];
+        // @ts-expect-error - Properties are added in the next line
+        this.upgrades = {
+            // *[Symbol.iterator] () {
+            //     for (const upgrade of Object.values(this)) {
+            //         yield upgrade;
+            //     }
+            // },
+        };
+
+        if (upgrades) this.addUpgrade(upgrades);
+
+        this.upgrades = this.upgrades as Record<U[number] | string, UpgradeStatic<U[number]>>;
+
         this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-        this.boost = new boost(defaultBoost);
+        this.boost = new Boost(this.defaultBoost);
+        this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
 
         this.pointer.value = this.defaultVal;
     }
@@ -445,9 +460,12 @@ class currencyStatic {
     public reset (resetCurrency: boolean = true, resetUpgradeLevels = true): void {
         if (resetCurrency) this.value = this.defaultVal;
         if (resetUpgradeLevels) {
-            this.upgrades.forEach((upgrade) => {
+            // this.upgrades.forEach((upgrade) => {
+            //     upgrade.level = E(0);
+            // });
+            for (const upgrade of Object.values(this.upgrades)) {
                 upgrade.level = E(0);
-            });
+            }
         };
     }
 
@@ -469,8 +487,8 @@ class currencyStatic {
      * @param upgrades1 Upgrade to add
      * @returns The upgrade object.
      */
-    private pointerAddUpgrade (upgrades1: UpgradeInit): UpgradeInit {
-        const upgrades2 = new upgradeData(upgrades1);
+    private pointerAddUpgrade (upgrades1: UpgradeInit<U[number]>): UpgradeInit<U[number]> {
+        const upgrades2 = new UpgradeData(upgrades1);
         this.pointer.upgrades.push(upgrades2);
         return upgrades1;
     };
@@ -480,8 +498,8 @@ class currencyStatic {
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
-    private pointerGetUpgrade (id?: string): upgradeData | null {
-        let upgradeToGet: upgradeData | null = null;
+    private pointerGetUpgrade (id?: string): UpgradeData<U[number]> | null {
+        let upgradeToGet: UpgradeData<U[number]> | null = null;
         if (id === undefined) {
             return null;
         }
@@ -504,24 +522,28 @@ class currencyStatic {
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    public getUpgrade (id?: string): upgradeStatic | null {
-        let upgradeToGet: upgradeStatic | null = null;
-        if (id === undefined) {
-            return null;
-        }
-        // else if (typeof id == "number") {
-        //     upgradeToGet = this.upgrades[id];
+    // public getUpgrade (id: string): UpgradeStatic | null {
+    public getUpgrade (id: string | U[number]): typeof id extends U[number] ? UpgradeStatic<U[number]> : UpgradeStatic<U[number]> | null {
+        // let upgradeToGet: UpgradeStatic | null = null;
+        // if (id === undefined) {
+        //     return null;
         // }
-        else if (typeof id == "string") {
-            // for (let i = 0; i < this.upgrades.length; i++) {
-            //     if (this.upgrades[i].id === id) {
-            //         upgradeToGet = this.upgrades[i];
-            //         break;
-            //     }
-            // }
-            upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-        }
-        return upgradeToGet;
+        // // else if (typeof id == "number") {
+        // //     upgradeToGet = this.upgrades[id];
+        // // }
+        // else if (typeof id == "string") {
+        //     // for (let i = 0; i < this.upgrades.length; i++) {
+        //     //     if (this.upgrades[i].id === id) {
+        //     //         upgradeToGet = this.upgrades[i];
+        //     //         break;
+        //     //     }
+        //     // }
+
+        //     upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+        // }
+        // return upgradeToGet;
+
+        return this.upgrades[id] ?? null;
     }
 
     /**
@@ -549,25 +571,47 @@ class currencyStatic {
      *     }
      * });
      */
-    public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly: boolean = true): void {
-        if (!Array.isArray(upgrades)) upgrades = [upgrades];
+    public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly: boolean = true): void {
+        // if (!Array.isArray(upgrades)) upgrades = [upgrades];
+        if (!Array.isArray(upgrades)) {
+            if (typeof upgrades === "object") {
+                upgrades = Object.values(upgrades);
+            } else {
+                upgrades = [upgrades];
+            }
+        }
 
         // Adds standard
-        const upgradesDefault: upgradeStatic[] = [];
-        for (let i = 0; i < upgrades.length; i++) {
+        // const upgradesDefault: UpgradeStatic[] = [];
+        // for (let i = 0; i < upgrades.length; i++) {
+        //     // if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
+        //     this.pointerAddUpgrade(upgrades[i]);
+        //     const currentLength = this.pointer.upgrades.length;
+        //     const upgrade = new UpgradeStatic(upgrades[i], () =>
+        //         this.pointerGetUpgrade((upgrades as UpgradeInit[])[i].id) as UpgradeData
+        //         ??
+        //         this.pointer.upgrades[currentLength - 1],
+        //     );
+        //     if (upgrade.effect && runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
+        //     upgradesDefault.push(upgrade);
+        // }
+
+        // this.upgrades = this.upgrades.concat(upgradesDefault);
+
+        // Adds standard (object instead of array)
+        const upgradesDefault: Record<string, UpgradeStatic<string>> = {};
+        for (const upgrade of upgrades) {
             // if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
-            this.pointerAddUpgrade(upgrades[i]);
+            this.pointerAddUpgrade(upgrade);
             const currentLength = this.pointer.upgrades.length;
-            const upgrade = new upgradeStatic(upgrades[i], () =>
-                this.pointerGetUpgrade((upgrades as UpgradeInit[])[i].id) as upgradeData
+            const upgrade1 = new UpgradeStatic(upgrade, () =>
+                this.pointerGetUpgrade(upgrade.id) as UpgradeData<string>
                 ??
                 this.pointer.upgrades[currentLength - 1],
             );
-            if (upgrade.effect && runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
-            upgradesDefault.push(upgrade);
+            if (upgrade1.effect && runEffectInstantly) upgrade1.effect(upgrade1.level, upgrade1);
+            upgradesDefault[upgrade.id] = upgrade1;
         }
-
-        this.upgrades = this.upgrades.concat(upgradesDefault);
     }
 
     /**
@@ -584,7 +628,7 @@ class currencyStatic {
      *     }
      * });
      */
-    public updateUpgrade (id: string, upgrade: UpgradeInit): void {
+    public updateUpgrade (id: string, upgrade: UpgradeInit<string>): void {
         const upgrade1 = this.getUpgrade(id);
         if (upgrade1 === null) return;
 
@@ -645,7 +689,7 @@ class currencyStatic {
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
-     * @param target - The target level or quantity to reach for the upgrade.
+     * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
@@ -653,7 +697,7 @@ class currencyStatic {
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    public buyUpgrade (id: string, target: ESource = 1, mode?: MeanMode, iterations?: number): boolean {
+    public buyUpgrade (id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean {
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
@@ -667,7 +711,7 @@ class currencyStatic {
             return false;
         }
 
-        // Deduct the cost from available currency and increase the upgrade level
+        // Deduct the cost from available currency
         this.pointer.value = this.pointer.value.sub(cost);
 
         // Set the upgrade level
@@ -683,16 +727,14 @@ class currencyStatic {
     }
 }
 
-export { currency, currencyStatic, UpgradeInit, IUpgradeStatic, upgradeData, upgradeStatic, IUpgradeData, calculateUpgrade, inverseFunctionApprox, calculateSum, MeanMode };
+export { Currency as currency, CurrencyStatic as currencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as upgradeData, UpgradeStatic as upgradeStatic, IUpgradeData };
+// export { MeanMode, calculateUpgrade, inverseFunctionApprox, calculateSum, calculateSumLoop, calculateSumApprox };
 
 // Test
 /*
-const myCurrency = new currencyStatic();
-
 const costFn = (level: E) => level.pow(2);
 
-// Add an upgrade
-myCurrency.addUpgrade({
+const testUpgrade: UpgradeInit = {
     id: "healthBoost",
     name: "Health Boost",
     description: "Increases health by 10.",
@@ -702,23 +744,64 @@ myCurrency.addUpgrade({
     //     // console.log("Health Boost effect", level);
     // },
     el: true,
-});
+};
+
+const myCurrency = new CurrencyStatic(undefined, [
+    {
+        id: "healthBoost",
+        name: "Health Boost",
+        description: "Increases health by 10.",
+        cost: costFn,
+        // maxLevel: 10,
+        // effect: (level) => {
+        //     // console.log("Health Boost effect", level);
+        // },
+        el: true,
+    },
+]);
+
+// Add an upgrade
+// myCurrency.addUpgrade({
+//     id: "healthBoost",
+//     name: "Health Boost",
+//     description: "Increases health by 10.",
+//     cost: costFn,
+//     // maxLevel: 10,
+//     // effect: (level) => {
+//     //     // console.log("Health Boost effect", level);
+//     // },
+//     el: true,
+// });
 
 // Gain currency
 
+// console.log("calc sum", calculateSum(costFn, E(100)));
+calculateSum(costFn, E(1000), 0, "1e-4");
+
 const x = E("123.34344e3");
 
-myCurrency.gain(x.mul(1000));
+const formatFn = (n: E) => n.format(5, 9, "sc");
 
-const currentTime = Date.now();
+for (let i = 0; i < 3; i++) {
+    myCurrency.gain(x.mul(1000));
 
-const formatFn = (n: E) => n.format(2, 9, "sc");
+    const newCurrency = myCurrency.value;
 
-const calc = myCurrency.calculateUpgrade("healthBoost", undefined, "geometric", 15);
+    const calc = myCurrency.calculateUpgrade("healthBoost", undefined, "geometric", 15);
 
-console.log({
-    calc: calc.map(formatFn),
-    acc: formatFn(costFn(calc[0]).div(x)),
-});
-console.log("Time taken:", Date.now() - currentTime, "ms");
+    myCurrency.buyUpgrade("healthBoost");
+
+    const upgrade = myCurrency.getUpgrade("healthBoost");
+
+    console.log({
+        calc: calc.map(formatFn),
+        acc: formatFn(costFn(upgrade?.level ?? E(1)).div(newCurrency)),
+    });
+
+    console.log({
+        value: formatFn(myCurrency.value),
+        level: upgrade?.level,
+    });
+}
+
 */

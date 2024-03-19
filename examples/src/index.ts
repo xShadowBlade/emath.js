@@ -6,6 +6,9 @@
 
 // console.log(E(69420).format());
 
+import * as eMath from "emath.js";
+(window as any).eMath = eMath;
+
 import "./nguformat";
 // import "./latexToE";
 import "./coinGame/index";

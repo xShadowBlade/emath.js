@@ -4,14 +4,14 @@
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
-import { boost } from "../classes/boost";
+import { Boost } from "../classes/boost";
 import { Decimal } from "../E/e";
 
 /**
  * Represents an attribute in the game.
- * Note: This is only meant for the data of an attribute. Use in combination with {@link attributeStatic} for the actual attribute.
+ * Note: This is only meant for the data of an attribute. Use in combination with {@link AttributeStatic} for the actual attribute.
  */
-class attribute {
+class Attribute {
     /** The current value of the attribute. */
     @Type(() => Decimal)
     public value: E;
@@ -36,8 +36,8 @@ class attribute {
  * });
  * console.log(health.value); // 110
  */
-class attributeStatic {
-    protected pointerFn: attribute;
+class AttributeStatic {
+    protected pointerFn: Attribute;
 
     get pointer () {
         return this.pointerFn;
@@ -50,7 +50,7 @@ class attributeStatic {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    public boost?: boost;
+    public boost?: Boost;
 
     /**
      * Constructs a new instance of the Attribute class.
@@ -58,11 +58,11 @@ class attributeStatic {
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor (pointer?: (() => attribute) | attribute, useBoost: boolean = true, initial: ESource = 0) {
+    constructor (pointer?: (() => Attribute) | Attribute, useBoost: boolean = true, initial: ESource = 0) {
         this.initial = E(initial);
-        pointer = pointer ?? new attribute(this.initial);
+        pointer = pointer ?? new Attribute(this.initial);
         this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
-        if (useBoost) this.boost = new boost(this.initial);
+        if (useBoost) this.boost = new Boost(this.initial);
     }
 
     /**
@@ -100,4 +100,4 @@ class attributeStatic {
     }
 }
 
-export { attribute, attributeStatic };
+export { Attribute, AttributeStatic };

@@ -6,7 +6,7 @@ import { E, ESource } from "../E/eMain";
 import type { Pointer } from "../game/game";
 
 /** An object representing a boost. */
-interface boostsObjectInit {
+interface BoostsObjectInit {
     /** The ID of the boost. */
     id: string,
     /** The name of the boost. */
@@ -49,7 +49,7 @@ interface boostsObjectInit {
 }
 
 /** Represents an indiviual boost object. */
-class boostObject implements boostsObjectInit {
+class BoostObject implements BoostsObjectInit {
     // public id; name; desc; value; order;
     public id: string;
     public name: string;
@@ -64,7 +64,7 @@ class boostObject implements boostsObjectInit {
     public value: (input: E) => E;
     public order: number;
 
-    constructor (init: boostObject | boostsObjectInit) {
+    constructor (init: BoostObject | BoostsObjectInit) {
         // if (init instanceof boostObject) {
         //     init = init as boostObject;
         // }
@@ -84,10 +84,10 @@ class boostObject implements boostsObjectInit {
 /**
  * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
  */
-class boost {
+class Boost {
     /** An array of boost objects. */
     // @Type(() => boostObject)
-    public boostArray: boostObject[];
+    public boostArray: BoostObject[];
 
     /** The base effect value. */
     // @Expose()
@@ -98,13 +98,13 @@ class boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect: ESource = 1, boosts?: boostsObjectInit | boostsObjectInit[]) {
+    constructor (baseEffect: ESource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
         boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
         this.baseEffect = E(baseEffect);
         this.boostArray = [];
         if (boosts) {
             boosts.forEach((boostObj) => {
-                this.boostArray.push(new boostObject(boostObj));
+                this.boostArray.push(new BoostObject(boostObj));
             });
         }
     }
@@ -124,10 +124,10 @@ class boost {
      * // Get all boosts with the ID "healthBoost" or "manaBoost"
      * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
-    public getBoosts (id: string | RegExp): boostObject[];
-    public getBoosts (id: string | RegExp, index: boolean): [boostObject[], number[]];
-    public getBoosts (id: string | RegExp, index?: boolean): boostObject[] | [boostObject[], number[]] {
-        const boostList: boostObject[] = [];
+    public getBoosts (id: string | RegExp): BoostObject[];
+    public getBoosts (id: string | RegExp, index: boolean): [BoostObject[], number[]];
+    public getBoosts (id: string | RegExp, index?: boolean): BoostObject[] | [BoostObject[], number[]] {
+        const boostList: BoostObject[] = [];
         const indexList: number[] = [];
         for (let i = 0; i < this.boostArray.length; i++) {
             // if (i === this.boostArray.length) break;
@@ -148,7 +148,7 @@ class boost {
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    public getBoost (id: string): boostObject | null {
+    public getBoost (id: string): BoostObject | null {
         return this.getBoosts(id)[0] ?? null;
     }
 
@@ -192,8 +192,8 @@ class boost {
      *     value: (input) => input.mul(2),
      * });
      */
-    public setBoost (boostObj: boostsObjectInit | boostsObjectInit[]): void;
-    public setBoost (arg1: string | (boostsObjectInit | boostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
+    public setBoost (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
+    public setBoost (arg1: string | (BoostsObjectInit | BoostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
         if (!arg1) return; // class-transformer bug
         if (typeof arg1 === "string") {
             // Basic set using parameters
@@ -205,9 +205,9 @@ class boost {
             const bCheck = this.getBoosts(id, true);
 
             if (!bCheck[0][0]) {
-                this.boostArray.push(new boostObject({ id, name, desc, value, order }));
+                this.boostArray.push(new BoostObject({ id, name, desc, value, order }));
             } else {
-                this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
+                this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, desc, value, order });
             }
         } else {
             // Advanced set using boost object
@@ -215,9 +215,9 @@ class boost {
             for (let i = 0; i < arg1.length; i++) {
                 const bCheck = this.getBoosts(arg1[i].id, true);
                 if (!bCheck[0][0]) {
-                    this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+                    this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
                 } else {
-                    this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
+                    this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
                 }
             }
         }
@@ -240,7 +240,7 @@ class boost {
         let output: E = E(base);
         let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
-        boosts = boosts.sort((a: boostObject, b: boostObject) => a.order - b.order);
+        boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);
         for (let i = 0; i < boosts.length; i++) {
             output = boosts[i].value(output);
         }
@@ -248,4 +248,4 @@ class boost {
     }
 }
 
-export { boost, boostObject, boostsObjectInit };
+export { Boost, BoostObject as boostObject, BoostsObjectInit as boostsObjectInit };

@@ -2,14 +2,14 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../E/eMain";
-import { configManager } from "./configManager";
+import { ConfigManager } from "./configManager";
 import type { Application } from "pixi.js";
 
 /**
  * The type of event
  */
 // eslint-disable-next-line no-shadow
-enum eventTypes {
+enum EventTypes {
     interval = "interval",
     timeout = "timeout",
 }
@@ -22,7 +22,7 @@ interface Event {
     name: string;
     // type: "interval" | "timeout";
     /** The type of the event */
-    type: eventTypes;
+    type: EventTypes;
     /** The delay before the event triggers */
     delay: number;
     /** The callback function to execute when the event triggers */
@@ -34,9 +34,9 @@ interface Event {
 /**
  * The interval event interface
  */
-interface intervalEvent extends Event {
+interface IntervalEvent extends Event {
     // type: "interval";
-    type: eventTypes.interval;
+    type: EventTypes.interval;
     /** The last time the event was executed */
     intervalLast: number;
 }
@@ -44,9 +44,9 @@ interface intervalEvent extends Event {
 /**
  * The timeout event interface
  */
-interface timeoutEvent extends Event {}
+interface TimeoutEvent extends Event {}
 
-interface eventManagerConfig {
+interface EventManagerConfig {
     /**
      * Whether or not to automatically add an interval
      * that checks and calls for keybindings.
@@ -66,7 +66,7 @@ interface eventManagerConfig {
     pixiApp?: Application;
 }
 
-const eventManagerDefaultConfig: eventManagerConfig = {
+const eventManagerDefaultConfig: EventManagerConfig = {
     autoAddInterval: true,
     fps: 30,
     pixiApp: undefined,
@@ -75,20 +75,20 @@ const eventManagerDefaultConfig: eventManagerConfig = {
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  */
-class eventManager {
-    private events: Record<string, (intervalEvent | timeoutEvent)>;
+class EventManager {
+    private events: Record<string, (IntervalEvent | TimeoutEvent)>;
     private tickerInterval?: ReturnType<typeof setInterval>;
 
-    private static configManager = new configManager(eventManagerDefaultConfig);
+    private static configManager = new ConfigManager(eventManagerDefaultConfig);
     /** The config object */
-    public config: eventManagerConfig;
+    public config: EventManagerConfig;
 
     /**
      * Creates a new event manager.
      * @param config - The config to use for this event manager.
      */
-    constructor (config?: eventManagerConfig) {
-        this.config = eventManager.configManager.parse(config);
+    constructor (config?: EventManagerConfig) {
+        this.config = EventManager.configManager.parse(config);
         this.events = {};
         if (this.config.autoAddInterval) {
             if (this.config.pixiApp) {
@@ -111,10 +111,10 @@ class eventManager {
             // const event = this.events[i];
             if (event.type === "interval") {
                 // If interval
-                if (currentTime - (event as intervalEvent).intervalLast >= event.delay) {
-                    const dt = currentTime - (event as intervalEvent).intervalLast;
+                if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
+                    const dt = currentTime - (event as IntervalEvent).intervalLast;
                     event.callbackFn(dt);
-                    (event as intervalEvent).intervalLast = currentTime;
+                    (event as IntervalEvent).intervalLast = currentTime;
                 }
             } else if (event.type === "timeout") {
                 const dt = currentTime - event.timeCreated;
@@ -152,11 +152,11 @@ class eventManager {
     public timeWarp (dt: number): void {
         for (const event of Object.values(this.events)) {
             if (event.type === "interval") {
-                (event as intervalEvent).intervalLast -= dt;
+                (event as IntervalEvent).intervalLast -= dt;
             }
             if (event.type === "timeout") {
                 // ! might cause issues
-                (event as timeoutEvent).timeCreated -= dt;
+                (event as TimeoutEvent).timeCreated -= dt;
             }
         }
     }
@@ -179,13 +179,13 @@ class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public setEvent (name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
+    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
         this.events[name] = (() => {
             switch (type) {
             case "interval": {
-                const event: intervalEvent = {
+                const event: IntervalEvent = {
                     name,
-                    type: type as eventTypes.interval,
+                    type: type as EventTypes.interval,
                     delay: typeof delay === "number" ? delay : delay.toNumber(),
                     callbackFn,
                     timeCreated: Date.now(),
@@ -195,9 +195,9 @@ class eventManager {
             // eslint-disable-next-line no-unreachable
             }; break;
             case "timeout": default: {
-                const event: timeoutEvent = {
+                const event: TimeoutEvent = {
                     name,
-                    type: type as eventTypes.timeout,
+                    type: type as EventTypes.timeout,
                     delay: typeof delay === "number" ? delay : delay.toNumber(),
                     callbackFn,
                     timeCreated: Date.now(),
@@ -211,7 +211,7 @@ class eventManager {
 
     /**
      * Adds a new event
-     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
     public addEvent = this.setEvent;
@@ -227,4 +227,4 @@ class eventManager {
     }
 };
 
-export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event, eventTypes };
+export { EventManager, EventManagerConfig, IntervalEvent, TimeoutEvent, Event, EventTypes };

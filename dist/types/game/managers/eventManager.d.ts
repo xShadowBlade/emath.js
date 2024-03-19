@@ -6,7 +6,7 @@ import type { Application } from "pixi.js";
 /**
  * The type of event
  */
-declare enum eventTypes {
+declare enum EventTypes {
     interval = "interval",
     timeout = "timeout"
 }
@@ -17,7 +17,7 @@ interface Event {
     /** The name of the event */
     name: string;
     /** The type of the event */
-    type: eventTypes;
+    type: EventTypes;
     /** The delay before the event triggers */
     delay: number;
     /** The callback function to execute when the event triggers */
@@ -28,17 +28,17 @@ interface Event {
 /**
  * The interval event interface
  */
-interface intervalEvent extends Event {
-    type: eventTypes.interval;
+interface IntervalEvent extends Event {
+    type: EventTypes.interval;
     /** The last time the event was executed */
     intervalLast: number;
 }
 /**
  * The timeout event interface
  */
-interface timeoutEvent extends Event {
+interface TimeoutEvent extends Event {
 }
-interface eventManagerConfig {
+interface EventManagerConfig {
     /**
      * Whether or not to automatically add an interval
      * that checks and calls for keybindings.
@@ -58,17 +58,17 @@ interface eventManagerConfig {
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  */
-declare class eventManager {
+declare class EventManager {
     private events;
     private tickerInterval?;
     private static configManager;
     /** The config object */
-    config: eventManagerConfig;
+    config: EventManagerConfig;
     /**
      * Creates a new event manager.
      * @param config - The config to use for this event manager.
      */
-    constructor(config?: eventManagerConfig);
+    constructor(config?: EventManagerConfig);
     /** The function that is called every frame, executes all events. */
     protected tickerFunction(): void;
     /**
@@ -99,13 +99,13 @@ declare class eventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    setEvent(name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
+    setEvent(name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
     /**
      * Adds a new event
-     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
-    addEvent: (name: string, type: eventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
+    addEvent: (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
     /**
      * Removes an event from the event system.
      * @param name - The name of the event to remove.
@@ -114,4 +114,4 @@ declare class eventManager {
      */
     removeEvent(name: string): void;
 }
-export { eventManager, eventManagerConfig, intervalEvent, timeoutEvent, Event, eventTypes };
+export { EventManager, EventManagerConfig, IntervalEvent, TimeoutEvent, Event, EventTypes };

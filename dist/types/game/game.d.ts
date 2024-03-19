@@ -2,13 +2,13 @@
  * @file Declares the main game class.
  */
 import { ESource } from "../E/eMain";
-import { keyManager } from "./managers/keyManager";
-import { eventManager } from "./managers/eventManager";
-import { dataManager } from "./managers/dataManager";
-import { gameCurrency } from "./gameCurrency";
-import { gameAttribute } from "./gameAttribute";
-import { gameReset } from "./resetLayer";
-import { configManager, RequiredDeep } from "./managers/configManager";
+import { KeyManager } from "./managers/keyManager";
+import { EventManager } from "./managers/eventManager";
+import { DataManager } from "./managers/dataManager";
+import { GameCurrency } from "./gameCurrency";
+import { GameAttribute } from "./gameAttribute";
+import { GameReset } from "./resetLayer";
+import { ConfigManager, RequiredDeep } from "./managers/configManager";
 /**
  * A pointer to a value or a function that returns a value by reference.
  */
@@ -16,7 +16,7 @@ type Pointer<T> = (() => T) | T;
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
  */
-interface gameConfigOptions {
+interface GameConfigOptions {
     /** The mode to run the game in. Not used internally. */
     mode?: "development" | "production";
     /** The name of the game. Not used internally. */
@@ -39,23 +39,23 @@ interface gameConfigOptions {
      */
     initIntervalBasedManagers?: boolean;
 }
-declare const gameDefaultConfig: RequiredDeep<gameConfigOptions>;
+declare const gameDefaultConfig: RequiredDeep<GameConfigOptions>;
 /**
  * Represents a game instance.
  */
-declare class game {
-    protected static configManager: configManager<RequiredDeep<gameConfigOptions>>;
+declare class Game {
+    protected static configManager: ConfigManager<RequiredDeep<GameConfigOptions>>;
     /** The config object */
-    config: typeof game.configManager.options;
+    config: typeof Game.configManager.options;
     /**
      * The data manager for the game.
      * As of v5.0.0, all data is stored here.
      */
-    dataManager: dataManager;
+    dataManager: DataManager;
     /** The key manager for the game. */
-    keyManager: keyManager;
+    keyManager: KeyManager;
     /** The event manager for the game. */
-    eventManager: eventManager;
+    eventManager: EventManager;
     protected tickers: ((dt: number) => void)[];
     /**
      * Creates a new instance of the game class.
@@ -69,7 +69,7 @@ declare class game {
      *     // Additional options here
      * });
      */
-    constructor(config?: gameConfigOptions);
+    constructor(config?: GameConfigOptions);
     /** Initializes the game. Also initializes the data manager. */
     init(): void;
     /**
@@ -78,7 +78,7 @@ declare class game {
      */
     changeFps(fps: number): void;
     /**
-     * Adds a new currency section to the game. {@link gameCurrency} is the class.
+     * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
@@ -87,9 +87,9 @@ declare class game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    addCurrency<Name extends string>(name: Name): gameCurrency<Name>;
+    addCurrency<Name extends string>(name: Name): GameCurrency<Name>;
     /**
-     * Adds a new attribute to the game. {@link gameAttribute} is the class.
+     * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
      * @param name - The name of the attribute.
      * @param useBoost - Indicates whether to use boost for the attribute.
@@ -98,13 +98,13 @@ declare class game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    addAttribute(name: string, useBoost?: boolean, initial?: ESource): gameAttribute;
+    addAttribute(name: string, useBoost?: boolean, initial?: ESource): GameAttribute;
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    addReset(currenciesToReset: gameCurrency<string> | gameCurrency<string>[], extender?: gameReset): gameReset;
+    addReset(currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset): GameReset;
 }
-export { game, gameCurrency, gameAttribute, gameConfigOptions, gameDefaultConfig, Pointer };
+export { Game, GameConfigOptions, gameDefaultConfig, Pointer };

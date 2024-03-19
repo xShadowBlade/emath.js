@@ -6,7 +6,7 @@ import type { UnknownObject } from "./dataManager";
  * Represents a configuration object.
  * @template T - The type of the configuration object.
  */
-declare class configManager<T extends UnknownObject | object> {
+declare class ConfigManager<T extends UnknownObject | object> {
     /** The template to use for default values. */
     private configOptionTemplate;
     /**
@@ -29,5 +29,5 @@ declare class configManager<T extends UnknownObject | object> {
 type RequiredDeep<T> = {
     [P in keyof T]-?: RequiredDeep<T[P]>;
 };
-export { configManager };
+export { ConfigManager };
 export type { RequiredDeep };

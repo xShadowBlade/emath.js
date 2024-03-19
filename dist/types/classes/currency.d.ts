@@ -5,64 +5,19 @@ import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/game";
-import { boost } from "./boost";
-/**
- * Represents different methods to calculate the mean.
- * Mode 1 `"arithmetic"` `(a+b)/2` is the default and a bit faster.
- * Mode 2 `"geometric"` `sqrt(ab)` is more accurate.
- */
-type MeanMode = "arithmetic" | "geometric" | 1 | 2;
-/**
- * Approximates the inverse of a function at `n` using the bisection / binary search method.
- * @param f - The function to approximate the inverse of. It must be monotonically increasing.
- * @param n - The value to approximate the inverse at.
- * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param target - The target value to reach. If not provided, it defaults to `n`.
- * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
- */
-declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number, target?: ESource): {
-    value: Decimal;
-    lowerBound: Decimal;
-    upperBound: Decimal;
-    iterations: number;
-} | {
-    value: Decimal;
-    lowerBound: Decimal;
-    upperBound: Decimal;
-};
-/**
- * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
- * @param f - The function `f(n)` to calculate the sum.
- * @param b - The upper limit for the sum.
- * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param epsilon - The maximum error tolerance.
- * @returns The calculated sum of `f(n)`.
- */
-declare function calculateSum(f: (n: E) => E, b: E, a?: number, epsilon?: E): E;
-/**
- * Calculates the cost and how many upgrades you can buy
- * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
- * The priority is: `target === 1` > `costBulk` > `el`
- * @param value - The current value of the currency.
- * @param upgrade - The upgrade object to calculate.
- * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade.
- * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
- */
-declare function calculateUpgrade(value: ESource, upgrade: upgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
+import { Boost } from "./boost";
+import { LRUCache } from "../E/lru-cache";
+import { MeanMode } from "./numericalAnalysis";
 /**
  * Interface for initializing an upgrade.
+ * @template N - The ID of the upgrade.
  */
-interface UpgradeInit {
+interface UpgradeInit<N extends string = string> {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    id: string;
+    readonly id: N;
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
     /**
@@ -117,7 +72,7 @@ interface UpgradeInit {
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: upgradeStatic) => void;
+    effect?: (level: E, context: UpgradeStatic<N>) => void;
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
@@ -130,8 +85,11 @@ interface UpgradeInit {
      */
     level?: E;
 }
-/** Interface for an upgrade. */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
+/**
+ * Interface for an upgrade.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
     maxLevel?: E;
     name: string;
     description: string;
@@ -142,38 +100,56 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
      */
     descriptionFn: (...args: any[]) => string;
 }
-/** Interface for upgrade data. */
-interface IUpgradeData extends Pick<UpgradeInit, "id" | "level"> {
-    id: string;
-    level: E;
+/**
+ * Interface for upgrade data.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "id" | "level"> {
 }
+/**
+ * Represents a decimal number in the form of a string. `sign/mag/layer`
+ */
+type DecimalJSONString = `${number}/${number}/${number}`;
+/**
+ * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
+ * In the form of: "${id}/el/${level: {@link DecimalJSONString}}"
+ */
+type UpgradeCachedELName = `${string}/el/${DecimalJSONString}`;
+/**
+ * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
+ * In the form of: "${id}/sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ */
+type UpgradeCachedSumName = `${string}/sum/${DecimalJSONString}/${DecimalJSONString}`;
+/** Interface for an upgrade that is cached. */
+/** Interface for an upgrade that is cached. (EL) */
+/** Interface for an upgrade that is cached. (Not EL) */
 /** Represents the frontend for an upgrade. */
-declare class upgradeData implements IUpgradeData {
-    id: string;
+declare class UpgradeData<N extends string = string> implements IUpgradeData<N> {
+    id: N;
     level: Decimal;
-    constructor(init: Pick<UpgradeInit, "id" | "level">);
+    constructor(init: Pick<UpgradeInit<N>, "id" | "level">);
 }
 /** Represents the backend for an upgrade. */
-declare class upgradeStatic implements IUpgradeStatic {
-    id: string;
+declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
+    id: N;
     name: string;
     cost: (level: Decimal) => Decimal;
     costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
     maxLevel: Decimal | undefined;
-    effect: ((level: Decimal, context: upgradeStatic) => void) | undefined;
+    effect: ((level: Decimal, context: UpgradeStatic<N>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
     get description(): string;
     /**
      * @returns The data of the upgrade.
      */
-    protected dataPointerFn: () => upgradeData;
-    get data(): upgradeData;
+    protected dataPointerFn: () => UpgradeData<N>;
+    get data(): UpgradeData<N>;
     /**
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      */
-    constructor(init: UpgradeInit, dataPointer: Pointer<upgradeData>);
+    constructor(init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>);
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
@@ -185,44 +161,53 @@ declare class upgradeStatic implements IUpgradeStatic {
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
  */
-declare class currency {
+declare class Currency {
     /** The current value of the currency. */
     value: E;
     /** An array that represents upgrades and their levels. */
-    upgrades: upgradeData[];
+    upgrades: UpgradeData<string>[];
     /** Constructs a new currency object with an initial value of 0. */
     constructor();
 }
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
+ * @template U - An array that represents the names of the upgrades.
  * @example
  * const currency = new currencyStatic();
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
-declare class currencyStatic {
+declare class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
-    upgrades: upgradeStatic[];
+    upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
+    /** A cache for upgrades. */
+    protected upgradeCache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, undefined>;
+    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
+    protected static cacheSize: number;
     /** A function that returns the pointer of the data */
-    protected pointerFn: (() => currency);
-    protected get pointer(): currency;
+    protected pointerFn: (() => Currency);
+    /** @returns The pointer of the data. */
+    protected get pointer(): Currency;
     /**
      * Updates / applies effects to the currency on load.
      */
     onLoadData(): void;
     /** A boost object that affects the currency gain. */
-    boost: boost;
+    boost: Boost;
     /** The default value of the currency. */
-    defaultVal: E;
+    readonly defaultVal: E;
     /** The default boost of the currency. */
-    defaultBoost: E;
+    readonly defaultBoost: E;
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
-     * @param defaultVal - The default value of the currency.
-     * @param defaultBoost - The default boost of the currency.
+     * @param upgrades - An array of upgrade objects.
+     * @param defaults - The default value and boost of the currency.
      */
-    constructor(pointer?: Pointer<currency>, defaultVal?: ESource, defaultBoost?: ESource);
+    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInit<U[number]>[], defaults?: {
+        defaultVal: Decimal;
+        defaultBoost: Decimal;
+    });
     /**
      * The current value of the currency.
      * @returns The current value of the currency.
@@ -266,7 +251,7 @@ declare class currencyStatic {
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    getUpgrade(id?: string): upgradeStatic | null;
+    getUpgrade(id: string | U[number]): typeof id extends U[number] ? UpgradeStatic<U[number]> : UpgradeStatic<U[number]> | null;
     /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
@@ -292,7 +277,7 @@ declare class currencyStatic {
      *     }
      * });
      */
-    addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly?: boolean): void;
+    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly?: boolean): void;
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
@@ -307,7 +292,7 @@ declare class currencyStatic {
      *     }
      * });
      */
-    updateUpgrade(id: string, upgrade: UpgradeInit): void;
+    updateUpgrade(id: string, upgrade: UpgradeInit<string>): void;
     /**
      * Calculates the cost and how many upgrades you can buy
      * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
@@ -337,7 +322,7 @@ declare class currencyStatic {
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
-     * @param target - The target level or quantity to reach for the upgrade.
+     * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
@@ -347,4 +332,4 @@ declare class currencyStatic {
      */
     buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
-export { currency, currencyStatic, UpgradeInit, IUpgradeStatic, upgradeData, upgradeStatic, IUpgradeData, calculateUpgrade, inverseFunctionApprox, calculateSum, MeanMode };
+export { Currency as currency, CurrencyStatic as currencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as upgradeData, UpgradeStatic as upgradeStatic, IUpgradeData };

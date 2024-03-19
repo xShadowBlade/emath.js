@@ -10,15 +10,15 @@
 // import { Sprite as PixiSprite } from "@pixi/react";
 // import { loadPIXI } from "./loadPIXI.js";
 import Intersects, { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
-import type { pixiGame } from "./pixiGame";
+import type { PixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
 
-type collisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
+type CollisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
 
 /**
  * Represents a game sprite
  */
-class sprite {
+class GameSprite {
     /** The pixi sprite */
     public sprite: Sprite | Graphics;
     /** The x position of the sprite */
@@ -26,12 +26,12 @@ class sprite {
     /** The y position of the sprite */
     public y: number;
     /** The type of collision shape to use for the sprite */
-    public collisionShape: collisionShapeType;
+    public collisionShape: CollisionShapeType;
     /** The collision shape of the sprite */
     protected intersects: Shape | Circle | Polygon | Rectangle;
 
     /** The game reference */
-    protected gameRef: pixiGame;
+    protected gameRef: PixiGame;
 
     /**
      * Constructs a new game sprite.
@@ -41,7 +41,7 @@ class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor (gameRef: pixiGame, spr: Sprite | Graphics, collisionShape: collisionShapeType = "Rectangle") {
+    constructor (gameRef: PixiGame, spr: Sprite | Graphics, collisionShape: CollisionShapeType = "Rectangle") {
         this.gameRef = gameRef;
         this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
         this.x = this.sprite.x; // absolute position
@@ -63,7 +63,7 @@ class sprite {
      * @param other - The other sprite to check for collision with.
      * @returns True if a collision occurs, otherwise false.
      */
-    public collides (other: sprite): boolean {
+    public collides (other: GameSprite): boolean {
         if (this.x === Infinity || other.x === Infinity) return false; // buggy collision detection
         return Boolean(this.intersects[`collides${other.collisionShape}`](other.intersects));
     }
@@ -85,4 +85,5 @@ class sprite {
         // } else if (typeof parent == "object") delete this;
     }
 };
-export { sprite, collisionShapeType };
+// export { GameSprite as GameSprite, CollisionShapeType as CollisionShapeType };
+export { GameSprite, CollisionShapeType };

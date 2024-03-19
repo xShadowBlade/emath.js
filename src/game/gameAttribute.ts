@@ -3,19 +3,19 @@
  */
 
 import { E } from "../E/eMain";
-import { attribute, attributeStatic } from "../classes/attribute";
-import type { game, Pointer } from "./game";
+import { Attribute, AttributeStatic } from "../classes/attribute";
+import type { Game, Pointer } from "./game";
 
 /**
- * Represents a game attribute. {@link attribute} is the data class and {@link attributeStatic} is the static class where all the useful functions are.
+ * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
  * WIP
  */
-class gameAttribute {
-    public data: attribute;
-    public static: attributeStatic;
+class GameAttribute {
+    public data: Attribute;
+    public static: AttributeStatic;
 
-    public game?: game;
+    public game?: Game;
 
     /**
      * Creates a new instance of the attribute class.
@@ -23,7 +23,7 @@ class gameAttribute {
      * @param staticPointer - A function that returns the static data for the attribute.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor (attributePointer: Pointer<attribute>, staticPointer: Pointer<attributeStatic>, gamePointer?: game) {
+    constructor (attributePointer: Pointer<Attribute>, staticPointer: Pointer<AttributeStatic>, gamePointer?: Game) {
         this.data = typeof attributePointer === "function" ? attributePointer() : attributePointer;
         this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 
@@ -54,4 +54,4 @@ class gameAttribute {
 
 // }
 
-export { gameAttribute };
+export { GameAttribute };

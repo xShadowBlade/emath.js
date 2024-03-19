@@ -289,13 +289,13 @@ function Expose(options) {
 // src/E/lru-cache.ts
 var LRUCache = class {
   /**
-  * @param maxSize The maximum size for this cache. We recommend setting this
-  * to be one less than a power of 2, as most hashtables - including V8's
-  * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
-  * - uses powers of two for hashtable sizes. It can't exactly be a power of
-  * two, as a .set() call could temporarily set the size of the map to be
-  * maxSize + 1.
-  */
+   * @param maxSize The maximum size for this cache. We recommend setting this
+   * to be one less than a power of 2, as most hashtables - including V8's
+   * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
+   * - uses powers of two for hashtable sizes. It can't exactly be a power of
+   * two, as a .set() call could temporarily set the size of the map to be
+   * maxSize + 1.
+   */
   constructor(maxSize) {
     this.map = /* @__PURE__ */ new Map();
     // Invariant: Exactly one of the below is true before and after calling a
@@ -311,11 +311,11 @@ var LRUCache = class {
     return this.map.size;
   }
   /**
-  * Gets the specified key from the cache, or undefined if it is not in the
-  * cache.
-  * @param key The key to get.
-  * @returns The cached value, or undefined if key is not in the cache.
-  */
+   * Gets the specified key from the cache, or undefined if it is not in the
+   * cache.
+   * @param key The key to get.
+   * @returns The cached value, or undefined if key is not in the cache.
+   */
   get(key) {
     const node = this.map.get(key);
     if (node === void 0) {
@@ -336,12 +336,11 @@ var LRUCache = class {
     return node.value;
   }
   /**
-  * Sets an entry in the cache.
-  *
-  * @param key The key of the entry.
-  * @param value The value of the entry.
-  * @throws Error, if the map already contains the key.
-  */
+   * Sets an entry in the cache.
+   * @param key The key of the entry.
+   * @param value The value of the entry.
+   * @throws Error, if the map already contains the key.
+   */
   set(key, value) {
     if (this.maxSize < 1) {
       return;

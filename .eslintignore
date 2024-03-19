@@ -1,6 +1,5 @@
 dist/
 bin/build/umdPlugin.js
-src/E/lru-cache.ts
 documentation/production/
 
 # Logs

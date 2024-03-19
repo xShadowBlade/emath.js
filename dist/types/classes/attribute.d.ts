@@ -3,12 +3,12 @@
  */
 import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
-import { boost } from "../classes/boost";
+import { Boost } from "../classes/boost";
 /**
  * Represents an attribute in the game.
- * Note: This is only meant for the data of an attribute. Use in combination with {@link attributeStatic} for the actual attribute.
+ * Note: This is only meant for the data of an attribute. Use in combination with {@link AttributeStatic} for the actual attribute.
  */
-declare class attribute {
+declare class Attribute {
     /** The current value of the attribute. */
     value: E;
     /**
@@ -28,23 +28,23 @@ declare class attribute {
  * });
  * console.log(health.value); // 110
  */
-declare class attributeStatic {
-    protected pointerFn: attribute;
-    get pointer(): attribute;
+declare class AttributeStatic {
+    protected pointerFn: Attribute;
+    get pointer(): Attribute;
     /** The initial value of the attribute. */
     initial: E;
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    boost?: boost;
+    boost?: Boost;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor(pointer?: (() => attribute) | attribute, useBoost?: boolean, initial?: ESource);
+    constructor(pointer?: (() => Attribute) | Attribute, useBoost?: boolean, initial?: ESource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
@@ -63,4 +63,4 @@ declare class attributeStatic {
      */
     set value(value: E);
 }
-export { attribute, attributeStatic };
+export { Attribute, AttributeStatic };

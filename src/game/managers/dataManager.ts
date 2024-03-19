@@ -2,18 +2,15 @@
  * @file Declares classes and functions for managing game data.
  * Ex. Saving, loading, exporting, etc.
  */
-import type { game } from "../game";
-// import { gameData } from "../game";
-import { compressToBase64, decompressFromBase64 } from "lz-string";
-
-// Saver
 import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
+import { compressToBase64, decompressFromBase64 } from "lz-string";
+import type { Game } from "../game";
 
 // Recursive plain to class
 import { currency } from "../../classes/currency";
 // import { boost, boostObject } from "../../classes/boost";
-import { attribute } from "../../classes/attribute";
+import { Attribute } from "../../classes/attribute";
 // import { Decimal } from "../../E/old/e";
 import { Decimal } from "../../E/e";
 
@@ -39,7 +36,7 @@ type UnknownObject = Record<string, unknown>;
  * The main methods are: {@link dataManager.saveData}, {@link dataManager.loadData}, and {@link dataManager.exportData}.
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
-class dataManager {
+class DataManager {
     /**
      * Game data in its initial state.
      */
@@ -59,7 +56,7 @@ class dataManager {
     /**
      * A reference to the game instance.
      */
-    private gameRef: game;
+    private gameRef: Game;
 
     /** A queue of functions to call when the game data is loaded. */
     private eventsOnLoad: (() => void)[] = [];
@@ -68,7 +65,7 @@ class dataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor (gameRef: game | (() => game)) {
+    constructor (gameRef: Game | (() => Game)) {
         // if (typeof window === "undefined") { // Don't run on serverside
         //     throw new Error("dataManager cannot be run on serverside");
         // }
@@ -435,7 +432,7 @@ class dataManager {
             return out;
         })([
             {
-                class: attribute,
+                class: Attribute,
                 name: "attribute",
                 // subclasses: {
                 //     value: Decimal,
@@ -601,5 +598,5 @@ class dataManager {
     };
 }
 
-export { dataManager };
+export { DataManager };
 export type { UnknownObject, ClassType };

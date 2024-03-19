@@ -1,5 +1,5 @@
 @REM call npm run build
-cd testPackage
-call npm update emath.js
+cd examples
 node
+cd ..
 @REM require("emath.js")

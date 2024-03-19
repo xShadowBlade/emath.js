@@ -34,7 +34,7 @@ interface KeyBinding {
 /**
  * The key manager configuration interface.
  */
-interface keyManagerConfig {
+interface KeyManagerConfig {
     /**
      * Whether or not to automatically add an interval
      * that checks and calls for keybindings.
@@ -57,7 +57,7 @@ declare const keys: string[];
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.
  */
-declare class keyManager {
+declare class KeyManager {
     private keysPressed;
     private config;
     private static configManager;
@@ -69,7 +69,7 @@ declare class keyManager {
      * Creates a new key manager.
      * @param config - The configuration for the key manager.
      */
-    constructor(config?: keyManagerConfig);
+    constructor(config?: KeyManagerConfig);
     /**
      * Changes the framerate of the key manager.
      * @param fps - The new framerate to use.
@@ -128,4 +128,4 @@ declare class keyManager {
         (keysToAdd: KeyBinding | KeyBinding[]): void;
     };
 }
-export { keyManager, keyManagerConfig, KeyBinding, keys };
+export { KeyManager, KeyManagerConfig, KeyBinding, keys };

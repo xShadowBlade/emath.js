@@ -26,7 +26,8 @@ button!.addEventListener("click", () => {
         a = f(a);
         const tier = a.absLog10().div(3).sub(1).floor();
         let ct = 1;
-        let txt = `${tier.format()} <br> ${a.formatST()}`; // .match(/\d*[a-zA-Z\-]+/
+        // let txt = `${tier.format()} <br> ${a.format(2, 9, "sc")}`; // .match(/\d*[a-zA-Z\-]+/
+        let txt = `${tier.toString()} <br> ${a.toString()}`;
         while (tier.div(E.pow(1000, ct - 1)).gte(1)) {
             txt += `<br>Tier ${ct}: ${tier.div(E.pow(1000, ct - 1)).mod(1000).floor()}`;
             ct++;

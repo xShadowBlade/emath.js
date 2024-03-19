@@ -6,13 +6,13 @@
  * detection, and rendering offset by the camera.
  */
 import { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
-import type { pixiGame } from "./pixiGame";
+import type { PixiGame } from "./pixiGame";
 import type { Sprite, Graphics } from "pixi.js";
-type collisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
+type CollisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
 /**
  * Represents a game sprite
  */
-declare class sprite {
+declare class GameSprite {
     /** The pixi sprite */
     sprite: Sprite | Graphics;
     /** The x position of the sprite */
@@ -20,11 +20,11 @@ declare class sprite {
     /** The y position of the sprite */
     y: number;
     /** The type of collision shape to use for the sprite */
-    collisionShape: collisionShapeType;
+    collisionShape: CollisionShapeType;
     /** The collision shape of the sprite */
     protected intersects: Shape | Circle | Polygon | Rectangle;
     /** The game reference */
-    protected gameRef: pixiGame;
+    protected gameRef: PixiGame;
     /**
      * Constructs a new game sprite.
      * @param gameRef - The game reference.
@@ -33,14 +33,14 @@ declare class sprite {
      * Default: "Rectangle"
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
-    constructor(gameRef: pixiGame, spr: Sprite | Graphics, collisionShape?: collisionShapeType);
+    constructor(gameRef: PixiGame, spr: Sprite | Graphics, collisionShape?: CollisionShapeType);
     private tickerFn;
     /**
      * Checks if this sprite collides with another sprite.
      * @param other - The other sprite to check for collision with.
      * @returns True if a collision occurs, otherwise false.
      */
-    collides(other: sprite): boolean;
+    collides(other: GameSprite): boolean;
     /**
      * Removes the sprite from its parent container.
      * Note: This does not delete the sprite object, it only removes it from the parent container.
@@ -48,4 +48,4 @@ declare class sprite {
      */
     remove(): void;
 }
-export { sprite, collisionShapeType };
+export { GameSprite, CollisionShapeType };

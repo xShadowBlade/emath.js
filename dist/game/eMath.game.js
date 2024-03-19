@@ -1603,14 +1603,15 @@ var require_lz_string = __commonJS({
 // src/game/index.ts
 var game_exports = {};
 __export(game_exports, {
-  dataManager: () => dataManager,
-  eventManager: () => eventManager,
-  eventTypes: () => eventTypes,
-  game: () => game,
-  gameAttribute: () => gameAttribute,
-  gameCurrency: () => gameCurrency,
+  DataManager: () => DataManager,
+  EventManager: () => EventManager,
+  EventTypes: () => EventTypes,
+  Game: () => Game,
+  GameAttribute: () => GameAttribute,
+  GameCurrency: () => GameCurrency,
+  GameReset: () => GameReset,
+  KeyManager: () => KeyManager,
   gameDefaultConfig: () => gameDefaultConfig,
-  keyManager: () => keyManager,
   keys: () => keys
 });
 module.exports = __toCommonJS(game_exports);
@@ -2374,13 +2375,13 @@ function plainToInstance(cls, plain, options) {
 // src/E/lru-cache.ts
 var LRUCache = class {
   /**
-  * @param maxSize The maximum size for this cache. We recommend setting this
-  * to be one less than a power of 2, as most hashtables - including V8's
-  * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
-  * - uses powers of two for hashtable sizes. It can't exactly be a power of
-  * two, as a .set() call could temporarily set the size of the map to be
-  * maxSize + 1.
-  */
+   * @param maxSize The maximum size for this cache. We recommend setting this
+   * to be one less than a power of 2, as most hashtables - including V8's
+   * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
+   * - uses powers of two for hashtable sizes. It can't exactly be a power of
+   * two, as a .set() call could temporarily set the size of the map to be
+   * maxSize + 1.
+   */
   constructor(maxSize) {
     this.map = /* @__PURE__ */ new Map();
     // Invariant: Exactly one of the below is true before and after calling a
@@ -2396,11 +2397,11 @@ var LRUCache = class {
     return this.map.size;
   }
   /**
-  * Gets the specified key from the cache, or undefined if it is not in the
-  * cache.
-  * @param key The key to get.
-  * @returns The cached value, or undefined if key is not in the cache.
-  */
+   * Gets the specified key from the cache, or undefined if it is not in the
+   * cache.
+   * @param key The key to get.
+   * @returns The cached value, or undefined if key is not in the cache.
+   */
   get(key) {
     const node = this.map.get(key);
     if (node === void 0) {
@@ -2421,12 +2422,11 @@ var LRUCache = class {
     return node.value;
   }
   /**
-  * Sets an entry in the cache.
-  *
-  * @param key The key of the entry.
-  * @param value The value of the entry.
-  * @throws Error, if the map already contains the key.
-  */
+   * Sets an entry in the cache.
+   * @param key The key of the entry.
+   * @param value The value of the entry.
+   * @throws Error, if the map already contains the key.
+   */
   set(key, value) {
     if (this.maxSize < 1) {
       return;
@@ -6939,7 +6939,7 @@ var E = (() => {
 var import_reflect_metadata = __toESM(require_Reflect());
 
 // src/classes/boost.ts
-var boostObject = class {
+var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
   /** @deprecated Use {@link description} instead */
   get desc() {
@@ -6956,7 +6956,7 @@ var boostObject = class {
     this.order = init.order ?? 99;
   }
 };
-var boost = class {
+var Boost = class {
   /**
    * Constructs a new boost manager.
    * @param baseEffect - The base effect value to which boosts are applied.
@@ -6973,7 +6973,7 @@ var boost = class {
     this.boostArray = [];
     if (boosts) {
       boosts.forEach((boostObj) => {
-        this.boostArray.push(new boostObject(boostObj));
+        this.boostArray.push(new BoostObject(boostObj));
       });
     }
   }
@@ -7023,18 +7023,18 @@ var boost = class {
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(new boostObject({ id, name, desc, value, order }));
+        this.boostArray.push(new BoostObject({ id, name, desc, value, order }));
       } else {
-        this.boostArray[bCheck[1][0]] = new boostObject({ id, name, desc, value, order });
+        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, desc, value, order });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
       for (let i = 0; i < arg1.length; i++) {
         const bCheck = this.getBoosts(arg1[i].id, true);
         if (!bCheck[0][0]) {
-          this.boostArray = this.boostArray.concat(new boostObject(arg1[i]));
+          this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
         } else {
-          this.boostArray[bCheck[1][0]] = new boostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
         }
       }
     }
@@ -7058,8 +7058,9 @@ var boost = class {
   }
 };
 
-// src/classes/currency.ts
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target) {
+// src/classes/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 15;
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, target) {
   let lowerBound = E(1);
   let upperBound = E(target ?? n);
   if (f(upperBound).lt(n)) {
@@ -7071,8 +7072,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target
       upperBound
     };
   }
-  let i = 0;
-  for (; i < iterations; i++) {
+  for (let i = 0; i < iterations; i++) {
     let mid;
     switch (mode) {
       case "arithmetic":
@@ -7100,21 +7100,47 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = 15, target
   const out = {
     value: lowerBound,
     lowerBound,
-    upperBound,
-    iterations: i
+    upperBound
   };
   return out;
 }
-function calculateSum(f, b, a = 0, epsilon) {
-  epsilon = epsilon ?? E("1e-6");
+function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
   let sum = E();
-  for (let n = E(a); n.lte(b); n = n.add(1)) {
-    if (f(n).div(n).lt(epsilon))
+  let n = E(b);
+  for (; n.gte(a); n = n.sub(1)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    const diff = initSum.div(sum);
+    if (diff.lte(1) && diff.gt(E(1).sub(epsilon)))
       break;
-    sum = sum.add(f(n));
+  }
+  console.log({ sum, iterations: E(b).sub(n).add(a) });
+  return sum;
+}
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+  a = E(a);
+  b = E(b);
+  let sum = E(0);
+  const intervalWidth = b.sub(a).div(iterations);
+  for (let i = 0; i < iterations; i++) {
+    const x0 = a.add(intervalWidth.mul(i));
+    const x1 = a.add(intervalWidth.mul(i + 1));
+    sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
   }
   return sum;
 }
+function calculateSum(f, b, a = 0, epsilon, iterations) {
+  a = E(a);
+  b = E(b);
+  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
+    return calculateSumLoop(f, b, a, epsilon);
+  } else {
+    return calculateSumApprox(f, b, a, iterations);
+  }
+}
+
+// src/classes/currency.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -7140,32 +7166,32 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
     const maxLevelAffordable2 = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
-    const cost2 = upgrade.cost(maxLevelAffordable2);
+    const cost2 = E(0);
     return [maxLevelAffordable2, cost2];
   }
   const maxLevelAffordable = inverseFunctionApprox(
-    (level) => calculateSum(upgrade.cost, level),
+    (level) => calculateSum(upgrade.cost, level, start),
     value,
     mode,
     iterations
   ).value.floor();
-  const cost = calculateSum(upgrade.cost, maxLevelAffordable);
+  const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
   return [maxLevelAffordable, cost];
 }
-var upgradeData = class {
+var UpgradeData = class {
   constructor(init) {
     init = init ?? {};
-    this.id = init.id ?? -1;
+    this.id = init.id;
     this.level = init.level ? E(init.level) : E(1);
   }
 };
 __decorateClass([
   Expose()
-], upgradeData.prototype, "id", 2);
+], UpgradeData.prototype, "id", 2);
 __decorateClass([
   Type(() => Decimal)
-], upgradeData.prototype, "level", 2);
-var upgradeStatic = class {
+], UpgradeData.prototype, "level", 2);
+var UpgradeStatic = class {
   get description() {
     return this.descriptionFn();
   }
@@ -7199,7 +7225,7 @@ var upgradeStatic = class {
     this.data.level = E(n);
   }
 };
-var currency = class {
+var Currency = class {
   // /** A boost object that affects the currency gain. */
   // @Expose()
   // public boost: boost;
@@ -7211,11 +7237,16 @@ var currency = class {
 };
 __decorateClass([
   Type(() => Decimal)
-], currency.prototype, "value", 2);
+], Currency.prototype, "value", 2);
 __decorateClass([
-  Type(() => upgradeData)
-], currency.prototype, "upgrades", 2);
-var currencyStatic = class {
+  Type(() => UpgradeData)
+], Currency.prototype, "upgrades", 2);
+var CurrencyStatic = class _CurrencyStatic {
+  static {
+    /** The size of the cache. Should be one less than a power of 2. See {@link upgradeCache} */
+    this.cacheSize = 127;
+  }
+  /** @returns The pointer of the data. */
   get pointer() {
     return this.pointerFn();
   }
@@ -7223,23 +7254,31 @@ var currencyStatic = class {
    * Updates / applies effects to the currency on load.
    */
   onLoadData() {
-    for (const upgrade of this.upgrades) {
-      if (upgrade.effect) {
-        upgrade.effect(upgrade.level, upgrade);
-      }
+    for (const upgrade of Object.values(this.upgrades)) {
+      upgrade.effect?.(upgrade.level, upgrade);
     }
   }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param defaultVal - The default value of the currency.
-   * @param defaultBoost - The default boost of the currency.
+   * @param upgrades - An array of upgrade objects.
+   * @param defaults - The default value and boost of the currency.
    */
-  constructor(pointer = new currency(), defaultVal = E(0), defaultBoost = E(1)) {
-    this.defaultVal = E(defaultVal);
-    this.defaultBoost = E(defaultBoost);
-    this.upgrades = [];
+  constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
+    this.defaultVal = defaults.defaultVal;
+    this.defaultBoost = defaults.defaultBoost;
+    this.upgrades = {
+      // *[Symbol.iterator] () {
+      //     for (const upgrade of Object.values(this)) {
+      //         yield upgrade;
+      //     }
+      // },
+    };
+    if (upgrades)
+      this.addUpgrade(upgrades);
+    this.upgrades = this.upgrades;
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = new boost(defaultBoost);
+    this.boost = new Boost(this.defaultBoost);
+    this.upgradeCache = new LRUCache(_CurrencyStatic.cacheSize);
     this.pointer.value = this.defaultVal;
   }
   /**
@@ -7264,9 +7303,9 @@ var currencyStatic = class {
     if (resetCurrency)
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
-      this.upgrades.forEach((upgrade) => {
+      for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = E(0);
-      });
+      }
     }
     ;
   }
@@ -7288,7 +7327,7 @@ var currencyStatic = class {
    * @returns The upgrade object.
    */
   pointerAddUpgrade(upgrades1) {
-    const upgrades2 = new upgradeData(upgrades1);
+    const upgrades2 = new UpgradeData(upgrades1);
     this.pointer.upgrades.push(upgrades2);
     return upgrades1;
   }
@@ -7313,14 +7352,9 @@ var currencyStatic = class {
    * const upgrade = currency.getUpgrade("healthBoost");
    * console.log(upgrade); // upgrade object
    */
+  // public getUpgrade (id: string): UpgradeStatic | null {
   getUpgrade(id) {
-    let upgradeToGet = null;
-    if (id === void 0) {
-      return null;
-    } else if (typeof id == "string") {
-      upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-    }
-    return upgradeToGet;
+    return this.upgrades[id] ?? null;
   }
   /**
    * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
@@ -7348,21 +7382,25 @@ var currencyStatic = class {
    * });
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades))
-      upgrades = [upgrades];
-    const upgradesDefault = [];
-    for (let i = 0; i < upgrades.length; i++) {
-      this.pointerAddUpgrade(upgrades[i]);
-      const currentLength = this.pointer.upgrades.length;
-      const upgrade = new upgradeStatic(
-        upgrades[i],
-        () => this.pointerGetUpgrade(upgrades[i].id) ?? this.pointer.upgrades[currentLength - 1]
-      );
-      if (upgrade.effect && runEffectInstantly)
-        upgrade.effect(upgrade.level, upgrade);
-      upgradesDefault.push(upgrade);
+    if (!Array.isArray(upgrades)) {
+      if (typeof upgrades === "object") {
+        upgrades = Object.values(upgrades);
+      } else {
+        upgrades = [upgrades];
+      }
     }
-    this.upgrades = this.upgrades.concat(upgradesDefault);
+    const upgradesDefault = {};
+    for (const upgrade of upgrades) {
+      this.pointerAddUpgrade(upgrade);
+      const currentLength = this.pointer.upgrades.length;
+      const upgrade1 = new UpgradeStatic(
+        upgrade,
+        () => this.pointerGetUpgrade(upgrade.id) ?? this.pointer.upgrades[currentLength - 1]
+      );
+      if (upgrade1.effect && runEffectInstantly)
+        upgrade1.effect(upgrade1.level, upgrade1);
+      upgradesDefault[upgrade.id] = upgrade1;
+    }
   }
   /**
    * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
@@ -7433,7 +7471,7 @@ var currencyStatic = class {
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
    * @param id - The ID or position of the upgrade to buy or upgrade.
-   * @param target - The target level or quantity to reach for the upgrade.
+   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
@@ -7441,7 +7479,7 @@ var currencyStatic = class {
    * // Attempt to buy up to 10 healthBoost upgrades at once
    * currency.buyUpgrade("healthBoost", 10);
    */
-  buyUpgrade(id, target = 1, mode, iterations) {
+  buyUpgrade(id, target, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
@@ -7460,7 +7498,7 @@ var currencyStatic = class {
 
 // src/classes/attribute.ts
 var import_reflect_metadata2 = __toESM(require_Reflect());
-var attribute = class {
+var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
    * @param initial - The inital value of the attribute.
@@ -7471,8 +7509,8 @@ var attribute = class {
 };
 __decorateClass([
   Type(() => Decimal)
-], attribute.prototype, "value", 2);
-var attributeStatic = class {
+], Attribute.prototype, "value", 2);
+var AttributeStatic = class {
   get pointer() {
     return this.pointerFn;
   }
@@ -7484,10 +7522,10 @@ var attributeStatic = class {
    */
   constructor(pointer, useBoost = true, initial = 0) {
     this.initial = E(initial);
-    pointer = pointer ?? new attribute(this.initial);
+    pointer = pointer ?? new Attribute(this.initial);
     this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
     if (useBoost)
-      this.boost = new boost(this.initial);
+      this.boost = new Boost(this.initial);
   }
   /**
    * Updates the value of the attribute.
@@ -7523,7 +7561,7 @@ var attributeStatic = class {
 };
 
 // src/game/managers/configManager.ts
-var configManager = class {
+var ConfigManager = class {
   /**
    * Constructs a new configuration manager.
    * @param configOptionTemplate - The template to use for default values.
@@ -7567,7 +7605,7 @@ var keyManagerDefaultConfig = {
   pixiApp: void 0
 };
 var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
-var keyManager = class _keyManager {
+var KeyManager = class _KeyManager {
   /**
    * Creates a new key manager.
    * @param config - The configuration for the key manager.
@@ -7578,7 +7616,7 @@ var keyManager = class _keyManager {
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
-    this.config = _keyManager.configManager.parse(config);
+    this.config = _KeyManager.configManager.parse(config);
     if (this.config.autoAddInterval) {
       if (this.config.pixiApp) {
         this.config.pixiApp.ticker.add((dt) => {
@@ -7619,7 +7657,7 @@ var keyManager = class _keyManager {
     });
   }
   static {
-    this.configManager = new configManager(keyManagerDefaultConfig);
+    this.configManager = new ConfigManager(keyManagerDefaultConfig);
   }
   /**
    * Changes the framerate of the key manager.
@@ -7705,17 +7743,17 @@ var keyManager = class _keyManager {
 };
 
 // src/game/managers/eventManager.ts
-var eventTypes = /* @__PURE__ */ ((eventTypes2) => {
-  eventTypes2["interval"] = "interval";
-  eventTypes2["timeout"] = "timeout";
-  return eventTypes2;
-})(eventTypes || {});
+var EventTypes = /* @__PURE__ */ ((EventTypes2) => {
+  EventTypes2["interval"] = "interval";
+  EventTypes2["timeout"] = "timeout";
+  return EventTypes2;
+})(EventTypes || {});
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30,
   pixiApp: void 0
 };
-var eventManager = class _eventManager {
+var EventManager = class _EventManager {
   /**
    * Creates a new event manager.
    * @param config - The config to use for this event manager.
@@ -7723,11 +7761,11 @@ var eventManager = class _eventManager {
   constructor(config) {
     /**
      * Adds a new event
-     * @deprecated Use {@link eventManager.setEvent} instead.
+     * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
     this.addEvent = this.setEvent;
-    this.config = _eventManager.configManager.parse(config);
+    this.config = _EventManager.configManager.parse(config);
     this.events = {};
     if (this.config.autoAddInterval) {
       if (this.config.pixiApp) {
@@ -7743,7 +7781,7 @@ var eventManager = class _eventManager {
     }
   }
   static {
-    this.configManager = new configManager(eventManagerDefaultConfig);
+    this.configManager = new ConfigManager(eventManagerDefaultConfig);
   }
   /** The function that is called every frame, executes all events. */
   tickerFunction() {
@@ -7854,8 +7892,8 @@ var eventManager = class _eventManager {
 };
 
 // src/game/managers/dataManager.ts
-var import_lz_string = __toESM(require_lz_string());
 var import_reflect_metadata3 = __toESM(require_Reflect());
+var import_lz_string = __toESM(require_lz_string());
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -7896,7 +7934,7 @@ function md5(_) {
     c = x, a = g, i = l, h = d, x = u(x, g, l, d, v[F + 0], 7, -680876936), d = u(d, x, g, l, v[F + 1], 12, -389564586), l = u(l, d, x, g, v[F + 2], 17, 606105819), g = u(g, l, d, x, v[F + 3], 22, -1044525330), x = u(x, g, l, d, v[F + 4], 7, -176418897), d = u(d, x, g, l, v[F + 5], 12, 1200080426), l = u(l, d, x, g, v[F + 6], 17, -1473231341), g = u(g, l, d, x, v[F + 7], 22, -45705983), x = u(x, g, l, d, v[F + 8], 7, 1770035416), d = u(d, x, g, l, v[F + 9], 12, -1958414417), l = u(l, d, x, g, v[F + 10], 17, -42063), g = u(g, l, d, x, v[F + 11], 22, -1990404162), x = u(x, g, l, d, v[F + 12], 7, 1804603682), d = u(d, x, g, l, v[F + 13], 12, -40341101), l = u(l, d, x, g, v[F + 14], 17, -1502002290), g = u(g, l, d, x, v[F + 15], 22, 1236535329), x = e(x, g, l, d, v[F + 1], 5, -165796510), d = e(d, x, g, l, v[F + 6], 9, -1069501632), l = e(l, d, x, g, v[F + 11], 14, 643717713), g = e(g, l, d, x, v[F + 0], 20, -373897302), x = e(x, g, l, d, v[F + 5], 5, -701558691), d = e(d, x, g, l, v[F + 10], 9, 38016083), l = e(l, d, x, g, v[F + 15], 14, -660478335), g = e(g, l, d, x, v[F + 4], 20, -405537848), x = e(x, g, l, d, v[F + 9], 5, 568446438), d = e(d, x, g, l, v[F + 14], 9, -1019803690), l = e(l, d, x, g, v[F + 3], 14, -187363961), g = e(g, l, d, x, v[F + 8], 20, 1163531501), x = e(x, g, l, d, v[F + 13], 5, -1444681467), d = e(d, x, g, l, v[F + 2], 9, -51403784), l = e(l, d, x, g, v[F + 7], 14, 1735328473), g = e(g, l, d, x, v[F + 12], 20, -1926607734), x = f(x, g, l, d, v[F + 5], 4, -378558), d = f(d, x, g, l, v[F + 8], 11, -2022574463), l = f(l, d, x, g, v[F + 11], 16, 1839030562), g = f(g, l, d, x, v[F + 14], 23, -35309556), x = f(x, g, l, d, v[F + 1], 4, -1530992060), d = f(d, x, g, l, v[F + 4], 11, 1272893353), l = f(l, d, x, g, v[F + 7], 16, -155497632), g = f(g, l, d, x, v[F + 10], 23, -1094730640), x = f(x, g, l, d, v[F + 13], 4, 681279174), d = f(d, x, g, l, v[F + 0], 11, -358537222), l = f(l, d, x, g, v[F + 3], 16, -722521979), g = f(g, l, d, x, v[F + 6], 23, 76029189), x = f(x, g, l, d, v[F + 9], 4, -640364487), d = f(d, x, g, l, v[F + 12], 11, -421815835), l = f(l, d, x, g, v[F + 15], 16, 530742520), g = f(g, l, d, x, v[F + 2], 23, -995338651), x = o(x, g, l, d, v[F + 0], 6, -198630844), d = o(d, x, g, l, v[F + 7], 10, 1126891415), l = o(l, d, x, g, v[F + 14], 15, -1416354905), g = o(g, l, d, x, v[F + 5], 21, -57434055), x = o(x, g, l, d, v[F + 12], 6, 1700485571), d = o(d, x, g, l, v[F + 3], 10, -1894986606), l = o(l, d, x, g, v[F + 10], 15, -1051523), g = o(g, l, d, x, v[F + 1], 21, -2054922799), x = o(x, g, l, d, v[F + 8], 6, 1873313359), d = o(d, x, g, l, v[F + 15], 10, -30611744), l = o(l, d, x, g, v[F + 6], 15, -1560198380), g = o(g, l, d, x, v[F + 13], 21, 1309151649), x = o(x, g, l, d, v[F + 4], 6, -145523070), d = o(d, x, g, l, v[F + 11], 10, -1120210379), l = o(l, d, x, g, v[F + 2], 15, 718787259), g = o(g, l, d, x, v[F + 9], 21, -343485551), x = r(x, c), g = r(g, a), l = r(l, i), d = r(d, h);
   return n(x) + n(g) + n(l) + n(d);
 }
-var dataManager = class {
+var DataManager = class {
   /**
    * Creates a new instance of the game class.
    * @param gameRef - A function that returns the game instance.
@@ -8122,7 +8160,7 @@ var dataManager = class {
         if (Object.prototype.hasOwnProperty.call(sourcePlain, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
           out[key] = sourcePlain[key];
         }
-        if (source[key] instanceof currency) {
+        if (source[key] instanceof Currency) {
           const sourceCurrency = source[key];
           const targetCurrency = target[key];
           for (const upgrade of sourceCurrency.upgrades) {
@@ -8150,7 +8188,7 @@ var dataManager = class {
       return out;
     }([
       {
-        class: attribute,
+        class: Attribute,
         name: "attribute"
         // subclasses: {
         //     value: Decimal,
@@ -8164,7 +8202,7 @@ var dataManager = class {
       //     },
       // },
       {
-        class: currency,
+        class: Currency,
         name: "currency"
         // subclasses: {
         //     // boost: boost,
@@ -8230,7 +8268,7 @@ var dataManager = class {
 };
 
 // src/game/gameCurrency.ts
-var gameCurrency = class {
+var GameCurrency = class {
   get data() {
     return this.dataPointer();
   }
@@ -8271,7 +8309,7 @@ var gameCurrency = class {
 };
 
 // src/game/gameAttribute.ts
-var gameAttribute = class {
+var GameAttribute = class {
   /**
    * Creates a new instance of the attribute class.
    * @param attributePointer - A function that returns the current attribute value.
@@ -8302,7 +8340,7 @@ var gameAttribute = class {
 };
 
 // src/game/resetLayer.ts
-var gameReset = class {
+var GameReset = class {
   /**
    * Creates a new instance of the game reset.
    * @param currenciesToReset The currencies to reset.
@@ -8318,8 +8356,8 @@ var gameReset = class {
    */
   reset() {
     this.onReset?.();
-    this.currenciesToReset.forEach((currency2) => {
-      currency2.static.reset();
+    this.currenciesToReset.forEach((currency) => {
+      currency.static.reset();
     });
     if (this.extender && this.extender.id !== this.id) {
       this.extender.reset();
@@ -8340,9 +8378,9 @@ var gameDefaultConfig = {
   },
   initIntervalBasedManagers: true
 };
-var game = class _game {
+var Game = class _Game {
   static {
-    this.configManager = new configManager(gameDefaultConfig);
+    this.configManager = new ConfigManager(gameDefaultConfig);
   }
   /**
    * Creates a new instance of the game class.
@@ -8357,13 +8395,13 @@ var game = class _game {
    * });
    */
   constructor(config) {
-    this.config = _game.configManager.parse(config);
-    this.dataManager = new dataManager(this);
-    this.keyManager = new keyManager({
+    this.config = _Game.configManager.parse(config);
+    this.dataManager = new DataManager(this);
+    this.keyManager = new KeyManager({
       autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
-    this.eventManager = new eventManager({
+    this.eventManager = new EventManager({
       autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
     });
@@ -8382,7 +8420,7 @@ var game = class _game {
     this.eventManager.changeFps(fps);
   }
   /**
-   * Adds a new currency section to the game. {@link gameCurrency} is the class.
+   * Adds a new currency section to the game. {@link GameCurrency} is the class.
    * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
    * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
    * @returns A new instance of the gameCurrency class.
@@ -8393,14 +8431,14 @@ var game = class _game {
    */
   addCurrency(name) {
     this.dataManager.setData(name, {
-      currency: new currency()
+      currency: new Currency()
     });
     this.dataManager.setStatic(name, {
       // @ts-expect-error - fix this
-      currency: new currencyStatic(() => this.dataManager.getData(name).currency)
+      currency: new CurrencyStatic(() => this.dataManager.getData(name).currency)
       // attributes: {},
     });
-    const classInstance = new gameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
+    const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
     return classInstance;
   }
   // /**
@@ -8431,7 +8469,7 @@ var game = class _game {
   //     // return outCurrencies;
   // }
   /**
-   * Adds a new attribute to the game. {@link gameAttribute} is the class.
+   * Adds a new attribute to the game. {@link GameAttribute} is the class.
    * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
    * @param name - The name of the attribute.
    * @param useBoost - Indicates whether to use boost for the attribute.
@@ -8441,9 +8479,9 @@ var game = class _game {
    * const myAttribute = game.addAttribute("myAttribute");
    */
   addAttribute(name, useBoost = true, initial = 0) {
-    const dataRef = this.dataManager.setData(name, new attribute(initial));
-    const staticRef = this.dataManager.setStatic(name, new attributeStatic(this.dataManager.getData(name), useBoost, initial));
-    const classInstance = new gameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
+    const dataRef = this.dataManager.setData(name, new Attribute(initial));
+    const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
+    const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
     return classInstance;
   }
   /**
@@ -8453,7 +8491,7 @@ var game = class _game {
    * @returns The newly created game reset object.
    */
   addReset(currenciesToReset, extender) {
-    const reset = new gameReset(currenciesToReset, extender);
+    const reset = new GameReset(currenciesToReset, extender);
     return reset;
   }
 };

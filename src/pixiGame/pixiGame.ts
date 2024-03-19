@@ -1,11 +1,11 @@
 /**
  * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
  */
-import { game, gameConfigOptions, gameDefaultConfig } from "../game/game";
-import { configManager, RequiredDeep } from "../game/managers/configManager";
-import { sprite, collisionShapeType } from "./sprite";
-import { keyManager } from "../game/managers/keyManager";
-import { eventManager } from "../game/managers/eventManager";
+import { Game, GameConfigOptions, gameDefaultConfig } from "../game/game";
+import { ConfigManager, RequiredDeep } from "../game/managers/configManager";
+import { GameSprite, CollisionShapeType } from "./sprite";
+import { KeyManager } from "../game/managers/keyManager";
+import { EventManager } from "../game/managers/eventManager";
 
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";
@@ -15,7 +15,7 @@ import type { Application } from "pixi.js";
 // const { Application } = PIXI;
 
 /** The configuration options for the game. */
-interface pixiGameConfig extends gameConfigOptions {
+interface PixiGameConfig extends GameConfigOptions {
     /** The PIXI-specific config */
     pixi: {
         /** The PIXI app to use for the game. */
@@ -24,7 +24,7 @@ interface pixiGameConfig extends gameConfigOptions {
 }
 
 /** The default configuration for the game. */
-const pixiGameDefaultConfig: pixiGameConfig & RequiredDeep<gameConfigOptions> = {
+const pixiGameDefaultConfig: PixiGameConfig & RequiredDeep<GameConfigOptions> = {
     ...gameDefaultConfig,
     initIntervalBasedManagers: false,
     pixi: {
@@ -36,8 +36,8 @@ const pixiGameDefaultConfig: pixiGameConfig & RequiredDeep<gameConfigOptions> = 
  * Represents a game instance with PIXI-specific methods and properties.
  * Uses PIXI.js time-based game loop.
  */
-class pixiGame extends game {
-    protected static configManager = new configManager(pixiGameDefaultConfig);
+class PixiGame extends Game {
+    protected static configManager = new ConfigManager(pixiGameDefaultConfig);
 
     /** The configuration for the game. */
     // public config: RequiredDeep<pixiGameConfig>;
@@ -60,9 +60,9 @@ class pixiGame extends game {
      * Creates a new instance of the pixiGame class.
      * @param config - The configuration for the game.
      */
-    constructor (config?: pixiGameConfig) {
+    constructor (config?: PixiGameConfig) {
         super(config);
-        this.config = pixiGame.configManager.parse(config);
+        this.config = PixiGame.configManager.parse(config);
 
         // Setup PIXI
         if (!this.config.pixi.app) throw new Error(`No PIXI app was provided in config: ${JSON.stringify(this.config)}`);
@@ -94,11 +94,11 @@ class pixiGame extends game {
                 y: 0,
             },
         };
-        this.keyManager = new keyManager({
+        this.keyManager = new KeyManager({
             autoAddInterval: true,
             pixiApp: this.PIXI.app,
         });
-        this.eventManager = new eventManager({
+        this.eventManager = new EventManager({
             autoAddInterval: true,
             pixiApp: this.PIXI.app,
         });
@@ -110,9 +110,10 @@ class pixiGame extends game {
      * @param collisionShape - The collision shape to use for the sprite.
      * @returns The sprite object.
      */
-    public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: collisionShapeType = "Rectangle"): sprite {
-        return new sprite(this, spriteToAdd, collisionShape);
+    public addSprite (spriteToAdd: Graphics | Sprite, collisionShape: CollisionShapeType = "Rectangle"): GameSprite {
+        return new GameSprite(this, spriteToAdd, collisionShape);
     }
 }
 
-export { pixiGame, pixiGameConfig, pixiGameDefaultConfig };
+// export { PixiGame as PixiGame, PixiGameConfig as PixiGameConfig, pixiGameDefaultConfig };
+export { PixiGame, PixiGameConfig, pixiGameDefaultConfig };
