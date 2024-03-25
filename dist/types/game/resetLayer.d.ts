@@ -2,14 +2,16 @@
  * @file This file contains all the reset layer related classes.
  */
 import type { GameCurrency } from "./gameCurrency";
-/** Represents a game reset. */
+/**
+ * Represents a game reset.
+ */
 declare class GameReset {
     /** The unique identifier for the game reset to prevent infinite loops. */
-    private id;
+    private readonly id;
     /** The currencies to reset. */
-    currenciesToReset: GameCurrency<string>[];
+    readonly currenciesToReset: GameCurrency<string>[];
     /** The extender for the game reset. */
-    extender?: GameReset;
+    readonly extender?: GameReset;
     /** Custom code to run after {@link reset} is called but BEFORE the currencies are reset */
     onReset?: () => void;
     /**

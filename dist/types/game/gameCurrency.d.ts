@@ -8,14 +8,21 @@ import type { Game, Pointer } from "./game";
  * Represents a game currency. {@link Currency} is the data class and {@link CurrencyStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
  * @template N - The name of the currency. This is optional, and you can use it for display purposes.
+ * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
  */
-declare class GameCurrency<N extends string> {
-    dataPointer: () => Currency;
-    staticPointer: () => CurrencyStatic;
-    name: N;
+declare class GameCurrency<N extends string = string, U extends string[] = string[]> {
+    /** A function that returns the data for the currency. */
+    protected readonly dataPointer: () => Currency;
+    /** A function that returns the static data for the currency. */
+    protected readonly staticPointer: () => CurrencyStatic<U>;
+    /** The name of the currency. This is optional, and you can use it for display purposes. */
+    readonly name: N;
+    /** @returns The data for the currency. */
     get data(): Currency;
-    get static(): CurrencyStatic;
-    game?: Game;
+    /** @returns The static data for the currency. */
+    get static(): CurrencyStatic<U>;
+    /** The game pointer/reference */
+    readonly game?: Game;
     /**
      * Creates a new instance of the game class.
      * @param currencyPointer - A function that returns the current currency value.

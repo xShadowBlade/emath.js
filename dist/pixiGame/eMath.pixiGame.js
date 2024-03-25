@@ -7036,7 +7036,7 @@ var Boost = class {
       for (let i = 0; i < arg1.length; i++) {
         const bCheck = this.getBoosts(arg1[i].id, true);
         if (!bCheck[0][0]) {
-          this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
+          this.boostArray.push(new BoostObject(arg1[i]));
         } else {
           this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
         }
@@ -7064,12 +7064,19 @@ var Boost = class {
 
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 15;
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, target) {
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
   let lowerBound = E(1);
-  let upperBound = E(target ?? n);
+  let upperBound = E(n);
+  if (f(upperBound).eq(0)) {
+    return {
+      value: E(0),
+      lowerBound: E(0),
+      upperBound: E(0)
+    };
+  }
   if (f(upperBound).lt(n)) {
-    if (!target)
-      console.warn("The function is not monotonically increasing. (f(n) < n)");
+    console.warn("The function is not monotonically increasing. (f(n) < n)");
+    console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound) });
     return {
       value: upperBound,
       lowerBound: upperBound,
@@ -7119,7 +7126,6 @@ function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
     if (diff.lte(1) && diff.gt(E(1).sub(epsilon)))
       break;
   }
-  console.log({ sum, iterations: E(b).sub(n).add(a) });
   return sum;
 }
 function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
@@ -7151,36 +7157,46 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
   end = E(end ?? value);
   const target = end.sub(start);
   if (target.lte(0)) {
+    console.warn("calculateUpgrade: Invalid target: ", target);
     return [E(0), E(0)];
   }
   el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
   if (target.eq(1)) {
     const cost2 = upgrade.cost(upgrade.level);
     const canAfford = value.gte(cost2);
+    let out = [E(0), E(0)];
     if (el) {
-      return [canAfford ? E(1) : E(0), E(0)];
+      out[0] = canAfford ? E(1) : E(0);
+      return out;
+    } else {
+      out = [canAfford ? E(1) : E(0), canAfford ? cost2 : E(0)];
+      return out;
     }
-    return [canAfford ? E(1) : E(0), canAfford ? cost2 : E(0)];
   }
   if (upgrade.costBulk) {
-    const [cost2, amount] = upgrade.costBulk(value, upgrade.level, target);
+    const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
-    return [canAfford ? amount : E(0), canAfford ? cost2 : E(0)];
+    const out = [canAfford ? amount : E(0), canAfford && !el ? cost2 : E(0)];
+    if (el) {
+    } else {
+    }
+    return out;
   }
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
+    const maxLevelAffordable2 = E.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
     const cost2 = E(0);
     return [maxLevelAffordable2, cost2];
   }
   const maxLevelAffordable = inverseFunctionApprox(
-    (level) => calculateSum(upgrade.cost, level, start),
+    (x) => calculateSum(upgrade.cost, x, start),
     value,
     mode,
     iterations
   ).value.floor();
   const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
-  return [maxLevelAffordable, cost];
+  const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
+  return [maxLevelAffordableActual, cost];
 }
 function decimalToJSONString(n) {
   n = E(n);
@@ -7208,7 +7224,7 @@ __decorateClass([
 var UpgradeStatic = class _UpgradeStatic {
   static {
     /** The default size of the cache. Should be one less than a power of 2. */
-    this.cacheSize = 127;
+    this.cacheSize = 63;
   }
   get description() {
     return this.descriptionFn();
@@ -7219,6 +7235,26 @@ var UpgradeStatic = class _UpgradeStatic {
     } else {
       return this.cache.get(upgradeToCacheNameEL(start));
     }
+  }
+  setCached(type, start, endOrStart, costSum) {
+    const data = type === "sum" ? {
+      id: this.id,
+      el: false,
+      start: E(start),
+      end: E(endOrStart),
+      cost: E(costSum)
+    } : {
+      id: this.id,
+      el: true,
+      level: E(start),
+      cost: E(endOrStart)
+    };
+    if (type === "sum") {
+      this.cache.set(upgradeToCacheNameSum(start, endOrStart), data);
+    } else {
+      this.cache.set(upgradeToCacheNameEL(start), data);
+    }
+    return data;
   }
   get data() {
     return this.dataPointerFn();
@@ -7259,7 +7295,7 @@ var Currency = class {
   /** Constructs a new currency object with an initial value of 0. */
   constructor() {
     this.value = E(0);
-    this.upgrades = [];
+    this.upgrades = {};
   }
 };
 __decorateClass([
@@ -7334,7 +7370,7 @@ var CurrencyStatic = class {
   /**
    * The new currency value after applying the boost.
    * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-   * @returns What you gained.
+   * @returns What was gained, NOT the new value.
    * @example
    * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
    */
@@ -7350,7 +7386,7 @@ var CurrencyStatic = class {
    */
   pointerAddUpgrade(upgrades1) {
     const upgrades2 = new UpgradeData(upgrades1);
-    this.pointer.upgrades.push(upgrades2);
+    this.pointer.upgrades[upgrades2.id] = upgrades2;
     return upgrades2;
   }
   /**
@@ -7364,7 +7400,7 @@ var CurrencyStatic = class {
     if (id === void 0) {
       return null;
     }
-    upgradeToGet = this.pointer.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+    upgradeToGet = this.pointer.upgrades[id] ?? null;
     return upgradeToGet;
   }
   /**
@@ -7385,7 +7421,7 @@ var CurrencyStatic = class {
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
    * @returns The added upgrades.
    * @example
-   * currenct.addUpgrade({
+   * currency.addUpgrade({
    *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
    *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
    *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
@@ -7406,13 +7442,9 @@ var CurrencyStatic = class {
    * });
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades)) {
-      if (typeof upgrades === "object") {
-        upgrades = Object.values(upgrades);
-      } else {
-        upgrades = [upgrades];
-      }
-    }
+    if (!Array.isArray(upgrades))
+      upgrades = [upgrades];
+    console.log(upgrades);
     const addedUpgradeList = {};
     for (const upgrade of upgrades) {
       const addedUpgradeData = this.pointerAddUpgrade(upgrade);
@@ -7420,8 +7452,10 @@ var CurrencyStatic = class {
       if (addedUpgradeStatic.effect && runEffectInstantly)
         addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
       addedUpgradeList[upgrade.id] = addedUpgradeStatic;
+      this.upgrades[upgrade.id] = addedUpgradeStatic;
     }
-    return addedUpgradeList;
+    console.log(addedUpgradeList);
+    return Object.values(addedUpgradeList);
   }
   /**
    * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
@@ -7447,8 +7481,7 @@ var CurrencyStatic = class {
     upgrade1.effect = upgrade.effect ?? upgrade1.effect;
   }
   /**
-   * Calculates the cost and how many upgrades you can buy
-   * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+   * Calculates the cost and how many upgrades you can buy.
    * See {@link calculateUpgrade} for more information.
    * @param id - The ID or position of the upgrade to calculate.
    * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
@@ -7532,6 +7565,7 @@ __decorateClass([
   Type(() => Decimal)
 ], Attribute.prototype, "value", 2);
 var AttributeStatic = class {
+  /** @returns The data for the attribute. */
   get pointer() {
     return this.pointerFn;
   }
@@ -7678,6 +7712,7 @@ var KeyManager = class _KeyManager {
     });
   }
   static {
+    /** The configuration manager for the key manager */
     this.configManager = new ConfigManager(keyManagerDefaultConfig);
   }
   /**
@@ -7797,9 +7832,12 @@ var EventManager = class _EventManager {
     }
   }
   static {
+    /** The static config manager for the event manager */
     this.configManager = new ConfigManager(eventManagerDefaultConfig);
   }
-  /** The function that is called every frame, executes all events. */
+  /**
+   * The function that is called every frame, executes all events.
+   */
   tickerFunction() {
     const currentTime = Date.now();
     for (const event of Object.values(this.events)) {
@@ -8170,20 +8208,26 @@ var DataManager = class {
     function isPlainObject(obj) {
       return typeof obj === "object" && obj?.constructor === Object;
     }
+    const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
     function deepMerge(sourcePlain, source, target) {
       const out = target;
       for (const key in sourcePlain) {
-        if (Object.prototype.hasOwnProperty.call(sourcePlain, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+        if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
           out[key] = sourcePlain[key];
         }
         if (source[key] instanceof Currency) {
+          console.log("Merging currency: ", source[key], target[key]);
           const sourceCurrency = source[key];
           const targetCurrency = target[key];
-          for (const upgrade of sourceCurrency.upgrades) {
-            if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
-              targetCurrency.upgrades.push(instanceToPlain(upgrade));
+          if (Array.isArray(targetCurrency.upgrades)) {
+            const upgrades = targetCurrency.upgrades;
+            targetCurrency.upgrades = {};
+            for (const upgrade of upgrades) {
+              targetCurrency.upgrades[upgrade.id] = upgrade.level;
             }
           }
+          targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
+          out[key] = targetCurrency;
         } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
           out[key] = deepMerge(sourcePlain[key], source[key], target[key]);
         }
@@ -8285,9 +8329,11 @@ var DataManager = class {
 
 // src/game/gameCurrency.ts
 var GameCurrency = class {
+  /** @returns The data for the currency. */
   get data() {
     return this.dataPointer();
   }
+  /** @returns The static data for the currency. */
   get static() {
     return this.staticPointer();
   }
@@ -8396,6 +8442,7 @@ var gameDefaultConfig = {
 };
 var Game = class _Game {
   static {
+    /** The static config manager for the game. */
     this.configManager = new ConfigManager(gameDefaultConfig);
   }
   /**
@@ -8457,33 +8504,6 @@ var Game = class _Game {
     const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
     return classInstance;
   }
-  // /**
-  //  * Adds a new currency group to the game.
-  //  * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
-  //  * @param name - The name of the currency group.
-  //  * @param currencies - An array of currency names to add to the group.
-  //  * @returns An array of gameCurrency objects, in the same order as the input array.
-  //  */
-  // public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
-  //     throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
-  //     // this.dataManager.setData(name, {});
-  //     // this.dataManager.setStatic(name, {
-  //     //     attributes: {},
-  //     // });
-  //     // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
-  //     // const outCurrencies: gameCurrency[] = [];
-  //     // // currencies.forEach((currencyName) => {
-  //     // //     this.dataManager.getData(name)[currencyName] = new currency();
-  //     // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
-  //     // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
-  //     // // });
-  //     // currencies.forEach((currencyName) => {
-  //     //     const dataRef = this.dataManager.setData(currencyName, new currency());
-  //     //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
-  //     //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
-  //     // });
-  //     // return outCurrencies;
-  // }
   /**
    * Adds a new attribute to the game. {@link GameAttribute} is the class.
    * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.

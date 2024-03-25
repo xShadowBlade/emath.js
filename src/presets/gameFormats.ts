@@ -80,11 +80,11 @@ function gameFormatGain (value: ESource, gain: ESource, settings: FormatGainSett
 /**
  * Class to represent a game format.
  */
-class gameFormatClass {
+class GameFormatClass {
     /**
      * A pointer to the settings to use for formatting.
      */
-    private settingsFn: () => FormatSettings;
+    private readonly settingsFn: () => FormatSettings;
     /**
      * @returns The settings to use for formatting.
      */
@@ -198,5 +198,5 @@ const formatTimeOptions: FormatOption<FormatTimeType>[] = ([
     },
 ] as FormatOption<FormatTimeType>[]).sort((a, b) => a.name.localeCompare(b.name));
 
-export { gameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
 export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };

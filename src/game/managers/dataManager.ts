@@ -56,10 +56,10 @@ class DataManager {
     /**
      * A reference to the game instance.
      */
-    private gameRef: Game;
+    private readonly gameRef: Game;
 
     /** A queue of functions to call when the game data is loaded. */
-    private eventsOnLoad: (() => void)[] = [];
+    private readonly eventsOnLoad: (() => void)[] = [];
 
     /**
      * Creates a new instance of the game class.
@@ -367,6 +367,8 @@ class DataManager {
             return typeof obj === "object" && obj?.constructor === Object;
         }
 
+        const objectHasOwnProperty = (obj: UnknownObject, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
+
         /**
          * Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
          * @deprecated use Object.assign instead
@@ -378,26 +380,40 @@ class DataManager {
         function deepMerge (sourcePlain: UnknownObject, source: UnknownObject, target: UnknownObject): UnknownObject {
             const out = target;
             for (const key in sourcePlain) {
-                if (Object.prototype.hasOwnProperty.call(sourcePlain, key) && !Object.prototype.hasOwnProperty.call(target, key)) {
+                if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
                     // If the property is missing from the target, add it
                     out[key] = sourcePlain[key];
                 }
                 // Special case for currency.upgrades
                 if (source[key] instanceof Currency) {
-                    // console.log("Merging currency: ", source[key], target[key]);
-                    interface currencyPlainType {
-                        upgrades: {
-                            id: string;
-                            level: unknown; // irrelevant so unknown
-                        }[]
-                    }
+                    console.log("Merging currency: ", source[key], target[key]);
+                    // interface currencyPlainType {
+                    //     upgrades: {
+                    //         id: string;
+                    //         level: unknown; // irrelevant so unknown
+                    //     }[]
+                    // }
                     const sourceCurrency = source[key] as Currency;
-                    const targetCurrency = target[key] as currencyPlainType;
-                    for (const upgrade of sourceCurrency.upgrades) {
-                        if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
-                            targetCurrency.upgrades.push(instanceToPlain(upgrade) as currencyPlainType["upgrades"][0]);
+                    const targetCurrency = target[key] as Currency;
+                    // for (const upgrade of sourceCurrency.upgrades) {
+                    //     if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
+                    //         targetCurrency.upgrades.push(instanceToPlain(upgrade) as currencyPlainType["upgrades"][0]);
+                    //     }
+                    // }
+
+                    // Backwards compatibility: In versions before 8.x.x, upgrades was of type UpgradeData[]. Now it's of type Record<string, UpgradeData>.
+                    // Convert the old format to the new format
+                    if (Array.isArray(targetCurrency.upgrades)) {
+                        const upgrades = targetCurrency.upgrades;
+                        targetCurrency.upgrades = {};
+                        for (const upgrade of upgrades) {
+                            targetCurrency.upgrades[upgrade.id] = upgrade.level;
                         }
                     }
+
+                    // Merge upgrades
+                    targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
+                    out[key] = targetCurrency;
                 } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
                     // Recursive
                     out[key] = deepMerge((sourcePlain as Record<string, UnknownObject>)[key], (source as Record<string, UnknownObject>)[key], (target as Record<string, UnknownObject>)[key]);

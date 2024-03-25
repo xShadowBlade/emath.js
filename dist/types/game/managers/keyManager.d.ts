@@ -19,7 +19,7 @@ interface KeyBinding {
     onDownContinuous?: (dt: number) => void;
     /**
      * The function executed when the binding is pressed down.
-     * Uses the default "mousedown" event
+     * Uses the default "keydown" event (which is called once when the key is pressed down, has a slight delay, and then repeats if held down for a while).
      */
     onDown?: () => void;
     /**
@@ -58,13 +58,18 @@ declare const keys: string[];
  * Game keys manager for handling key bindings and tracking pressed keys.
  */
 declare class KeyManager {
-    private keysPressed;
-    private config;
-    private static configManager;
-    private tickers;
+    /** The keys currently being pressed */
+    private readonly keysPressed;
+    /** The configuration for the key manager */
+    private readonly config;
+    /** The configuration manager for the key manager */
+    private static readonly configManager;
+    /** The tickers for the key manager */
+    private readonly tickers;
+    /** The interval for the key manager */
     private tickerInterval?;
     /** The key bindings */
-    binds: KeyBinding[];
+    readonly binds: KeyBinding[];
     /**
      * Creates a new key manager.
      * @param config - The configuration for the key manager.

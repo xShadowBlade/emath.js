@@ -42,10 +42,10 @@ var __decorateClass = (decorators, target, key, kind) => {
 // src/presets/index.ts
 var presets_exports = {};
 __export(presets_exports, {
+  GameFormatClass: () => GameFormatClass,
   formatOptions: () => formatOptions,
   formatTimeOptions: () => formatTimeOptions,
   gameFormat: () => gameFormat,
-  gameFormatClass: () => gameFormatClass,
   gameFormatGain: () => gameFormatGain
 });
 module.exports = __toCommonJS(presets_exports);
@@ -4874,7 +4874,7 @@ function gameFormatGain(value, gain, settings) {
   const { formatType, acc, max } = settings;
   return E.formatGain(value, gain, formatType, acc, max);
 }
-var gameFormatClass = class {
+var GameFormatClass = class {
   constructor(settings) {
     /**
      * Formats a game value based on the settings.

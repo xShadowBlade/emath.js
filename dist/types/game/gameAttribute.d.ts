@@ -7,7 +7,7 @@ import type { Game, Pointer } from "./game";
 /**
  * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
- * WIP
+ * WIP, not fully implemented.
  */
 declare class GameAttribute {
     data: Attribute;

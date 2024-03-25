@@ -60,9 +60,9 @@ declare class BoostObject implements BoostsObjectInit {
  */
 declare class Boost {
     /** An array of boost objects. */
-    boostArray: BoostObject[];
+    readonly boostArray: BoostObject[];
     /** The base effect value. */
-    baseEffect: E;
+    readonly baseEffect: E;
     /**
      * Constructs a new boost manager.
      * @param baseEffect - The base effect value to which boosts are applied.

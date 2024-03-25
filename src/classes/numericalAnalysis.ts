@@ -18,16 +18,27 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param target - The target value to reach. If not provided, it defaults to `n`.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
  */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS, target?: ESource) {
+function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS) {
     // Set the initial bounds
     let lowerBound = E(1);
     // let upperBound = E(n);
-    let upperBound = E(target ?? n);
+    let upperBound = E(n);
+
+    // If the function evaluates to 0, return 0
+    if (f(upperBound).eq(0)) {
+        return {
+            value: E(0),
+            lowerBound: E(0),
+            upperBound: E(0),
+        };
+    }
+
+    // If the function is not monotonically increasing, return the upper bound
     if (f(upperBound).lt(n)) {
-        if (!target) console.warn("The function is not monotonically increasing. (f(n) < n)");
+        console.warn("The function is not monotonically increasing. (f(n) < n)");
+        console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
         return {
             value: upperBound,
             lowerBound: upperBound,
@@ -102,7 +113,7 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
         const diff = initSum.div(sum);
         if (diff.lte(1) && diff.gt(E(1).sub(epsilon))) break;
     }
-    console.log({ sum, iterations: E(b).sub(n).add(a) });
+    // console.log({ sum, iterations: E(b).sub(n).add(a) });
     return sum;
 }
 
@@ -115,14 +126,6 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
  * @returns The calculated sum of `f(n)`.
  */
 function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterations: number = DEFAULT_ITERATIONS): E {
-    // let sum = 0;
-    // const intervalWidth = (b - a) / iterations;
-    // for (let i = 0; i < iterations; i++) {
-    //     const x0 = a + i * intervalWidth;
-    //     const x1 = a + (i + 1) * intervalWidth;
-    //     sum += (f(x0) + f(x1)) / 2 * intervalWidth;
-    // }
-    // return sum;
     a = E(a);
     b = E(b);
 

@@ -9,7 +9,7 @@ import type { UnknownObject } from "./dataManager";
  */
 class ConfigManager<T extends UnknownObject | object> {
     /** The template to use for default values. */
-    private configOptionTemplate: T;
+    private readonly configOptionTemplate: T;
 
     /**
      * Constructs a new configuration manager.

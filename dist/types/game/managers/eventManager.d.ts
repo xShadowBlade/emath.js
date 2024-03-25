@@ -59,17 +59,22 @@ interface EventManagerConfig {
  * The event manager class, used to manage events and execute them at the correct time.
  */
 declare class EventManager {
-    private events;
+    /** The events stored in the event manager */
+    private readonly events;
+    /** The interval for the event manager */
     private tickerInterval?;
-    private static configManager;
+    /** The static config manager for the event manager */
+    private static readonly configManager;
     /** The config object */
-    config: EventManagerConfig;
+    readonly config: EventManagerConfig;
     /**
      * Creates a new event manager.
      * @param config - The config to use for this event manager.
      */
     constructor(config?: EventManagerConfig);
-    /** The function that is called every frame, executes all events. */
+    /**
+     * The function that is called every frame, executes all events.
+     */
     protected tickerFunction(): void;
     /**
      * Changes the framerate of the event manager.

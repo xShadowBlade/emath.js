@@ -5,16 +5,18 @@
 // import type { gameCurrency } from "./game";
 import type { GameCurrency } from "./gameCurrency";
 
-/** Represents a game reset. */
+/**
+ * Represents a game reset.
+ */
 class GameReset {
     /** The unique identifier for the game reset to prevent infinite loops. */
-    private id: symbol;
+    private readonly id: symbol;
 
     /** The currencies to reset. */
-    public currenciesToReset: GameCurrency<string>[];
+    public readonly currenciesToReset: GameCurrency<string>[];
 
     /** The extender for the game reset. */
-    public extender?: GameReset;
+    public readonly extender?: GameReset;
 
     /** Custom code to run after {@link reset} is called but BEFORE the currencies are reset */
     public onReset?: () => void;

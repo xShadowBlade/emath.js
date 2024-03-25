@@ -32,8 +32,8 @@ declare class GridCell {
  * Represents a grid with cells.
  */
 declare class Grid {
-    x_size: number;
-    y_size: number;
+    xSize: number;
+    ySize: number;
     /**
      * Represents the cells of the grid.
      */

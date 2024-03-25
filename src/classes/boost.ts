@@ -87,11 +87,11 @@ class BoostObject implements BoostsObjectInit {
 class Boost {
     /** An array of boost objects. */
     // @Type(() => boostObject)
-    public boostArray: BoostObject[];
+    public readonly boostArray: BoostObject[];
 
     /** The base effect value. */
     // @Expose()
-    public baseEffect: E;
+    public readonly baseEffect: E;
 
     /**
      * Constructs a new boost manager.
@@ -215,7 +215,8 @@ class Boost {
             for (let i = 0; i < arg1.length; i++) {
                 const bCheck = this.getBoosts(arg1[i].id, true);
                 if (!bCheck[0][0]) {
-                    this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
+                    // this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
+                    this.boostArray.push(new BoostObject(arg1[i]));
                 } else {
                     this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
                 }

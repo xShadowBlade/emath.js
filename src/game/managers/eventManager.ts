@@ -76,12 +76,17 @@ const eventManagerDefaultConfig: EventManagerConfig = {
  * The event manager class, used to manage events and execute them at the correct time.
  */
 class EventManager {
-    private events: Record<string, (IntervalEvent | TimeoutEvent)>;
+    /** The events stored in the event manager */
+    private readonly events: Record<string, (IntervalEvent | TimeoutEvent)>;
+
+    /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;
 
-    private static configManager = new ConfigManager(eventManagerDefaultConfig);
+    /** The static config manager for the event manager */
+    private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
+
     /** The config object */
-    public config: EventManagerConfig;
+    public readonly config: EventManagerConfig;
 
     /**
      * Creates a new event manager.
@@ -104,7 +109,9 @@ class EventManager {
         }
     }
 
-    /** The function that is called every frame, executes all events. */
+    /**
+     * The function that is called every frame, executes all events.
+     */
     protected tickerFunction () {
         const currentTime = Date.now();
         for (const event of Object.values(this.events)) {

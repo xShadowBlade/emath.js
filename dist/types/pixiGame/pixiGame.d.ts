@@ -1,7 +1,7 @@
 /**
  * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
  */
-import { Game, GameConfigOptions } from "../game/game";
+import { Game, GameConfigOptions, gameDefaultConfig } from "../game/game";
 import { ConfigManager, RequiredDeep } from "../game/managers/configManager";
 import { GameSprite, CollisionShapeType } from "./sprite";
 import type { Graphics, Sprite } from "pixi.js";
@@ -15,7 +15,7 @@ interface PixiGameConfig extends GameConfigOptions {
     };
 }
 /** The default configuration for the game. */
-declare const pixiGameDefaultConfig: PixiGameConfig & RequiredDeep<GameConfigOptions>;
+declare const pixiGameDefaultConfig: PixiGameConfig & typeof gameDefaultConfig;
 /**
  * Represents a game instance with PIXI-specific methods and properties.
  * Uses PIXI.js time-based game loop.

@@ -35,6 +35,7 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
 
     // Special case: If target is less than 1, just return 0
     if (target.lte(0)) {
+        console.warn("calculateUpgrade: Invalid target: ", target);
         return [E(0), E(0)];
     }
 
@@ -42,21 +43,24 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
     el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
 
     // Get the cache
-    const cached = el ? upgrade.getCached("el", start) : upgrade.getCached("sum", start, end);
-    if (cached) {
-        const { cost } = cached;
-        if (value.gte(cost)) {
-            if (el) {
-                const cachedEL = cached as UpgradeCachedEL;
-                return [cachedEL.level, E(0)];
-            }
-            const cachedSum = cached as UpgradeCachedSum;
-            return [cachedSum.end.sub(cachedSum.start), cost];
-        }
-    }
+    // TODO: Fix cache
+    // const cached = el ? upgrade.getCached("el", start) : upgrade.getCached("sum", start, end);
+    // if (cached) {
+    //     console.log("cached", cached, el, start, end, upgrade.id, upgrade.level.toString());
+    //     const { cost } = cached;
+    //     if (value.gte(cost)) {
+    //         if (el) {
+    //             const cachedEL = cached as UpgradeCachedEL;
+    //             return [cachedEL.level, E(0)];
+    //         }
+    //         const cachedSum = cached as UpgradeCachedSum;
+    //         return [cachedSum.end.sub(cachedSum.start), cost];
+    //     }
+    // }
 
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
+        // console.log("target === 1");
         const cost = upgrade.cost(upgrade.level);
         const canAfford = value.gte(cost);
         let out: [E, E] = [E(0), E(0)];
@@ -65,28 +69,29 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
             out[0] = canAfford ? E(1) : E(0);
 
             // Set the cache
-            upgrade.setCached("el", start, cost);
+            // upgrade.setCached("el", start, cost);
             return out;
         } else {
             out = [canAfford ? E(1) : E(0), canAfford ? cost : E(0)];
 
             // Set the cache
-            upgrade.setCached("sum", start, end, cost);
+            // upgrade.setCached("sum", start, end, cost);
             return out;
         }
     }
 
     // Special case: If costBulk exists, use it
     if (upgrade.costBulk) {
+        // console.log("costBulk");
         const [amount, cost] = upgrade.costBulk(value, upgrade.level, target);
         const canAfford = value.gte(cost);
         const out: [E, E] = [canAfford ? amount : E(0), canAfford && !el ? cost : E(0)];
 
         // Set the cache
         if (el) {
-            upgrade.setCached("el", start, cost);
+            // upgrade.setCached("el", start, cost);
         } else {
-            upgrade.setCached("sum", start, end, cost);
+            // upgrade.setCached("sum", start, end, cost);
         }
 
         return out;
@@ -94,30 +99,38 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
 
     // Special case for endless upgrades
     if (el) {
+        // console.log("el");
         const costTargetFn = (level: E) => upgrade.cost(level.add(start!));
-        const maxLevelAffordable = inverseFunctionApprox(costTargetFn, value, mode, iterations, end).value.floor();
+        const maxLevelAffordable = E.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
         // const cost = upgrade.cost(maxLevelAffordable);
         const cost = E(0);
 
         // Set the cache
-        upgrade.setCached("el", start, cost);
+        // upgrade.setCached("el", start, cost);
 
         return [maxLevelAffordable, cost];
     }
 
     // Binary Search with sum calculation
+    // console.log("binary search");
     const maxLevelAffordable = inverseFunctionApprox(
-        (level: E) => calculateSum(upgrade.cost, level, start),
+        (x: E) => calculateSum(upgrade.cost, x, start),
         value,
         mode,
         iterations,
     ).value.floor();
     const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
 
-    // Set the cache
-    upgrade.setCached("sum", start, end, cost);
+    // console.log({ maxLevelAffordable, cost });
 
-    return [maxLevelAffordable, cost];
+    const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
+
+    // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
+
+    // Set the cache
+    // upgrade.setCached("sum", start, end, cost);
+
+    return [maxLevelAffordableActual, cost];
 }
 
 /**
@@ -240,21 +253,25 @@ interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
+ * @deprecated Use an object index instead.
  */
 type DecimalJSONString = `${number}/${number}/${number}`;
 /**
  * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
  * In the form of: "el/${level: {@link DecimalJSONString}}"
+ * @deprecated Use an object index instead.
  */
 type UpgradeCachedELName = `el/${DecimalJSONString}`;
 /**
  * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
  * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ * @deprecated Use an object index instead.
  */
 type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
 
 /**
  * Converts a decimal number to a JSON string.
+ * @deprecated Use an object index instead.
  * @param n - The decimal number to convert.
  * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
  */
@@ -265,6 +282,7 @@ function decimalToJSONString (n: ESource): DecimalJSONString {
 
 /**
  * Converts an upgrade to a cache name (sum)
+ * @deprecated Use an object index instead.
  * @param start - The starting level of the upgrade.
  * @param end - The ending level or quantity to reach for the upgrade.
  * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
@@ -276,6 +294,7 @@ function upgradeToCacheNameSum (start: ESource, end: ESource): UpgradeCachedSumN
 
 /**
  * Converts an upgrade to a cache name (EL)
+ * @deprecated Use an object index instead.
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
@@ -435,7 +454,8 @@ class Currency {
 
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
-    public upgrades: UpgradeData<string>[];
+    // public upgrades: UpgradeData<string>[];
+    public upgrades: Record<string, UpgradeData<string>>;
 
     // /** A boost object that affects the currency gain. */
     // @Expose()
@@ -444,7 +464,8 @@ class Currency {
     /** Constructs a new currency object with an initial value of 0. */
     constructor () {
         this.value = E(0);
-        this.upgrades = [];
+        // this.upgrades = [];
+        this.upgrades = {};
         // this.boost = new boost();
     }
 }
@@ -461,14 +482,14 @@ class Currency {
 class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
     // public upgrades: upgradeStatic[];
-    public upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
+    public readonly upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
     // public upgrades: {
     //     [id: string]: UpgradeStatic;
     //     [Symbol.iterator]: IterableIterator<UpgradeStatic>;
     // };
 
     /** A function that returns the pointer of the data */
-    protected pointerFn: (() => Currency);
+    protected readonly pointerFn: (() => Currency);
 
     /** @returns The pointer of the data. */
     protected get pointer () { return this.pointerFn(); }
@@ -489,7 +510,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     }
 
     /** A boost object that affects the currency gain. */
-    public boost: Boost;
+    public readonly boost: Boost;
 
     /** The default value of the currency. */
     public readonly defaultVal: E;
@@ -548,7 +569,7 @@ class CurrencyStatic<U extends string[] = string[]> {
      * currency.reset();
      * console.log(currency.value); // E(0), or the default value
      */
-    public reset (resetCurrency: boolean = true, resetUpgradeLevels = true): void {
+    public reset (resetCurrency = true, resetUpgradeLevels = true): void {
         if (resetCurrency) this.value = this.defaultVal;
         if (resetUpgradeLevels) {
             // this.upgrades.forEach((upgrade) => {
@@ -563,7 +584,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     /**
      * The new currency value after applying the boost.
      * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-     * @returns What you gained.
+     * @returns What was gained, NOT the new value.
      * @example
      * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
      */
@@ -580,7 +601,8 @@ class CurrencyStatic<U extends string[] = string[]> {
      */
     private pointerAddUpgrade (upgrades1: UpgradeInit<U[number]>): UpgradeData<U[number]> {
         const upgrades2 = new UpgradeData(upgrades1);
-        this.pointer.upgrades.push(upgrades2);
+        // this.pointer.upgrades.push(upgrades2);
+        this.pointer.upgrades[upgrades2.id] = upgrades2;
         return upgrades2;
     };
 
@@ -601,7 +623,8 @@ class CurrencyStatic<U extends string[] = string[]> {
         //         break;
         //     }
         // }
-        upgradeToGet = this.pointer.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+        // upgradeToGet = this.pointer.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+        upgradeToGet = this.pointer.upgrades[id] ?? null;
         return upgradeToGet;
     }
 

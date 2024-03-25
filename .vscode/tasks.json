@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "type": "npm",
+            "script": "build",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: build",
+            "detail": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\""
+        },
+        {
+            "type": "shell",
+            "command": ".\\bin\\test.cmd",
+            "group": "test",
+            "label": "testREPL",
+        }
+    ]
+}

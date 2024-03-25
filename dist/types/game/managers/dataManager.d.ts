@@ -32,9 +32,9 @@ declare class DataManager {
     /**
      * A reference to the game instance.
      */
-    private gameRef;
+    private readonly gameRef;
     /** A queue of functions to call when the game data is loaded. */
-    private eventsOnLoad;
+    private readonly eventsOnLoad;
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.

@@ -24,7 +24,7 @@ interface PixiGameConfig extends GameConfigOptions {
 }
 
 /** The default configuration for the game. */
-const pixiGameDefaultConfig: PixiGameConfig & RequiredDeep<GameConfigOptions> = {
+const pixiGameDefaultConfig: PixiGameConfig & typeof gameDefaultConfig = {
     ...gameDefaultConfig,
     initIntervalBasedManagers: false,
     pixi: {

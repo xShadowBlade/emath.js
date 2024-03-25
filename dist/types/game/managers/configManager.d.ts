@@ -8,7 +8,7 @@ import type { UnknownObject } from "./dataManager";
  */
 declare class ConfigManager<T extends UnknownObject | object> {
     /** The template to use for default values. */
-    private configOptionTemplate;
+    private readonly configOptionTemplate;
     /**
      * Constructs a new configuration manager.
      * @param configOptionTemplate - The template to use for default values.

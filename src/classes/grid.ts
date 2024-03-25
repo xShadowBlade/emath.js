@@ -46,8 +46,8 @@ class GridCell {
  * Represents a grid with cells.
  */
 class Grid {
-    public x_size: number;
-    public y_size: number;
+    public xSize: number;
+    public ySize: number;
     /**
      * Represents the cells of the grid.
      */
@@ -59,8 +59,8 @@ class Grid {
      * @param starterProps - The properties to initialize with.
      */
     constructor (x_size: number, y_size: number, starterProps?: UnknownObject) {
-        this.x_size = x_size;
-        this.y_size = y_size;
+        this.xSize = x_size;
+        this.ySize = y_size;
         this.cells = [];
 
         for (let a = 0; a < y_size; a++) {
@@ -78,8 +78,8 @@ class Grid {
      */
     public getAll (): GridCell[] {
         const output: GridCell[] = [];
-        for (let a = 0; a < this.y_size; a++) {
-            for (let b = 0; b < this.x_size; b++) {
+        for (let a = 0; a < this.ySize; a++) {
+            for (let b = 0; b < this.xSize; b++) {
                 // iterates through every cell
                 output.push(this.cells[a][b]);
             }
@@ -102,7 +102,7 @@ class Grid {
      */
     public getAllX (x: number): GridCell[] {
         const output: GridCell[] = [];
-        for (let i = 0; i < this.y_size; i++) {
+        for (let i = 0; i < this.ySize; i++) {
             output.push(this.cells[i][x]);
         }
         return output;
@@ -124,7 +124,7 @@ class Grid {
      */
     public getAllY (y: number): GridCell[] {
         const output: GridCell[] = [];
-        for (let i = 0; this.x_size; i++) {
+        for (let i = 0; this.xSize; i++) {
             output.push(this.cells[y][i]);
         }
         return output;

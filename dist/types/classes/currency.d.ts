@@ -51,7 +51,9 @@ interface UpgradeInit<N extends string = string> {
      */
     cost: (level: E) => E;
     /**
-     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function)
+     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
+     * EL is automatically applied to the cost.
+     * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade.
      * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
@@ -61,7 +63,7 @@ interface UpgradeInit<N extends string = string> {
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: E, level: E, target: E) => [cost: E, amount: E];
+    costBulk?: (currencyValue: E, level: E, target: E) => [amount: E, cost: E];
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
@@ -108,16 +110,19 @@ interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "
 }
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
+ * @deprecated Use an object index instead.
  */
 type DecimalJSONString = `${number}/${number}/${number}`;
 /**
  * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
  * In the form of: "el/${level: {@link DecimalJSONString}}"
+ * @deprecated Use an object index instead.
  */
 type UpgradeCachedELName = `el/${DecimalJSONString}`;
 /**
  * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
  * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
+ * @deprecated Use an object index instead.
  */
 type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
 /** Interface for an upgrade that is cached. */
@@ -150,7 +155,7 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
     id: N;
     name: string;
     cost: (level: Decimal) => Decimal;
-    costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [cost: Decimal, amount: Decimal]) | undefined;
+    costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal]) | undefined;
     maxLevel: Decimal | undefined;
     effect: ((level: Decimal, context: UpgradeStatic<N>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
@@ -169,6 +174,15 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
      */
     getCached(type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
     getCached(type: "el", start: ESource): UpgradeCachedEL | undefined;
+    /**
+     * Sets the cached data of the upgrade.
+     * @param type - The type of the cache. "sum" or "el"
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
+     * @param cost - The cost of the upgrade.
+     */
+    setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
+    setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
     /**
      * @returns The data of the upgrade.
      */
@@ -195,7 +209,7 @@ declare class Currency {
     /** The current value of the currency. */
     value: E;
     /** An array that represents upgrades and their levels. */
-    upgrades: UpgradeData<string>[];
+    upgrades: Record<string, UpgradeData<string>>;
     /** Constructs a new currency object with an initial value of 0. */
     constructor();
 }
@@ -210,9 +224,9 @@ declare class Currency {
  */
 declare class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
-    upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
+    readonly upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
     /** A function that returns the pointer of the data */
-    protected pointerFn: (() => Currency);
+    protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
     protected get pointer(): Currency;
     /**
@@ -220,7 +234,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     onLoadData(): void;
     /** A boost object that affects the currency gain. */
-    boost: Boost;
+    readonly boost: Boost;
     /** The default value of the currency. */
     readonly defaultVal: E;
     /** The default boost of the currency. */
@@ -252,7 +266,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     /**
      * The new currency value after applying the boost.
      * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-     * @returns What you gained.
+     * @returns What was gained, NOT the new value.
      * @example
      * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
      */
@@ -285,7 +299,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      * @returns The added upgrades.
      * @example
-     * currenct.addUpgrade({
+     * currency.addUpgrade({
      *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
      *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
      *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
@@ -305,7 +319,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[] | Record<string, UpgradeInit<string>>, runEffectInstantly?: boolean): Record<string, UpgradeStatic<string>>;
+    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly?: boolean): UpgradeStatic<string>[];
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
@@ -322,8 +336,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     updateUpgrade(id: string, upgrade: UpgradeInit<string>): void;
     /**
-     * Calculates the cost and how many upgrades you can buy
-     * NOTE: This becomes very slow for higher levels. Use el=`true` to skip the sum calculation and speed up dramatically.
+     * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.

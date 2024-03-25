@@ -29,15 +29,17 @@ declare class Attribute {
  * console.log(health.value); // 110
  */
 declare class AttributeStatic {
-    protected pointerFn: Attribute;
+    /** The data for the attribute. */
+    protected readonly pointerFn: Attribute;
+    /** @returns The data for the attribute. */
     get pointer(): Attribute;
     /** The initial value of the attribute. */
-    initial: E;
+    readonly initial: E;
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    boost?: Boost;
+    readonly boost?: Boost;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.

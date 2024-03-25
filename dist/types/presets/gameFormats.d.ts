@@ -43,11 +43,11 @@ declare function gameFormatGain(value: ESource, gain: ESource, settings: FormatG
 /**
  * Class to represent a game format.
  */
-declare class gameFormatClass {
+declare class GameFormatClass {
     /**
      * A pointer to the settings to use for formatting.
      */
-    private settingsFn;
+    private readonly settingsFn;
     /**
      * @returns The settings to use for formatting.
      */
@@ -97,5 +97,5 @@ declare const formatOptions: FormatOption[];
  * A list of format options with their display names and values for time.
  */
 declare const formatTimeOptions: FormatOption<FormatTimeType>[];
-export { gameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
 export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };

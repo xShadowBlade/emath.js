@@ -40,5 +40,4 @@ const eMathGameWeb = {
 //     (window as any)["eMath"] = eMathGameWeb;
 // }
 
-// jsdoc is weird
 export { eMathGameWeb as eMath };

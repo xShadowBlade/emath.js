@@ -40,6 +40,12 @@ interface GameConfigOptions {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
     };
+    /** The managers for the game if you want to manually init them */
+    // managers?: {
+    //     keyManager?: KeyManager;
+    //     eventManager?: EventManager;
+    //     dataManager?: DataManager;
+    // };
     /**
      * Whether or not to automatically initialize the interval-based managers.
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
@@ -47,6 +53,8 @@ interface GameConfigOptions {
     initIntervalBasedManagers?: boolean;
 }
 
+/** The default configuration for the game. */
+// const gameDefaultConfig: RequiredDeep<Omit<GameConfigOptions, "managers">> & GameConfigOptions["managers"] = {
 const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
     mode: "production",
     name: {
@@ -64,9 +72,11 @@ const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
  * Represents a game instance.
  */
 class Game {
-    protected static configManager = new ConfigManager(gameDefaultConfig);
+    /** The static config manager for the game. */
+    protected static readonly configManager = new ConfigManager(gameDefaultConfig);
+
     /** The config object */
-    public config: typeof Game.configManager.options;
+    public readonly config: typeof Game.configManager.options;
 
     // public data: gameData;
     // public static: gameStatic;
@@ -75,7 +85,7 @@ class Game {
      * The data manager for the game.
      * As of v5.0.0, all data is stored here.
      */
-    public dataManager: DataManager;
+    public readonly dataManager: DataManager;
 
     /** The key manager for the game. */
     public keyManager: KeyManager;
@@ -83,7 +93,8 @@ class Game {
     /** The event manager for the game. */
     public eventManager: EventManager;
 
-    protected tickers: ((dt: number) => void)[];
+    /** The tickers for the game. */
+    protected readonly tickers: ((dt: number) => void)[];
 
     /**
      * Creates a new instance of the game class.
@@ -160,35 +171,6 @@ class Game {
         // const classInstance = new gameCurrency(() => dataRef.value.currency, () => staticRef.currency as currencyStatic, this, name);
         return classInstance;
     }
-
-    // /**
-    //  * Adds a new currency group to the game.
-    //  * @deprecated Use {@link addCurrency} instead. This method is buggy and will be removed in a future version.
-    //  * @param name - The name of the currency group.
-    //  * @param currencies - An array of currency names to add to the group.
-    //  * @returns An array of gameCurrency objects, in the same order as the input array.
-    //  */
-    // public addCurrencyGroup (name: string, currencies: string[]): gameCurrency<string>[] {
-    //     throw new Error("addCurrencyGroup is deprecated. Use addCurrency instead.");
-    //     // this.dataManager.setData(name, {});
-    //     // this.dataManager.setStatic(name, {
-    //     //     attributes: {},
-    //     // });
-
-    //     // // const classInstance = new gameCurrency(() => this.data[name], () => this.static[name]);
-    //     // const outCurrencies: gameCurrency[] = [];
-    //     // // currencies.forEach((currencyName) => {
-    //     // //     this.dataManager.getData(name)[currencyName] = new currency();
-    //     // //     this.dataManager.getStatic(name)[currencyName] = new currencyStatic(this.dataManager.getData(name)[currencyName]);
-    //     // //     outCurrencies.push(new gameCurrency(() => this.dataManager.getData(name)[currencyName], () => this.dataManager.getStatic(name)[currencyName], this, currencyName));
-    //     // // });
-    //     // currencies.forEach((currencyName) => {
-    //     //     const dataRef = this.dataManager.setData(currencyName, new currency());
-    //     //     const staticRef = this.dataManager.setStatic(currencyName, new currencyStatic(dataRef));
-    //     //     outCurrencies.push(new gameCurrency(dataRef as currency, staticRef as currencyStatic, this, currencyName));
-    //     // });
-    //     // return outCurrencies;
-    // }
 
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.

@@ -33,30 +33,34 @@ interface GameConfigOptions {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
     };
+    /** The managers for the game if you want to manually init them */
     /**
      * Whether or not to automatically initialize the interval-based managers.
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
      */
     initIntervalBasedManagers?: boolean;
 }
+/** The default configuration for the game. */
 declare const gameDefaultConfig: RequiredDeep<GameConfigOptions>;
 /**
  * Represents a game instance.
  */
 declare class Game {
-    protected static configManager: ConfigManager<RequiredDeep<GameConfigOptions>>;
+    /** The static config manager for the game. */
+    protected static readonly configManager: ConfigManager<RequiredDeep<GameConfigOptions>>;
     /** The config object */
-    config: typeof Game.configManager.options;
+    readonly config: typeof Game.configManager.options;
     /**
      * The data manager for the game.
      * As of v5.0.0, all data is stored here.
      */
-    dataManager: DataManager;
+    readonly dataManager: DataManager;
     /** The key manager for the game. */
     keyManager: KeyManager;
     /** The event manager for the game. */
     eventManager: EventManager;
-    protected tickers: ((dt: number) => void)[];
+    /** The tickers for the game. */
+    protected readonly tickers: ((dt: number) => void)[];
     /**
      * Creates a new instance of the game class.
      * @param config - The configuration object for the game.

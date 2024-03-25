@@ -37,20 +37,22 @@ class Attribute {
  * console.log(health.value); // 110
  */
 class AttributeStatic {
-    protected pointerFn: Attribute;
+    /** The data for the attribute. */
+    protected readonly pointerFn: Attribute;
 
-    get pointer () {
+    /** @returns The data for the attribute. */
+    public get pointer () {
         return this.pointerFn;
     }
 
     /** The initial value of the attribute. */
-    public initial: E;
+    public readonly initial: E;
 
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    public boost?: Boost;
+    public readonly boost?: Boost;
 
     /**
      * Constructs a new instance of the Attribute class.
