@@ -2,7 +2,8 @@
  * @file Skill tree class
  */
 import { E, ESource } from "../E/eMain";
-import type { CurrencyStatic, IUpgradeStatic } from "./currency";
+import type { CurrencyStatic } from "./currency";
+import type { IUpgradeStatic } from "./upgrade";
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
     cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
     costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];

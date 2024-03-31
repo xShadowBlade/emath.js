@@ -1,22 +1,32 @@
 /**
- * @file Defines a LRU cache.
+ * @file Defines a LRU cache. From break_eternity.js (https://github.com/Patashu/break_eternity.js).
  */
 
 /**
  * A LRU cache intended for caching pure functions.
+ * @template K The type of the key.
+ * @template V The type of the value.
  */
-export class LRUCache<K, V> {
+class LRUCache<K, V> {
+    /** The map of keys to ListNodes. */
     private map = new Map<K, ListNode<K, V>>();
     // Invariant: Exactly one of the below is true before and after calling a
     // LRUCache method:
     // - first and last are both undefined, and map.size() is 0.
     // - first and last are the same object, and map.size() is 1.
     // - first and last are different objects, and map.size() is greater than 1.
+
+    /** The first node in the list. */
     private first: ListNode<K, V> | undefined = undefined;
+
+    /** The last node in the list. */
     private last: ListNode<K, V> | undefined = undefined;
-    maxSize: number;
+
+    /** The maximum size of the cache. */
+    public readonly maxSize: number;
 
     /**
+     * Constructs a new instance of the LRUCache class.
      * @param maxSize The maximum size for this cache. We recommend setting this
      * to be one less than a power of 2, as most hashtables - including V8's
      * Object hashtable (https://crsrc.org/c/v8/src/objects/ordered-hash-table.cc)
@@ -28,7 +38,10 @@ export class LRUCache<K, V> {
 	    this.maxSize = maxSize;
     }
 
-    get size (): number {
+    /**
+     * @returns The size of the cache
+     */
+    public get size (): number {
         return this.map.size;
     }
 
@@ -38,7 +51,7 @@ export class LRUCache<K, V> {
      * @param key The key to get.
      * @returns The cached value, or undefined if key is not in the cache.
      */
-    get (key: K): V | undefined {
+    public get (key: K): V | undefined {
         const node = this.map.get(key);
         if (node === undefined) {
             return undefined;
@@ -88,7 +101,7 @@ export class LRUCache<K, V> {
      * @param value The value of the entry.
      * @throws Error, if the map already contains the key.
      */
-    set (key: K, value: V): void {
+    public set (key: K, value: V): void {
         // Ensure that this.maxSize >= 1.
         if (this.maxSize < 1) {
             return;
@@ -128,15 +141,28 @@ export class LRUCache<K, V> {
 
 /**
  * A node in a doubly linked list.
+ * @template K The type of the key.
+ * @template V The type of the value.
  */
 class ListNode<K, V> {
-    key: K;
-    value: V;
-    next: ListNode<K, V> | undefined = undefined;
-    prev: ListNode<K, V> | undefined = undefined;
+    /** The key of the node. */
+    public readonly key: K;
+    /** The value of the node. */
+    public readonly value: V;
+    /** The next node in the list. */
+    public next: ListNode<K, V> | undefined = undefined;
+    /** The previous node in the list. */
+    public prev: ListNode<K, V> | undefined = undefined;
 
+    /**
+     * Constructs a new instance of the ListNode class.
+     * @param key - The key of the node.
+     * @param value - The value of the node.
+     */
     constructor (key: K, value: V) {
         this.key = key;
         this.value = value;
     }
 }
+
+export { LRUCache, ListNode };

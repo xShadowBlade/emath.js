@@ -6,211 +6,20 @@ import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/game";
 import { Boost } from "./boost";
-import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
-/**
- * Interface for initializing an upgrade.
- * @template N - The ID of the upgrade.
- */
-interface UpgradeInit<N extends string = string> {
-    /**
-     * The ID of the upgrade.
-     * Used to retrieve the upgrade later.
-     */
-    readonly id: N;
-    /** The name of the upgrade. Defaults to the ID. */
-    name?: string;
-    /**
-     * The description of the upgrade.
-     * Can be a string or a function that returns a string.
-     * Made into a getter function to allow for dynamic descriptions.
-     * @example
-     * // A dynamic description that returns a string
-     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
-     *
-     * // ... create upgrade here (see currencyStatic.addUpgrade)
-     *
-     * const upgrade = currencyStatic.getUpgrade("upgradeID");
-     *
-     * // Getter property
-     * console.log(upgrade.description); // "This is a undefined that returns a undefined"
-     *
-     * // Getter function
-     * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
-     */
-    description?: ((...args: any[]) => string) | string;
-    /**
-     * The cost of upgrades at a certain level.
-     * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
-     * Also, if you do not set your own `costBulk` function, the function should always be greater than the level.
-     * @param level - The CURRENT (not next) level of the upgrade. It will always be a positive integer.
-     * @returns The cost of the upgrade. It should be a non-negative integer greater than or equal to 0.
-     * @example
-     * // A cost function that returns twice the level.
-     * (level) => level.mul(2)
-     */
-    cost: (level: E) => E;
-    /**
-     * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
-     * EL is automatically applied to the cost.
-     * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
-     * @param level - The current level of the upgrade.
-     * @param target - The target level of the upgrade.
-     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
-     * @example
-     * // A cost function that returns the sum of the levels and the target.
-     * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
-     * // -target^2 + target + level^2 + level
-     * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
-     */
-    costBulk?: (currencyValue: E, level: E, target: E) => [amount: E, cost: E];
-    /**
-     * The maximum level of the upgrade.
-     * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
-     */
-    maxLevel?: E;
-    /**
-     * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
-     * @param level - The current level of the upgrade.
-     * @param context - The upgrade object.
-     */
-    effect?: (level: E, context: UpgradeStatic<N>) => void;
-    /**
-     * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
-     * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
-     * (but you should use a getter function instead)
-     */
-    el?: boolean | (() => boolean);
-    /**
-     * The default level of the upgrade.
-     * Automatically set to `1` if not provided.
-     */
-    level?: E;
-}
-/**
- * Interface for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
-    maxLevel?: E;
-    name: string;
-    description: string;
-    /**
-     * A function that returns a description of the upgrade.
-     * @param args - Arguments to pass to the description function.
-     * @returns The description of the upgrade.
-     */
-    descriptionFn: (...args: any[]) => string;
-}
-/**
- * Interface for upgrade data.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "id" | "level"> {
-}
-/**
- * Represents a decimal number in the form of a string. `sign/mag/layer`
- * @deprecated Use an object index instead.
- */
-type DecimalJSONString = `${number}/${number}/${number}`;
-/**
- * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "el/${level: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedELName = `el/${DecimalJSONString}`;
-/**
- * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
-/** Interface for an upgrade that is cached. */
-interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "id" | "el"> {
-    el: EL;
-}
-/** Interface for an upgrade that is cached. (EL) */
-interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
-    level: E;
-    /** The cost of the upgrade at level (el) */
-    cost: E;
-}
-/** Interface for an upgrade that is cached. (Not EL) */
-interface UpgradeCachedSum extends UpgradeCached<false> {
-    start: E;
-    end: E;
-    /**
-     * The cost of the upgrade from start to end. (summation)
-     */
-    cost: E;
-}
-/** Represents the frontend for an upgrade. */
-declare class UpgradeData<N extends string = string> implements IUpgradeData<N> {
-    id: N;
-    level: Decimal;
-    constructor(init: Pick<UpgradeInit<N>, "id" | "level">);
-}
-/** Represents the backend for an upgrade. */
-declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
-    id: N;
-    name: string;
-    cost: (level: Decimal) => Decimal;
-    costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal]) | undefined;
-    maxLevel: Decimal | undefined;
-    effect: ((level: Decimal, context: UpgradeStatic<N>) => void) | undefined;
-    el?: boolean | (() => boolean) | undefined;
-    descriptionFn: (...args: any[]) => string;
-    /** The default size of the cache. Should be one less than a power of 2. */
-    static cacheSize: number;
-    /** The cache to store the values of certain upgrade levels */
-    cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
-    get description(): string;
-    /**
-     * Gets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @returns The data of the upgrade.
-     */
-    getCached(type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
-    getCached(type: "el", start: ESource): UpgradeCachedEL | undefined;
-    /**
-     * Sets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @param cost - The cost of the upgrade.
-     */
-    setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
-    setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
-    /**
-     * @returns The data of the upgrade.
-     */
-    protected dataPointerFn: () => UpgradeData<N>;
-    get data(): UpgradeData<N>;
-    /**
-     * @param init - The upgrade object to initialize.
-     * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
-     */
-    constructor(init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number);
-    /**
-     * The current level of the upgrade.
-     * @returns The current level of the upgrade.
-     */
-    get level(): E;
-    set level(n: ESource);
-}
+import { UpgradeData, UpgradeStatic, UpgradeInit } from "./upgrade";
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
- * Note: This class is created by default when creating a `currencyStatic` class. Use that instead as there are no methods here.
+ * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
  */
 declare class Currency {
     /** The current value of the currency. */
     value: E;
     /** An array that represents upgrades and their levels. */
     upgrades: Record<string, UpgradeData<string>>;
-    /** Constructs a new currency object with an initial value of 0. */
+    /**
+     * Constructs a new currency object with an initial value of 0.
+     */
     constructor();
 }
 /**
@@ -229,16 +38,19 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
     protected get pointer(): Currency;
-    /**
-     * Updates / applies effects to the currency on load.
-     */
-    onLoadData(): void;
     /** A boost object that affects the currency gain. */
     readonly boost: Boost;
     /** The default value of the currency. */
     readonly defaultVal: E;
     /** The default boost of the currency. */
     readonly defaultBoost: E;
+    /**
+     * The current value of the currency.
+     * Note: If you want to change the value, use {@link gain} instead.
+     * @returns The current value of the currency.
+     */
+    get value(): E;
+    set value(value: E);
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
@@ -249,11 +61,9 @@ declare class CurrencyStatic<U extends string[] = string[]> {
         defaultBoost: Decimal;
     });
     /**
-     * The current value of the currency.
-     * @returns The current value of the currency.
+     * Updates / applies effects to the currency on load.
      */
-    get value(): E;
-    set value(value: E);
+    onLoadData(): void;
     /**
      * Resets the currency and upgrade levels.
      * @param resetCurrency - Whether to reset the currency value. Default is true.
@@ -265,25 +75,19 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
     /**
      * The new currency value after applying the boost.
-     * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+     * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
      * @returns What was gained, NOT the new value.
      * @example
-     * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
+     * // Gain a random number between 1 and 10, and return the amount gained.
+     * currency.gain(Math.random() * 10000);
      */
     gain(dt?: ESource): E;
     /**
-     * Adds an upgrade to the upgrades array.
-     * @param upgrades1 Upgrade to add
+     * Adds an upgrade to the data class.
+     * @param upgrades - Upgrade to add
      * @returns The upgrade object.
      */
     private pointerAddUpgrade;
-    /**
-     * Retrieves an upgrade object based on the provided id.
-     * @deprecated Use the return value of {@link pointerAddUpgrade} instead.
-     * @param id - The id of the upgrade to retrieve.
-     * @returns The upgrade object if found, otherwise null.
-     */
-    private pointerGetUpgrade;
     /**
      * Retrieves an upgrade object based on the provided id.
      * @param id - The id of the upgrade to retrieve.
@@ -373,4 +177,4 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
-export { Currency, CurrencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData, UpgradeStatic, IUpgradeData };
+export { Currency, CurrencyStatic, UpgradeInit, UpgradeData, UpgradeStatic };

@@ -6,6 +6,7 @@ import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { Boost } from "../classes/boost";
 import { Decimal } from "../E/e";
+import type { Pointer } from "../game/game";
 
 /**
  * Represents an attribute in the game.
@@ -38,11 +39,11 @@ class Attribute {
  */
 class AttributeStatic {
     /** The data for the attribute. */
-    protected readonly pointerFn: Attribute;
+    protected readonly pointerFn: (() => Attribute);
 
     /** @returns The data for the attribute. */
     public get pointer () {
-        return this.pointerFn;
+        return this.pointerFn();
     }
 
     /** The initial value of the attribute. */
@@ -60,10 +61,11 @@ class AttributeStatic {
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor (pointer?: (() => Attribute) | Attribute, useBoost: boolean = true, initial: ESource = 0) {
+    constructor (pointer?: Pointer<Attribute>, useBoost: boolean = true, initial: ESource = 0) {
         this.initial = E(initial);
-        pointer = pointer ?? new Attribute(this.initial);
-        this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+        pointer = (pointer ? (typeof pointer === "function" ? pointer : () => pointer) : () => new Attribute(this.initial)) as (() => Attribute);
+        // this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+        this.pointerFn = pointer;
         if (useBoost) this.boost = new Boost(this.initial);
     }
 

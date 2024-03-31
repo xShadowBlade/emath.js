@@ -9,10 +9,13 @@ import type { Pointer } from "../game/game";
 interface BoostsObjectInit {
     /** The ID of the boost. */
     id: string;
+
     /** The name of the boost. */
     name?: string;
+
     /** @deprecated Use {@link description} instead. This will do nothing */
     desc?: Pointer<string>;
+
     /**
      * An optional description of the boost.
      * Can be a string or a function that returns a string.
@@ -30,11 +33,11 @@ interface BoostsObjectInit {
      * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
     // description?: Pointer<string>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     description?: ((...args: any[]) => string) | string;
+
     /**
      * The function that calculates the value of the boost.
-     * @param input The input value.
+     * @param input - The input value.
      * @returns The calculated value.
      * @example
      * // A boost that adds 10 to the input value.
@@ -44,6 +47,7 @@ interface BoostsObjectInit {
      * (input) => input.mul(2)
      */
     value: (input: E) => E;
+
     /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
 }
@@ -82,7 +86,8 @@ class BoostObject implements BoostsObjectInit {
 }
 
 /**
- * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
+ * Represents a boost manager that applies various effects to a base value.
+ * Typically used in combination with Attribute or Currency classes.
  */
 class Boost {
     /** An array of boost objects. */

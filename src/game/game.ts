@@ -17,6 +17,7 @@ import { ConfigManager, RequiredDeep } from "./managers/configManager";
 
 /**
  * A pointer to a value or a function that returns a value by reference.
+ * @template T - The type of the value to point to.
  */
 type Pointer<T> = (() => T) | T;
 

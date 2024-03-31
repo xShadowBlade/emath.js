@@ -28,8 +28,10 @@ import "reflect-metadata";
 //     // dataManager,
 // };
 
+export * from "./E/lru-cache";
 export * from "./E/eMain";
 export * from "./classes/boost";
+export * from "./classes/upgrade";
 export * from "./classes/currency";
 export * from "./classes/attribute";
 export * from "./classes/grid";

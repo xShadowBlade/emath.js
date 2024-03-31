@@ -2,6 +2,10 @@
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
 import { E, ESource } from "../E/eMain";
+/**
+ * The default amount of iterations to perform for the inverse function approximation and sum calculation.
+ * Can be overriden by passing a custom amount of iterations.
+ */
 declare const DEFAULT_ITERATIONS = 15;
 /**
  * Represents different methods to calculate the mean.

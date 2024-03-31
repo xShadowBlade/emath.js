@@ -8,7 +8,7 @@
         "src/index.ts",
         "src/game/index.ts",
         "src/pixiGame/index.ts",
-        "src/E/lru-cache.ts",
+        "src/presets/index.ts",
         "src/E/new/**",
         "src/hookMain.ts",
         "src/game/hookGame.ts",

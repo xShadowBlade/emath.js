@@ -30,7 +30,7 @@ interface BoostsObjectInit {
     description?: ((...args: any[]) => string) | string;
     /**
      * The function that calculates the value of the boost.
-     * @param input The input value.
+     * @param input - The input value.
      * @returns The calculated value.
      * @example
      * // A boost that adds 10 to the input value.
@@ -56,7 +56,8 @@ declare class BoostObject implements BoostsObjectInit {
     constructor(init: BoostObject | BoostsObjectInit);
 }
 /**
- * Represents a boost manager that applies various effects to a base value. Typically used in combination with attribute or currency classes.
+ * Represents a boost manager that applies various effects to a base value.
+ * Typically used in combination with Attribute or Currency classes.
  */
 declare class Boost {
     /** An array of boost objects. */

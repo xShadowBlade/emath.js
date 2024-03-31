@@ -4,6 +4,7 @@
 import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Boost } from "../classes/boost";
+import type { Pointer } from "../game/game";
 /**
  * Represents an attribute in the game.
  * Note: This is only meant for the data of an attribute. Use in combination with {@link AttributeStatic} for the actual attribute.
@@ -30,7 +31,7 @@ declare class Attribute {
  */
 declare class AttributeStatic {
     /** The data for the attribute. */
-    protected readonly pointerFn: Attribute;
+    protected readonly pointerFn: (() => Attribute);
     /** @returns The data for the attribute. */
     get pointer(): Attribute;
     /** The initial value of the attribute. */
@@ -46,7 +47,7 @@ declare class AttributeStatic {
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor(pointer?: (() => Attribute) | Attribute, useBoost?: boolean, initial?: ESource);
+    constructor(pointer?: Pointer<Attribute>, useBoost?: boolean, initial?: ESource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.

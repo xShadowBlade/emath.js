@@ -3,6 +3,10 @@
  */
 import { E, ESource } from "../E/eMain";
 
+/**
+ * The default amount of iterations to perform for the inverse function approximation and sum calculation.
+ * Can be overriden by passing a custom amount of iterations.
+ */
 const DEFAULT_ITERATIONS = 15;
 
 /**

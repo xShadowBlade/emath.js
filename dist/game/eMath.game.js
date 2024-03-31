@@ -7146,7 +7146,7 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
   }
 }
 
-// src/classes/currency.ts
+// src/classes/upgrade.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -7205,6 +7205,10 @@ function upgradeToCacheNameEL(level) {
   return `el/${decimalToJSONString(level)}`;
 }
 var UpgradeData = class {
+  /**
+   * Constructs a new upgrade object with an initial level of 1 (or the provided level)
+   * @param init - The upgrade object to initialize.
+   */
   constructor(init) {
     init = init ?? {};
     this.id = init.id;
@@ -7222,8 +7226,41 @@ var UpgradeStatic = class _UpgradeStatic {
     /** The default size of the cache. Should be one less than a power of 2. */
     this.cacheSize = 63;
   }
+  /** @returns The data of the upgrade. */
+  get data() {
+    return this.dataPointerFn();
+  }
   get description() {
     return this.descriptionFn();
+  }
+  /**
+   * The current level of the upgrade.
+   * @returns The current level of the upgrade.
+   */
+  get level() {
+    return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
+  }
+  set level(n) {
+    this.data.level = E(n);
+  }
+  /**
+   * Constructs a new static upgrade object.
+   * @param init - The upgrade object to initialize.
+   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
+   */
+  constructor(init, dataPointer, cacheSize) {
+    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+    this.cache = new LRUCache(cacheSize ?? _UpgradeStatic.cacheSize);
+    this.id = init.id;
+    this.name = init.name ?? init.id;
+    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
+    this.cost = init.cost;
+    this.costBulk = init.costBulk;
+    this.maxLevel = init.maxLevel;
+    this.effect = init.effect;
+    this.el = init.el;
   }
   getCached(type, start, end) {
     if (type === "sum") {
@@ -7252,43 +7289,16 @@ var UpgradeStatic = class _UpgradeStatic {
     }
     return data;
   }
-  get data() {
-    return this.dataPointerFn();
-  }
-  /**
-   * @param init - The upgrade object to initialize.
-   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
-   */
-  constructor(init, dataPointer, cacheSize) {
-    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
-    this.cache = new LRUCache(cacheSize ?? _UpgradeStatic.cacheSize);
-    this.id = init.id;
-    this.name = init.name ?? init.id;
-    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
-    this.cost = init.cost;
-    this.costBulk = init.costBulk;
-    this.maxLevel = init.maxLevel;
-    this.effect = init.effect;
-    this.el = init.el;
-  }
-  /**
-   * The current level of the upgrade.
-   * @returns The current level of the upgrade.
-   */
-  get level() {
-    return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
-  }
-  set level(n) {
-    this.data.level = E(n);
-  }
 };
+
+// src/classes/currency.ts
 var Currency = class {
   // /** A boost object that affects the currency gain. */
   // @Expose()
   // public boost: boost;
-  /** Constructs a new currency object with an initial value of 0. */
+  /**
+   * Constructs a new currency object with an initial value of 0.
+   */
   constructor() {
     this.value = E(0);
     this.upgrades = {};
@@ -7306,12 +7316,15 @@ var CurrencyStatic = class {
     return this.pointerFn();
   }
   /**
-   * Updates / applies effects to the currency on load.
+   * The current value of the currency.
+   * Note: If you want to change the value, use {@link gain} instead.
+   * @returns The current value of the currency.
    */
-  onLoadData() {
-    for (const upgrade of Object.values(this.upgrades)) {
-      upgrade.effect?.(upgrade.level, upgrade);
-    }
+  get value() {
+    return this.pointer.value;
+  }
+  set value(value) {
+    this.pointer.value = value;
   }
   /**
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
@@ -7336,14 +7349,12 @@ var CurrencyStatic = class {
     this.pointer.value = this.defaultVal;
   }
   /**
-   * The current value of the currency.
-   * @returns The current value of the currency.
+   * Updates / applies effects to the currency on load.
    */
-  get value() {
-    return this.pointer.value;
-  }
-  set value(value) {
-    this.pointer.value = value;
+  onLoadData() {
+    for (const upgrade of Object.values(this.upgrades)) {
+      upgrade.effect?.(upgrade.level, upgrade);
+    }
   }
   /**
    * Resets the currency and upgrade levels.
@@ -7365,10 +7376,11 @@ var CurrencyStatic = class {
   }
   /**
    * The new currency value after applying the boost.
-   * @param dt Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+   * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
    * @returns What was gained, NOT the new value.
    * @example
-   * currency.gain(Math.random() * 10000); // Gain a random number between 1 and 10.
+   * // Gain a random number between 1 and 10, and return the amount gained.
+   * currency.gain(Math.random() * 10000);
    */
   gain(dt = 1e3) {
     const toAdd = this.boost.calculate().mul(E(dt).div(1e3));
@@ -7376,28 +7388,14 @@ var CurrencyStatic = class {
     return toAdd;
   }
   /**
-   * Adds an upgrade to the upgrades array.
-   * @param upgrades1 Upgrade to add
+   * Adds an upgrade to the data class.
+   * @param upgrades - Upgrade to add
    * @returns The upgrade object.
    */
-  pointerAddUpgrade(upgrades1) {
-    const upgrades2 = new UpgradeData(upgrades1);
-    this.pointer.upgrades[upgrades2.id] = upgrades2;
-    return upgrades2;
-  }
-  /**
-   * Retrieves an upgrade object based on the provided id.
-   * @deprecated Use the return value of {@link pointerAddUpgrade} instead.
-   * @param id - The id of the upgrade to retrieve.
-   * @returns The upgrade object if found, otherwise null.
-   */
-  pointerGetUpgrade(id) {
-    let upgradeToGet = null;
-    if (id === void 0) {
-      return null;
-    }
-    upgradeToGet = this.pointer.upgrades[id] ?? null;
-    return upgradeToGet;
+  pointerAddUpgrade(upgrades) {
+    const upgradesToAdd = new UpgradeData(upgrades);
+    this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
+    return upgradesToAdd;
   }
   /**
    * Retrieves an upgrade object based on the provided id.
@@ -7563,7 +7561,7 @@ __decorateClass([
 var AttributeStatic = class {
   /** @returns The data for the attribute. */
   get pointer() {
-    return this.pointerFn;
+    return this.pointerFn();
   }
   /**
    * Constructs a new instance of the Attribute class.
@@ -7573,8 +7571,8 @@ var AttributeStatic = class {
    */
   constructor(pointer, useBoost = true, initial = 0) {
     this.initial = E(initial);
-    pointer = pointer ?? new Attribute(this.initial);
-    this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
+    pointer = pointer ? typeof pointer === "function" ? pointer : () => pointer : () => new Attribute(this.initial);
+    this.pointerFn = pointer;
     if (useBoost)
       this.boost = new Boost(this.initial);
   }
