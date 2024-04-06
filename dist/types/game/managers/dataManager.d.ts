@@ -13,25 +13,15 @@ type UnknownObject = Record<string, unknown>;
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 declare class DataManager {
-    /**
-     * Game data in its initial state.
-     */
+    /**  Game data in its initial state. */
     private normalData?;
-    /**
-     * Game data in its initial state, as a plain object.
-     */
+    /** Game data in its initial state, as a plain object. */
     private normalDataPlain?;
-    /**
-     * The current game data.
-     */
+    /** The current game data. */
     private data;
-    /**
-     * The static game data.
-     */
+    /** The static game data. */
     private static;
-    /**
-     * A reference to the game instance.
-     */
+    /** A reference to the game instance. */
     private readonly gameRef;
     /** A queue of functions to call when the game data is loaded. */
     private readonly eventsOnLoad;
@@ -48,6 +38,7 @@ declare class DataManager {
     addEventOnLoad(event: () => void): void;
     /**
      * Sets the data for the given key.
+     * The getter is a work in progress.
      * @template s - The key to set the data for.
      * @template t - The value to set the data to.
      * @param key - The key to set the data for.
@@ -74,6 +65,7 @@ declare class DataManager {
     getData(key: string): unknown | undefined;
     /**
      * Sets the static data for the given key.
+     * This data is not affected by data loading and saving, and is mainly used internally.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.

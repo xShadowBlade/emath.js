@@ -1,3 +1,7 @@
+/**
+ * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
+ */
+import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/game";
@@ -135,6 +139,20 @@ type UpgradeCachedELName = `el/${DecimalJSONString}`;
  */
 type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
 /**
+ * Converts a decimal number to a JSON string.
+ * @deprecated Use an object index instead.
+ * @param n - The decimal number to convert.
+ * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
+ */
+declare function decimalToJSONString(n: ESource): DecimalJSONString;
+/**
+ * Converts an upgrade to a cache name (EL)
+ * @deprecated Use an object index instead.
+ * @param level - The level of the upgrade.
+ * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
+ */
+declare function upgradeToCacheNameEL(level: ESource): UpgradeCachedELName;
+/**
  * Interface for an upgrade that is cached.
  * @template EL - Whether the upgrade is EL or not.
  */
@@ -201,7 +219,7 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link upgradeCache}
+     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}
      */
     constructor(init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number);
     /**
@@ -224,3 +242,4 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
     setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
 }
 export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, calculateUpgrade };
+export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };

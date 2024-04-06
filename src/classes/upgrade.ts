@@ -1,6 +1,7 @@
 /**
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
+import "reflect-metadata";
 import { Type, Expose } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
@@ -446,5 +447,5 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     }
 }
 
-export { upgradeToCacheNameSum, IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, calculateUpgrade };
+export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, calculateUpgrade };
 export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };

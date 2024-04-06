@@ -121,12 +121,6 @@ class CurrencyStatic<U extends string[] = string[]> {
      * Updates / applies effects to the currency on load.
      */
     public onLoadData () {
-        // console.log("onLoadData", this.upgrades);
-        // for (const upgrade of this.upgrades) {
-        //     if (upgrade.effect) {
-        //         upgrade.effect(upgrade.level, upgrade);
-        //     }
-        // }
         for (const upgrade of Object.values(this.upgrades)) {
             upgrade.effect?.(upgrade.level, upgrade);
         }
@@ -179,6 +173,15 @@ class CurrencyStatic<U extends string[] = string[]> {
     };
 
     /**
+     * Retrieves an upgrade object from the data pointer based on the provided id.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object if found, otherwise null.
+     */
+    private pointerGetUpgrade (id: string): UpgradeData<string> | null {
+        return this.pointer.upgrades[id] ?? null;
+    }
+
+    /**
      * Retrieves an upgrade object based on the provided id.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
@@ -188,25 +191,6 @@ class CurrencyStatic<U extends string[] = string[]> {
      */
     // public getUpgrade (id: string): UpgradeStatic | null {
     public getUpgrade (id: string | U[number]): typeof id extends U[number] ? UpgradeStatic<U[number]> : UpgradeStatic<U[number]> | null {
-        // let upgradeToGet: UpgradeStatic | null = null;
-        // if (id === undefined) {
-        //     return null;
-        // }
-        // // else if (typeof id == "number") {
-        // //     upgradeToGet = this.upgrades[id];
-        // // }
-        // else if (typeof id == "string") {
-        //     // for (let i = 0; i < this.upgrades.length; i++) {
-        //     //     if (this.upgrades[i].id === id) {
-        //     //         upgradeToGet = this.upgrades[i];
-        //     //         break;
-        //     //     }
-        //     // }
-
-        //     upgradeToGet = this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-        // }
-        // return upgradeToGet;
-
         return this.upgrades[id] ?? null;
     }
 
@@ -238,32 +222,8 @@ class CurrencyStatic<U extends string[] = string[]> {
      */
     public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly: boolean = true): UpgradeStatic<string>[] {
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
-        // if (!Array.isArray(upgrades)) {
-        //     if (typeof upgrades === "object") {
-        //         upgrades = Object.values(upgrades);
-        //     } else {
-        //         upgrades = [upgrades];
-        //     }
-        // }
 
         console.log(upgrades);
-
-        // Adds standard
-        // const upgradesDefault: UpgradeStatic[] = [];
-        // for (let i = 0; i < upgrades.length; i++) {
-        //     // if (!upgrades[i].id) upgrades[i].id = this.upgrades.length + i;
-        //     this.pointerAddUpgrade(upgrades[i]);
-        //     const currentLength = this.pointer.upgrades.length;
-        //     const upgrade = new UpgradeStatic(upgrades[i], () =>
-        //         this.pointerGetUpgrade((upgrades as UpgradeInit[])[i].id) as UpgradeData
-        //         ??
-        //         this.pointer.upgrades[currentLength - 1],
-        //     );
-        //     if (upgrade.effect && runEffectInstantly) upgrade.effect(upgrade.level, upgrade);
-        //     upgradesDefault.push(upgrade);
-        // }
-
-        // this.upgrades = this.upgrades.concat(upgradesDefault);
 
         // Adds standard (object instead of array)
         const addedUpgradeList: Record<string, UpgradeStatic<string>> = {};
@@ -272,6 +232,7 @@ class CurrencyStatic<U extends string[] = string[]> {
 
             const addedUpgradeData = this.pointerAddUpgrade(upgrade);
             const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+            // const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id) ?? addedUpgradeData);
 
             if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
             addedUpgradeList[upgrade.id] = addedUpgradeStatic;
@@ -396,9 +357,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     }
 }
 
-// export { Currency as Currency, CurrencyStatic as CurrencyStatic, UpgradeInit, IUpgradeStatic, UpgradeData as UpgradeData, UpgradeStatic as UpgradeStatic, IUpgradeData };
-export { Currency, CurrencyStatic, UpgradeInit, UpgradeData, UpgradeStatic };
-// export { MeanMode, calculateUpgrade, inverseFunctionApprox, calculateSum, calculateSumLoop, calculateSumApprox };
+export { Currency, CurrencyStatic };
 
 // Test
 /*

@@ -2,7 +2,7 @@
  * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
  */
 import { Game, GameConfigOptions, gameDefaultConfig } from "../game/game";
-import { ConfigManager, RequiredDeep } from "../game/managers/configManager";
+import { ConfigManager } from "../game/managers/configManager";
 import { GameSprite, CollisionShapeType } from "./sprite";
 import { KeyManager } from "../game/managers/keyManager";
 import { EventManager } from "../game/managers/eventManager";

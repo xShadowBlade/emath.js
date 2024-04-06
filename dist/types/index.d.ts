@@ -3,6 +3,7 @@
  * @description This is the entry point for the library and exports all relevant things.
  */
 import "reflect-metadata";
+export * from "./E/lru-cache";
 export * from "./E/eMain";
 export * from "./classes/boost";
 export * from "./classes/upgrade";

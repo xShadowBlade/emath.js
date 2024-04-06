@@ -37,25 +37,19 @@ type UnknownObject = Record<string, unknown>;
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 class DataManager {
-    /**
-     * Game data in its initial state.
-     */
+    /**  Game data in its initial state. */
     private normalData?: UnknownObject;
-    /**
-     * Game data in its initial state, as a plain object.
-     */
+
+    /** Game data in its initial state, as a plain object. */
     private normalDataPlain?: UnknownObject;
-    /**
-     * The current game data.
-     */
+
+    /** The current game data. */
     private data: UnknownObject = {};
-    /**
-     * The static game data.
-     */
+
+    /** The static game data. */
     private static: UnknownObject = {};
-    /**
-     * A reference to the game instance.
-     */
+
+    /** A reference to the game instance. */
     private readonly gameRef: Game;
 
     /** A queue of functions to call when the game data is loaded. */
@@ -83,6 +77,7 @@ class DataManager {
 
     /**
      * Sets the data for the given key.
+     * The getter is a work in progress.
      * @template s - The key to set the data for.
      * @template t - The value to set the data to.
      * @param key - The key to set the data for.
@@ -188,6 +183,7 @@ class DataManager {
 
     /**
      * Sets the static data for the given key.
+     * This data is not affected by data loading and saving, and is mainly used internally.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
@@ -302,10 +298,7 @@ class DataManager {
      * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
      */
     public resetData (reload = false): void {
-        if (!this.normalData) {
-            throw new Error("dataManager.resetData(): You must call init() before writing to data.");
-            return;
-        }
+        if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
         this.data = this.normalData;
         this.saveData();
         if (reload) window.location.reload();
@@ -503,41 +496,6 @@ class DataManager {
             // Convert the object
             const out = plainToInstance(templateClassToConvert.class, plain);
             if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
-
-            // Special case for currency - merge upgrades
-            // if (templateClassToConvert.name === "currency") {
-            //     const currOut = out as currency;
-            //     currOut
-            // }
-
-            // if ((out as any).onLoadData) {
-            //     // (out as any).onLoadData();
-            //     console.log("Loaded data2 for: ", out, (out as any).onLoadData);
-            //     loadDataQueue.push(out);
-            // }
-
-            // Convert subclasses
-            // ! Use class-transformer instead
-            // if (templateClass.subclasses) {
-            //     for (const subclassKey in templateClass.subclasses) {
-            //         console.log(subclassKey);
-            //         if (Array.isArray(templateClass.subclasses[subclassKey])) {
-            //             // Convert each object in the array
-            //             for (let i = 0; i < (out as any)[subclassKey].length; i++) {
-            //                 (out as any)[subclassKey][i] = plainToInstanceRecursive((out as any)[subclassKey][i]);
-            //             }
-            //         } else {
-            //             // Convert object
-            //             // Special case for currency.value because I am lazy
-            //             if (subclassKey === "value") {
-            //                 (out as any)[subclassKey] = new Decimal((out as any)[subclassKey]);
-            //             } else {
-            //                 (out as any)[subclassKey] = plainToInstanceRecursive((out as any)[subclassKey]);
-            //             }
-            //             // (out as any)[subclassKey] = plainToInstanceRecursive((out as any)[subclassKey]);
-            //         }
-            //     }
-            // }
             return out;
         }
 
@@ -575,15 +533,6 @@ class DataManager {
         }
 
         loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
-
-        // Call onLoadData on all objects
-        // for (const obj of loadDataQueue) {
-        //     if ((obj as any).onLoadData) {
-        //         (obj as any).onLoadData();
-        //         console.log("Loaded data for: ", obj, (obj as any).onLoadData);
-        //     }
-        // }
-        // console.log("Converted data: ", loadedDataProcessed);
         return loadedDataProcessed;
     }
 

@@ -89,6 +89,12 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     private pointerAddUpgrade;
     /**
+     * Retrieves an upgrade object from the data pointer based on the provided id.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object if found, otherwise null.
+     */
+    private pointerGetUpgrade;
+    /**
      * Retrieves an upgrade object based on the provided id.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
@@ -177,4 +183,4 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      */
     buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
-export { Currency, CurrencyStatic, UpgradeInit, UpgradeData, UpgradeStatic };
+export { Currency, CurrencyStatic };
