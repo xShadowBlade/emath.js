@@ -2,7 +2,7 @@
  * @file Declares a generator function for formats for the E library.
  */
 import type { Decimal as DecimalType, DecimalSource } from "./e";
-type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf";
+type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf" | "alphabet";
 /** A list of names for the standard notation */
 declare const ST_NAMES: string[][][];
 declare const FormatTypeList: FormatType[];
@@ -50,7 +50,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
             abbreviationLength(group: number): number;
             getAbbreviationAndValue(x: Decimal): (string | DecimalType)[];
             formatElementalPart(abbreviation: string, n: Decimal): string;
-            format(value: Decimal, acc: number): string;
+            format(value: Decimal, acc?: number): string;
         };
         /** Old scientific format */
         old_sc: {
@@ -72,7 +72,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * @example
              * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
              */
-            format(ex: DecimalSource, acc: number): string;
+            format(ex: DecimalSource, acc?: number): string;
         };
         /** Mixed scientific format */
         mixed_sc: {
@@ -86,12 +86,12 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
              * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
              */
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
         };
         /** Layer format */
         layer: {
             layers: string[];
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
         };
         /** Standard (letter abbv) format */
         standard: {
@@ -110,7 +110,36 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         };
         /** Infinity format */
         inf: {
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
+        };
+        /** Alphabet format */
+        alphabet: {
+            config: {
+                alphabet: string;
+            };
+            /**
+             * Get the abbreviation for a number
+             * @param ex - The value to get the abbreviation for
+             * @param start - The starting value
+             * @param startDouble - Whether to start at aa instead of a
+             * @param abbStart - The starting value for abbreviations
+             * @returns - The abbreviation
+             */
+            getAbbreviation(ex: DecimalSource, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
+            /**
+             * Format the value into alphabet format (a, b, c, ..., z, aa, ab, ac, ... aaa, aab, ... aaaa, ... aaaaaaaaaaaaaaa, ... aaaaaaaaaaaaaaa(2), aaaaaaaaaaaaaaa(3), ...)
+             * Basically base 26 for the exponential part / 3
+             * Work in progress
+             * @param ex - The value to format
+             * @param acc - The accuracy
+             * @param max - The maximum value before switching to an abbreviation
+             * @param type - The type of format to use
+             * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
+             * @param startDouble - Whether to start at aa instead of a. Defaults to false.
+             * @param abbStart - The starting value for abbreviations. Defaults to 10.
+             * @returns - The formatted value
+             */
+            format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
         };
     };
     formats: {
@@ -164,7 +193,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
             abbreviationLength(group: number): number;
             getAbbreviationAndValue(x: Decimal): (string | DecimalType)[];
             formatElementalPart(abbreviation: string, n: Decimal): string;
-            format(value: Decimal, acc: number): string;
+            format(value: Decimal, acc?: number): string;
         };
         /** Old scientific format */
         old_sc: {
@@ -186,7 +215,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * @example
              * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
              */
-            format(ex: DecimalSource, acc: number): string;
+            format(ex: DecimalSource, acc?: number): string;
         };
         /** Mixed scientific format */
         mixed_sc: {
@@ -200,12 +229,12 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
              * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
              */
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
         };
         /** Layer format */
         layer: {
             layers: string[];
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
         };
         /** Standard (letter abbv) format */
         standard: {
@@ -224,7 +253,36 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         };
         /** Infinity format */
         inf: {
-            format(ex: DecimalSource, acc: number, max: number): string;
+            format(ex: DecimalSource, acc?: number, max?: number): string;
+        };
+        /** Alphabet format */
+        alphabet: {
+            config: {
+                alphabet: string;
+            };
+            /**
+             * Get the abbreviation for a number
+             * @param ex - The value to get the abbreviation for
+             * @param start - The starting value
+             * @param startDouble - Whether to start at aa instead of a
+             * @param abbStart - The starting value for abbreviations
+             * @returns - The abbreviation
+             */
+            getAbbreviation(ex: DecimalSource, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
+            /**
+             * Format the value into alphabet format (a, b, c, ..., z, aa, ab, ac, ... aaa, aab, ... aaaa, ... aaaaaaaaaaaaaaa, ... aaaaaaaaaaaaaaa(2), aaaaaaaaaaaaaaa(3), ...)
+             * Basically base 26 for the exponential part / 3
+             * Work in progress
+             * @param ex - The value to format
+             * @param acc - The accuracy
+             * @param max - The maximum value before switching to an abbreviation
+             * @param type - The type of format to use
+             * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
+             * @param startDouble - Whether to start at aa instead of a. Defaults to false.
+             * @param abbStart - The starting value for abbreviations. Defaults to 10.
+             * @returns - The formatted value
+             */
+            format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
         };
     };
 };

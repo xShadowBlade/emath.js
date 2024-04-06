@@ -1307,27 +1307,34 @@ declare const formats: {
         abbreviationLength(group: number): number;
         getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
         formatElementalPart(abbreviation: string, n: Decimal): string;
-        format(value: Decimal, acc: number): string;
+        format(value: Decimal, acc?: number): string;
     };
     old_sc: {
         format(ex: DecimalSource, acc: number): string;
     };
     eng: {
-        format(ex: DecimalSource, acc: number): string;
+        format(ex: DecimalSource, acc?: number): string;
     };
     mixed_sc: {
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number | undefined, max?: number): string;
     };
     layer: {
         layers: string[];
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number, max?: number | undefined): string;
     };
     standard: {
         tier1(x: number): string;
         tier2(x: number): string;
     };
     inf: {
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number | undefined, max?: number | undefined): string;
+    };
+    alphabet: {
+        config: {
+            alphabet: string;
+        };
+        getAbbreviation(ex: DecimalSource, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
+        format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
     };
 }, FORMATS: {
     omega: {
@@ -1354,27 +1361,34 @@ declare const formats: {
         abbreviationLength(group: number): number;
         getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
         formatElementalPart(abbreviation: string, n: Decimal): string;
-        format(value: Decimal, acc: number): string;
+        format(value: Decimal, acc?: number): string;
     };
     old_sc: {
         format(ex: DecimalSource, acc: number): string;
     };
     eng: {
-        format(ex: DecimalSource, acc: number): string;
+        format(ex: DecimalSource, acc?: number): string;
     };
     mixed_sc: {
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number | undefined, max?: number): string;
     };
     layer: {
         layers: string[];
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number, max?: number | undefined): string;
     };
     standard: {
         tier1(x: number): string;
         tier2(x: number): string;
     };
     inf: {
-        format(ex: DecimalSource, acc: number, max: number): string;
+        format(ex: DecimalSource, acc?: number | undefined, max?: number | undefined): string;
+    };
+    alphabet: {
+        config: {
+            alphabet: string;
+        };
+        getAbbreviation(ex: DecimalSource, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
+        format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
     };
 };
 export { formats, FORMATS };

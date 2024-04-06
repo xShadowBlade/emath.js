@@ -2736,7 +2736,7 @@ function decimalFormatGenerator(Decimal2) {
         }
         return `${n} ${abbreviation}`;
       },
-      format(value, acc) {
+      format(value, acc = 2) {
         if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4)))))
           return "e" + FORMATS2.elemental.format(value.log10(), acc);
         let log = value.log(118);
@@ -2799,7 +2799,7 @@ function decimalFormatGenerator(Decimal2) {
        * @example
        * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
        */
-      format(ex, acc) {
+      format(ex, acc = 2) {
         ex = new Decimal2(ex);
         const e = ex.log10().floor();
         if (e.lt(9)) {
@@ -2829,7 +2829,7 @@ function decimalFormatGenerator(Decimal2) {
        * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
        * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
        */
-      format(ex, acc, max) {
+      format(ex, acc, max = 9) {
         ex = new Decimal2(ex);
         const e = ex.log10().floor();
         if (e.lt(303) && e.gte(max))
@@ -2841,7 +2841,7 @@ function decimalFormatGenerator(Decimal2) {
     /** Layer format */
     layer: {
       layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
-      format(ex, acc, max) {
+      format(ex, acc = 2, max) {
         ex = new Decimal2(ex);
         const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
         if (layer.lte(0))
@@ -2901,6 +2901,65 @@ function decimalFormatGenerator(Decimal2) {
         if (ex.gte(2))
           return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
         return symbols2[meta] + symbols[meta] + "-" + format(inf.pow(ex.sub(1)), acc, max, "sc");
+      }
+    },
+    // Add more formats here
+    /** Alphabet format */
+    alphabet: {
+      config: {
+        alphabet: "abcdefghijklmnopqrstuvwxyz"
+      },
+      /**
+       * Get the abbreviation for a number
+       * @param ex - The value to get the abbreviation for
+       * @param start - The starting value
+       * @param startDouble - Whether to start at aa instead of a
+       * @param abbStart - The starting value for abbreviations
+       * @returns - The abbreviation
+       */
+      getAbbreviation(ex, start = new Decimal2(1e15), startDouble = false, abbStart = 10) {
+        ex = new Decimal2(ex);
+        start = new Decimal2(start).div(1e3);
+        if (ex.lt(start.mul(1e3)))
+          return "";
+        const { alphabet } = FORMATS2.alphabet.config;
+        const alphabetLength = alphabet.length;
+        const exponent = ex.log(1e3).sub(start.log(1e3)).floor();
+        const numLetters = exponent.add(1).log(alphabetLength + 1).ceil();
+        let letters = "";
+        if (numLetters.lt(abbStart)) {
+          let remaining = exponent;
+          for (let i = 0; i < numLetters.toNumber(); i++) {
+            const letter = remaining.sub(1).mod(alphabetLength).toNumber();
+            letters = alphabet[letter] + letters;
+            remaining = remaining.sub(1).div(alphabetLength).floor();
+          }
+        } else {
+          throw new Error("Not implemented");
+        }
+        return letters;
+      },
+      /**
+       * Format the value into alphabet format (a, b, c, ..., z, aa, ab, ac, ... aaa, aab, ... aaaa, ... aaaaaaaaaaaaaaa, ... aaaaaaaaaaaaaaa(2), aaaaaaaaaaaaaaa(3), ...)
+       * Basically base 26 for the exponential part / 3
+       * Work in progress
+       * @param ex - The value to format
+       * @param acc - The accuracy
+       * @param max - The maximum value before switching to an abbreviation
+       * @param type - The type of format to use
+       * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
+       * @param startDouble - Whether to start at aa instead of a. Defaults to false.
+       * @param abbStart - The starting value for abbreviations. Defaults to 10.
+       * @returns - The formatted value
+       */
+      format(ex, acc = 2, max = 9, type = "mixed_sc", start = new Decimal2(1e15), startDouble = false, abbStart) {
+        ex = new Decimal2(ex);
+        start = new Decimal2(start).div(1e3);
+        if (ex.lt(start.mul(1e3)))
+          return format(ex, acc, max, type);
+        const letters = FORMATS2.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
+        const mantissa = ex.div(Decimal2.pow(1e3, ex.log(1e3).floor()));
+        return mantissa.toFixed(acc) + " " + letters;
       }
     }
   };
@@ -3016,7 +3075,7 @@ function decimalFormatGenerator(Decimal2) {
     return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
   }
   function formatTimeLong(ex, ms = false, acc = 0, max = 9, type = "mixed_sc") {
-    const formatFn = (ex2) => format(ex2, acc, max, type);
+    const formatFn = (exf) => format(exf, acc, max, type);
     ex = new Decimal2(ex);
     const mls = ex.mul(1e3).mod(1e3).floor();
     const sec = ex.mod(60).floor();
