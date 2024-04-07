@@ -1268,6 +1268,25 @@ declare class Decimal {
      */
     toRoman(max?: DecimalSource): string | Decimal;
     static toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
+    /**
+     * Returns a random Decimal value between the specified minimum and maximum values.
+     * This suffers from floating point errors if you want to generate a random number close to either the minimum or the maximum.
+     * @param [min] - The minimum value, defaults to `0`.
+     * @param [max] - The maximum value, defaults to `1`.
+     * @returns A random Decimal value between the minimum and maximum values.
+     */
+    static random(min?: DecimalSource, max?: DecimalSource): Decimal;
+    /**
+     * Returns a random boolean value based on the specified probability.
+     * @param rng - The probability of returning `true`. Must be between `0` and `1`.
+     * @returns A boolean value based on the probability.
+     * @example
+     * randomProb(0.5); // 50% chance of returning true
+     * randomProb(0.25); // 25% chance of returning true
+     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * // Anything less than ~1e-16 will always return false due to floating point errors
+     */
+    static randomProb(rng: DecimalSource): boolean;
 }
 declare const formats: {
     toSubscript: (value: number) => string;

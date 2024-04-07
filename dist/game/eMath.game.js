@@ -2917,7 +2917,7 @@ function decimalFormatGenerator(Decimal2) {
        * @param abbStart - The starting value for abbreviations
        * @returns - The abbreviation
        */
-      getAbbreviation(ex, start = new Decimal2(1e15), startDouble = false, abbStart = 10) {
+      getAbbreviation(ex, start = new Decimal2(1e15), startDouble = false, abbStart = 9) {
         ex = new Decimal2(ex);
         start = new Decimal2(start).div(1e3);
         if (ex.lt(start.mul(1e3)))
@@ -2927,15 +2927,26 @@ function decimalFormatGenerator(Decimal2) {
         const exponent = ex.log(1e3).sub(start.log(1e3)).floor();
         const numLetters = exponent.add(1).log(alphabetLength + 1).ceil();
         let letters = "";
-        if (numLetters.lt(abbStart)) {
-          let remaining = exponent;
-          for (let i = 0; i < numLetters.toNumber(); i++) {
+        const convertToLetters = (num, length) => {
+          let remaining = num;
+          let out = "";
+          for (let i = 0; i < length.toNumber(); i++) {
             const letter = remaining.sub(1).mod(alphabetLength).toNumber();
-            letters = alphabet[letter] + letters;
+            if (letter < 0 || letter >= alphabetLength) {
+              return "\u03C9";
+            }
+            out = alphabet[letter] + out;
             remaining = remaining.sub(1).div(alphabetLength).floor();
           }
+          return out;
+        };
+        if (numLetters.lt(abbStart)) {
+          letters = convertToLetters(exponent, numLetters);
         } else {
-          throw new Error("Not implemented");
+          const trunc = numLetters.sub(abbStart).add(1);
+          const truncExponent = exponent.div(Decimal2.pow(alphabetLength + 1, trunc.sub(1))).floor();
+          const truncLetters = convertToLetters(truncExponent, new Decimal2(abbStart));
+          letters = `${truncLetters}(${trunc.gt("1e9") ? trunc.format() : trunc.format(0)})`;
         }
         return letters;
       },
@@ -2949,7 +2960,7 @@ function decimalFormatGenerator(Decimal2) {
        * @param type - The type of format to use
        * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
        * @param startDouble - Whether to start at aa instead of a. Defaults to false.
-       * @param abbStart - The starting value for abbreviations. Defaults to 10.
+       * @param abbStart - The starting value for abbreviations. Defaults to 9.
        * @returns - The formatted value
        */
       format(ex, acc = 2, max = 9, type = "mixed_sc", start = new Decimal2(1e15), startDouble = false, abbStart) {
@@ -2959,7 +2970,8 @@ function decimalFormatGenerator(Decimal2) {
           return format(ex, acc, max, type);
         const letters = FORMATS2.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
         const mantissa = ex.div(Decimal2.pow(1e3, ex.log(1e3).floor()));
-        return mantissa.toFixed(acc) + " " + letters;
+        const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
+        return `${!isAbbreviation ? mantissa.toFixed(acc) + " " : ""}${letters}`;
       }
     }
   };
@@ -6979,6 +6991,33 @@ var Decimal = class {
   }
   static toRoman(value, max) {
     return new Decimal(value).toRoman(max);
+  }
+  /**
+   * Returns a random Decimal value between the specified minimum and maximum values.
+   * This suffers from floating point errors if you want to generate a random number close to either the minimum or the maximum.
+   * @param [min] - The minimum value, defaults to `0`.
+   * @param [max] - The maximum value, defaults to `1`.
+   * @returns A random Decimal value between the minimum and maximum values.
+   */
+  static random(min = 0, max = 1) {
+    min = new Decimal(min);
+    max = new Decimal(max);
+    min = min.lt(max) ? min : max;
+    max = max.gt(min) ? max : min;
+    return new Decimal(Math.random()).mul(max.sub(min)).add(min);
+  }
+  /**
+   * Returns a random boolean value based on the specified probability.
+   * @param rng - The probability of returning `true`. Must be between `0` and `1`.
+   * @returns A boolean value based on the probability.
+   * @example
+   * randomProb(0.5); // 50% chance of returning true
+   * randomProb(0.25); // 25% chance of returning true
+   * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+   * // Anything less than ~1e-16 will always return false due to floating point errors
+   */
+  static randomProb(rng) {
+    return new Decimal(Math.random()).lt(rng);
   }
 };
 Decimal.dZero = FC_NN(0, 0, 0);

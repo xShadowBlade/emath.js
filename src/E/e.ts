@@ -4373,6 +4373,35 @@ class Decimal {
     public static toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
         return new Decimal(value).toRoman(max);
     }
+
+    /**
+     * Returns a random Decimal value between the specified minimum and maximum values.
+     * This suffers from floating point errors if you want to generate a random number close to either the minimum or the maximum.
+     * @param [min] - The minimum value, defaults to `0`.
+     * @param [max] - The maximum value, defaults to `1`.
+     * @returns A random Decimal value between the minimum and maximum values.
+     */
+    public static random (min: DecimalSource = 0, max: DecimalSource = 1): Decimal {
+        min = new Decimal(min);
+        max = new Decimal(max);
+        min = min.lt(max) ? min : max;
+        max = max.gt(min) ? max : min;
+        return new Decimal(Math.random()).mul(max.sub(min)).add(min);
+    }
+
+    /**
+     * Returns a random boolean value based on the specified probability.
+     * @param rng - The probability of returning `true`. Must be between `0` and `1`.
+     * @returns A boolean value based on the probability.
+     * @example
+     * randomProb(0.5); // 50% chance of returning true
+     * randomProb(0.25); // 25% chance of returning true
+     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * // Anything less than ~1e-16 will always return false due to floating point errors
+     */
+    public static randomProb (rng: DecimalSource): boolean {
+        return new Decimal(Math.random()).lt(rng);
+    }
 }
 
 // Formats

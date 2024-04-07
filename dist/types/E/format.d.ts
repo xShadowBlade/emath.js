@@ -136,7 +136,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * @param type - The type of format to use
              * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
              * @param startDouble - Whether to start at aa instead of a. Defaults to false.
-             * @param abbStart - The starting value for abbreviations. Defaults to 10.
+             * @param abbStart - The starting value for abbreviations. Defaults to 9.
              * @returns - The formatted value
              */
             format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;
@@ -279,7 +279,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
              * @param type - The type of format to use
              * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
              * @param startDouble - Whether to start at aa instead of a. Defaults to false.
-             * @param abbStart - The starting value for abbreviations. Defaults to 10.
+             * @param abbStart - The starting value for abbreviations. Defaults to 9.
              * @returns - The formatted value
              */
             format(ex: DecimalSource, acc?: number, max?: number, type?: FormatType, start?: DecimalSource, startDouble?: boolean, abbStart?: number): string;

@@ -158,6 +158,25 @@ declare const DecimalAddedStaticMethods: {
      * or the original E instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
+    /**
+     * Returns a random Decimal value between the specified minimum and maximum values.
+     * This suffers from floating point errors if you want to generate a random number close to either the minimum or the maximum.
+     * @param [min] - The minimum value, defaults to `0`.
+     * @param [max] - The maximum value, defaults to `1`.
+     * @returns A random Decimal value between the minimum and maximum values.
+     */
+    random(min?: DecimalSource, max?: DecimalSource): Decimal;
+    /**
+     * Returns a random boolean value based on the specified probability.
+     * @param rng - The probability of returning `true`. Must be between `0` and `1`.
+     * @returns A boolean value based on the probability.
+     * @example
+     * randomProb(0.5); // 50% chance of returning true
+     * randomProb(0.25); // 25% chance of returning true
+     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * // Anything less than ~1e-16 will always return false due to floating point errors
+     */
+    randomProb(rng: DecimalSource): boolean;
 };
 /**
  * A function that returns a Decimal instance. Also contains static methods and properties of the Decimal class.

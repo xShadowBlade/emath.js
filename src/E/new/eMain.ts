@@ -83,6 +83,10 @@ declare module "./declare" {
      */
     // eslint-disable-next-line no-shadow
     interface Decimal extends DecimalAddedMethodsInterface {}
+    // namespace Decimal {
+    //     // eslint-disable-next-line no-shadow
+    //     // let formats: typeof formats;
+    // }
 }
 
 const DecimalAddedMethods: DecimalAddedMethodsInterface = {
@@ -292,6 +296,35 @@ const DecimalAddedStaticMethods = {
     toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
         return new Decimal(value).toRoman(max);
     },
+
+    /**
+     * Returns a random Decimal value between the specified minimum and maximum values.
+     * This suffers from floating point errors if you want to generate a random number close to either the minimum or the maximum.
+     * @param [min] - The minimum value, defaults to `0`.
+     * @param [max] - The maximum value, defaults to `1`.
+     * @returns A random Decimal value between the minimum and maximum values.
+     */
+    random (min: DecimalSource = 0, max: DecimalSource = 1): Decimal {
+        min = new Decimal(min);
+        max = new Decimal(max);
+        min = min.lt(max) ? min : max;
+        max = max.gt(min) ? max : min;
+        return new Decimal(Math.random()).mul(max.sub(min)).add(min);
+    },
+
+    /**
+     * Returns a random boolean value based on the specified probability.
+     * @param rng - The probability of returning `true`. Must be between `0` and `1`.
+     * @returns A boolean value based on the probability.
+     * @example
+     * randomProb(0.5); // 50% chance of returning true
+     * randomProb(0.25); // 25% chance of returning true
+     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * // Anything less than ~1e-16 will always return false due to floating point errors
+     */
+    randomProb (rng: DecimalSource): boolean {
+        return new Decimal(Math.random()).lt(rng);
+    },
 };
 
 for (const key in DecimalAddedStaticMethods) {
@@ -329,12 +362,12 @@ type E = Decimal;
 // Formats
 const { formats, FORMATS } = decimalFormatGenerator(Decimal as unknown as Parameters<typeof decimalFormatGenerator>[0]);
 
-// /*
+/*
 // Test
-const mag = 1e9;
-const testA = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
+const mag = 1e6;
+const testA = E(Math.random()).mul("1ee" + Math.floor(Math.random() * mag));
 console.log(testA);
-const testB = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
+const testB = E(Math.random()).mul("1ee" + Math.floor(Math.random() * mag));
 console.log(testB);
 const testShort = E(Math.random()).mul(10e3);
 
@@ -347,8 +380,9 @@ const testFormats = {
     sc: (x: DecimalSource) => format(x, 2, 9, "sc"),
     default: format,
     gain: [formatGain],
-    omega: (x: DecimalSource) => format(x, 2, 9, "omega"),
-    omega_short: (x: DecimalSource) => format(x, 2, 9, "omega_short"),
+    // TODO: Omega format is broken for very large numbers (call stack size exceeded)
+    // omega: (x: DecimalSource) => format(x, 2, 9, "omega"),
+    // omega_short: (x: DecimalSource) => format(x, 2, 9, "omega_short"),
     elemental: (x: DecimalSource) => format(x, 2, 9, "elemental"),
     old_sc: (x: DecimalSource) => format(x, 2, 9, "old_sc"),
     eng: (x: DecimalSource) => format(x, 2, 9, "eng"),
@@ -373,7 +407,6 @@ console.table(Object.keys(testFormats).map((x) => {
         if (Array.isArray(formatFn)) {
             value = formatFn[0](testA, testB);
         } else {
-            // @ts-expect-error - idk
             value = formatFn(testA);
         }
     } catch (e) {
@@ -386,7 +419,7 @@ console.table(Object.keys(testFormats).map((x) => {
     };
 }));
 // end test
-// */
+*/
 
 export { ST_NAMES, FormatTypeList } from "../format";
 export type { FormatType } from "../format";

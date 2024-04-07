@@ -372,7 +372,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param abbStart - The starting value for abbreviations
              * @returns - The abbreviation
              */
-            getAbbreviation (ex: DecimalSource, start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart: number = 10): string {
+            getAbbreviation (ex: DecimalSource, start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart: number = 9): string {
                 // there were so many off by one errors in this function
 
                 ex = new Decimal(ex);
@@ -389,18 +389,40 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
 
                 let letters = "";
 
-                if (numLetters.lt(abbStart)) {
-                    // If the number of letters is less than the abbreviation start, do a loop
-                    let remaining = exponent;
-                    for (let i = 0; i < numLetters.toNumber(); i++) {
+                const convertToLetters = (num: Decimal, length: Decimal): string => {
+                    let remaining = num;
+                    let out = "";
+                    for (let i = 0; i < length.toNumber(); i++) {
                         const letter = remaining.sub(1).mod(alphabetLength).toNumber();
                         // letters.unshift(alphabet[letter]);
-                        letters = alphabet[letter] + letters;
+                        // console.log({ letter, remaining, out });
+                        if (letter < 0 || letter >= alphabetLength) {
+                            // This should never happen, but due to floating point errors on very large numbers (above ~eee10), it can
+                            // So we just return a random letter
+                            // out = alphabet[Math.floor(Math.random() * alphabetLength)] + out;
+
+                            // out = alphabet[alphabetLength - 1] + out;
+                            // remaining = remaining.sub(1).div(alphabetLength).floor();
+                            // continue;
+
+                            return "ω";
+                        }
+                        out = alphabet[letter] + out;
                         remaining = remaining.sub(1).div(alphabetLength).floor();
                     }
+                    return out;
+                };
+
+                if (numLetters.lt(abbStart)) {
+                    // If the number of letters is less than the abbreviation start, do a loop
+                    letters = convertToLetters(exponent, numLetters);
                 } else {
                     // TODO
-                    throw new Error("Not implemented");
+                    // throw new Error("Not implemented");
+                    const trunc = numLetters.sub(abbStart).add(1);
+                    const truncExponent = exponent.div(Decimal.pow(alphabetLength + 1, trunc.sub(1))).floor();
+                    const truncLetters = convertToLetters(truncExponent, new Decimal(abbStart));
+                    letters = `${truncLetters}(${trunc.gt("1e9") ? trunc.format() : trunc.format(0)})`;
                 }
 
                 // return letters.join("");
@@ -417,7 +439,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param type - The type of format to use
              * @param start - The starting value. Defaults to 1e15, or 1 quadrillion.
              * @param startDouble - Whether to start at aa instead of a. Defaults to false.
-             * @param abbStart - The starting value for abbreviations. Defaults to 10.
+             * @param abbStart - The starting value for abbreviations. Defaults to 9.
              * @returns - The formatted value
              */
             format (ex: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc", start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart?: number): string {
@@ -431,7 +453,8 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 const mantissa = ex.div(Decimal.pow(1e3, ex.log(1e3).floor()));
 
                 // console.log({ mantissa, exponent, letters, numLetters });
-                return mantissa.toFixed(acc) + " " + letters;
+                const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
+                return `${(!isAbbreviation ? (mantissa.toFixed(acc) + " ") : "")}${letters}`;
             },
         },
     };
