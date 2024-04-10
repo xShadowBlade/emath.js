@@ -1,14 +1,14 @@
 (function (g, f) {
     var hasExports = typeof exports === 'object';
     if (typeof define === "function" && define.amd) {
-      define([], f);
+      define(['reflect-metadata', 'class-transformer'], f);
     } else if (typeof module === "object" && module.exports) {
-      module.exports = f();
+      module.exports = f(require('reflect-metadata'), require('class-transformer'));
     } else {
-      var m = hasExports ? f() : f();
+      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer')) : f(g["reflect-metadata"], g["class-transformer"]);
       var root = hasExports ? exports : g;
       for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, () => {
+    }}(typeof self !== 'undefined' ? self : this, (__da, __db) => {
   var exports = {};
   var module = { exports };
 "use strict";
@@ -50,241 +50,8 @@ __export(presets_exports, {
 });
 module.exports = __toCommonJS(presets_exports);
 
-// node_modules/class-transformer/esm5/enums/transformation-type.enum.js
-var TransformationType;
-(function(TransformationType2) {
-  TransformationType2[TransformationType2["PLAIN_TO_CLASS"] = 0] = "PLAIN_TO_CLASS";
-  TransformationType2[TransformationType2["CLASS_TO_PLAIN"] = 1] = "CLASS_TO_PLAIN";
-  TransformationType2[TransformationType2["CLASS_TO_CLASS"] = 2] = "CLASS_TO_CLASS";
-})(TransformationType || (TransformationType = {}));
-
-// node_modules/class-transformer/esm5/MetadataStorage.js
-var MetadataStorage = (
-  /** @class */
-  function() {
-    function MetadataStorage2() {
-      this._typeMetadatas = /* @__PURE__ */ new Map();
-      this._transformMetadatas = /* @__PURE__ */ new Map();
-      this._exposeMetadatas = /* @__PURE__ */ new Map();
-      this._excludeMetadatas = /* @__PURE__ */ new Map();
-      this._ancestorsMap = /* @__PURE__ */ new Map();
-    }
-    MetadataStorage2.prototype.addTypeMetadata = function(metadata) {
-      if (!this._typeMetadatas.has(metadata.target)) {
-        this._typeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._typeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addTransformMetadata = function(metadata) {
-      if (!this._transformMetadatas.has(metadata.target)) {
-        this._transformMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      if (!this._transformMetadatas.get(metadata.target).has(metadata.propertyName)) {
-        this._transformMetadatas.get(metadata.target).set(metadata.propertyName, []);
-      }
-      this._transformMetadatas.get(metadata.target).get(metadata.propertyName).push(metadata);
-    };
-    MetadataStorage2.prototype.addExposeMetadata = function(metadata) {
-      if (!this._exposeMetadatas.has(metadata.target)) {
-        this._exposeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._exposeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.addExcludeMetadata = function(metadata) {
-      if (!this._excludeMetadatas.has(metadata.target)) {
-        this._excludeMetadatas.set(metadata.target, /* @__PURE__ */ new Map());
-      }
-      this._excludeMetadatas.get(metadata.target).set(metadata.propertyName, metadata);
-    };
-    MetadataStorage2.prototype.findTransformMetadatas = function(target, propertyName, transformationType) {
-      return this.findMetadatas(this._transformMetadatas, target, propertyName).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      });
-    };
-    MetadataStorage2.prototype.findExcludeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._excludeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._exposeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.findExposeMetadataByCustomName = function(target, name) {
-      return this.getExposedMetadatas(target).find(function(metadata) {
-        return metadata.options && metadata.options.name === name;
-      });
-    };
-    MetadataStorage2.prototype.findTypeMetadata = function(target, propertyName) {
-      return this.findMetadata(this._typeMetadatas, target, propertyName);
-    };
-    MetadataStorage2.prototype.getStrategy = function(target) {
-      var excludeMap = this._excludeMetadatas.get(target);
-      var exclude = excludeMap && excludeMap.get(void 0);
-      var exposeMap = this._exposeMetadatas.get(target);
-      var expose = exposeMap && exposeMap.get(void 0);
-      if (exclude && expose || !exclude && !expose)
-        return "none";
-      return exclude ? "excludeAll" : "exposeAll";
-    };
-    MetadataStorage2.prototype.getExposedMetadatas = function(target) {
-      return this.getMetadata(this._exposeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExcludedMetadatas = function(target) {
-      return this.getMetadata(this._excludeMetadatas, target);
-    };
-    MetadataStorage2.prototype.getExposedProperties = function(target, transformationType) {
-      return this.getExposedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.getExcludedProperties = function(target, transformationType) {
-      return this.getExcludedMetadatas(target).filter(function(metadata) {
-        if (!metadata.options)
-          return true;
-        if (metadata.options.toClassOnly === true && metadata.options.toPlainOnly === true)
-          return true;
-        if (metadata.options.toClassOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_CLASS || transformationType === TransformationType.PLAIN_TO_CLASS;
-        }
-        if (metadata.options.toPlainOnly === true) {
-          return transformationType === TransformationType.CLASS_TO_PLAIN;
-        }
-        return true;
-      }).map(function(metadata) {
-        return metadata.propertyName;
-      });
-    };
-    MetadataStorage2.prototype.clear = function() {
-      this._typeMetadatas.clear();
-      this._exposeMetadatas.clear();
-      this._excludeMetadatas.clear();
-      this._ancestorsMap.clear();
-    };
-    MetadataStorage2.prototype.getMetadata = function(metadatas, target) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = Array.from(metadataFromTargetMap.values()).filter(function(meta) {
-          return meta.propertyName !== void 0;
-        });
-      }
-      var metadataFromAncestors = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
-            return meta.propertyName !== void 0;
-          });
-          metadataFromAncestors.push.apply(metadataFromAncestors, metadataFromAncestor);
-        }
-      }
-      return metadataFromAncestors.concat(metadataFromTarget || []);
-    };
-    MetadataStorage2.prototype.findMetadata = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      if (metadataFromTargetMap) {
-        var metadataFromTarget = metadataFromTargetMap.get(propertyName);
-        if (metadataFromTarget) {
-          return metadataFromTarget;
-        }
-      }
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          var ancestorResult = ancestorMetadataMap.get(propertyName);
-          if (ancestorResult) {
-            return ancestorResult;
-          }
-        }
-      }
-      return void 0;
-    };
-    MetadataStorage2.prototype.findMetadatas = function(metadatas, target, propertyName) {
-      var metadataFromTargetMap = metadatas.get(target);
-      var metadataFromTarget;
-      if (metadataFromTargetMap) {
-        metadataFromTarget = metadataFromTargetMap.get(propertyName);
-      }
-      var metadataFromAncestorsTarget = [];
-      for (var _i = 0, _a = this.getAncestors(target); _i < _a.length; _i++) {
-        var ancestor = _a[_i];
-        var ancestorMetadataMap = metadatas.get(ancestor);
-        if (ancestorMetadataMap) {
-          if (ancestorMetadataMap.has(propertyName)) {
-            metadataFromAncestorsTarget.push.apply(metadataFromAncestorsTarget, ancestorMetadataMap.get(propertyName));
-          }
-        }
-      }
-      return metadataFromAncestorsTarget.slice().reverse().concat((metadataFromTarget || []).slice().reverse());
-    };
-    MetadataStorage2.prototype.getAncestors = function(target) {
-      if (!target)
-        return [];
-      if (!this._ancestorsMap.has(target)) {
-        var ancestors = [];
-        for (var baseClass = Object.getPrototypeOf(target.prototype.constructor); typeof baseClass.prototype !== "undefined"; baseClass = Object.getPrototypeOf(baseClass.prototype.constructor)) {
-          ancestors.push(baseClass);
-        }
-        this._ancestorsMap.set(target, ancestors);
-      }
-      return this._ancestorsMap.get(target);
-    };
-    return MetadataStorage2;
-  }()
-);
-
-// node_modules/class-transformer/esm5/storage.js
-var defaultMetadataStorage = new MetadataStorage();
-
-// node_modules/class-transformer/esm5/decorators/exclude.decorator.js
-function Exclude(options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return function(object, propertyName) {
-    defaultMetadataStorage.addExcludeMetadata({
-      target: object instanceof Function ? object : object.constructor,
-      propertyName,
-      options
-    });
-  };
-}
-
-// node_modules/class-transformer/esm5/decorators/expose.decorator.js
-function Expose(options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return function(object, propertyName) {
-    defaultMetadataStorage.addExposeMetadata({
-      target: object instanceof Function ? object : object.constructor,
-      propertyName,
-      options
-    });
-  };
-}
+// src/E/e.ts
+var import_class_transformer = require("class-transformer");
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -4946,16 +4713,16 @@ Decimal.dNumberMax = FC(1, 0, Number.MAX_VALUE);
 Decimal.dNumberMin = FC(1, 0, Number.MIN_VALUE);
 Decimal.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
 __decorateClass([
-  Expose()
+  (0, import_class_transformer.Expose)()
 ], Decimal.prototype, "sign", 2);
 __decorateClass([
-  Expose()
+  (0, import_class_transformer.Expose)()
 ], Decimal.prototype, "mag", 2);
 __decorateClass([
-  Expose()
+  (0, import_class_transformer.Expose)()
 ], Decimal.prototype, "layer", 2);
 Decimal = __decorateClass([
-  Exclude()
+  (0, import_class_transformer.Exclude)()
 ], Decimal);
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;

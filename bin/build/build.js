@@ -49,6 +49,7 @@ const fs = require("fs/promises");
 const dev = {
     format: "umd",
     plugins: [umdWrapper()],
+    external: ["reflect-metadata", "class-transformer"],
 };
 
 const min = {

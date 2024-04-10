@@ -60,7 +60,6 @@
         "@typescript-eslint/eslint-plugin": "^7.0.2",
         "@typescript-eslint/parser": "^7.0.2",
         "break_eternity.js": "^1.4.2",
-        "class-transformer": "^0.5.1",
         "concurrently": "^8.2.2",
         "esbuild": "0.20.2",
         "eslint": "^8.50.0",
@@ -74,9 +73,12 @@
         "prettier": "3.2.5",
         "prettier-eslint": "^16.1.1",
         "react": "^18.2.0",
-        "reflect-metadata": "^0.2.1",
         "ts-mocha": "^10.0.0",
         "typedoc": "^0.25.11",
         "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "class-transformer": "^0.5.1",
+        "reflect-metadata": "^0.2.2"
     }
 }
