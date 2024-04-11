@@ -36,7 +36,7 @@
     "scripts": {
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
         "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.config.json\"",
-        "build-main": "node bin/build/build.js",
+        "build:main": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "doc": "typedoc --options typedoc.config.json",
         "lint": "eslint src/**/*.ts test/**/*.ts",
@@ -62,6 +62,7 @@
         "break_eternity.js": "^1.4.2",
         "concurrently": "^8.2.2",
         "esbuild": "0.20.2",
+        "esbuild-plugin-replace": "^1.4.0",
         "eslint": "^8.50.0",
         "eslint-config-prettier": "^9.0.0",
         "eslint-config-react-app": "^7.0.1",

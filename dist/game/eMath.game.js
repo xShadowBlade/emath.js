@@ -6411,16 +6411,28 @@ var DataManager = class {
   compileDataRaw(data = this.data) {
     const gameDataString = (0, import_class_transformer5.instanceToPlain)(data);
     const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
-    return [hasedData, gameDataString];
+    const saveMetadata = {
+      hash: hasedData,
+      game: {
+        title: this.gameRef.config.name.title,
+        id: this.gameRef.config.name.id,
+        version: this.gameRef.config.name.version
+      },
+      emath: {
+        // @ts-expect-error - Replaced by esbuild
+        version: "8.0.0-rc.0"
+      }
+    };
+    return [saveMetadata, gameDataString];
   }
   /**
-   * Compresses the given game data to a base64-encoded using lz-string, or btoa if lz-string is not available.
+   * Compresses the given game data to a base64-encoded using lz-string.
    * @param data The game data to be compressed. Defaults to the current game data.
    * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
    */
   compileData(data = this.data) {
     const dataRawString = JSON.stringify(this.compileDataRaw(data));
-    return import_lz_string.compressToBase64 ? (0, import_lz_string.compressToBase64)(dataRawString) : btoa(dataRawString);
+    return (0, import_lz_string.compressToBase64)(dataRawString);
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
@@ -6432,7 +6444,7 @@ var DataManager = class {
       return null;
     let parsedData;
     try {
-      parsedData = JSON.parse(import_lz_string.decompressFromBase64 ? (0, import_lz_string.decompressFromBase64)(data) : atob(data));
+      parsedData = JSON.parse((0, import_lz_string.decompressFromBase64)(data));
       return parsedData;
     } catch (error) {
       if (error instanceof SyntaxError) {
@@ -6449,7 +6461,11 @@ var DataManager = class {
    * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
    */
   validateData(data) {
-    const [hashSave, gameDataToValidate] = data;
+    const [saveMetadata, gameDataToValidate] = data;
+    if (typeof saveMetadata === "string") {
+      return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
+    }
+    const hashSave = saveMetadata.hash;
     const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
     return hashSave === hashCheck;
   }
@@ -6524,6 +6540,8 @@ var DataManager = class {
               targetCurrency.upgrades[upgrade.id] = upgrade.level;
             }
           }
+          console.log("Merging upgrades: ");
+          console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades } });
           targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
           out[key] = targetCurrency;
         } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {

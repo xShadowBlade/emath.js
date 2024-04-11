@@ -31,6 +31,21 @@ type UnknownObject = Record<string, unknown>;
 // type plainTypes = string | number | boolean | UnknownObject | unknown[];
 
 /**
+ * Interface for the metadata of a save file.
+ */
+interface SaveMetadata {
+    hash: string;
+    game: {
+        title: string;
+        id: string;
+        version: string;
+    };
+    emath: {
+        version: string;
+    };
+}
+
+/**
  * A class that manages game data, including saving, loading, and exporting data.
  *
  * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
@@ -243,20 +258,33 @@ class DataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    private compileDataRaw (data = this.data): [string, object] {
+    private compileDataRaw (data = this.data): [SaveMetadata, object] {
         const gameDataString = instanceToPlain(data);
         const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
-        return [hasedData, gameDataString];
+        const saveMetadata: SaveMetadata = {
+            hash: hasedData,
+            game: {
+                title: this.gameRef.config.name.title,
+                id: this.gameRef.config.name.id,
+                version: this.gameRef.config.name.version,
+            },
+            emath: {
+                // @ts-expect-error - Replaced by esbuild
+                version: PKG_VERSION,
+            },
+        };
+        // console.log("Compiled data: ", saveMetadata, gameDataString);
+        return [saveMetadata, gameDataString];
     }
 
     /**
-     * Compresses the given game data to a base64-encoded using lz-string, or btoa if lz-string is not available.
+     * Compresses the given game data to a base64-encoded using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
     public compileData (data = this.data): string {
         const dataRawString = JSON.stringify(this.compileDataRaw(data));
-        return compressToBase64 ? compressToBase64(dataRawString) : btoa(dataRawString);
+        return compressToBase64(dataRawString);
     }
 
     /**
@@ -264,11 +292,11 @@ class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [string, UnknownObject] | null {
+    public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
         if (!data) return null;
-        let parsedData: [string, UnknownObject];
+        let parsedData: [SaveMetadata, UnknownObject];
         try {
-            parsedData = JSON.parse(decompressFromBase64 ? decompressFromBase64(data) : atob(data));
+            parsedData = JSON.parse(decompressFromBase64(data));
             return parsedData;
         } catch (error) {
             if (error instanceof SyntaxError) {
@@ -285,8 +313,13 @@ class DataManager {
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
-    public validateData (data: [string, object]): boolean {
-        const [hashSave, gameDataToValidate] = data;
+    public validateData (data: [SaveMetadata, object]): boolean {
+        const [saveMetadata, gameDataToValidate] = data;
+        // Backwards compatibility: In versions before 8.x.x, data was of type [hash: string, data: object]. Now it's of type [SaveMetadata, data: object].
+        if (typeof saveMetadata === "string") {
+            return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
+        }
+        const hashSave = saveMetadata.hash;
         // Current hash
         const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
         // console.log("Hashes: ", hashSave, hashCheck);
@@ -405,6 +438,8 @@ class DataManager {
                     }
 
                     // Merge upgrades
+                    console.log("Merging upgrades: ");
+                    console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades }});
                     targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
                     out[key] = targetCurrency;
                 } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
@@ -541,7 +576,7 @@ class DataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData (dataToLoad: [string, UnknownObject] | null | string = this.decompileData()): null | boolean {
+    public loadData (dataToLoad: [SaveMetadata, UnknownObject] | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
         if (!dataToLoad) return null;
         const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??

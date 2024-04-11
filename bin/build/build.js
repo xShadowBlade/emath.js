@@ -4,8 +4,10 @@
  */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const esbuild = require("esbuild");
+const { replace } = require("esbuild-plugin-replace");
 const { umdWrapper } = require("./umdPlugin.js");
 const fs = require("fs/promises");
+const packageJson = require("../../package.json");
 /*
 "build-main": "run-p build-main:bundle build-main:minify build-main:esm build-main:cjs",
 "build-main:bundle": "esbuild src/index.ts --bundle --format=iife --outfile=dist/main/eMath.bundle.js",
@@ -42,19 +44,25 @@ const fs = require("fs/promises");
 //     "./src/E/lru-cache.ts",
 // ];
 
+const replacePlugin = replace({
+    // "process.env.NODE_ENV": JSON.stringify("production"),
+    "PKG_VERSION": JSON.stringify(packageJson.version),
+});
+
 /**
  * @typedef {import("esbuild").BuildOptions} BuildOptions
  */
 
 const dev = {
     format: "umd",
-    plugins: [umdWrapper()],
+    plugins: [umdWrapper(), replacePlugin],
     external: ["reflect-metadata", "class-transformer"],
 };
 
 const min = {
     format: "iife",
     minify: true,
+    plugins: [replacePlugin],
 };
 
 // TODO: fix hook
@@ -165,6 +173,7 @@ Promise.all(buildOptions.map(async function (option) {
         newOption = {
             ...newOption,
             ...dev,
+            external: [],
         };
         esbuild
             .build(newOption)
