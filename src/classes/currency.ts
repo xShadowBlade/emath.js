@@ -22,8 +22,8 @@ class Currency {
 
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
-    // public upgrades: UpgradeData<string>[];
     public upgrades: Record<string, UpgradeData<string>>;
+    // public upgrades: UpgradeData<string>[];
 
     // /** A boost object that affects the currency gain. */
     // @Expose()
@@ -168,6 +168,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     private pointerAddUpgrade (upgrades: UpgradeInit<U[number]>): UpgradeData<U[number]> {
         const upgradesToAdd = new UpgradeData(upgrades);
         // this.pointer.upgrades.push(upgradesToAdd);
+        // console.log("pointerAdd", { upgradesToAdd });
         this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
         return upgradesToAdd;
     };
@@ -178,6 +179,7 @@ class CurrencyStatic<U extends string[] = string[]> {
      * @returns The upgrade object if found, otherwise null.
      */
     private pointerGetUpgrade (id: string): UpgradeData<string> | null {
+        // console.log("pointerGet", { id, upgrades: this.pointer });
         return this.pointer.upgrades[id] ?? null;
     }
 
@@ -223,7 +225,7 @@ class CurrencyStatic<U extends string[] = string[]> {
     public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly: boolean = true): UpgradeStatic<string>[] {
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
-        console.log(upgrades);
+        // console.log({ upgrades });
 
         // Adds standard (object instead of array)
         const addedUpgradeList: Record<string, UpgradeStatic<string>> = {};
@@ -231,15 +233,15 @@ class CurrencyStatic<U extends string[] = string[]> {
             // console.log(upgrade.id);
 
             const addedUpgradeData = this.pointerAddUpgrade(upgrade);
-            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
-            // const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id) ?? addedUpgradeData);
+            // const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!);
 
             if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
             addedUpgradeList[upgrade.id] = addedUpgradeStatic;
             (this.upgrades as Record<string, UpgradeStatic>)[upgrade.id] = addedUpgradeStatic;
         }
 
-        console.log(addedUpgradeList);
+        // console.log({ addedUpgradeList });
 
         // return addedUpgradeList;
         return Object.values(addedUpgradeList);

@@ -32,7 +32,8 @@
   },
   "dependencies": {
     "emath.js": "file:../",
-    "evaluatex": "^2.2.0"
+    "evaluatex": "^2.2.0",
+    "lz-string": "^1.5.0"
   },
   "devDependencies": {
     "@types/css-modules": "^1.0.4",

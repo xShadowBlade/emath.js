@@ -13,6 +13,8 @@ import { Currency } from "../../classes/currency";
 import { Attribute } from "../../classes/attribute";
 // import { Decimal } from "../../E/old/e";
 import { Decimal } from "../../E/e";
+import { UpgradeData } from "../../classes/upgrade";
+import { E } from "../../E/eMain";
 
 // Save validation
 /**
@@ -261,6 +263,13 @@ class DataManager {
     private compileDataRaw (data = this.data): [SaveMetadata, object] {
         const gameDataString = instanceToPlain(data);
         const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+        let version: string;
+        try {
+            // @ts-expect-error - Replaced by esbuild
+            version = PKG_VERSION;
+        } catch (error) {
+            version = "8.0.0";
+        }
         const saveMetadata: SaveMetadata = {
             hash: hasedData,
             game: {
@@ -269,8 +278,7 @@ class DataManager {
                 version: this.gameRef.config.name.version,
             },
             emath: {
-                // @ts-expect-error - Replaced by esbuild
-                version: PKG_VERSION,
+                version,
             },
         };
         // console.log("Compiled data: ", saveMetadata, gameDataString);
@@ -412,14 +420,14 @@ class DataManager {
                 }
                 // Special case for currency.upgrades
                 if (source[key] instanceof Currency) {
-                    console.log("Merging currency: ", source[key], target[key]);
+                    // console.log("Merging currency: ", sourcePlain[key], target[key]);
                     // interface currencyPlainType {
                     //     upgrades: {
                     //         id: string;
                     //         level: unknown; // irrelevant so unknown
                     //     }[]
                     // }
-                    const sourceCurrency = source[key] as Currency;
+                    const sourceCurrency = sourcePlain[key] as Currency;
                     const targetCurrency = target[key] as Currency;
                     // for (const upgrade of sourceCurrency.upgrades) {
                     //     if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
@@ -431,6 +439,7 @@ class DataManager {
                     // Convert the old format to the new format
                     if (Array.isArray(targetCurrency.upgrades)) {
                         const upgrades = targetCurrency.upgrades;
+                        // targetCurrency.upgrades = {};
                         targetCurrency.upgrades = {};
                         for (const upgrade of upgrades) {
                             targetCurrency.upgrades[upgrade.id] = upgrade.level;
@@ -438,8 +447,8 @@ class DataManager {
                     }
 
                     // Merge upgrades
-                    console.log("Merging upgrades: ");
-                    console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades }});
+                    // console.log("Merging upgrades: ");
+                    // console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades }});
                     targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
                     out[key] = targetCurrency;
                 } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
@@ -518,7 +527,7 @@ class DataManager {
 
         /** A queue of objects to call onLoadData on. */
         // const loadDataQueue: any = [];
-
+        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
         /**
          * Converts a plain object to a class instance.
          * @param templateClassToConvert - The template class to convert to.
@@ -530,6 +539,19 @@ class DataManager {
             // let out: object = plain;
             // Convert the object
             const out = plainToInstance(templateClassToConvert.class, plain);
+            if (out instanceof Currency) {
+                // console.log("Converted currency: ", out);
+                for (const upgradeName in out.upgrades) {
+                    const upgrade = out.upgrades[upgradeName];
+                    // console.log("Upgrade: ", upgrade);
+                    if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
+                        // console.log("invalid upgrade: ", upgrade);
+                        delete out.upgrades[upgradeName];
+                        continue;
+                    }
+                    out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
+                }
+            }
             if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
             return out;
         }
