@@ -7,6 +7,20 @@ import type { Game } from "../game";
 type ClassType = new (...args: any[]) => any;
 type UnknownObject = Record<string, unknown>;
 /**
+ * Interface for the metadata of a save file.
+ */
+interface SaveMetadata {
+    hash: string;
+    game: {
+        title: string;
+        id: string;
+        version: string;
+    };
+    emath: {
+        version: string;
+    };
+}
+/**
  * A class that manages game data, including saving, loading, and exporting data.
  *
  * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
@@ -93,7 +107,7 @@ declare class DataManager {
      */
     private compileDataRaw;
     /**
-     * Compresses the given game data to a base64-encoded using lz-string, or btoa if lz-string is not available.
+     * Compresses the given game data to a base64-encoded using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
@@ -103,13 +117,13 @@ declare class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    decompileData(data?: string | null): [string, UnknownObject] | null;
+    decompileData(data?: string | null): [SaveMetadata, UnknownObject] | null;
     /**
      * Validates the given data using a hashing algorithm (md5)
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
-    validateData(data: [string, object]): boolean;
+    validateData(data: [SaveMetadata, object]): boolean;
     /**
      * Resets the game data to its initial state and saves it.
      * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
@@ -133,13 +147,13 @@ declare class DataManager {
      * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    parseData(dataToParse?: [string, UnknownObject] | null, mergeData?: boolean): UnknownObject | null;
+    parseData(dataToParse?: [SaveMetadata, UnknownObject] | null, mergeData?: boolean): UnknownObject | null;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    loadData(dataToLoad?: [string, UnknownObject] | null | string): null | boolean;
+    loadData(dataToLoad?: [SaveMetadata, UnknownObject] | null | string): null | boolean;
 }
 export { DataManager };
 export type { UnknownObject, ClassType };

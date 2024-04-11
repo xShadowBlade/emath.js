@@ -5118,6 +5118,7 @@ var UpgradeStatic = class _UpgradeStatic {
 var import_reflect_metadata2 = require("reflect-metadata");
 var import_class_transformer3 = require("class-transformer");
 var Currency = class {
+  // public upgrades: UpgradeData<string>[];
   // /** A boost object that affects the currency gain. */
   // @Expose()
   // public boost: boost;
@@ -5271,17 +5272,15 @@ var CurrencyStatic = class {
   addUpgrade(upgrades, runEffectInstantly = true) {
     if (!Array.isArray(upgrades))
       upgrades = [upgrades];
-    console.log(upgrades);
     const addedUpgradeList = {};
     for (const upgrade of upgrades) {
       const addedUpgradeData = this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
       if (addedUpgradeStatic.effect && runEffectInstantly)
         addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
       addedUpgradeList[upgrade.id] = addedUpgradeStatic;
       this.upgrades[upgrade.id] = addedUpgradeStatic;
     }
-    console.log(addedUpgradeList);
     return Object.values(addedUpgradeList);
   }
   /**

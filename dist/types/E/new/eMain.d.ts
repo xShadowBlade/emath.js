@@ -190,30 +190,30 @@ type E = Decimal;
 declare const formats: {
     toSubscript: (value: number) => string;
     toSuperscript: (value: number) => string;
-    formatST: (ex: import("index").ESource, acc?: number, max?: number, type?: FormatType) => string;
-    format: (ex: import("index").ESource, acc?: number, max?: number, type?: FormatType) => string;
-    formatGain: (amt: import("index").ESource, gain: import("index").ESource, type?: FormatType, acc?: number | undefined, max?: number | undefined) => string;
-    formatTime: (ex: import("index").ESource, acc?: number, type?: string) => string;
-    formatTimeLong: (ex: import("index").ESource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;
-    formatReduction: (ex: import("index").ESource) => string;
-    formatPercent: (ex: import("index").ESource) => string;
-    formatMult: (ex: import("index").ESource, acc?: number) => string;
-    expMult: (a: import("index").ESource, b: import("index").ESource, base?: number) => import("E/e").Decimal;
-    metric: (num: import("index").ESource, type: 0 | 1 | 2 | 3) => string;
-    ev: (num: import("index").ESource, c2?: boolean) => string;
+    formatST: (ex: import("../e").DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
+    format: (ex: import("../e").DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
+    formatGain: (amt: import("../e").DecimalSource, gain: import("../e").DecimalSource, type?: FormatType, acc?: number | undefined, max?: number | undefined) => string;
+    formatTime: (ex: import("../e").DecimalSource, acc?: number, type?: string) => string;
+    formatTimeLong: (ex: import("../e").DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;
+    formatReduction: (ex: import("../e").DecimalSource) => string;
+    formatPercent: (ex: import("../e").DecimalSource) => string;
+    formatMult: (ex: import("../e").DecimalSource, acc?: number) => string;
+    expMult: (a: import("../e").DecimalSource, b: import("../e").DecimalSource, base?: number) => import("../e").Decimal;
+    metric: (num: import("../e").DecimalSource, type: 0 | 1 | 2 | 3) => string;
+    ev: (num: import("../e").DecimalSource, c2?: boolean) => string;
     omega: {
         config: {
             greek: string;
             infinity: string;
         };
-        format(value: import("index").ESource): string;
+        format(value: import("../e").DecimalSource): string;
     };
     omega_short: {
         config: {
             greek: string;
             infinity: string;
         };
-        format(value: import("index").ESource): string;
+        format(value: import("../e").DecimalSource): string;
     };
     elemental: {
         config: {
@@ -223,36 +223,36 @@ declare const formats: {
         getAbbreviation(group: number, progress: number): string;
         beyondOg(x: number): string;
         abbreviationLength(group: number): number;
-        getAbbreviationAndValue(x: import("E/e").Decimal): (string | import("E/e").Decimal)[];
-        formatElementalPart(abbreviation: string, n: import("E/e").Decimal): string;
-        format(value: import("E/e").Decimal, acc?: number): string;
+        getAbbreviationAndValue(x: import("../e").Decimal): (string | import("../e").Decimal)[];
+        formatElementalPart(abbreviation: string, n: import("../e").Decimal): string;
+        format(value: import("../e").Decimal, acc?: number): string;
     };
     old_sc: {
-        format(ex: import("index").ESource, acc: number): string;
+        format(ex: import("../e").DecimalSource, acc: number): string;
     };
     eng: {
-        format(ex: import("index").ESource, acc?: number): string;
+        format(ex: import("../e").DecimalSource, acc?: number): string;
     };
     mixed_sc: {
-        format(ex: import("index").ESource, acc?: number | undefined, max?: number): string;
+        format(ex: import("../e").DecimalSource, acc?: number | undefined, max?: number): string;
     };
     layer: {
         layers: string[];
-        format(ex: import("index").ESource, acc?: number, max?: number | undefined): string;
+        format(ex: import("../e").DecimalSource, acc?: number, max?: number | undefined): string;
     };
     standard: {
         tier1(x: number): string;
         tier2(x: number): string;
     };
     inf: {
-        format(ex: import("index").ESource, acc?: number | undefined, max?: number | undefined): string;
+        format(ex: import("../e").DecimalSource, acc?: number | undefined, max?: number | undefined): string;
     };
     alphabet: {
         config: {
             alphabet: string;
         };
-        getAbbreviation(ex: import("index").ESource, start?: import("index").ESource, startDouble?: boolean, abbStart?: number): string;
-        format(ex: import("index").ESource, acc?: number, max?: number, type?: FormatType, start?: import("index").ESource, startDouble?: boolean, abbStart?: number | undefined): string;
+        getAbbreviation(ex: import("../e").DecimalSource, start?: import("../e").DecimalSource, startDouble?: boolean, abbStart?: number): string;
+        format(ex: import("../e").DecimalSource, acc?: number, max?: number, type?: FormatType, start?: import("../e").DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
     };
 };
 export { ST_NAMES, FormatTypeList } from "../format";

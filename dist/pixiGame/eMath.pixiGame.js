@@ -5590,6 +5590,7 @@ var UpgradeStatic = class _UpgradeStatic {
 
 // src/classes/currency.ts
 var Currency = class {
+  // public upgrades: UpgradeData<string>[];
   // /** A boost object that affects the currency gain. */
   // @Expose()
   // public boost: boost;
@@ -5743,17 +5744,15 @@ var CurrencyStatic = class {
   addUpgrade(upgrades, runEffectInstantly = true) {
     if (!Array.isArray(upgrades))
       upgrades = [upgrades];
-    console.log(upgrades);
     const addedUpgradeList = {};
     for (const upgrade of upgrades) {
       const addedUpgradeData = this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
+      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
       if (addedUpgradeStatic.effect && runEffectInstantly)
         addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
       addedUpgradeList[upgrade.id] = addedUpgradeStatic;
       this.upgrades[upgrade.id] = addedUpgradeStatic;
     }
-    console.log(addedUpgradeList);
     return Object.values(addedUpgradeList);
   }
   /**
@@ -6410,6 +6409,12 @@ var DataManager = class {
   compileDataRaw(data = this.data) {
     const gameDataString = (0, import_class_transformer5.instanceToPlain)(data);
     const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+    let version;
+    try {
+      version = "8.0.0-rc.0";
+    } catch (error) {
+      version = "8.0.0";
+    }
     const saveMetadata = {
       hash: hasedData,
       game: {
@@ -6418,8 +6423,7 @@ var DataManager = class {
         version: this.gameRef.config.name.version
       },
       emath: {
-        // @ts-expect-error - Replaced by esbuild
-        version: "8.0.0-rc.0"
+        version
       }
     };
     return [saveMetadata, gameDataString];
@@ -6529,8 +6533,7 @@ var DataManager = class {
           out[key] = sourcePlain[key];
         }
         if (source[key] instanceof Currency) {
-          console.log("Merging currency: ", source[key], target[key]);
-          const sourceCurrency = source[key];
+          const sourceCurrency = sourcePlain[key];
           const targetCurrency = target[key];
           if (Array.isArray(targetCurrency.upgrades)) {
             const upgrades = targetCurrency.upgrades;
@@ -6539,8 +6542,6 @@ var DataManager = class {
               targetCurrency.upgrades[upgrade.id] = upgrade.level;
             }
           }
-          console.log("Merging upgrades: ");
-          console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades } });
           targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
           out[key] = targetCurrency;
         } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
@@ -6593,8 +6594,19 @@ var DataManager = class {
     function compareArrays(arr1, arr2) {
       return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
     }
+    const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
     function convertTemplateClass(templateClassToConvert, plain) {
       const out = (0, import_class_transformer5.plainToInstance)(templateClassToConvert.class, plain);
+      if (out instanceof Currency) {
+        for (const upgradeName in out.upgrades) {
+          const upgrade = out.upgrades[upgradeName];
+          if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
+            delete out.upgrades[upgradeName];
+            continue;
+          }
+          out.upgrades[upgradeName] = (0, import_class_transformer5.plainToInstance)(UpgradeData, upgrade);
+        }
+      }
       if (!out)
         throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
       return out;
