@@ -142,6 +142,7 @@ class Game {
     /**
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+     * @template N - The name
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
      * @example
@@ -149,7 +150,7 @@ class Game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    public addCurrency<Name extends string> (name: Name): GameCurrency<Name> {
+    public addCurrency<N extends string> (name: N): GameCurrency<N> {
         this.dataManager.setData(name, {
             currency: new Currency(),
         });

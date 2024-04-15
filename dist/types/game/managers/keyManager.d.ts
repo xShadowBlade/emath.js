@@ -129,7 +129,7 @@ declare class KeyManager {
     addKey(keysToAdd: KeyBinding | KeyBinding[]): void;
     /** @deprecated Use {@link addKey} instead. */
     addKeys: {
-        (name: string, key: string, fn?: ((dt: number) => void) | undefined): void;
+        (name: string, key: string, fn?: (dt: number) => void): void;
         (keysToAdd: KeyBinding | KeyBinding[]): void;
     };
 }

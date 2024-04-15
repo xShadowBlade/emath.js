@@ -199,7 +199,7 @@ declare const formats: {
     formatPercent: (ex: import("../e").DecimalSource) => string;
     formatMult: (ex: import("../e").DecimalSource, acc?: number) => string;
     expMult: (a: import("../e").DecimalSource, b: import("../e").DecimalSource, base?: number) => import("../e").Decimal;
-    metric: (num: import("../e").DecimalSource, type: 0 | 1 | 2 | 3) => string;
+    metric: (num: import("../e").DecimalSource, type?: 0 | 1 | 2 | 3) => string;
     ev: (num: import("../e").DecimalSource, c2?: boolean) => string;
     omega: {
         config: {

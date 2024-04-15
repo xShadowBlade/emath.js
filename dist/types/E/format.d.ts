@@ -2,6 +2,7 @@
  * @file Declares a generator function for formats for the E library.
  */
 import type { Decimal as DecimalType, DecimalSource } from "./e";
+type Decimal = DecimalType;
 type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf" | "alphabet";
 /** A list of names for the standard notation */
 declare const ST_NAMES: string[][][];
@@ -154,7 +155,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         formatPercent: (ex: DecimalSource) => string;
         formatMult: (ex: DecimalSource, acc?: number) => string;
         expMult: (a: DecimalSource, b: DecimalSource, base?: number) => DecimalType;
-        metric: (num: DecimalSource, type: 0 | 1 | 2 | 3) => string;
+        metric: (num: DecimalSource, type?: 0 | 1 | 2 | 3) => string;
         ev: (num: DecimalSource, c2?: boolean) => string;
         /** Omega format */
         omega: {

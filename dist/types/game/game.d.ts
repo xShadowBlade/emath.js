@@ -85,6 +85,7 @@ declare class Game {
     /**
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+     * @template N - The name
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @returns A new instance of the gameCurrency class.
      * @example
@@ -92,7 +93,7 @@ declare class Game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    addCurrency<Name extends string>(name: Name): GameCurrency<Name>;
+    addCurrency<N extends string>(name: N): GameCurrency<N>;
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.

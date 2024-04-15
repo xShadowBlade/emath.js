@@ -68,7 +68,6 @@
         "eslint-config-react-app": "^7.0.1",
         "eslint-plugin-jsdoc": "^48.0.2",
         "eslint-plugin-react": "^7.33.2",
-        "lz-string": "^1.5.0",
         "mocha": "^10.2.0",
         "pixi.js": "^7.4.0",
         "prettier": "3.2.5",
@@ -80,6 +79,7 @@
     },
     "dependencies": {
         "class-transformer": "^0.5.1",
+        "lz-string": "^1.5.0",
         "reflect-metadata": "^0.2.2"
     }
 }

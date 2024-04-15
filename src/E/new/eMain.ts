@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable */
 /**
  * @file idk use black magic and type gymnastics to make this work or something
  */
@@ -66,7 +65,7 @@ interface DecimalAddedMethodsInterface {
      * const formatted = currency.formats.formatGain(currencyGain);
      * console.log(formatted); // should return "(+12/sec)"
      */
-    formatGain (gain: DecimalSource, type: FormatType, acc?: number, max?: number): string
+    formatGain (gain: DecimalSource, type: FormatType, acc?: number, max?: number): string;
     /**
      * Converts the E instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
@@ -360,16 +359,16 @@ type E = Decimal;
 // console.log("clone test", E(5).format());
 
 // Formats
-const { formats, FORMATS } = decimalFormatGenerator(Decimal as unknown as Parameters<typeof decimalFormatGenerator>[0]);
+const { formats } = decimalFormatGenerator(Decimal as unknown as Parameters<typeof decimalFormatGenerator>[0]);
 
 /*
 // Test
 const mag = 1e6;
-const testA = E(Math.random()).mul("1ee" + Math.floor(Math.random() * mag));
+const testA = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
 console.log(testA);
-const testB = E(Math.random()).mul("1ee" + Math.floor(Math.random() * mag));
+const testB = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
 console.log(testB);
-const testShort = E(Math.random()).mul(10e3);
+// const testShort = E(Math.random()).mul(10e3);
 
 const { format, formatGain, metric, ev, formatTime, formatTimeLong, formatReduction, formatPercent, formatMult } = formats;
 

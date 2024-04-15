@@ -56,7 +56,7 @@ const replacePlugin = replace({
 const dev = {
     format: "umd",
     plugins: [umdWrapper(), replacePlugin],
-    external: ["reflect-metadata", "class-transformer"],
+    external: ["reflect-metadata", "class-transformer", "lz-string"],
 };
 
 const min = {

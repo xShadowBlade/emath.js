@@ -96,6 +96,12 @@ class CurrencyStatic<U extends string[] = string[]> {
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
 
+        this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+        this.boost = new Boost(this.defaultBoost);
+        // this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
+
+        this.pointer.value = this.defaultVal;
+
         // this.upgrades = [];
         // @ts-expect-error - Properties are added in the next line
         this.upgrades = {
@@ -109,12 +115,6 @@ class CurrencyStatic<U extends string[] = string[]> {
         if (upgrades) this.addUpgrade(upgrades);
 
         this.upgrades = this.upgrades as Record<U[number] | string, UpgradeStatic<U[number]>>;
-
-        this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-        this.boost = new Boost(this.defaultBoost);
-        // this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
-
-        this.pointer.value = this.defaultVal;
     }
 
     /**
@@ -363,6 +363,7 @@ export { Currency, CurrencyStatic };
 
 // Test
 /*
+import { calculateSum } from "./numericalAnalysis";
 const costFn = (level: E) => level.pow(2);
 
 const testUpgrade: UpgradeInit = {
@@ -377,18 +378,8 @@ const testUpgrade: UpgradeInit = {
     el: true,
 };
 
-const myCurrency = new CurrencyStatic(undefined, [
-    {
-        id: "healthBoost",
-        name: "Health Boost",
-        description: "Increases health by 10.",
-        cost: costFn,
-        // maxLevel: 10,
-        // effect: (level) => {
-        //     // console.log("Health Boost effect", level);
-        // },
-        el: true,
-    },
+const myCurrency = new CurrencyStatic(new Currency(), [
+    testUpgrade,
 ]);
 
 // Add an upgrade
@@ -412,13 +403,13 @@ calculateSum(costFn, E(1000), 0, "1e-4");
 const x = E("123.34344e3");
 
 const formatFn = (n: E) => n.format(5, 9, "sc");
-
 for (let i = 0; i < 3; i++) {
     myCurrency.gain(x.mul(1000));
 
     const newCurrency = myCurrency.value;
-
-    const calc = myCurrency.calculateUpgrade("healthBoost", undefined, "geometric", 15);
+    console.time("upg");
+    const calc = myCurrency.calculateUpgrade("healthBoost", undefined, "geometric");
+    console.timeEnd("upg");
 
     myCurrency.buyUpgrade("healthBoost");
 

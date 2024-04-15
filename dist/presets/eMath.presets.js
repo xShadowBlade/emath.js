@@ -1,14 +1,14 @@
 (function (g, f) {
     var hasExports = typeof exports === 'object';
     if (typeof define === "function" && define.amd) {
-      define(['reflect-metadata', 'class-transformer'], f);
+      define(['reflect-metadata', 'class-transformer', 'lz-string'], f);
     } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('reflect-metadata'), require('class-transformer'));
+      module.exports = f(require('reflect-metadata'), require('class-transformer'), require('lz-string'));
     } else {
-      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer')) : f(g["reflect-metadata"], g["class-transformer"]);
+      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer'), require('lz-string')) : f(g["reflect-metadata"], g["class-transformer"], g["lz-string"]);
       var root = hasExports ? exports : g;
       for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, (__da, __db) => {
+    }}(typeof self !== 'undefined' ? self : this, (__da, __db, __dc) => {
   var exports = {};
   var module = { exports };
 "use strict";
@@ -799,7 +799,7 @@ function decimalFormatGenerator(Decimal2) {
   function expMult(a, b, base = 10) {
     return Decimal2.gte(a, 10) ? Decimal2.pow(base, Decimal2.log(a, base).pow(b)) : new Decimal2(a);
   }
-  function metric(num, type) {
+  function metric(num, type = 0) {
     num = new Decimal2(num);
     const abb = ((abbM) => {
       return abbM.map((x, i) => {

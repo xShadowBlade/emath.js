@@ -1,26 +1,21 @@
 (function (g, f) {
     var hasExports = typeof exports === 'object';
     if (typeof define === "function" && define.amd) {
-      define(['reflect-metadata', 'class-transformer'], f);
+      define(['reflect-metadata', 'class-transformer', 'lz-string'], f);
     } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('reflect-metadata'), require('class-transformer'));
+      module.exports = f(require('reflect-metadata'), require('class-transformer'), require('lz-string'));
     } else {
-      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer')) : f(g["reflect-metadata"], g["class-transformer"]);
+      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer'), require('lz-string')) : f(g["reflect-metadata"], g["class-transformer"], g["lz-string"]);
       var root = hasExports ? exports : g;
       for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, (__da, __db) => {
+    }}(typeof self !== 'undefined' ? self : this, (__da, __db, __dc) => {
   var exports = {};
   var module = { exports };
 "use strict";
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -33,14 +28,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
@@ -51,473 +38,6 @@ var __decorateClass = (decorators, target, key, kind) => {
     __defProp(target, key, result);
   return result;
 };
-
-// node_modules/lz-string/libs/lz-string.js
-var require_lz_string = __commonJS({
-  "node_modules/lz-string/libs/lz-string.js"(exports, module2) {
-    var LZString = function() {
-      var f = String.fromCharCode;
-      var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
-      var baseReverseDic = {};
-      function getBaseValue(alphabet, character) {
-        if (!baseReverseDic[alphabet]) {
-          baseReverseDic[alphabet] = {};
-          for (var i = 0; i < alphabet.length; i++) {
-            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
-          }
-        }
-        return baseReverseDic[alphabet][character];
-      }
-      var LZString2 = {
-        compressToBase64: function(input) {
-          if (input == null)
-            return "";
-          var res = LZString2._compress(input, 6, function(a) {
-            return keyStrBase64.charAt(a);
-          });
-          switch (res.length % 4) {
-            default:
-            case 0:
-              return res;
-            case 1:
-              return res + "===";
-            case 2:
-              return res + "==";
-            case 3:
-              return res + "=";
-          }
-        },
-        decompressFromBase64: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          return LZString2._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrBase64, input.charAt(index));
-          });
-        },
-        compressToUTF16: function(input) {
-          if (input == null)
-            return "";
-          return LZString2._compress(input, 15, function(a) {
-            return f(a + 32);
-          }) + " ";
-        },
-        decompressFromUTF16: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString2._decompress(compressed.length, 16384, function(index) {
-            return compressed.charCodeAt(index) - 32;
-          });
-        },
-        //compress into uint8array (UCS-2 big endian format)
-        compressToUint8Array: function(uncompressed) {
-          var compressed = LZString2.compress(uncompressed);
-          var buf = new Uint8Array(compressed.length * 2);
-          for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
-            var current_value = compressed.charCodeAt(i);
-            buf[i * 2] = current_value >>> 8;
-            buf[i * 2 + 1] = current_value % 256;
-          }
-          return buf;
-        },
-        //decompress from uint8array (UCS-2 big endian format)
-        decompressFromUint8Array: function(compressed) {
-          if (compressed === null || compressed === void 0) {
-            return LZString2.decompress(compressed);
-          } else {
-            var buf = new Array(compressed.length / 2);
-            for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
-              buf[i] = compressed[i * 2] * 256 + compressed[i * 2 + 1];
-            }
-            var result = [];
-            buf.forEach(function(c) {
-              result.push(f(c));
-            });
-            return LZString2.decompress(result.join(""));
-          }
-        },
-        //compress into a string that is already URI encoded
-        compressToEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          return LZString2._compress(input, 6, function(a) {
-            return keyStrUriSafe.charAt(a);
-          });
-        },
-        //decompress from an output of compressToEncodedURIComponent
-        decompressFromEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
-          input = input.replace(/ /g, "+");
-          return LZString2._decompress(input.length, 32, function(index) {
-            return getBaseValue(keyStrUriSafe, input.charAt(index));
-          });
-        },
-        compress: function(uncompressed) {
-          return LZString2._compress(uncompressed, 16, function(a) {
-            return f(a);
-          });
-        },
-        _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
-          if (uncompressed == null)
-            return "";
-          var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
-          for (ii = 0; ii < uncompressed.length; ii += 1) {
-            context_c = uncompressed.charAt(ii);
-            if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
-              context_dictionary[context_c] = context_dictSize++;
-              context_dictionaryToCreate[context_c] = true;
-            }
-            context_wc = context_w + context_c;
-            if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
-              context_w = context_wc;
-            } else {
-              if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-                if (context_w.charCodeAt(0) < 256) {
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 8; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                } else {
-                  value = 1;
-                  for (i = 0; i < context_numBits; i++) {
-                    context_data_val = context_data_val << 1 | value;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = 0;
-                  }
-                  value = context_w.charCodeAt(0);
-                  for (i = 0; i < 16; i++) {
-                    context_data_val = context_data_val << 1 | value & 1;
-                    if (context_data_position == bitsPerChar - 1) {
-                      context_data_position = 0;
-                      context_data.push(getCharFromInt(context_data_val));
-                      context_data_val = 0;
-                    } else {
-                      context_data_position++;
-                    }
-                    value = value >> 1;
-                  }
-                }
-                context_enlargeIn--;
-                if (context_enlargeIn == 0) {
-                  context_enlargeIn = Math.pow(2, context_numBits);
-                  context_numBits++;
-                }
-                delete context_dictionaryToCreate[context_w];
-              } else {
-                value = context_dictionary[context_w];
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              context_dictionary[context_wc] = context_dictSize++;
-              context_w = String(context_c);
-            }
-          }
-          if (context_w !== "") {
-            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
-              if (context_w.charCodeAt(0) < 256) {
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 8; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              } else {
-                value = 1;
-                for (i = 0; i < context_numBits; i++) {
-                  context_data_val = context_data_val << 1 | value;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = 0;
-                }
-                value = context_w.charCodeAt(0);
-                for (i = 0; i < 16; i++) {
-                  context_data_val = context_data_val << 1 | value & 1;
-                  if (context_data_position == bitsPerChar - 1) {
-                    context_data_position = 0;
-                    context_data.push(getCharFromInt(context_data_val));
-                    context_data_val = 0;
-                  } else {
-                    context_data_position++;
-                  }
-                  value = value >> 1;
-                }
-              }
-              context_enlargeIn--;
-              if (context_enlargeIn == 0) {
-                context_enlargeIn = Math.pow(2, context_numBits);
-                context_numBits++;
-              }
-              delete context_dictionaryToCreate[context_w];
-            } else {
-              value = context_dictionary[context_w];
-              for (i = 0; i < context_numBits; i++) {
-                context_data_val = context_data_val << 1 | value & 1;
-                if (context_data_position == bitsPerChar - 1) {
-                  context_data_position = 0;
-                  context_data.push(getCharFromInt(context_data_val));
-                  context_data_val = 0;
-                } else {
-                  context_data_position++;
-                }
-                value = value >> 1;
-              }
-            }
-            context_enlargeIn--;
-            if (context_enlargeIn == 0) {
-              context_enlargeIn = Math.pow(2, context_numBits);
-              context_numBits++;
-            }
-          }
-          value = 2;
-          for (i = 0; i < context_numBits; i++) {
-            context_data_val = context_data_val << 1 | value & 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data_position = 0;
-              context_data.push(getCharFromInt(context_data_val));
-              context_data_val = 0;
-            } else {
-              context_data_position++;
-            }
-            value = value >> 1;
-          }
-          while (true) {
-            context_data_val = context_data_val << 1;
-            if (context_data_position == bitsPerChar - 1) {
-              context_data.push(getCharFromInt(context_data_val));
-              break;
-            } else
-              context_data_position++;
-          }
-          return context_data.join("");
-        },
-        decompress: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
-          return LZString2._decompress(compressed.length, 32768, function(index) {
-            return compressed.charCodeAt(index);
-          });
-        },
-        _decompress: function(length, resetValue, getNextValue) {
-          var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c, data = { val: getNextValue(0), position: resetValue, index: 1 };
-          for (i = 0; i < 3; i += 1) {
-            dictionary[i] = i;
-          }
-          bits = 0;
-          maxpower = Math.pow(2, 2);
-          power = 1;
-          while (power != maxpower) {
-            resb = data.val & data.position;
-            data.position >>= 1;
-            if (data.position == 0) {
-              data.position = resetValue;
-              data.val = getNextValue(data.index++);
-            }
-            bits |= (resb > 0 ? 1 : 0) * power;
-            power <<= 1;
-          }
-          switch (next = bits) {
-            case 0:
-              bits = 0;
-              maxpower = Math.pow(2, 8);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 1:
-              bits = 0;
-              maxpower = Math.pow(2, 16);
-              power = 1;
-              while (power != maxpower) {
-                resb = data.val & data.position;
-                data.position >>= 1;
-                if (data.position == 0) {
-                  data.position = resetValue;
-                  data.val = getNextValue(data.index++);
-                }
-                bits |= (resb > 0 ? 1 : 0) * power;
-                power <<= 1;
-              }
-              c = f(bits);
-              break;
-            case 2:
-              return "";
-          }
-          dictionary[3] = c;
-          w = c;
-          result.push(c);
-          while (true) {
-            if (data.index > length) {
-              return "";
-            }
-            bits = 0;
-            maxpower = Math.pow(2, numBits);
-            power = 1;
-            while (power != maxpower) {
-              resb = data.val & data.position;
-              data.position >>= 1;
-              if (data.position == 0) {
-                data.position = resetValue;
-                data.val = getNextValue(data.index++);
-              }
-              bits |= (resb > 0 ? 1 : 0) * power;
-              power <<= 1;
-            }
-            switch (c = bits) {
-              case 0:
-                bits = 0;
-                maxpower = Math.pow(2, 8);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 1:
-                bits = 0;
-                maxpower = Math.pow(2, 16);
-                power = 1;
-                while (power != maxpower) {
-                  resb = data.val & data.position;
-                  data.position >>= 1;
-                  if (data.position == 0) {
-                    data.position = resetValue;
-                    data.val = getNextValue(data.index++);
-                  }
-                  bits |= (resb > 0 ? 1 : 0) * power;
-                  power <<= 1;
-                }
-                dictionary[dictSize++] = f(bits);
-                c = dictSize - 1;
-                enlargeIn--;
-                break;
-              case 2:
-                return result.join("");
-            }
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-            if (dictionary[c]) {
-              entry = dictionary[c];
-            } else {
-              if (c === dictSize) {
-                entry = w + w.charAt(0);
-              } else {
-                return null;
-              }
-            }
-            result.push(entry);
-            dictionary[dictSize++] = w + entry.charAt(0);
-            enlargeIn--;
-            w = entry;
-            if (enlargeIn == 0) {
-              enlargeIn = Math.pow(2, numBits);
-              numBits++;
-            }
-          }
-        }
-      };
-      return LZString2;
-    }();
-    if (typeof define === "function" && define.amd) {
-      define(function() {
-        return LZString;
-      });
-    } else if (typeof module2 !== "undefined" && module2 != null) {
-      module2.exports = LZString;
-    } else if (typeof angular !== "undefined" && angular != null) {
-      angular.module("LZString", []).factory("LZString", function() {
-        return LZString;
-      });
-    }
-  }
-});
 
 // src/pixiGame/index.ts
 var pixiGame_exports = {};
@@ -1293,7 +813,7 @@ function decimalFormatGenerator(Decimal2) {
   function expMult(a, b, base = 10) {
     return Decimal2.gte(a, 10) ? Decimal2.pow(base, Decimal2.log(a, base).pow(b)) : new Decimal2(a);
   }
-  function metric(num, type) {
+  function metric(num, type = 0) {
     num = new Decimal2(num);
     const abb = ((abbM) => {
       return abbM.map((x, i) => {
@@ -5356,7 +4876,7 @@ var import_reflect_metadata = require("reflect-metadata");
 var import_class_transformer2 = require("class-transformer");
 
 // src/classes/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 15;
+var DEFAULT_ITERATIONS = 25;
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
   let lowerBound = E(1);
   let upperBound = E(n);
@@ -5632,6 +5152,9 @@ var CurrencyStatic = class {
   constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
     this.defaultVal = defaults.defaultVal;
     this.defaultBoost = defaults.defaultBoost;
+    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+    this.boost = new Boost(this.defaultBoost);
+    this.pointer.value = this.defaultVal;
     this.upgrades = {
       // *[Symbol.iterator] () {
       //     for (const upgrade of Object.values(this)) {
@@ -5642,9 +5165,6 @@ var CurrencyStatic = class {
     if (upgrades)
       this.addUpgrade(upgrades);
     this.upgrades = this.upgrades;
-    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = new Boost(this.defaultBoost);
-    this.pointer.value = this.defaultVal;
   }
   /**
    * Updates / applies effects to the currency on load.
@@ -6247,7 +5767,7 @@ var EventManager = class _EventManager {
 // src/game/managers/dataManager.ts
 var import_reflect_metadata4 = require("reflect-metadata");
 var import_class_transformer5 = require("class-transformer");
-var import_lz_string = __toESM(require_lz_string());
+var import_lz_string = require("lz-string");
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -6313,8 +5833,8 @@ var DataManager = class {
   /**
    * Sets the data for the given key.
    * The getter is a work in progress.
-   * @template s - The key to set the data for.
-   * @template t - The value to set the data to.
+   * @template S - The key to set the data for.
+   * @template T - The value to set the data to.
    * @param key - The key to set the data for.
    * @param value - The value to set the data to.
    * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
@@ -6364,22 +5884,7 @@ var DataManager = class {
       console.warn("After initializing data, you should not add new properties to staticData.");
     }
     this.static[key] = value;
-    const getter = {
-      // get a () {
-      //     // console.log("Getter called", key, thisStatic[key]);
-      //     return this.static[key] as t | undefined;
-      // },
-      // a: this.static[key] as t | undefined,
-      // get a (): t | undefined {
-      //     throw new Error("Access getter before it is defined");
-      // },
-    };
-    Object.defineProperty(getter, "a", {
-      get: () => {
-        return this.static[key];
-      }
-    });
-    return getter?.a;
+    return this.static[key];
   }
   /**
    * Gets the static data for the given key.
@@ -6812,6 +6317,7 @@ var Game = class _Game {
   /**
    * Adds a new currency section to the game. {@link GameCurrency} is the class.
    * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+   * @template N - The name
    * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
    * @returns A new instance of the gameCurrency class.
    * @example

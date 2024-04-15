@@ -46,7 +46,7 @@ coins.static.addUpgrade({
             "boostUpg1Coins",
             "Basic Coin Boost",
             "Basic Coin Boost",
-            n => n.plus(level).sub(1),
+            n => n.plus(level.mul(11)).sub(1),
             1,
         );
     },
@@ -83,7 +83,7 @@ const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
 function updateDisplayUpgrade () {
-    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins", 25)[0]} Upgrades for ${coins.static.calculateUpgrade("upg1Coins", 25)[1]} Coins (b)`;
+    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins", 25)[0].format()} Upgrades for ${coins.static.calculateUpgrade("upg1Coins", 25)[1].format()} Coins (b)`;
 }
 updateDisplayUpgrade();
 

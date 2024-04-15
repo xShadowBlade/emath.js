@@ -5,7 +5,7 @@
 import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToBase64, decompressFromBase64 } from "lz-string";
-import type { Game } from "../game";
+import type { Game, Pointer } from "../game";
 
 // Recursive plain to class
 import { Currency } from "../../classes/currency";
@@ -27,8 +27,10 @@ import { E } from "../../E/eMain";
 function md5(_:string):string{var $="0123456789abcdef";function n(_){var n,r="";for(n=0;n<=3;n++)r+=$.charAt(_>>8*n+4&15)+$.charAt(_>>8*n&15);return r}function r(_,$){var n=(65535&_)+(65535&$);return(_>>16)+($>>16)+(n>>16)<<16|65535&n}function t(_,$,n,t,u,e){var f,o;return r((f=r(r($,_),r(t,e)),f<<(o=u)|f>>>32-o),n)}function u(_,$,n,r,u,e,f){return t($&n|~$&r,_,$,u,e,f)}function e(_,$,n,r,u,e,f){return t($&r|n&~r,_,$,u,e,f)}function f(_,$,n,r,u,e,f){return t($^n^r,_,$,u,e,f)}function o(_,$,n,r,u,e,f){return t(n^($|~r),_,$,u,e,f)}var F,c,a,i,h,v=function _($){var n,r=($.length+8>>6)+1,t=Array(16*r);for(n=0;n<16*r;n++)t[n]=0;for(n=0;n<$.length;n++)t[n>>2]|=$.charCodeAt(n)<<n%4*8;return t[n>>2]|=128<<n%4*8,t[16*r-2]=8*$.length,t}(""+_),x=1732584193,g=-271733879,l=-1732584194,d=271733878;for(F=0;F<v.length;F+=16)c=x,a=g,i=l,h=d,x=u(x,g,l,d,v[F+0],7,-680876936),d=u(d,x,g,l,v[F+1],12,-389564586),l=u(l,d,x,g,v[F+2],17,606105819),g=u(g,l,d,x,v[F+3],22,-1044525330),x=u(x,g,l,d,v[F+4],7,-176418897),d=u(d,x,g,l,v[F+5],12,1200080426),l=u(l,d,x,g,v[F+6],17,-1473231341),g=u(g,l,d,x,v[F+7],22,-45705983),x=u(x,g,l,d,v[F+8],7,1770035416),d=u(d,x,g,l,v[F+9],12,-1958414417),l=u(l,d,x,g,v[F+10],17,-42063),g=u(g,l,d,x,v[F+11],22,-1990404162),x=u(x,g,l,d,v[F+12],7,1804603682),d=u(d,x,g,l,v[F+13],12,-40341101),l=u(l,d,x,g,v[F+14],17,-1502002290),g=u(g,l,d,x,v[F+15],22,1236535329),x=e(x,g,l,d,v[F+1],5,-165796510),d=e(d,x,g,l,v[F+6],9,-1069501632),l=e(l,d,x,g,v[F+11],14,643717713),g=e(g,l,d,x,v[F+0],20,-373897302),x=e(x,g,l,d,v[F+5],5,-701558691),d=e(d,x,g,l,v[F+10],9,38016083),l=e(l,d,x,g,v[F+15],14,-660478335),g=e(g,l,d,x,v[F+4],20,-405537848),x=e(x,g,l,d,v[F+9],5,568446438),d=e(d,x,g,l,v[F+14],9,-1019803690),l=e(l,d,x,g,v[F+3],14,-187363961),g=e(g,l,d,x,v[F+8],20,1163531501),x=e(x,g,l,d,v[F+13],5,-1444681467),d=e(d,x,g,l,v[F+2],9,-51403784),l=e(l,d,x,g,v[F+7],14,1735328473),g=e(g,l,d,x,v[F+12],20,-1926607734),x=f(x,g,l,d,v[F+5],4,-378558),d=f(d,x,g,l,v[F+8],11,-2022574463),l=f(l,d,x,g,v[F+11],16,1839030562),g=f(g,l,d,x,v[F+14],23,-35309556),x=f(x,g,l,d,v[F+1],4,-1530992060),d=f(d,x,g,l,v[F+4],11,1272893353),l=f(l,d,x,g,v[F+7],16,-155497632),g=f(g,l,d,x,v[F+10],23,-1094730640),x=f(x,g,l,d,v[F+13],4,681279174),d=f(d,x,g,l,v[F+0],11,-358537222),l=f(l,d,x,g,v[F+3],16,-722521979),g=f(g,l,d,x,v[F+6],23,76029189),x=f(x,g,l,d,v[F+9],4,-640364487),d=f(d,x,g,l,v[F+12],11,-421815835),l=f(l,d,x,g,v[F+15],16,530742520),g=f(g,l,d,x,v[F+2],23,-995338651),x=o(x,g,l,d,v[F+0],6,-198630844),d=o(d,x,g,l,v[F+7],10,1126891415),l=o(l,d,x,g,v[F+14],15,-1416354905),g=o(g,l,d,x,v[F+5],21,-57434055),x=o(x,g,l,d,v[F+12],6,1700485571),d=o(d,x,g,l,v[F+3],10,-1894986606),l=o(l,d,x,g,v[F+10],15,-1051523),g=o(g,l,d,x,v[F+1],21,-2054922799),x=o(x,g,l,d,v[F+8],6,1873313359),d=o(d,x,g,l,v[F+15],10,-30611744),l=o(l,d,x,g,v[F+6],15,-1560198380),g=o(g,l,d,x,v[F+13],21,1309151649),x=o(x,g,l,d,v[F+4],6,-145523070),d=o(d,x,g,l,v[F+11],10,-1120210379),l=o(l,d,x,g,v[F+2],15,718787259),g=o(g,l,d,x,v[F+9],21,-343485551),x=r(x,c),g=r(g,a),l=r(l,i),d=r(d,h);return n(x)+n(g)+n(l)+n(d)}
 /* eslint-enable */
 
+/** A class constructor */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ClassType = new (...args: any[]) => any;
+/** A plain object with unknown properties. */
 type UnknownObject = Record<string, unknown>;
 // type plainTypes = string | number | boolean | UnknownObject | unknown[];
 
@@ -36,13 +38,20 @@ type UnknownObject = Record<string, unknown>;
  * Interface for the metadata of a save file.
  */
 interface SaveMetadata {
+    /** The hash of the game data (Default hash is MD5) Used to check for tampering. */
     hash: string;
+    /** Metadata about the game. */
     game: {
+        /** The title of the game. */
         title: string;
+        /** The id of the game. */
         id: string;
+        /** The version of the game. */
         version: string;
     };
+    /** Metadata about the eMath library. */
     emath: {
+        /** The version of the eMath library. */
         version: string;
     };
 }
@@ -76,7 +85,7 @@ class DataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor (gameRef: Game | (() => Game)) {
+    constructor (gameRef: Pointer<Game>) {
         // if (typeof window === "undefined") { // Don't run on serverside
         //     throw new Error("dataManager cannot be run on serverside");
         // }
@@ -95,8 +104,8 @@ class DataManager {
     /**
      * Sets the data for the given key.
      * The getter is a work in progress.
-     * @template s - The key to set the data for.
-     * @template t - The value to set the data to.
+     * @template S - The key to set the data for.
+     * @template T - The value to set the data to.
      * @param key - The key to set the data for.
      * @param value - The value to set the data to.
      * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
@@ -107,81 +116,30 @@ class DataManager {
      * testData.value = 10; // Also sets the data
      * console.log(testData.value); // 10
      */
-    public setData<s extends string, t> (key: s, value: t):
+    public setData<S extends string, T> (key: S, value: T):
         // { [data in s]: t; }
         {
-            value: t;
+            value: T;
             /** @deprecated Use the setter instead. */
-            setValue: (valueToSet: t) => void;
+            setValue: (valueToSet: T) => void;
         }
     {
         if (typeof this.data[key] === "undefined" && this.normalData) {
             console.warn("After initializing data, you should not add new properties to data.");
         }
         this.data[key] = value;
-        // return this.data[key] as t;
-
-        // Create a getter for the data
-        // const thisData = this.data;
-        // const getter = {
-        //     // get a () {
-        //     //     // console.log("Getter called", key, thisData[key]);
-        //     //     return this.data[key] as t | undefined;
-        //     // },
-        //     // a: this.data[key] as t | undefined,
-        //     // get a (): t | undefined {
-        //     //     throw new Error("Access getter before it is defined");
-        //     // },
-        // };
-        // Object.defineProperty(getter, "a", {
-        //     get: () => {
-        //         console.log("Getter called", key, this.data[key]);
-        //         return this.data[key] as t;
-        //     },
-        //     // set: (valueToSet: t) => {
-        //     //     console.log("Setter called", key, valueToSet);
-        //     //     this.data[key] = valueToSet;
-        //     // },
-        // });
-        // // return (getter as { a: t })?.a;
         const thisData = () => this.data;
-        // return [
-        //     // (getter as { a: t })?.a,
-        //     ({
-        //         get val (): t {
-        //             console.log("Getter called", key, thisData()[key]);
-        //             return thisData()[key] as t;
-        //         },
-        //     })["val"],
-        //     (valueToSet: t) => {
-        //         console.log("Setter called", key, valueToSet);
-        //         this.data[key] = valueToSet;
-        //         console.log("Data: ", this.data[key]);
-        //     },
-        // ];
-
-        // Object destructuring strips the getter and setter
-        // return {
-        //     get [key] (): t {
-        //         // console.log("Getter called", key, thisData()[key]);
-        //         return thisData()[key] as t;
-        //     },
-        //     set [key] (valueToSet: t) {
-        //         // console.log("Setter called", key, valueToSet);
-        //         thisData()[key] = valueToSet;
-        //     },
-        // } as { [data in s]: t; };
 
         return {
-            get value (): t {
+            get value (): T {
                 // console.log("Getter called", key, thisData()[key]);
-                return thisData()[key] as t;
+                return thisData()[key] as T;
             },
-            set value (valueToSet: t) {
+            set value (valueToSet: T) {
                 // console.log("Setter called", key, valueToSet);
                 thisData()[key] = valueToSet;
             },
-            setValue (valueToSet: t): void {
+            setValue (valueToSet: T): void {
                 // console.log("Setter called", key, valueToSet);
                 thisData()[key] = valueToSet;
             },
@@ -210,27 +168,7 @@ class DataManager {
             console.warn("After initializing data, you should not add new properties to staticData.");
         }
         this.static[key] = value;
-        // return this.static[key] as t;
-
-        // Create a getter for the static data
-        // const thisStatic = this.static;
-        const getter = {
-            // get a () {
-            //     // console.log("Getter called", key, thisStatic[key]);
-            //     return this.static[key] as t | undefined;
-            // },
-            // a: this.static[key] as t | undefined,
-            // get a (): t | undefined {
-            //     throw new Error("Access getter before it is defined");
-            // },
-        };
-        Object.defineProperty(getter, "a", {
-            get: () => {
-                // console.log("Getter called", key, thisStatic[key]);
-                return this.static[key] as t;
-            },
-        });
-        return (getter as { a: t })?.a;
+        return this.static[key] as t;
     }
 
     /**
@@ -260,7 +198,7 @@ class DataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    private compileDataRaw (data = this.data): [SaveMetadata, object] {
+    public compileDataRaw (data = this.data): [SaveMetadata, object] {
         const gameDataString = instanceToPlain(data);
         const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
         let version: string;
@@ -621,4 +559,4 @@ class DataManager {
 }
 
 export { DataManager };
-export type { UnknownObject, ClassType };
+export type { UnknownObject, ClassType, SaveMetadata };

@@ -697,7 +697,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * metric(1234, 2); // Returns "1.23"
      * metric(1234, 3); // Returns "Kilo"
      */
-    function metric (num: DecimalSource, type: 0 | 1 | 2 | 3): string {
+    function metric (num: DecimalSource, type: 0 | 1 | 2 | 3 = 0): string {
         num = new Decimal(num);
         interface IAbb {
             name: string;

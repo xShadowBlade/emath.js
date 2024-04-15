@@ -3,20 +3,29 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import "reflect-metadata";
-import type { Game } from "../game";
+import type { Game, Pointer } from "../game";
+/** A class constructor */
 type ClassType = new (...args: any[]) => any;
+/** A plain object with unknown properties. */
 type UnknownObject = Record<string, unknown>;
 /**
  * Interface for the metadata of a save file.
  */
 interface SaveMetadata {
+    /** The hash of the game data (Default hash is MD5) Used to check for tampering. */
     hash: string;
+    /** Metadata about the game. */
     game: {
+        /** The title of the game. */
         title: string;
+        /** The id of the game. */
         id: string;
+        /** The version of the game. */
         version: string;
     };
+    /** Metadata about the eMath library. */
     emath: {
+        /** The version of the eMath library. */
         version: string;
     };
 }
@@ -43,7 +52,7 @@ declare class DataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor(gameRef: Game | (() => Game));
+    constructor(gameRef: Pointer<Game>);
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.
@@ -53,8 +62,8 @@ declare class DataManager {
     /**
      * Sets the data for the given key.
      * The getter is a work in progress.
-     * @template s - The key to set the data for.
-     * @template t - The value to set the data to.
+     * @template S - The key to set the data for.
+     * @template T - The value to set the data to.
      * @param key - The key to set the data for.
      * @param value - The value to set the data to.
      * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
@@ -65,10 +74,10 @@ declare class DataManager {
      * testData.value = 10; // Also sets the data
      * console.log(testData.value); // 10
      */
-    setData<s extends string, t>(key: s, value: t): {
-        value: t;
+    setData<S extends string, T>(key: S, value: T): {
+        value: T;
         /** @deprecated Use the setter instead. */
-        setValue: (valueToSet: t) => void;
+        setValue: (valueToSet: T) => void;
     };
     /**
      * Gets the data for the given key.
@@ -105,7 +114,7 @@ declare class DataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    private compileDataRaw;
+    compileDataRaw(data?: UnknownObject): [SaveMetadata, object];
     /**
      * Compresses the given game data to a base64-encoded using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
@@ -156,4 +165,4 @@ declare class DataManager {
     loadData(dataToLoad?: [SaveMetadata, UnknownObject] | null | string): null | boolean;
 }
 export { DataManager };
-export type { UnknownObject, ClassType };
+export type { UnknownObject, ClassType, SaveMetadata };
