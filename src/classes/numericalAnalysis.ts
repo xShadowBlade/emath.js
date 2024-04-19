@@ -33,6 +33,10 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const inverse = inverseFunctionApprox(f, 16);
+ * console.log(inverse.value); // ~3.9999999999999996
  */
 function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS) {
     // Set the initial bounds
@@ -103,6 +107,7 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
 
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
+ * See {@link calculateSum} for a more general function.
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
@@ -133,6 +138,7 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
 
 /**
  * Approximates the sum of `f(n)` from `a` to `b` using the trapezoidal rule.
+ * See {@link calculateSum} for a more general function.
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
@@ -161,6 +167,10 @@ function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterati
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}. Only used if `b - a` is greater than {@link DEFAULT_ITERATIONS}.
  * @returns - The calculated sum of `f(n)`.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const sum = calculateSum(f, 10);
+ * console.log(sum); // ~385
  */
 function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESource, iterations?: number): E {
     a = E(a);

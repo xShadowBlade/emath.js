@@ -123,11 +123,7 @@ class Grid {
      * @param y - The y coordinate to check.
      */
     public getAllY (y: number): GridCell[] {
-        const output: GridCell[] = [];
-        for (let i = 0; this.xSize; i++) {
-            output.push(this.cells[y][i]);
-        }
-        return output;
+        return this.cells[y];
     }
     /**
      * Returns an array of all grid cells with the same y coordinate.

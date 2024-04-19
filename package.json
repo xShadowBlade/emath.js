@@ -40,11 +40,13 @@
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
         "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.config.json\"",
         "build:main": "node bin/build/build.js",
+        "build:main:watch": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "doc": "typedoc --options typedoc.config.json",
         "lint": "eslint src/**/*.ts test/**/*.ts",
         "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts",
-        "test": "ts-mocha test/**/*.test.ts"
+        "test": "ts-mocha test/**/*.test.ts",
+        "build-and-test": "node bin/build/build.js && npm run test"
     },
     "repository": {
         "type": "git",

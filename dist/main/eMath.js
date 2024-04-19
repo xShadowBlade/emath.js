@@ -45,6 +45,7 @@ __export(src_exports, {
   Attribute: () => Attribute,
   AttributeStatic: () => AttributeStatic,
   Boost: () => Boost,
+  BoostObject: () => BoostObject,
   Currency: () => Currency,
   CurrencyStatic: () => CurrencyStatic,
   DEFAULT_ITERATIONS: () => DEFAULT_ITERATIONS,
@@ -57,7 +58,6 @@ __export(src_exports, {
   ListNode: () => ListNode,
   UpgradeData: () => UpgradeData,
   UpgradeStatic: () => UpgradeStatic,
-  boostObject: () => BoostObject,
   calculateSum: () => calculateSum,
   calculateSumApprox: () => calculateSumApprox,
   calculateSumLoop: () => calculateSumLoop,
@@ -5541,11 +5541,7 @@ var Grid = class {
    * @param y - The y coordinate to check.
    */
   getAllY(y) {
-    const output = [];
-    for (let i = 0; this.xSize; i++) {
-      output.push(this.cells[y][i]);
-    }
-    return output;
+    return this.cells[y];
   }
   /**
    * Returns an array of all grid cells with the same y coordinate.

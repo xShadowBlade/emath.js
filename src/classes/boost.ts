@@ -254,4 +254,4 @@ class Boost {
     }
 }
 
-export { Boost, BoostObject as boostObject, BoostsObjectInit as boostsObjectInit };
+export { Boost, BoostObject, BoostsObjectInit };

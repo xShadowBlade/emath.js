@@ -145,4 +145,4 @@ declare class Boost {
      */
     calculate(base?: ESource): E;
 }
-export { Boost, BoostObject as boostObject, BoostsObjectInit as boostsObjectInit };
+export { Boost, BoostObject, BoostsObjectInit };
