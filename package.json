@@ -5,23 +5,23 @@
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
-            "default": "./dist/main/eMath.js",
-            "module": "./dist/main/eMath.mjs"
+            "import": "./dist/main/eMath.mjs",
+            "default": "./dist/main/eMath.js"
         },
         "./game": {
             "types": "./dist/types/game/index.d.ts",
-            "default": "./dist/game/eMath.game.js",
-            "module": "./dist/game/eMath.game.mjs"
+            "import": "./dist/game/eMath.game.mjs",
+            "default": "./dist/game/eMath.game.js"
         },
         "./pixiGame": {
             "types": "./dist/types/pixiGame/index.d.ts",
-            "default": "./dist/pixiGame/eMath.pixiGame.js",
-            "module": "./dist/pixiGame/eMath.pixiGame.mjs"
+            "import": "./dist/pixiGame/eMath.pixiGame.mjs",
+            "default": "./dist/pixiGame/eMath.pixiGame.js"
         },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
             "default": "./dist/presets/eMath.presets.js",
-            "module": "./dist/presets/eMath.presets.mjs"
+            "import": "./dist/presets/eMath.presets.mjs"
         },
         "./ts": {
             "default": "./src/index.ts"
