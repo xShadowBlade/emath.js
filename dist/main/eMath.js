@@ -4895,7 +4895,6 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   }
   if (f(upperBound).lt(n)) {
     console.warn("The function is not monotonically increasing. (f(n) < n)");
-    console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound) });
     return {
       value: upperBound,
       lowerBound: upperBound,

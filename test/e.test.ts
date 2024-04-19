@@ -45,7 +45,7 @@ describe("E", () => {
 
     describe("constructor", () => {
         it("should create an E with correct value", () => {
-            assert.equal(testE.equals(E("123456.7e-3")) && testE.equals(E(testE)), true);
+            assert(testE.equals(E("123456.7e-3")) && testE.equals(E(testE)));
         });
     });
 

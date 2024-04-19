@@ -30,6 +30,10 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const inverse = inverseFunctionApprox(f, 16);
+ * console.log(inverse.value); // ~3.9999999999999996
  */
 declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number): {
     value: import("../E/e").Decimal;
@@ -38,6 +42,7 @@ declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMo
 };
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
+ * See {@link calculateSum} for a more general function.
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
@@ -47,6 +52,7 @@ declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMo
 declare function calculateSumLoop(f: (n: E) => E, b: ESource, a?: ESource, epsilon?: ESource): E;
 /**
  * Approximates the sum of `f(n)` from `a` to `b` using the trapezoidal rule.
+ * See {@link calculateSum} for a more general function.
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
@@ -62,6 +68,10 @@ declare function calculateSumApprox(f: (n: E) => E, b: ESource, a?: ESource, ite
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}. Only used if `b - a` is greater than {@link DEFAULT_ITERATIONS}.
  * @returns - The calculated sum of `f(n)`.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const sum = calculateSum(f, 10);
+ * console.log(sum); // ~385
  */
 declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?: ESource, iterations?: number): E;
 export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, MeanMode, DEFAULT_ITERATIONS };

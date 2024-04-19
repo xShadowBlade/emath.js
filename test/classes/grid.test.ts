@@ -25,7 +25,7 @@ describe("Grid", () => {
         it("should return all cells in the grid", () => {
             const allCells = grid.getAll();
             assert.equal(allCells.length, 9);
-            assert.equal(allCells[0] instanceof GridCell, true);
+            assert(allCells[0] instanceof GridCell);
         });
     });
 
@@ -33,7 +33,7 @@ describe("Grid", () => {
         it("should return all cells with the same x coordinate", () => {
             const cells = grid.getAllX(1);
             assert.equal(cells.length, 3);
-            assert.equal(cells[0] instanceof GridCell, true);
+            assert(cells[0] instanceof GridCell);
         });
     });
 
@@ -41,14 +41,14 @@ describe("Grid", () => {
         it("should return all cells with the same y coordinate", () => {
             const cells = grid.getAllY(1);
             assert.equal(cells.length, 3);
-            assert.equal(cells[0] instanceof GridCell, true);
+            assert(cells[0] instanceof GridCell);
         });
     });
 
     describe("getCell", () => {
         it("should get a cell at the specified coordinates", () => {
             const cell = grid.getCell(1, 1);
-            assert.equal(cell instanceof GridCell, true);
+            assert(cell instanceof GridCell);
         });
     });
 
@@ -64,7 +64,7 @@ describe("Grid", () => {
         it("should return all cells adjacent to a specific cell", () => {
             const cells = grid.getAdjacent(1, 1);
             assert.equal(cells.length, 4);
-            assert.equal(cells[0] instanceof GridCell, true);
+            assert(cells[0] instanceof GridCell);
         });
     });
 
@@ -72,7 +72,7 @@ describe("Grid", () => {
         it("should return all cells diagonal from a specific cell", () => {
             const cells = grid.getDiagonal(1, 1);
             assert.equal(cells.length, 4);
-            assert.equal(cells[0] instanceof GridCell, true);
+            assert(cells[0] instanceof GridCell);
         });
     });
 
@@ -80,7 +80,7 @@ describe("Grid", () => {
         it("should return all cells that surround a cell", () => {
             const cells = grid.getEncircling(1, 1);
             assert.equal(cells.length, 8);
-            assert.equal(cells[0] instanceof GridCell, true);
+            assert(cells[0] instanceof GridCell);
         });
     });
 });
