@@ -3,8 +3,8 @@
  */
 import { E, ESource } from "../E/eMain";
 // import { calculateUpgrade } from "./currency";
-import type { CurrencyStatic } from "./currency";
-import type { IUpgradeStatic } from "./upgrade";
+import type { CurrencyStatic } from "./Currency";
+import type { IUpgradeStatic } from "./Upgrade";
 
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
     cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
@@ -17,7 +17,7 @@ interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "
  * Represents a skill tree node.
  * WIP
  */
-class skillNode implements ISkill {
+class SkillNode implements ISkill {
     public id; name; description; cost; required; maxLevel; effect;
 
     /**
@@ -68,27 +68,27 @@ class skillNode implements ISkill {
      * @param skillObj - The skill to convert to a skill tree node.
      * @returns The skill tree node.
      */
-    public static fromSkill (skillObj: ISkill): skillNode {
-        return new skillNode(skillObj.id, skillObj.name, skillObj.cost, skillObj.description, skillObj.effect, skillObj.maxLevel, skillObj.required);
+    public static fromSkill (skillObj: ISkill): SkillNode {
+        return new SkillNode(skillObj.id, skillObj.name, skillObj.cost, skillObj.description, skillObj.effect, skillObj.maxLevel, skillObj.required);
     }
 }
 
 /**
  * Represents a skill tree.
  */
-class skillTree {
+class SkillTree {
     public skills: ISkill[];
 
     /**
      * Represents a skill tree.
      * @param skills - The skills in the skill tree.
      */
-    constructor (skills: (ISkill | skillNode)[]) {
+    constructor (skills: (ISkill | SkillNode)[]) {
         this.skills = skills.map(skillNodeMember => {
-            if (skillNodeMember instanceof skillNode) {
+            if (skillNodeMember instanceof SkillNode) {
                 return skillNodeMember;
             } else {
-                return skillNode.fromSkill(skillNodeMember);
+                return SkillNode.fromSkill(skillNodeMember);
             }
         });
     }
@@ -97,7 +97,7 @@ class skillTree {
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    public addSkill (skillNodeMember: (ISkill | skillNode)[]): void {
+    public addSkill (skillNodeMember: (ISkill | SkillNode)[]): void {
         if (Array.isArray(skillNodeMember)) {
             this.skills.push(...skillNodeMember);
         } else {
@@ -106,4 +106,4 @@ class skillTree {
     }
 }
 
-export { skillNode, skillTree, ISkill };
+export { SkillNode, SkillTree, ISkill };

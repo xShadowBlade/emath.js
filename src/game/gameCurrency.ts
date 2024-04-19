@@ -3,9 +3,9 @@
  */
 
 import { E } from "../E/eMain";
-import { Currency, CurrencyStatic } from "../classes/currency";
+import { Currency, CurrencyStatic } from "../classes/Currency";
 // import { attribute } from "../classes/attribute";
-import type { Game, Pointer } from "./game";
+import type { Game, Pointer } from "./Game";
 
 /**
  * Represents a game currency. {@link Currency} is the data class and {@link CurrencyStatic} is the static class where all the useful functions are.

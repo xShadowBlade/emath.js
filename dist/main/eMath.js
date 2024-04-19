@@ -4757,7 +4757,7 @@ var E = (() => {
   return out;
 })();
 
-// src/classes/boost.ts
+// src/classes/Boost.ts
 var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
   /** @deprecated Use {@link description} instead */
@@ -4877,7 +4877,7 @@ var Boost = class {
   }
 };
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 var import_reflect_metadata = require("reflect-metadata");
 var import_class_transformer2 = require("class-transformer");
 
@@ -4968,7 +4968,7 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
   }
 }
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -5113,7 +5113,7 @@ var UpgradeStatic = class _UpgradeStatic {
   }
 };
 
-// src/classes/currency.ts
+// src/classes/Currency.ts
 var import_reflect_metadata2 = require("reflect-metadata");
 var import_class_transformer3 = require("class-transformer");
 var Currency = class {
@@ -5375,7 +5375,7 @@ var CurrencyStatic = class {
   }
 };
 
-// src/classes/attribute.ts
+// src/classes/Attribute.ts
 var import_reflect_metadata3 = require("reflect-metadata");
 var import_class_transformer4 = require("class-transformer");
 var Attribute = class {
@@ -5441,7 +5441,7 @@ var AttributeStatic = class {
   }
 };
 
-// src/classes/grid.ts
+// src/classes/Grid.ts
 var GridCell = class {
   /**
    * Initializes a new instance of the grid cell.

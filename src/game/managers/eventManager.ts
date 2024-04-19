@@ -2,7 +2,7 @@
  * @file Declares classes for managing the event loop
  */
 import { E } from "../../E/eMain";
-import { ConfigManager } from "./configManager";
+import { ConfigManager } from "./ConfigManager";
 import type { Application } from "pixi.js";
 
 /**

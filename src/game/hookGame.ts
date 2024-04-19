@@ -2,11 +2,11 @@
  * @file Declares a function that hooks the game to the window object.
  */
 import "reflect-metadata";
-import { Game } from "./game";
+import { Game } from "./Game";
 import { eMath } from "../hookMain";
-import { KeyManager } from "./managers/keyManager";
-import { EventManager } from "./managers/eventManager";
-import { DataManager } from "./managers/dataManager";
+import { KeyManager } from "./managers/KeyManager";
+import { EventManager } from "./managers/EventManager";
+import { DataManager } from "./managers/DataManager";
 
 // import type { eMathHook } from "../hookMain";
 

@@ -4,9 +4,9 @@
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
-import { Boost } from "../classes/boost";
+import { Boost } from "./Boost";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 
 /**
  * Represents an attribute in the game.

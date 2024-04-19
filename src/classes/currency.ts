@@ -5,11 +5,11 @@ import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 
-import { Boost } from "./boost";
+import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
-import { UpgradeData, UpgradeStatic, UpgradeInit, calculateUpgrade } from "./upgrade";
+import { UpgradeData, UpgradeStatic, UpgradeInit, calculateUpgrade } from "./Upgrade";
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.

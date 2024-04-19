@@ -4701,7 +4701,7 @@ var E = (() => {
   return out;
 })();
 
-// src/classes/boost.ts
+// src/classes/Boost.ts
 var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
   /** @deprecated Use {@link description} instead */
@@ -4821,7 +4821,7 @@ var Boost = class {
   }
 };
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 import "reflect-metadata";
 import { Type, Expose as Expose2 } from "class-transformer";
 
@@ -4912,7 +4912,7 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
   }
 }
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -5057,7 +5057,7 @@ var UpgradeStatic = class _UpgradeStatic {
   }
 };
 
-// src/classes/currency.ts
+// src/classes/Currency.ts
 import "reflect-metadata";
 import { Type as Type2 } from "class-transformer";
 var Currency = class {
@@ -5319,7 +5319,7 @@ var CurrencyStatic = class {
   }
 };
 
-// src/classes/attribute.ts
+// src/classes/Attribute.ts
 import "reflect-metadata";
 import { Type as Type3 } from "class-transformer";
 var Attribute = class {
@@ -5385,7 +5385,7 @@ var AttributeStatic = class {
   }
 };
 
-// src/classes/grid.ts
+// src/classes/Grid.ts
 var GridCell = class {
   /**
    * Initializes a new instance of the grid cell.

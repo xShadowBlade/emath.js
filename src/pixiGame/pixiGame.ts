@@ -1,11 +1,11 @@
 /**
  * @file Declares the main pixi game class, which includes PIXI-specific methods and properties.
  */
-import { Game, GameConfigOptions, gameDefaultConfig } from "../game/game";
-import { ConfigManager } from "../game/managers/configManager";
-import { GameSprite, CollisionShapeType } from "./sprite";
-import { KeyManager } from "../game/managers/keyManager";
-import { EventManager } from "../game/managers/eventManager";
+import { Game, GameConfigOptions, gameDefaultConfig } from "../game/Game";
+import { ConfigManager } from "../game/managers/ConfigManager";
+import { GameSprite, CollisionShapeType } from "./Sprite";
+import { KeyManager } from "../game/managers/KeyManager";
+import { EventManager } from "../game/managers/EventManager";
 
 import type { Graphics, Sprite } from "pixi.js";
 import type { Application } from "pixi.js";

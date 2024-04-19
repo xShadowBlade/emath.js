@@ -5,15 +5,15 @@
 import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToBase64, decompressFromBase64 } from "lz-string";
-import type { Game, Pointer } from "../game";
+import type { Game, Pointer } from "../Game";
 
 // Recursive plain to class
-import { Currency } from "../../classes/currency";
+import { Currency } from "../../classes/Currency";
 // import { boost, boostObject } from "../../classes/boost";
-import { Attribute } from "../../classes/attribute";
+import { Attribute } from "../../classes/Attribute";
 // import { Decimal } from "../../E/old/e";
 import { Decimal } from "../../E/e";
-import { UpgradeData } from "../../classes/upgrade";
+import { UpgradeData } from "../../classes/Upgrade";
 import { E } from "../../E/eMain";
 
 // Save validation

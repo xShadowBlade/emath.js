@@ -3,10 +3,10 @@
  */
 import "reflect-metadata";
 import { E } from "./E/eMain";
-import { Boost } from "./classes/boost";
-import { Currency, CurrencyStatic } from "./classes/currency";
-import { Attribute } from "./classes/attribute";
-import { Grid, GridCell } from "./classes/grid";
+import { Boost } from "./classes/Boost";
+import { Currency, CurrencyStatic } from "./classes/Currency";
+import { Attribute } from "./classes/Attribute";
+import { Grid, GridCell } from "./classes/Grid";
 // import { skillNode, skillTree } from "classes/skillTree";
 
 // import { game } from "./game/game";

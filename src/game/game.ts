@@ -4,16 +4,16 @@
 
 import { ESource } from "../E/eMain";
 // import { boost } from "../classes/boost";
-import { Currency, CurrencyStatic } from "../classes/currency";
-import { Attribute, AttributeStatic } from "../classes/attribute";
-import { KeyManager } from "./managers/keyManager";
-import { EventManager } from "./managers/eventManager";
-import { DataManager } from "./managers/dataManager";
-import { GameCurrency } from "./gameCurrency";
-import { GameAttribute } from "./gameAttribute";
-import { GameReset } from "./resetLayer";
+import { Currency, CurrencyStatic } from "../classes/Currency";
+import { Attribute, AttributeStatic } from "../classes/Attribute";
+import { KeyManager } from "./managers/KeyManager";
+import { EventManager } from "./managers/EventManager";
+import { DataManager } from "./managers/DataManager";
+import { GameCurrency } from "./GameCurrency";
+import { GameAttribute } from "./GameAttribute";
+import { GameReset } from "./ResetLayer";
 
-import { ConfigManager, RequiredDeep } from "./managers/configManager";
+import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
 
 /**
  * A pointer to a value or a function that returns a value by reference.

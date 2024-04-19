@@ -10,7 +10,7 @@
 // import { Sprite as PixiSprite } from "@pixi/react";
 // import { loadPIXI } from "./loadPIXI.js";
 import Intersects, { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
-import type { PixiGame } from "./pixiGame";
+import type { PixiGame } from "./PixiGame.js";
 import type { Sprite, Graphics } from "pixi.js";
 
 type CollisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";

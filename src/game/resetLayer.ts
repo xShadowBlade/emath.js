@@ -3,7 +3,7 @@
  */
 // import type { game } from "./game";
 // import type { gameCurrency } from "./game";
-import type { GameCurrency } from "./gameCurrency";
+import type { GameCurrency } from "./GameCurrency";
 
 /**
  * Represents a game reset.

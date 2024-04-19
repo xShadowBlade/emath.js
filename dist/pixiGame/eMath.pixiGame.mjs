@@ -299,7 +299,7 @@ function hookPixiGame() {
   return;
 }
 
-// src/classes/currency.ts
+// src/classes/Currency.ts
 import "reflect-metadata";
 import { Type as Type2 } from "class-transformer";
 
@@ -4990,7 +4990,7 @@ var E = (() => {
   return out;
 })();
 
-// src/classes/boost.ts
+// src/classes/Boost.ts
 var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
   /** @deprecated Use {@link description} instead */
@@ -5110,7 +5110,7 @@ var Boost = class {
   }
 };
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 import "reflect-metadata";
 import { Type, Expose as Expose2 } from "class-transformer";
 
@@ -5201,7 +5201,7 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
   }
 }
 
-// src/classes/upgrade.ts
+// src/classes/Upgrade.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
@@ -5346,7 +5346,7 @@ var UpgradeStatic = class _UpgradeStatic {
   }
 };
 
-// src/classes/currency.ts
+// src/classes/Currency.ts
 var Currency = class {
   // public upgrades: UpgradeData<string>[];
   // /** A boost object that affects the currency gain. */
@@ -5606,7 +5606,7 @@ var CurrencyStatic = class {
   }
 };
 
-// src/classes/attribute.ts
+// src/classes/Attribute.ts
 import "reflect-metadata";
 import { Type as Type3 } from "class-transformer";
 var Attribute = class {
@@ -5672,7 +5672,7 @@ var AttributeStatic = class {
   }
 };
 
-// src/game/managers/configManager.ts
+// src/game/managers/ConfigManager.ts
 var ConfigManager = class {
   /**
    * Constructs a new configuration manager.
@@ -5710,7 +5710,7 @@ var ConfigManager = class {
   }
 };
 
-// src/game/managers/keyManager.ts
+// src/game/managers/KeyManager.ts
 var keyManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30,
@@ -5855,7 +5855,7 @@ var KeyManager = class _KeyManager {
   }
 };
 
-// src/game/managers/eventManager.ts
+// src/game/managers/EventManager.ts
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30,
@@ -6002,7 +6002,7 @@ var EventManager = class _EventManager {
   }
 };
 
-// src/game/managers/dataManager.ts
+// src/game/managers/DataManager.ts
 import "reflect-metadata";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToBase64, decompressFromBase64 } from "lz-string";
@@ -6358,7 +6358,7 @@ var DataManager = class {
   }
 };
 
-// src/game/gameCurrency.ts
+// src/game/GameCurrency.ts
 var GameCurrency = class {
   /** @returns The data for the currency. */
   get data() {
@@ -6401,7 +6401,7 @@ var GameCurrency = class {
   // }
 };
 
-// src/game/gameAttribute.ts
+// src/game/GameAttribute.ts
 var GameAttribute = class {
   /**
    * Creates a new instance of the attribute class.
@@ -6432,7 +6432,7 @@ var GameAttribute = class {
   }
 };
 
-// src/game/resetLayer.ts
+// src/game/ResetLayer.ts
 var GameReset = class {
   /**
    * Creates a new instance of the game reset.
@@ -6458,7 +6458,7 @@ var GameReset = class {
   }
 };
 
-// src/game/game.ts
+// src/game/Game.ts
 var gameDefaultConfig = {
   mode: "production",
   name: {
@@ -7031,7 +7031,7 @@ var Circle = class extends Shape {
 var Intersects = { Shape, Rectangle, Polygon, Circle };
 var pixi_intersects_default = Intersects;
 
-// src/pixiGame/sprite.ts
+// src/pixiGame/Sprite.ts
 var GameSprite = class {
   /**
    * Constructs a new game sprite.
@@ -7075,7 +7075,7 @@ var GameSprite = class {
   }
 };
 
-// src/pixiGame/pixiGame.ts
+// src/pixiGame/PixiGame.ts
 var pixiGameDefaultConfig = {
   ...gameDefaultConfig,
   initIntervalBasedManagers: false,

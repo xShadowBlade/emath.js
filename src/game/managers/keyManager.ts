@@ -2,7 +2,7 @@
  * @file Declares classes for managing key bindings.
  */
 
-import { ConfigManager } from "./configManager";
+import { ConfigManager } from "./ConfigManager";
 import type { Application } from "pixi.js";
 
 /**

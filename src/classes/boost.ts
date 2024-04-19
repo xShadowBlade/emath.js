@@ -3,7 +3,7 @@
  */
 import { E, ESource } from "../E/eMain";
 // import { Type, Expose } from "class-transformer";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 
 /** An object representing a boost. */
 interface BoostsObjectInit {

@@ -3,8 +3,8 @@
  */
 
 import { E } from "../E/eMain";
-import { Attribute, AttributeStatic } from "../classes/attribute";
-import type { Game, Pointer } from "./game";
+import { Attribute, AttributeStatic } from "../classes/Attribute";
+import type { Game, Pointer } from "./Game";
 
 /**
  * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.

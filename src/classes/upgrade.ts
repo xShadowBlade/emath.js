@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { Type, Expose } from "class-transformer";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
 

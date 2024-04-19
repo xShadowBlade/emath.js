@@ -4697,7 +4697,7 @@ var E = (() => {
   return out;
 })();
 
-// src/presets/gameFormats.ts
+// src/presets/GameFormats.ts
 function gameFormat(value, settings) {
   settings = Object.assign({
     formatType: "mixed_sc",
