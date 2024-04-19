@@ -1,34 +1,5 @@
-(function (g, f) {
-    var hasExports = typeof exports === 'object';
-    if (typeof define === "function" && define.amd) {
-      define(['reflect-metadata', 'class-transformer', 'lz-string', 'pixi.js'], f);
-    } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('reflect-metadata'), require('class-transformer'), require('lz-string'), require('pixi.js'));
-    } else {
-      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer'), require('lz-string'), require('pixi.js')) : f(g["reflect-metadata"], g["class-transformer"], g["lz-string"], g["pixi.js"]);
-      var root = hasExports ? exports : g;
-      for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, (__da, __db, __dc, __dd) => {
-  var exports = {};
-  var module = { exports };
-"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
@@ -39,33 +10,8 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
-// src/pixiGame/index.ts
-var pixiGame_exports = {};
-__export(pixiGame_exports, {
-  GameSprite: () => GameSprite,
-  PixiGame: () => PixiGame,
-  pixiGameDefaultConfig: () => pixiGameDefaultConfig
-});
-module.exports = __toCommonJS(pixiGame_exports);
-
-// src/pixiGame/hookPixiGame.ts
-function hookPixiGame() {
-  if (!(typeof process !== "object" && typeof window !== "undefined")) {
-    return;
-  }
-  if (typeof process !== "undefined") {
-    console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
-    return;
-  }
-  return;
-}
-
-// src/classes/currency.ts
-var import_reflect_metadata2 = require("reflect-metadata");
-var import_class_transformer3 = require("class-transformer");
-
-// src/E/e.ts
-var import_class_transformer = require("class-transformer");
+// src/index.ts
+import "reflect-metadata";
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -170,6 +116,9 @@ var ListNode = class {
   }
 };
 
+// src/E/e.ts
+import { Exclude, Expose } from "class-transformer";
+
 // src/E/format.ts
 var ST_NAMES = [
   [
@@ -186,6 +135,7 @@ var ST_NAMES = [
     ["", "Hc", "DHe", "THt", "TeH", "PHc", "HHe", "HpH", "OHt", "EHc"]
   ]
 ];
+var FormatTypeList = ["st", "sc", "scientific", "omega", "omega_short", "elemental", "old_sc", "eng", "mixed_sc", "layer", "standard", "inf", "alphabet"];
 function decimalFormatGenerator(Decimal2) {
   const FORMATS2 = {
     /** Omega format */
@@ -4727,16 +4677,16 @@ Decimal.dNumberMax = FC(1, 0, Number.MAX_VALUE);
 Decimal.dNumberMin = FC(1, 0, Number.MIN_VALUE);
 Decimal.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "sign", 2);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "mag", 2);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "layer", 2);
 Decimal = __decorateClass([
-  (0, import_class_transformer.Exclude)()
+  Exclude()
 ], Decimal);
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
@@ -4872,8 +4822,8 @@ var Boost = class {
 };
 
 // src/classes/upgrade.ts
-var import_reflect_metadata = require("reflect-metadata");
-var import_class_transformer2 = require("class-transformer");
+import "reflect-metadata";
+import { Type, Expose as Expose2 } from "class-transformer";
 
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 25;
@@ -5033,10 +4983,10 @@ var UpgradeData = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer2.Expose)()
+  Expose2()
 ], UpgradeData.prototype, "id", 2);
 __decorateClass([
-  (0, import_class_transformer2.Type)(() => Decimal)
+  Type(() => Decimal)
 ], UpgradeData.prototype, "level", 2);
 var UpgradeStatic = class _UpgradeStatic {
   static {
@@ -5109,6 +5059,8 @@ var UpgradeStatic = class _UpgradeStatic {
 };
 
 // src/classes/currency.ts
+import "reflect-metadata";
+import { Type as Type2 } from "class-transformer";
 var Currency = class {
   // public upgrades: UpgradeData<string>[];
   // /** A boost object that affects the currency gain. */
@@ -5123,10 +5075,10 @@ var Currency = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => Decimal)
+  Type2(() => Decimal)
 ], Currency.prototype, "value", 2);
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => UpgradeData)
+  Type2(() => UpgradeData)
 ], Currency.prototype, "upgrades", 2);
 var CurrencyStatic = class {
   /** @returns The pointer of the data. */
@@ -5369,8 +5321,8 @@ var CurrencyStatic = class {
 };
 
 // src/classes/attribute.ts
-var import_reflect_metadata3 = require("reflect-metadata");
-var import_class_transformer4 = require("class-transformer");
+import "reflect-metadata";
+import { Type as Type3 } from "class-transformer";
 var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
@@ -5381,7 +5333,7 @@ var Attribute = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer4.Type)(() => Decimal)
+  Type3(() => Decimal)
 ], Attribute.prototype, "value", 2);
 var AttributeStatic = class {
   /** @returns The data for the attribute. */
@@ -5434,1513 +5386,210 @@ var AttributeStatic = class {
   }
 };
 
-// src/game/managers/configManager.ts
-var ConfigManager = class {
+// src/classes/grid.ts
+var GridCell = class {
   /**
-   * Constructs a new configuration manager.
-   * @param configOptionTemplate - The template to use for default values.
+   * Initializes a new instance of the grid cell.
+   * @param x - The x-coordinate.
+   * @param y - The y-coordinate.
+   * @param props - The properties to initialize with.
    */
-  constructor(configOptionTemplate) {
-    this.configOptionTemplate = configOptionTemplate;
+  constructor(x, y, props) {
+    this.x = x;
+    this.y = y;
+    this.properties = props ? props : {};
   }
   /**
-   * Parses the given configuration object and returns a new object with default values for any missing options.
-   * @param config - The configuration object to parse.
-   * @returns A new object with default values for any missing options.
+   * Sets the value of a property on the cell.
+   * @param name - The name of the property.
+   * @param value - The value to set.
+   * @returns The set value.
    */
-  parse(config) {
-    if (typeof config === "undefined") {
-      return this.configOptionTemplate;
-    }
-    function parseObject(obj, template) {
-      for (const key in template) {
-        if (typeof obj[key] === "undefined") {
-          obj[key] = template[key];
-        } else if (typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
-          obj[key] = parseObject(obj[key], template[key]);
-        }
-      }
-      return obj;
-    }
-    return parseObject(config, this.configOptionTemplate);
+  setValue(name, value) {
+    this.properties[name] = value;
+    return value;
   }
   /**
-   * @returns The template to use for default values.
+   * Gets the value of a property on the cell.
+   * @param name - The name of the property.
+   * @returns - The value of the property.
    */
-  get options() {
-    return this.configOptionTemplate;
+  getValue(name) {
+    return this.properties[name];
   }
 };
-
-// src/game/managers/keyManager.ts
-var keyManagerDefaultConfig = {
-  autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
-};
-var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
-var KeyManager = class _KeyManager {
+var Grid = class {
+  // Add this index signature
   /**
-   * Creates a new key manager.
-   * @param config - The configuration for the key manager.
+   * Initializes a new instance of the grid.
+   * @param x_size - The size of the grid along the x-axis.
+   * @param y_size - The size of the grid along the y-axis.
+   * @param starterProps - The properties to initialize with.
    */
-  constructor(config) {
-    /** @deprecated Use {@link addKey} instead. */
-    this.addKeys = this.addKey;
-    this.keysPressed = [];
-    this.binds = [];
-    this.tickers = [];
-    this.config = _KeyManager.configManager.parse(config);
-    if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add((dt) => {
-          for (const ticker of this.tickers) {
-            ticker(dt);
-          }
-        });
-      } else {
-        const fps = this.config.fps ? this.config.fps : 30;
-        this.tickerInterval = setInterval(() => {
-          for (const ticker of this.tickers) {
-            ticker(1e3 / fps);
-          }
-        }, 1e3 / fps);
-      }
-    }
-    if (typeof document === "undefined") {
-      return;
-    }
-    this.tickers.push((dt) => {
-      for (const bind of this.binds) {
-        if ((bind.onDownContinuous || bind.fn) && this.isPressing(bind.name)) {
-          bind.onDownContinuous?.(dt);
-          bind.fn?.(dt);
-        }
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      this.logKey(e, true);
-      this.onAll("down", e.key);
-    });
-    document.addEventListener("keyup", (e) => {
-      this.logKey(e, false);
-      this.onAll("up", e.key);
-    });
-    document.addEventListener("keypress", (e) => {
-      this.onAll("press", e.key);
-    });
-  }
-  static {
-    /** The configuration manager for the key manager */
-    this.configManager = new ConfigManager(keyManagerDefaultConfig);
-  }
-  /**
-   * Changes the framerate of the key manager.
-   * @param fps - The new framerate to use.
-   */
-  changeFps(fps) {
-    this.config.fps = fps;
-    if (this.tickerInterval) {
-      clearInterval(this.tickerInterval);
-      this.tickerInterval = setInterval(() => {
-        for (const ticker of this.tickers) {
-          ticker(1e3 / fps);
-        }
-      }, 1e3 / fps);
-    } else if (this.config.pixiApp) {
-      this.config.pixiApp.ticker.maxFPS = fps;
-    }
-  }
-  /**
-   * Adds keys to the list of keys pressed.
-   * @param event - The event to add the key from.
-   * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
-   */
-  logKey(event, type) {
-    const key = event.key;
-    if (type && !this.keysPressed.includes(key))
-      this.keysPressed.push(key);
-    else if (!type && this.keysPressed.includes(key))
-      this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
-  }
-  /**
-   * Manages onDown, onPress, and onUp events for all key bindings.
-   * @param eventType - The type of event to call for.
-   * @param keypress - The key that was pressed.
-   */
-  onAll(eventType, keypress) {
-    for (const bind of this.binds) {
-      if (eventType === "down" && bind.key === keypress && bind.onDown) {
-        bind.onDown();
-      }
-      if (eventType === "press" && bind.key === keypress && bind.onPress) {
-        bind.onPress();
-      }
-      if (eventType === "up" && bind.key === keypress && bind.onUp) {
-        bind.onUp();
+  constructor(x_size, y_size, starterProps) {
+    this.xSize = x_size;
+    this.ySize = y_size;
+    this.cells = [];
+    for (let a = 0; a < y_size; a++) {
+      this.cells[a] = [];
+      for (let b = 0; b < x_size; b++) {
+        this.cells[a][b] = new GridCell(b, a, starterProps);
       }
     }
   }
   /**
-   * Checks if a specific key binding is currently being pressed.
-   * @param name - The name of the key binding to check.
-   * @returns True if the key binding is being pressed, otherwise false.
+   * Gets an array containing all cells in the grid.
+   * @returns - An array of all cells.
    */
-  isPressing(name) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
-      if (current.name === name) {
-        return this.keysPressed.includes(current.key);
+  getAll() {
+    const output = [];
+    for (let a = 0; a < this.ySize; a++) {
+      for (let b = 0; b < this.xSize; b++) {
+        output.push(this.cells[a][b]);
       }
     }
-    return false;
+    return output;
   }
   /**
-   * Gets a key binding by its name.
-   * @param name - The name of the key binding to get.
-   * @returns The key binding, if found.
+   * Returns an array of all grid cells.
+   * @returns An array of all grid cells.
+   * @deprecated Use getAll() instead.
    */
-  getBind(name) {
-    return this.binds.find((current) => current.name === name);
+  all() {
+    return this.getAll();
   }
-  addKey(nameOrKeysToAdd, key, fn) {
-    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key, fn }] : nameOrKeysToAdd;
-    nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
-    for (const keyBinding of nameOrKeysToAdd) {
-      const existing = this.getBind(keyBinding.name);
-      if (existing) {
-        Object.assign(existing, keyBinding);
-        continue;
-      }
-      this.binds.push(keyBinding);
+  /**
+   * Gets an array containing all cells that have the same x coordinate.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   */
+  getAllX(x) {
+    const output = [];
+    for (let i = 0; i < this.ySize; i++) {
+      output.push(this.cells[i][x]);
     }
+    return output;
   }
-};
-
-// src/game/managers/eventManager.ts
-var eventManagerDefaultConfig = {
-  autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
-};
-var EventManager = class _EventManager {
   /**
-   * Creates a new event manager.
-   * @param config - The config to use for this event manager.
+   * Returns an array of all grid cells with the same x coordinate.
+   * @param x The x coordinate to check.
+   * @returns An array of all grid cells with the same x coordinate.
+   * @deprecated Use getAllX() instead.
    */
-  constructor(config) {
-    /**
-     * Adds a new event
-     * @deprecated Use {@link EventManager.setEvent} instead.
-     * @alias eventManager.setEvent
-     */
-    this.addEvent = this.setEvent;
-    this.config = _EventManager.configManager.parse(config);
-    this.events = {};
-    if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add(() => {
-          this.tickerFunction();
-        });
-      } else {
-        const fps = this.config.fps ?? 30;
-        this.tickerInterval = setInterval(() => {
-          this.tickerFunction();
-        }, 1e3 / fps);
-      }
+  allX(x) {
+    return this.getAllX(x);
+  }
+  /**
+   * Gets an array containing all cells that have the same y coordinate.
+   * @returns - An array of all cells.
+   * @param y - The y coordinate to check.
+   */
+  getAllY(y) {
+    const output = [];
+    for (let i = 0; this.xSize; i++) {
+      output.push(this.cells[y][i]);
     }
-  }
-  static {
-    /** The static config manager for the event manager */
-    this.configManager = new ConfigManager(eventManagerDefaultConfig);
+    return output;
   }
   /**
-   * The function that is called every frame, executes all events.
+   * Returns an array of all grid cells with the same y coordinate.
+   * @param y The y coordinate to check.
+   * @returns An array of all grid cells with the same y coordinate.
+   * @deprecated Use allY() instead.
    */
-  tickerFunction() {
-    const currentTime = Date.now();
-    for (const event of Object.values(this.events)) {
-      if (event.type === "interval") {
-        if (currentTime - event.intervalLast >= event.delay) {
-          const dt = currentTime - event.intervalLast;
-          event.callbackFn(dt);
-          event.intervalLast = currentTime;
-        }
-      } else if (event.type === "timeout") {
-        const dt = currentTime - event.timeCreated;
-        if (currentTime - event.timeCreated >= event.delay) {
-          event.callbackFn(dt);
-          delete this.events[event.name];
-        }
-      }
-    }
+  allY(y) {
+    return this.getAllY(y);
   }
   /**
-   * Changes the framerate of the event manager.
-   * @param fps - The new framerate to use.
+   * Gets a cell.
+   * @returns - The cell.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
-  changeFps(fps) {
-    this.config.fps = fps;
-    if (this.tickerInterval) {
-      clearInterval(this.tickerInterval);
-      this.tickerInterval = setInterval(() => {
-        this.tickerFunction();
-      }, 1e3 / fps);
-    } else if (this.config.pixiApp) {
-      this.config.pixiApp.ticker.maxFPS = fps;
-    }
+  getCell(x, y) {
+    return this.cells[y][x];
   }
   /**
-   * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
-   * @param dt - The time to warp by.
+   * Sets the value of a cell in the grid.
+   * @param x The x-coordinate of the cell.
+   * @param y The y-coordinate of the cell.
+   * @param value The value to set for the cell.
    */
-  timeWarp(dt) {
-    for (const event of Object.values(this.events)) {
-      if (event.type === "interval") {
-        event.intervalLast -= dt;
-      }
-      if (event.type === "timeout") {
-        event.timeCreated -= dt;
-      }
-    }
+  setCell(x, y, value) {
+    this.cells[y][x] = value;
   }
   /**
-   * Adds a new event or changes an existing event to the event system.
-   * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
-   * @param type - The type of the event, either "interval" or "timeout".
-   * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
-   * @param callbackFn - The callback function to execute when the event triggers.
-   * @example
-   * const myEventManger = new eventManager();
-   * // Add an interval event that executes every 2 seconds.
-   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
-   *    console.log("Interval event executed.");
-   * });
-   *
-   * // Add a timeout event that executes after 5 seconds.
-   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
-   *   console.log("Timeout event executed.");
-   * });
+   * Gets an array containing all cells adjacent to a specific cell.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
-  setEvent(name, type, delay, callbackFn) {
-    this.events[name] = (() => {
-      switch (type) {
-        case "interval":
-          {
-            const event = {
-              name,
-              type,
-              delay: typeof delay === "number" ? delay : delay.toNumber(),
-              callbackFn,
-              timeCreated: Date.now(),
-              intervalLast: Date.now()
-            };
-            return event;
-          }
-          ;
-          break;
-        case "timeout":
-        default: {
-          const event = {
-            name,
-            type,
-            delay: typeof delay === "number" ? delay : delay.toNumber(),
-            callbackFn,
-            timeCreated: Date.now()
-          };
-          return event;
-        }
-      }
-    })();
+  getAdjacent(x, y) {
+    const output = [];
+    output[0] = this.getCell(x, y + 1);
+    output[1] = this.getCell(x + 1, y);
+    output[2] = this.getCell(x, y - 1);
+    output[3] = this.getCell(x - 1, y + 1);
+    return output;
   }
   /**
-   * Removes an event from the event system.
-   * @param name - The name of the event to remove.
-   * @example
-   * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
+   * Gets an array containing all cells diagonal from a specific cell.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
    */
-  removeEvent(name) {
-    delete this.events[name];
+  getDiagonal(x, y) {
+    const output = [];
+    output[0] = this.getCell(x - 1, y + 1);
+    output[1] = this.getCell(x + 1, y + 1);
+    output[2] = this.getCell(x + 1, y - 1);
+    output[3] = this.getCell(x - 1, y - 1);
+    return output;
+  }
+  /**
+   * Gets an array containing all cells that surround a cell.
+   * @returns - An array of all cells.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
+   */
+  getEncircling(x, y) {
+    return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
+  }
+  /**
+   * Calculates the distance between two points on the grid.
+   * @deprecated Use your own distance function instead.
+   * @param x1 - The x-coordinate of the first point.
+   * @param y1 - The y-coordinate of the first point.
+   * @param x2 - The x-coordinate of the second point.
+   * @param y2 - The y-coordinate of the second point.
+   * @returns The distance between the two points.
+   */
+  static getDistance(x1, y1, x2, y2) {
+    return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
   }
 };
-
-// src/game/managers/dataManager.ts
-var import_reflect_metadata4 = require("reflect-metadata");
-var import_class_transformer5 = require("class-transformer");
-var import_lz_string = require("lz-string");
-function md5(_) {
-  var $ = "0123456789abcdef";
-  function n(_2) {
-    var n2, r2 = "";
-    for (n2 = 0; n2 <= 3; n2++)
-      r2 += $.charAt(_2 >> 8 * n2 + 4 & 15) + $.charAt(_2 >> 8 * n2 & 15);
-    return r2;
-  }
-  function r(_2, $2) {
-    var n2 = (65535 & _2) + (65535 & $2);
-    return (_2 >> 16) + ($2 >> 16) + (n2 >> 16) << 16 | 65535 & n2;
-  }
-  function t(_2, $2, n2, t2, u2, e2) {
-    var f2, o2;
-    return r((f2 = r(r($2, _2), r(t2, e2)), f2 << (o2 = u2) | f2 >>> 32 - o2), n2);
-  }
-  function u(_2, $2, n2, r2, u2, e2, f2) {
-    return t($2 & n2 | ~$2 & r2, _2, $2, u2, e2, f2);
-  }
-  function e(_2, $2, n2, r2, u2, e2, f2) {
-    return t($2 & r2 | n2 & ~r2, _2, $2, u2, e2, f2);
-  }
-  function f(_2, $2, n2, r2, u2, e2, f2) {
-    return t($2 ^ n2 ^ r2, _2, $2, u2, e2, f2);
-  }
-  function o(_2, $2, n2, r2, u2, e2, f2) {
-    return t(n2 ^ ($2 | ~r2), _2, $2, u2, e2, f2);
-  }
-  var F, c, a, i, h, v = function _2($2) {
-    var n2, r2 = ($2.length + 8 >> 6) + 1, t2 = Array(16 * r2);
-    for (n2 = 0; n2 < 16 * r2; n2++)
-      t2[n2] = 0;
-    for (n2 = 0; n2 < $2.length; n2++)
-      t2[n2 >> 2] |= $2.charCodeAt(n2) << n2 % 4 * 8;
-    return t2[n2 >> 2] |= 128 << n2 % 4 * 8, t2[16 * r2 - 2] = 8 * $2.length, t2;
-  }("" + _), x = 1732584193, g = -271733879, l = -1732584194, d = 271733878;
-  for (F = 0; F < v.length; F += 16)
-    c = x, a = g, i = l, h = d, x = u(x, g, l, d, v[F + 0], 7, -680876936), d = u(d, x, g, l, v[F + 1], 12, -389564586), l = u(l, d, x, g, v[F + 2], 17, 606105819), g = u(g, l, d, x, v[F + 3], 22, -1044525330), x = u(x, g, l, d, v[F + 4], 7, -176418897), d = u(d, x, g, l, v[F + 5], 12, 1200080426), l = u(l, d, x, g, v[F + 6], 17, -1473231341), g = u(g, l, d, x, v[F + 7], 22, -45705983), x = u(x, g, l, d, v[F + 8], 7, 1770035416), d = u(d, x, g, l, v[F + 9], 12, -1958414417), l = u(l, d, x, g, v[F + 10], 17, -42063), g = u(g, l, d, x, v[F + 11], 22, -1990404162), x = u(x, g, l, d, v[F + 12], 7, 1804603682), d = u(d, x, g, l, v[F + 13], 12, -40341101), l = u(l, d, x, g, v[F + 14], 17, -1502002290), g = u(g, l, d, x, v[F + 15], 22, 1236535329), x = e(x, g, l, d, v[F + 1], 5, -165796510), d = e(d, x, g, l, v[F + 6], 9, -1069501632), l = e(l, d, x, g, v[F + 11], 14, 643717713), g = e(g, l, d, x, v[F + 0], 20, -373897302), x = e(x, g, l, d, v[F + 5], 5, -701558691), d = e(d, x, g, l, v[F + 10], 9, 38016083), l = e(l, d, x, g, v[F + 15], 14, -660478335), g = e(g, l, d, x, v[F + 4], 20, -405537848), x = e(x, g, l, d, v[F + 9], 5, 568446438), d = e(d, x, g, l, v[F + 14], 9, -1019803690), l = e(l, d, x, g, v[F + 3], 14, -187363961), g = e(g, l, d, x, v[F + 8], 20, 1163531501), x = e(x, g, l, d, v[F + 13], 5, -1444681467), d = e(d, x, g, l, v[F + 2], 9, -51403784), l = e(l, d, x, g, v[F + 7], 14, 1735328473), g = e(g, l, d, x, v[F + 12], 20, -1926607734), x = f(x, g, l, d, v[F + 5], 4, -378558), d = f(d, x, g, l, v[F + 8], 11, -2022574463), l = f(l, d, x, g, v[F + 11], 16, 1839030562), g = f(g, l, d, x, v[F + 14], 23, -35309556), x = f(x, g, l, d, v[F + 1], 4, -1530992060), d = f(d, x, g, l, v[F + 4], 11, 1272893353), l = f(l, d, x, g, v[F + 7], 16, -155497632), g = f(g, l, d, x, v[F + 10], 23, -1094730640), x = f(x, g, l, d, v[F + 13], 4, 681279174), d = f(d, x, g, l, v[F + 0], 11, -358537222), l = f(l, d, x, g, v[F + 3], 16, -722521979), g = f(g, l, d, x, v[F + 6], 23, 76029189), x = f(x, g, l, d, v[F + 9], 4, -640364487), d = f(d, x, g, l, v[F + 12], 11, -421815835), l = f(l, d, x, g, v[F + 15], 16, 530742520), g = f(g, l, d, x, v[F + 2], 23, -995338651), x = o(x, g, l, d, v[F + 0], 6, -198630844), d = o(d, x, g, l, v[F + 7], 10, 1126891415), l = o(l, d, x, g, v[F + 14], 15, -1416354905), g = o(g, l, d, x, v[F + 5], 21, -57434055), x = o(x, g, l, d, v[F + 12], 6, 1700485571), d = o(d, x, g, l, v[F + 3], 10, -1894986606), l = o(l, d, x, g, v[F + 10], 15, -1051523), g = o(g, l, d, x, v[F + 1], 21, -2054922799), x = o(x, g, l, d, v[F + 8], 6, 1873313359), d = o(d, x, g, l, v[F + 15], 10, -30611744), l = o(l, d, x, g, v[F + 6], 15, -1560198380), g = o(g, l, d, x, v[F + 13], 21, 1309151649), x = o(x, g, l, d, v[F + 4], 6, -145523070), d = o(d, x, g, l, v[F + 11], 10, -1120210379), l = o(l, d, x, g, v[F + 2], 15, 718787259), g = o(g, l, d, x, v[F + 9], 21, -343485551), x = r(x, c), g = r(g, a), l = r(l, i), d = r(d, h);
-  return n(x) + n(g) + n(l) + n(d);
-}
-var DataManager = class {
-  /**
-   * Creates a new instance of the game class.
-   * @param gameRef - A function that returns the game instance.
-   */
-  constructor(gameRef) {
-    /** The current game data. */
-    this.data = {};
-    /** The static game data. */
-    this.static = {};
-    /** A queue of functions to call when the game data is loaded. */
-    this.eventsOnLoad = [];
-    this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
-  }
-  /**
-   * Adds an event to call when the game data is loaded.
-   * @param event - The event to call when the game data is loaded.
-   * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
-   */
-  addEventOnLoad(event) {
-    this.eventsOnLoad.push(event);
-  }
-  /**
-   * Sets the data for the given key.
-   * The getter is a work in progress.
-   * @template S - The key to set the data for.
-   * @template T - The value to set the data to.
-   * @param key - The key to set the data for.
-   * @param value - The value to set the data to.
-   * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
-   * @example
-   * // ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
-   * const testData = dataManager.setData("test", 5);
-   * console.log(testData.value); // 5
-   * testData.value = 10; // Also sets the data
-   * console.log(testData.value); // 10
-   */
-  setData(key, value) {
-    if (typeof this.data[key] === "undefined" && this.normalData) {
-      console.warn("After initializing data, you should not add new properties to data.");
-    }
-    this.data[key] = value;
-    const thisData = () => this.data;
-    return {
-      get value() {
-        return thisData()[key];
-      },
-      set value(valueToSet) {
-        thisData()[key] = valueToSet;
-      },
-      setValue(valueToSet) {
-        thisData()[key] = valueToSet;
-      }
-    };
-  }
-  /**
-   * Gets the data for the given key.
-   * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
-   * @param key - The key to get the data for.
-   * @returns The data for the given key.
-   */
-  getData(key) {
-    return this.data[key];
-  }
-  /**
-   * Sets the static data for the given key.
-   * This data is not affected by data loading and saving, and is mainly used internally.
-   * @param key - The key to set the static data for.
-   * @param value - The value to set the static data to.
-   * @returns A getter for the static data.
-   */
-  setStatic(key, value) {
-    if (typeof this.static[key] === "undefined" && this.normalData) {
-      console.warn("After initializing data, you should not add new properties to staticData.");
-    }
-    this.static[key] = value;
-    return this.static[key];
-  }
-  /**
-   * Gets the static data for the given key.
-   * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
-   * @param key - The key to get the static data for.
-   * @returns The static data for the given key.
-   */
-  getStatic(key) {
-    return this.static[key];
-  }
-  /**
-   * Initializes / sets data that is unmodified by the player.
-   * This is used to merge the loaded data with the default data.
-   * It should be called before you load data.
-   * Note: This should only be called once, and after it is called, you should not add new properties to data.
-   * @example dataManager.init(); // Call this after setting the initial data.
-   */
-  init() {
-    this.normalData = this.data;
-    this.normalDataPlain = (0, import_class_transformer5.instanceToPlain)(this.data);
-  }
-  /**
-   * Compiles the given game data to a tuple containing the compressed game data and a hash.
-   * @param data The game data to be compressed. Defaults to the current game data.
-   * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
-   */
-  compileDataRaw(data = this.data) {
-    const gameDataString = (0, import_class_transformer5.instanceToPlain)(data);
-    const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
-    let version;
-    try {
-      version = "8.0.0-rc.1";
-    } catch (error) {
-      version = "8.0.0";
-    }
-    const saveMetadata = {
-      hash: hasedData,
-      game: {
-        title: this.gameRef.config.name.title,
-        id: this.gameRef.config.name.id,
-        version: this.gameRef.config.name.version
-      },
-      emath: {
-        version
-      }
-    };
-    return [saveMetadata, gameDataString];
-  }
-  /**
-   * Compresses the given game data to a base64-encoded using lz-string.
-   * @param data The game data to be compressed. Defaults to the current game data.
-   * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
-   */
-  compileData(data = this.data) {
-    const dataRawString = JSON.stringify(this.compileDataRaw(data));
-    return (0, import_lz_string.compressToBase64)(dataRawString);
-  }
-  /**
-   * Decompiles the data stored in localStorage and returns the corresponding object.
-   * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
-   * @returns The decompiled object, or null if the data is empty or invalid.
-   */
-  decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
-    if (!data)
-      return null;
-    let parsedData;
-    try {
-      parsedData = JSON.parse((0, import_lz_string.decompressFromBase64)(data));
-      return parsedData;
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        console.error(`Failed to decompile data (corrupted) "${data}":`, error);
-      } else {
-        throw error;
-      }
-      return null;
-    }
-  }
-  /**
-   * Validates the given data using a hashing algorithm (md5)
-   * @param data - [hash, data] The data to validate.
-   * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
-   */
-  validateData(data) {
-    const [saveMetadata, gameDataToValidate] = data;
-    if (typeof saveMetadata === "string") {
-      return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
-    }
-    const hashSave = saveMetadata.hash;
-    const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
-    return hashSave === hashCheck;
-  }
-  /**
-   * Resets the game data to its initial state and saves it.
-   * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
-   */
-  resetData(reload = false) {
-    if (!this.normalData)
-      throw new Error("dataManager.resetData(): You must call init() before writing to data.");
-    this.data = this.normalData;
-    this.saveData();
-    if (reload)
-      window.location.reload();
-  }
-  /**
-   * Saves the game data to local storage under the key `${game.config.name.id}-data`.
-   * If you dont want to save to local storage, use {@link compileData} instead.
-   * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
-   */
-  saveData(dataToSave = this.compileData()) {
-    localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
-  }
-  /**
-   * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
-   * If you want to implement a custom data export, use {@link compileData} instead.
-   */
-  exportData() {
-    const content = this.compileData();
-    if (prompt("Download save data?:", content) != null) {
-      const blob = new Blob([content], { type: "text/plain" });
-      const downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = `${this.gameRef.config.name.id}-data.txt`;
-      downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-  }
-  /**
-   * Loads game data and processes it.
-   * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-   * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
-   * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
-   * @returns The loaded data.
-   */
-  parseData(dataToParse = this.decompileData(), mergeData = true) {
-    if (mergeData && (!this.normalData || !this.normalDataPlain))
-      throw new Error("dataManager.parseData(): You must call init() before writing to data.");
-    if (!dataToParse)
-      return null;
-    const [, loadedData] = dataToParse;
-    function isPlainObject(obj) {
-      return typeof obj === "object" && obj?.constructor === Object;
-    }
-    const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-    function deepMerge(sourcePlain, source, target) {
-      const out = target;
-      for (const key in sourcePlain) {
-        if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
-          out[key] = sourcePlain[key];
-        }
-        if (source[key] instanceof Currency) {
-          const sourceCurrency = sourcePlain[key];
-          const targetCurrency = target[key];
-          if (Array.isArray(targetCurrency.upgrades)) {
-            const upgrades = targetCurrency.upgrades;
-            targetCurrency.upgrades = {};
-            for (const upgrade of upgrades) {
-              targetCurrency.upgrades[upgrade.id] = upgrade.level;
-            }
-          }
-          targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
-          out[key] = targetCurrency;
-        } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
-          out[key] = deepMerge(sourcePlain[key], source[key], target[key]);
-        }
-      }
-      return out;
-    }
-    let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
-    const templateClasses = function(templateClassesInit) {
-      const out = [];
-      for (const templateClassConvert of templateClassesInit) {
-        out.push({
-          class: templateClassConvert.class,
-          name: templateClassConvert.name,
-          // subclasses: templateClassConvert.subclasses,
-          properties: Object.getOwnPropertyNames((0, import_class_transformer5.instanceToPlain)(new templateClassConvert.class()))
-        });
-      }
-      return out;
-    }([
-      {
-        class: Attribute,
-        name: "attribute"
-        // subclasses: {
-        //     value: Decimal,
-        // },
-      },
-      // {
-      //     class: boost,
-      //     subclasses: {
-      //         baseEffect: Decimal,
-      //         boostArray: [boostObject],
-      //     },
-      // },
-      {
-        class: Currency,
-        name: "currency"
-        // subclasses: {
-        //     // boost: boost,
-        //     upgrades: [upgradeData],
-        //     value: Decimal,
-        // },
-      },
-      {
-        class: Decimal,
-        name: "Decimal"
-      }
-    ]);
-    function compareArrays(arr1, arr2) {
-      return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
-    }
-    const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
-    function convertTemplateClass(templateClassToConvert, plain) {
-      const out = (0, import_class_transformer5.plainToInstance)(templateClassToConvert.class, plain);
-      if (out instanceof Currency) {
-        for (const upgradeName in out.upgrades) {
-          const upgrade = out.upgrades[upgradeName];
-          if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
-            delete out.upgrades[upgradeName];
-            continue;
-          }
-          out.upgrades[upgradeName] = (0, import_class_transformer5.plainToInstance)(UpgradeData, upgrade);
-        }
-      }
-      if (!out)
-        throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
-      return out;
-    }
-    function plainToInstanceRecursive(plain) {
-      const out = plain;
-      for (const key in plain) {
-        if (!(plain[key] instanceof Object && plain[key].constructor === Object))
-          continue;
-        if ((() => {
-          for (const templateClassR of templateClasses) {
-            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClassR.properties)) {
-              out[key] = convertTemplateClass(templateClassR, plain[key]);
-              return false;
-            }
-          }
-          return true;
-        })()) {
-          out[key] = plainToInstanceRecursive(plain[key]);
-        }
-      }
-      return out;
-    }
-    loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
-    return loadedDataProcessed;
-  }
-  /**
-   * Loads game data and processes it.
-   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-   * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
-   */
-  loadData(dataToLoad = this.decompileData()) {
-    dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
-    if (!dataToLoad)
-      return null;
-    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer5.instanceToPlain)(dataToLoad[1])]);
-    const parsedData = this.parseData(dataToLoad);
-    if (!parsedData)
-      return null;
-    this.data = parsedData;
-    for (const obj of this.eventsOnLoad) {
-      obj();
-    }
-    return isDataValid;
-  }
+export {
+  Attribute,
+  AttributeStatic,
+  Boost,
+  Currency,
+  CurrencyStatic,
+  DEFAULT_ITERATIONS,
+  E,
+  FORMATS,
+  FormatTypeList,
+  Grid,
+  GridCell,
+  LRUCache,
+  ListNode,
+  UpgradeData,
+  UpgradeStatic,
+  BoostObject as boostObject,
+  calculateSum,
+  calculateSumApprox,
+  calculateSumLoop,
+  calculateUpgrade,
+  decimalToJSONString,
+  inverseFunctionApprox,
+  upgradeToCacheNameEL
 };
-
-// src/game/gameCurrency.ts
-var GameCurrency = class {
-  /** @returns The data for the currency. */
-  get data() {
-    return this.dataPointer();
-  }
-  /** @returns The static data for the currency. */
-  get static() {
-    return this.staticPointer();
-  }
-  /**
-   * Creates a new instance of the game class.
-   * @param currencyPointer - A function that returns the current currency value.
-   * @param staticPointer - A function that returns the static data for the game.
-   * @param gamePointer A pointer to the game instance.
-   * @param name - The name of the currency. This is optional, and you can use it for display purposes.
-   */
-  constructor(currencyPointer, staticPointer, gamePointer, name) {
-    this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
-    this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
-    this.game = gamePointer;
-    this.name = name;
-    this.game?.dataManager.addEventOnLoad(() => {
-      this.static.onLoadData();
-    });
-  }
-  /**
-   * Gets the value of the game currency.
-   * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
-   * @returns The value of the game currency.
-   */
-  get value() {
-    return this.data.value;
-  }
-  // /**
-  //  * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-  //  * @param currencyPointer - A function or pointer that returns the current currency value.
-  //  */
-  // public updateDataPointer (currencyPointer: (() => currency) | currency): void {
-  //     this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-  // }
-};
-
-// src/game/gameAttribute.ts
-var GameAttribute = class {
-  /**
-   * Creates a new instance of the attribute class.
-   * @param attributePointer - A function that returns the current attribute value.
-   * @param staticPointer - A function that returns the static data for the attribute.
-   * @param gamePointer A pointer to the game instance.
-   */
-  constructor(attributePointer, staticPointer, gamePointer) {
-    this.data = typeof attributePointer === "function" ? attributePointer() : attributePointer;
-    this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
-    this.game = gamePointer;
-  }
-  /**
-   * Gets the value of the attribute.
-   * NOTE: This getter is sometimes inaccurate.
-   * @returns The value of the attribute.
-   */
-  get value() {
-    return this.static.value;
-  }
-  /**
-   * Sets the value of the attribute.
-   * NOTE: This setter should not be used when boost is enabled.
-   * @param value - The value to set the attribute to.
-   */
-  set value(value) {
-    this.data.value = value;
-  }
-};
-
-// src/game/resetLayer.ts
-var GameReset = class {
-  /**
-   * Creates a new instance of the game reset.
-   * @param currenciesToReset The currencies to reset.
-   * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
-   */
-  constructor(currenciesToReset, extender) {
-    this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
-    this.extender = extender;
-    this.id = Symbol();
-  }
-  /**
-   * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
-   */
-  reset() {
-    this.onReset?.();
-    this.currenciesToReset.forEach((currency) => {
-      currency.static.reset();
-    });
-    if (this.extender && this.extender.id !== this.id) {
-      this.extender.reset();
-    }
-  }
-};
-
-// src/game/game.ts
-var gameDefaultConfig = {
-  mode: "production",
-  name: {
-    title: "",
-    id: "",
-    version: "0.0.0"
-  },
-  settings: {
-    framerate: 30
-  },
-  initIntervalBasedManagers: true
-};
-var Game = class _Game {
-  static {
-    /** The static config manager for the game. */
-    this.configManager = new ConfigManager(gameDefaultConfig);
-  }
-  /**
-   * Creates a new instance of the game class.
-   * @param config - The configuration object for the game.
-   * @example
-   * const myGame = new game({
-   *     name: {
-   *         title: "My Game",
-   *         id: "my-game",
-   *     },
-   *     // Additional options here
-   * });
-   */
-  constructor(config) {
-    this.config = _Game.configManager.parse(config);
-    this.dataManager = new DataManager(this);
-    this.keyManager = new KeyManager({
-      autoAddInterval: this.config.initIntervalBasedManagers,
-      fps: this.config.settings.framerate
-    });
-    this.eventManager = new EventManager({
-      autoAddInterval: this.config.initIntervalBasedManagers,
-      fps: this.config.settings.framerate
-    });
-    this.tickers = [];
-  }
-  /** Initializes the game. Also initializes the data manager. */
-  init() {
-    this.dataManager.init();
-  }
-  /**
-   * Changes the framerate of the game.
-   * @param fps - The new framerate to use.
-   */
-  changeFps(fps) {
-    this.keyManager.changeFps(fps);
-    this.eventManager.changeFps(fps);
-  }
-  /**
-   * Adds a new currency section to the game. {@link GameCurrency} is the class.
-   * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-   * @template N - The name
-   * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
-   * @returns A new instance of the gameCurrency class.
-   * @example
-   * const currency = game.addCurrency("currency");
-   * currency.static.gain();
-   * console.log(currency.value); // E(1)
-   */
-  addCurrency(name) {
-    this.dataManager.setData(name, {
-      currency: new Currency()
-    });
-    this.dataManager.setStatic(name, {
-      // @ts-expect-error - fix this
-      currency: new CurrencyStatic(() => this.dataManager.getData(name).currency)
-      // attributes: {},
-    });
-    const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
-    return classInstance;
-  }
-  /**
-   * Adds a new attribute to the game. {@link GameAttribute} is the class.
-   * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
-   * @param name - The name of the attribute.
-   * @param useBoost - Indicates whether to use boost for the attribute.
-   * @param initial - The initial value of the attribute.
-   * @returns The newly created attribute.
-   * @example
-   * const myAttribute = game.addAttribute("myAttribute");
-   */
-  addAttribute(name, useBoost = true, initial = 0) {
-    const dataRef = this.dataManager.setData(name, new Attribute(initial));
-    const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
-    const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
-    return classInstance;
-  }
-  /**
-   * Creates a new game reset object with the specified currencies to reset.
-   * @param currenciesToReset - The currencies to reset.
-   * @param extender - An optional object to extend the game reset object with.
-   * @returns The newly created game reset object.
-   */
-  addReset(currenciesToReset, extender) {
-    const reset = new GameReset(currenciesToReset, extender);
-    return reset;
-  }
-};
-
-// src/pixiGame/pixi-intersects.js
-var Shape = class _Shape {
-  /**
-   * @param {object} [article] that uses this shape
-   */
-  constructor(article) {
-    this.article = article;
-  }
-  update() {
-  }
-  /**
-   * collides with this shape's AABB box
-   * @param {object} AABB
-   */
-  AABBs(AABB) {
-    const AABB2 = this.AABB;
-    return !(AABB[2] < AABB2[0] || AABB2[2] < AABB[0] || AABB[3] < AABB2[1] || AABB2[3] < AABB[1]);
-  }
-  /**
-   * point-polygon collision test based on this.vertices
-   * based on http://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778
-   * @param {Point} point
-   * @return {boolean}
-   */
-  collidesPoint(point) {
-    const vertices = this.vertices;
-    const length = vertices.length;
-    let c = false;
-    for (let i = 0, j = length - 2; i < length; i += 2) {
-      if (vertices[i + 1] > point.y !== vertices[j + 1] > point.y && point.x < (vertices[j] - vertices[i]) * (point.y - vertices[i + 1]) / (vertices[j + 1] - vertices[i + 1]) + vertices[i])
-        c = !c;
-      j = i;
-    }
-    return c;
-  }
-  collidesCircle() {
-  }
-  collidesRectangle() {
-  }
-  /**
-   * Does Polygon collide Polygon or AABB?
-   * based on http://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
-   * @param {Array} polygon
-   * @param {boolean} isAABB
-   * @return {boolean}
-   */
-  collidesPolygon(polygon, isAABB) {
-    const a = this.vertices;
-    const b = isAABB ? polygon : polygon.vertices;
-    const polygons = [a, b];
-    let minA, maxA, projected, minB, maxB;
-    for (let i = 0; i < polygons.length; i++) {
-      const polygon2 = polygons[i];
-      for (let i1 = 0; i1 < polygon2.length; i1 += 2) {
-        const i2 = (i1 + 2) % polygon2.length;
-        const normal = { x: polygon2[i2 + 1] - polygon2[i1 + 1], y: polygon2[i1] - polygon2[i2] };
-        minA = maxA = null;
-        for (let j = 0; j < a.length; j += 2) {
-          projected = normal.x * a[j] + normal.y * a[j + 1];
-          if (minA === null || projected < minA)
-            minA = projected;
-          if (maxA === null || projected > maxA)
-            maxA = projected;
-        }
-        minB = maxB = null;
-        for (let j = 0; j < b.length; j += 2) {
-          projected = normal.x * b[j] + normal.y * b[j + 1];
-          if (minB === null || projected < minB)
-            minB = projected;
-          if (maxB === null || projected > maxB)
-            maxB = projected;
-        }
-        if (maxA < minB || maxB < minA)
-          return false;
-      }
-    }
-    return true;
-  }
-  /**
-   * Does polygon collide Line?
-   * @param {Point} p1
-   * @param {Point} p2
-   * @return {boolean}
-   */
-  collidesLine(p1, p2) {
-    const vertices = this.vertices;
-    const length = vertices.length;
-    if (this.collidesPoint(p1))
-      return true;
-    for (let i = 0; i < length; i += 2) {
-      const j = (i + 2) % length;
-      if (_Shape.lineLine(p1, p2, { x: vertices[i], y: vertices[i + 1] }, { x: vertices[j], y: vertices[j + 1] }))
-        return true;
-    }
-    return false;
-  }
-  /** catch all for automatic collision checking */
-  collides(shape) {
-    return this["collides" + shape.SHAPE](shape);
-  }
-  /**
-   * Do two lines intersect?
-   * from http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-   * @param {Point} p1
-   * @param {Point} p2
-   * @param {Point} p3
-   * @param {Point} p4
-   * @return {boolean}
-   */
-  static lineLine(p1, p2, p3, p4) {
-    const p0_x = p1.x;
-    const p0_y = p1.y;
-    const p1_x = p2.x;
-    const p1_y = p2.y;
-    const p2_x = p3.x;
-    const p2_y = p3.y;
-    const p3_x = p4.x;
-    const p3_y = p4.y;
-    const s1_x = p1_x - p0_x;
-    const s1_y = p1_y - p0_y;
-    const s2_x = p3_x - p2_x;
-    const s2_y = p3_y - p2_y;
-    const s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-    const t = (s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-    return s >= 0 && s <= 1 && t >= 0 && t <= 1;
-  }
-};
-var Rectangle = class _Rectangle extends Shape {
-  /**
-   * @param {object} article that uses this shape
-   * @param {object} [options] @see {@link Rectangle.set}
-   */
-  constructor(article, options) {
-    super(article);
-    this.SHAPE = "Rectangle";
-    options = options || {};
-    this._vertices = [];
-    this.AABB = [0, 0, 0, 0];
-    this.set(options);
-  }
-  /**
-   * @param {object} options
-   * @param {number} [options.width] width of object when aligned
-   * @param {number} [options.height] height of object when aligned
-   * @param {number} [options.square] side size of a square
-   * @param {object} [options.center] object to use for position (and rotation, unless separately defined)
-   * @param {object} [options.rotation] object to use for rotation instead of options.center or article
-   * @param {boolean} [options.noRotate] object does not rotate (simplifies math)
-   */
-  set(options) {
-    this.center = options.center || this.article;
-    this.rotation = options.rotation ? options.rotation : options.center ? options.center : this.article;
-    if (typeof options.square !== "undefined")
-      this._width = this._height = options.square;
-    else {
-      this._width = options.width || this.article.width;
-      this._height = options.height || this.article.height;
-    }
-    this.noRotate = options.noRotate;
-    this.hw = this._width / 2;
-    this.hh = this._height / 2;
-    this.update();
-  }
-  /** width of rectangle */
-  get width() {
-    return this._width;
-  }
-  set width(value) {
-    this._width = value;
-    this.hw = value / 2;
-  }
-  /** height of rectangle */
-  get height() {
-    return this._height;
-  }
-  set height(value) {
-    this._height = value;
-    this.hh = value / 2;
-  }
-  /**
-   * based on http://www.willperone.net/Code/coderr.php
-   * update AABB and sets vertices to dirty
-   */
-  update() {
-    const AABB = this.AABB;
-    const center = this.center;
-    if (this.noRotate) {
-      const hw = this.hw;
-      const hh = this.hh;
-      AABB[0] = center.x - hw;
-      AABB[1] = center.y - hh;
-      AABB[2] = center.x + hw;
-      AABB[3] = center.y + hh;
-    } else {
-      const s = Math.abs(Math.sin(this.rotation.rotation) / 2);
-      const c = Math.abs(Math.cos(this.rotation.rotation) / 2);
-      const width = this._width;
-      const height = this._height;
-      const ex = height * s + width * c;
-      const ey = height * c + width * s;
-      AABB[0] = center.x - ex;
-      AABB[1] = center.y - ey;
-      AABB[2] = center.x + ex;
-      AABB[3] = center.y + ey;
-    }
-    this.verticesDirty = true;
-  }
-  /** updates vertices automatically when dirty */
-  updateVertices() {
-    const vertices = this._vertices;
-    const center = this.center;
-    const hw = this.hw;
-    const hh = this.hh;
-    if (this.noRotate) {
-      const AABB = this.AABB;
-      vertices[0] = AABB[0];
-      vertices[1] = AABB[1];
-      vertices[2] = AABB[2];
-      vertices[3] = AABB[1];
-      vertices[4] = AABB[2];
-      vertices[5] = AABB[3];
-      vertices[6] = AABB[0];
-      vertices[7] = AABB[3];
-    } else {
-      const rotation = this.rotation.rotation;
-      const sin = Math.sin(rotation);
-      const cos = Math.cos(rotation);
-      vertices[0] = center.x - hw * cos + hh * sin;
-      vertices[1] = center.y - hw * sin - hh * cos;
-      vertices[2] = center.x + hw * cos + hh * sin;
-      vertices[3] = center.y + hw * sin - hh * cos;
-      vertices[4] = center.x + hw * cos - hh * sin;
-      vertices[5] = center.y + hw * sin + hh * cos;
-      vertices[6] = center.x - hw * cos - hh * sin;
-      vertices[7] = center.y - hw * sin + hh * cos;
-    }
-    this.verticesDirty = false;
-  }
-  /** sets vertices Array[8] */
-  get vertices() {
-    if (this.verticesDirty)
-      this.updateVertices();
-    return this._vertices;
-  }
-  /**
-   * Does Rectangle collide Rectangle?
-   * @param {Rectangle} rectangle
-   * @return {boolean}
-   */
-  collidesRectangle(rectangle) {
-    if (this.noRotate && rectangle.noRotate)
-      return this.AABBs(rectangle.AABB);
-    else
-      return this.collidesPolygon(rectangle);
-  }
-  /**
-   * Does Rectangle collide Circle?
-   * @param {Circle} circle
-   * @return {boolean}
-   */
-  collidesCircle(circle) {
-    return circle.collidesRectangle(this);
-  }
-  static fromRectangle(x, y, width, height) {
-    const center = { x: x + width / 2, y: y + height / 2 };
-    return new _Rectangle(center, { width, height, noRotate: true });
-  }
-};
-var Polygon = class extends Shape {
-  /**
-   * @param {Article} article that uses this shape
-   * @param {array} points in the form of [x, y, x2, y2, x3, y3, . . .]
-   * @param {object} [options] @see {@link Polygon.set}
-   */
-  constructor(article, points, options) {
-    super(article);
-    this.SHAPE = "Polygon";
-    options = options || {};
-    this.points = points;
-    this.vertices = [];
-    this.AABB = [];
-    this.set(options);
-  }
-  /**
-   * @param {object} options
-   * @param {PIXI.Point[]} options.points
-   * @param {PIXI.DisplayObject} [options.center] - object to use for position (and rotation, unless separately defined)
-   * @param {PIXI.DisplayObject} [options.rotation] - object to use for rotation instead of options.center or article
-   */
-  set(options) {
-    if (options.point)
-      this.points = options.points;
-    this.center = options.center || this.article;
-    this.rotation = options.rotation ? options.rotation : options.center ? options.center : this.article;
-    this.update();
-  }
-  /**
-   * based on http://www.willperone.net/Code/coderr.php
-   */
-  update() {
-    const rotation = this.rotation.rotation;
-    const sin = Math.sin(rotation);
-    const cos = Math.cos(rotation);
-    let minX = Infinity, maxX = 0, minY = Infinity, maxY = 0;
-    const points = this.points;
-    const count = points.length;
-    const vertices = this.vertices;
-    const center = this.center;
-    for (let i = 0; i < count; i += 2) {
-      const pointX = points[i];
-      const pointY = points[i + 1];
-      const x = vertices[i] = center.x + pointX * cos - pointY * sin;
-      const y = vertices[i + 1] = center.y + pointX * sin + pointY * cos;
-      minX = x < minX ? x : minX;
-      maxX = x > maxX ? x : maxX;
-      minY = y < minY ? y : minY;
-      maxY = y > maxY ? y : maxY;
-    }
-    this.AABB[0] = minX;
-    this.AABB[1] = minY;
-    this.AABB[2] = maxX;
-    this.AABB[3] = maxY;
-    this.width = maxX - minX;
-    this.height = maxY - minY;
-    this.hw = (maxX - minX) / 2;
-    this.hh = (maxY - minY) / 2;
-  }
-  /**
-   * Does Rectangle collide Rectangle?
-   * @param {Rectangle} rectangle
-   * @return {boolean}
-   */
-  collidesRectangle(rectangle) {
-    return this.collidesPolygon(rectangle);
-  }
-  /**
-   * Does Rectangle collide Circle?
-   * @param {Circle} circle
-   * @return {boolean}
-   */
-  collidesCircle(circle) {
-    return circle.collidesPolygon(this);
-  }
-};
-var Circle = class extends Shape {
-  /**
-   * @param {Article} article that uses this shape
-   * @param {object} [options] - @see {@link Circle.set}
-   */
-  constructor(article, options) {
-    super(article);
-    this.SHAPE = "Circle";
-    this.AABB = [];
-    options = options || {};
-    this.set(options);
-  }
-  /**
-   * @param {object} options
-   * @param {object} [options.positionObject=this.article] use this to update position
-   * @param {number} [options.radius] otherwise article.width / 2 is used as radius
-   */
-  set(options) {
-    this.radius = options.radius || this.article.width / 2;
-    this.radiusSquared = this.radius * this.radius;
-    this.center = options.positionObject ? options.positionObject : this.article;
-    this.update();
-  }
-  /** update AABB */
-  update() {
-    const AABB = this.AABB;
-    const radius = this.radius;
-    const center = this.center;
-    AABB[0] = center.x - radius;
-    AABB[1] = center.y - radius;
-    AABB[2] = center.x + radius;
-    AABB[3] = center.y + radius;
-  }
-  /**
-   * Does Circle collide with Circle?
-   * @param {Circle} circle
-   * @return {boolean}
-   */
-  collidesCircle(circle) {
-    const thisCenter = this.center;
-    const center = circle.center;
-    const x = center.x - thisCenter.x;
-    const y = center.y - thisCenter.y;
-    const radii = circle.radius + this.radius;
-    return x * x + y * y <= radii * radii;
-  }
-  /**
-   * Does Circle collide with point?
-   * @param {Point} point
-   * @return {boolean}
-   */
-  collidesPoint(point) {
-    const x = point.x - this.center.x;
-    const y = point.y - this.center.y;
-    return x * x + y * y <= this.radiusSquared;
-  }
-  /**
-   * Does Circle collide with a line?
-   * from http://stackoverflow.com/a/10392860/1955997
-   * @param {Point} p1
-   * @param {Point} p2
-   * @return {boolean}
-   */
-  collidesLine(p1, p2) {
-    function dot(v1, v2) {
-      return v1[0] * v2[0] + v1[1] * v2[1];
-    }
-    const center = this.center;
-    const ac = [center.x - p1.x, center.y - p1.y];
-    const ab = [p2.x - p1.x, p2.y - p1.y];
-    const ab2 = dot(ab, ab);
-    const acab = dot(ac, ab);
-    let t = acab / ab2;
-    t = t < 0 ? 0 : t;
-    t = t > 1 ? 1 : t;
-    const h = [ab[0] * t + p1.x - center.x, ab[1] * t + p1.y - center.y];
-    const h2 = dot(h, h);
-    return h2 <= this.radiusSquared;
-  }
-  /**
-   * Does circle collide with Rectangle?
-   * @param {Rectangle} rectangle
-   */
-  collidesRectangle(rectangle) {
-    if (rectangle.noRotate) {
-      const AABB = rectangle.AABB;
-      const hw = (AABB[2] - AABB[0]) / 2;
-      const hh = (AABB[3] - AABB[1]) / 2;
-      const center = this.center;
-      const radius = this.radius;
-      const distX = Math.abs(center.x - AABB[0]);
-      const distY = Math.abs(center.y - AABB[1]);
-      if (distX > hw + radius || distY > hh + radius)
-        return false;
-      if (distX <= hw || distY <= hh)
-        return true;
-      const x = distX - hw;
-      const y = distY - hh;
-      return x * x + y * y <= this.radiusSquared;
-    } else {
-      const center = this.center;
-      if (rectangle.collidesPoint(center))
-        return true;
-      const vertices = rectangle.vertices;
-      return this.collidesLine({ x: vertices[0], y: vertices[1] }, { x: vertices[2], y: vertices[3] }) || this.collidesLine({ x: vertices[2], y: vertices[3] }, { x: vertices[4], y: vertices[5] }) || this.collidesLine({ x: vertices[4], y: vertices[5] }, { x: vertices[6], y: vertices[7] }) || this.collidesLine({ x: vertices[6], y: vertices[7] }, { x: vertices[0], y: vertices[1] });
-    }
-  }
-  // from http://stackoverflow.com/a/402019/1955997
-  collidesPolygon(polygon) {
-    const center = this.center;
-    if (polygon.collidesPoint(center))
-      return true;
-    const vertices = polygon.vertices;
-    const count = vertices.length;
-    for (let i = 0; i < count - 2; i += 2)
-      if (this.collidesLine({ x: vertices[i], y: vertices[i + 1] }, { x: vertices[i + 2], y: vertices[i + 3] }))
-        return true;
-    return this.collidesLine({ x: vertices[0], y: vertices[1] }, { x: vertices[count - 2], y: vertices[count - 1] });
-  }
-};
-var Intersects = { Shape, Rectangle, Polygon, Circle };
-var pixi_intersects_default = Intersects;
-
-// src/pixiGame/sprite.ts
-var GameSprite = class {
-  /**
-   * Constructs a new game sprite.
-   * @param gameRef - The game reference.
-   * @param spr - The PIXI sprite to create the game sprite from.
-   * @param collisionShape - The type of collision shape to use for the sprite.
-   * Default: "Rectangle"
-   * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
-   */
-  constructor(gameRef, spr, collisionShape = "Rectangle") {
-    this.gameRef = gameRef;
-    this.sprite = this.gameRef.PIXI.app.stage.addChild(spr);
-    this.x = this.sprite.x;
-    this.y = this.sprite.y;
-    this.collisionShape = collisionShape;
-    this.intersects = new pixi_intersects_default[this.collisionShape](this.sprite);
-    this.gameRef.PIXI.app.ticker.add(this.tickerFn, this);
-  }
-  tickerFn() {
-    this.sprite.x = this.x - this.gameRef.PIXI.camera.x;
-    this.sprite.y = this.y - this.gameRef.PIXI.camera.y;
-  }
-  /**
-   * Checks if this sprite collides with another sprite.
-   * @param other - The other sprite to check for collision with.
-   * @returns True if a collision occurs, otherwise false.
-   */
-  collides(other) {
-    if (this.x === Infinity || other.x === Infinity)
-      return false;
-    return Boolean(this.intersects[`collides${other.collisionShape}`](other.intersects));
-  }
-  /**
-   * Removes the sprite from its parent container.
-   * Note: This does not delete the sprite object, it only removes it from the parent container.
-   * You should delete the sprite object after calling this method, or it will still exist in memory.
-   */
-  remove() {
-    this.x = this.y = Infinity;
-    this.sprite.parent.removeChild(this.sprite);
-  }
-};
-
-// src/pixiGame/pixiGame.ts
-var pixiGameDefaultConfig = {
-  ...gameDefaultConfig,
-  initIntervalBasedManagers: false,
-  pixi: {
-    app: null
-  }
-};
-var PixiGame = class _PixiGame extends Game {
-  static {
-    this.configManager = new ConfigManager(pixiGameDefaultConfig);
-  }
-  /**
-   * Creates a new instance of the pixiGame class.
-   * @param config - The configuration for the game.
-   */
-  constructor(config) {
-    super(config);
-    this.config = _PixiGame.configManager.parse(config);
-    if (!this.config.pixi.app)
-      throw new Error(`No PIXI app was provided in config: ${JSON.stringify(this.config)}`);
-    const app = this.config.pixi.app;
-    this.PIXI = {
-      app,
-      camera: {
-        x: 0,
-        y: 0
-      }
-    };
-    this.keyManager = new KeyManager({
-      autoAddInterval: true,
-      pixiApp: this.PIXI.app
-    });
-    this.eventManager = new EventManager({
-      autoAddInterval: true,
-      pixiApp: this.PIXI.app
-    });
-  }
-  /**
-   * Adds a sprite to the game.
-   * @param spriteToAdd - The sprite to add.
-   * @param collisionShape - The collision shape to use for the sprite.
-   * @returns The sprite object.
-   */
-  addSprite(spriteToAdd, collisionShape = "Rectangle") {
-    return new GameSprite(this, spriteToAdd, collisionShape);
-  }
-};
-
-// src/pixiGame/index.ts
-hookPixiGame();
-if (typeof module.exports == "object" && typeof exports == "object") {
-    var __cp = (to, from, except, desc) => {
-      if ((from && typeof from === "object") || typeof from === "function") {
-        for (let key of Object.getOwnPropertyNames(from)) {
-          if (!Object.prototype.hasOwnProperty.call(to, key) && key !== except)
-          Object.defineProperty(to, key, {
-            get: () => from[key],
-            enumerable: !(desc = Object.getOwnPropertyDescriptor(from, key)) || desc.enumerable,
-          });
-        }
-      }
-      return to;
-    };
-    module.exports = __cp(module.exports, exports);
-  }
-  return module.exports;
-  }))

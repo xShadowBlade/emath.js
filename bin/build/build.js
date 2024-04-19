@@ -59,6 +59,12 @@ const dev = {
     external: ["reflect-metadata", "class-transformer", "lz-string"],
 };
 
+const devEsm = {
+    format: "esm",
+    plugins: [replacePlugin],
+    external: ["reflect-metadata", "class-transformer", "lz-string"],
+};
+
 const min = {
     format: "iife",
     minify: true,
@@ -71,6 +77,7 @@ const min = {
  * @type {BuildOptions[]}
  */
 const buildOptions = [
+    // Main
     {
         // entryPoints: ["src/hookMain.ts"],
         entryPoints: ["src/index.ts"],
@@ -86,7 +93,13 @@ const buildOptions = [
         // minify: true,
         ...min,
     },
+    {
+        entryPoints: ["src/index.ts"],
+        outfile: "dist/main/eMath.mjs",
+        ...devEsm,
+    },
 
+    // Game
     {
         // entryPoints: ["src/game/hookGame.ts"],
         entryPoints: ["src/game/index.ts"],
@@ -104,7 +117,13 @@ const buildOptions = [
         // minify: true,
         ...min,
     },
+    {
+        entryPoints: ["src/game/index.ts"],
+        outfile: "dist/game/eMath.game.mjs",
+        ...devEsm,
+    },
 
+    // PixiGame
     {
         // entryPoints: ["src/pixiGame/hookPixiGame.ts"],
         entryPoints: ["src/pixiGame/index.ts"],
@@ -113,6 +132,7 @@ const buildOptions = [
         // format: "umd",
         // plugins: [umdWrapper()],
         ...dev,
+        external: [...dev.external, "pixi.js"],
     },
     {
         entryPoints: ["src/pixiGame/hookPixiGame.ts"],
@@ -122,7 +142,14 @@ const buildOptions = [
         // minify: true,
         ...min,
     },
+    {
+        entryPoints: ["src/pixiGame/index.ts"],
+        outfile: "dist/pixiGame/eMath.pixiGame.mjs",
+        ...devEsm,
+        external: [...devEsm.external, "pixi.js"],
+    },
 
+    // Presets
     {
         // entryPoints: ["src/presets/hookPresets.ts"],
         entryPoints: ["src/presets/index.ts"],
@@ -137,6 +164,11 @@ const buildOptions = [
         // format: "iife",
         // minify: true,
         ...min,
+    },
+    {
+        entryPoints: ["src/presets/index.ts"],
+        outfile: "dist/presets/eMath.presets.mjs",
+        ...devEsm,
     },
 ];
 

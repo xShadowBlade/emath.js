@@ -177,14 +177,14 @@ class Boost {
      * Sets or updates a boost with the given parameters.
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
-     * @param desc - The description of the boost.
+     * @param description - The description of the boost.
      * @param value - The value of the boost (function).
      * @param order - The order of the boost (higher order go first)
      * @example
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
-    public setBoost (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
+    public setBoost (id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -204,15 +204,15 @@ class Boost {
             // Basic set using parameters
             const id = arg1;
             const name = arg2 ?? "";
-            const desc = arg3 ?? "";
+            const description = arg3 ?? "";
             const value = arg4 ?? ((e) => e);
             const order = arg5;
             const bCheck = this.getBoosts(id, true);
 
             if (!bCheck[0][0]) {
-                this.boostArray.push(new BoostObject({ id, name, desc, value, order }));
+                this.boostArray.push(new BoostObject({ id, name, description, value, order }));
             } else {
-                this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, desc, value, order });
+                this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, description, value, order });
             }
         } else {
             // Advanced set using boost object

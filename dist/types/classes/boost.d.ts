@@ -106,14 +106,14 @@ declare class Boost {
      * Sets or updates a boost with the given parameters.
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
-     * @param desc - The description of the boost.
+     * @param description - The description of the boost.
      * @param value - The value of the boost (function).
      * @param order - The order of the boost (higher order go first)
      * @example
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
-    setBoost(id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
+    setBoost(id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -132,7 +132,7 @@ declare class Boost {
      * @deprecated Use {@link setBoost} instead.
      */
     addBoost: {
-        (id: string, name: string, desc: string, value: (input: E) => E, order?: number): void;
+        (id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
         (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     };
     /**

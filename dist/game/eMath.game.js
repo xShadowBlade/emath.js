@@ -4827,14 +4827,14 @@ var Boost = class {
     if (typeof arg1 === "string") {
       const id = arg1;
       const name = arg2 ?? "";
-      const desc = arg3 ?? "";
+      const description = arg3 ?? "";
       const value = arg4 ?? ((e) => e);
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(new BoostObject({ id, name, desc, value, order }));
+        this.boostArray.push(new BoostObject({ id, name, description, value, order }));
       } else {
-        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, desc, value, order });
+        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, description, value, order });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
@@ -5917,7 +5917,7 @@ var DataManager = class {
     const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "8.0.0-rc.0";
+      version = "8.0.0-rc.1";
     } catch (error) {
       version = "8.0.0";
     }

@@ -5,19 +5,23 @@
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
-            "default": "./dist/main/eMath.js"
+            "default": "./dist/main/eMath.js",
+            "module": "./dist/main/eMath.mjs"
         },
         "./game": {
             "types": "./dist/types/game/index.d.ts",
-            "default": "./dist/game/eMath.game.js"
+            "default": "./dist/game/eMath.game.js",
+            "module": "./dist/game/eMath.game.mjs"
         },
         "./pixiGame": {
             "types": "./dist/types/pixiGame/index.d.ts",
-            "default": "./dist/pixiGame/eMath.pixiGame.js"
+            "default": "./dist/pixiGame/eMath.pixiGame.js",
+            "module": "./dist/pixiGame/eMath.pixiGame.mjs"
         },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
-            "default": "./dist/presets/eMath.presets.js"
+            "default": "./dist/presets/eMath.presets.js",
+            "module": "./dist/presets/eMath.presets.mjs"
         },
         "./ts": {
             "default": "./src/index.ts"
@@ -32,7 +36,6 @@
             "default": "./src/presets/index.ts"
         }
     },
-    "unpkg": "./dist/main/eMath.min.js",
     "scripts": {
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
         "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.config.json\"",

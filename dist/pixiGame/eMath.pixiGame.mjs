@@ -1,34 +1,5 @@
-(function (g, f) {
-    var hasExports = typeof exports === 'object';
-    if (typeof define === "function" && define.amd) {
-      define(['reflect-metadata', 'class-transformer', 'lz-string', 'pixi.js'], f);
-    } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('reflect-metadata'), require('class-transformer'), require('lz-string'), require('pixi.js'));
-    } else {
-      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer'), require('lz-string'), require('pixi.js')) : f(g["reflect-metadata"], g["class-transformer"], g["lz-string"], g["pixi.js"]);
-      var root = hasExports ? exports : g;
-      for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, (__da, __db, __dc, __dd) => {
-  var exports = {};
-  var module = { exports };
-"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
@@ -38,15 +9,6 @@ var __decorateClass = (decorators, target, key, kind) => {
     __defProp(target, key, result);
   return result;
 };
-
-// src/pixiGame/index.ts
-var pixiGame_exports = {};
-__export(pixiGame_exports, {
-  GameSprite: () => GameSprite,
-  PixiGame: () => PixiGame,
-  pixiGameDefaultConfig: () => pixiGameDefaultConfig
-});
-module.exports = __toCommonJS(pixiGame_exports);
 
 // src/pixiGame/hookPixiGame.ts
 function hookPixiGame() {
@@ -61,11 +23,11 @@ function hookPixiGame() {
 }
 
 // src/classes/currency.ts
-var import_reflect_metadata2 = require("reflect-metadata");
-var import_class_transformer3 = require("class-transformer");
+import "reflect-metadata";
+import { Type as Type2 } from "class-transformer";
 
 // src/E/e.ts
-var import_class_transformer = require("class-transformer");
+import { Exclude, Expose } from "class-transformer";
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -4727,16 +4689,16 @@ Decimal.dNumberMax = FC(1, 0, Number.MAX_VALUE);
 Decimal.dNumberMin = FC(1, 0, Number.MIN_VALUE);
 Decimal.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "sign", 2);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "mag", 2);
 __decorateClass([
-  (0, import_class_transformer.Expose)()
+  Expose()
 ], Decimal.prototype, "layer", 2);
 Decimal = __decorateClass([
-  (0, import_class_transformer.Exclude)()
+  Exclude()
 ], Decimal);
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
@@ -4872,8 +4834,8 @@ var Boost = class {
 };
 
 // src/classes/upgrade.ts
-var import_reflect_metadata = require("reflect-metadata");
-var import_class_transformer2 = require("class-transformer");
+import "reflect-metadata";
+import { Type, Expose as Expose2 } from "class-transformer";
 
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 25;
@@ -5033,10 +4995,10 @@ var UpgradeData = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer2.Expose)()
+  Expose2()
 ], UpgradeData.prototype, "id", 2);
 __decorateClass([
-  (0, import_class_transformer2.Type)(() => Decimal)
+  Type(() => Decimal)
 ], UpgradeData.prototype, "level", 2);
 var UpgradeStatic = class _UpgradeStatic {
   static {
@@ -5123,10 +5085,10 @@ var Currency = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => Decimal)
+  Type2(() => Decimal)
 ], Currency.prototype, "value", 2);
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => UpgradeData)
+  Type2(() => UpgradeData)
 ], Currency.prototype, "upgrades", 2);
 var CurrencyStatic = class {
   /** @returns The pointer of the data. */
@@ -5369,8 +5331,8 @@ var CurrencyStatic = class {
 };
 
 // src/classes/attribute.ts
-var import_reflect_metadata3 = require("reflect-metadata");
-var import_class_transformer4 = require("class-transformer");
+import "reflect-metadata";
+import { Type as Type3 } from "class-transformer";
 var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
@@ -5381,7 +5343,7 @@ var Attribute = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer4.Type)(() => Decimal)
+  Type3(() => Decimal)
 ], Attribute.prototype, "value", 2);
 var AttributeStatic = class {
   /** @returns The data for the attribute. */
@@ -5765,9 +5727,9 @@ var EventManager = class _EventManager {
 };
 
 // src/game/managers/dataManager.ts
-var import_reflect_metadata4 = require("reflect-metadata");
-var import_class_transformer5 = require("class-transformer");
-var import_lz_string = require("lz-string");
+import "reflect-metadata";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+import { compressToBase64, decompressFromBase64 } from "lz-string";
 function md5(_) {
   var $ = "0123456789abcdef";
   function n(_2) {
@@ -5904,7 +5866,7 @@ var DataManager = class {
    */
   init() {
     this.normalData = this.data;
-    this.normalDataPlain = (0, import_class_transformer5.instanceToPlain)(this.data);
+    this.normalDataPlain = instanceToPlain(this.data);
   }
   /**
    * Compiles the given game data to a tuple containing the compressed game data and a hash.
@@ -5912,7 +5874,7 @@ var DataManager = class {
    * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
    */
   compileDataRaw(data = this.data) {
-    const gameDataString = (0, import_class_transformer5.instanceToPlain)(data);
+    const gameDataString = instanceToPlain(data);
     const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
@@ -5940,7 +5902,7 @@ var DataManager = class {
    */
   compileData(data = this.data) {
     const dataRawString = JSON.stringify(this.compileDataRaw(data));
-    return (0, import_lz_string.compressToBase64)(dataRawString);
+    return compressToBase64(dataRawString);
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
@@ -5952,7 +5914,7 @@ var DataManager = class {
       return null;
     let parsedData;
     try {
-      parsedData = JSON.parse((0, import_lz_string.decompressFromBase64)(data));
+      parsedData = JSON.parse(decompressFromBase64(data));
       return parsedData;
     } catch (error) {
       if (error instanceof SyntaxError) {
@@ -6063,7 +6025,7 @@ var DataManager = class {
           class: templateClassConvert.class,
           name: templateClassConvert.name,
           // subclasses: templateClassConvert.subclasses,
-          properties: Object.getOwnPropertyNames((0, import_class_transformer5.instanceToPlain)(new templateClassConvert.class()))
+          properties: Object.getOwnPropertyNames(instanceToPlain(new templateClassConvert.class()))
         });
       }
       return out;
@@ -6101,7 +6063,7 @@ var DataManager = class {
     }
     const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
     function convertTemplateClass(templateClassToConvert, plain) {
-      const out = (0, import_class_transformer5.plainToInstance)(templateClassToConvert.class, plain);
+      const out = plainToInstance(templateClassToConvert.class, plain);
       if (out instanceof Currency) {
         for (const upgradeName in out.upgrades) {
           const upgrade = out.upgrades[upgradeName];
@@ -6109,7 +6071,7 @@ var DataManager = class {
             delete out.upgrades[upgradeName];
             continue;
           }
-          out.upgrades[upgradeName] = (0, import_class_transformer5.plainToInstance)(UpgradeData, upgrade);
+          out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
         }
       }
       if (!out)
@@ -6147,7 +6109,7 @@ var DataManager = class {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad)
       return null;
-    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer5.instanceToPlain)(dataToLoad[1])]);
+    const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData)
       return null;
@@ -6927,20 +6889,8 @@ var PixiGame = class _PixiGame extends Game {
 
 // src/pixiGame/index.ts
 hookPixiGame();
-if (typeof module.exports == "object" && typeof exports == "object") {
-    var __cp = (to, from, except, desc) => {
-      if ((from && typeof from === "object") || typeof from === "function") {
-        for (let key of Object.getOwnPropertyNames(from)) {
-          if (!Object.prototype.hasOwnProperty.call(to, key) && key !== except)
-          Object.defineProperty(to, key, {
-            get: () => from[key],
-            enumerable: !(desc = Object.getOwnPropertyDescriptor(from, key)) || desc.enumerable,
-          });
-        }
-      }
-      return to;
-    };
-    module.exports = __cp(module.exports, exports);
-  }
-  return module.exports;
-  }))
+export {
+  GameSprite,
+  PixiGame,
+  pixiGameDefaultConfig
+};
