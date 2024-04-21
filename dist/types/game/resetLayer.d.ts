@@ -11,7 +11,7 @@ declare class GameReset {
     /** The currencies to reset. */
     readonly currenciesToReset: GameCurrency<string>[];
     /** The extender for the game reset. */
-    readonly extender?: GameReset;
+    readonly extender: GameReset[];
     /** Custom code to run after {@link reset} is called but BEFORE the currencies are reset */
     onReset?: () => void;
     /**
@@ -19,7 +19,7 @@ declare class GameReset {
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
      */
-    constructor(currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset);
+    constructor(currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset | GameReset[]);
     /**
      * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
      */

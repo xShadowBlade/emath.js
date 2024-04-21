@@ -4911,6 +4911,17 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
     return calculateSumApprox(f, b, a, iterations);
   }
 }
+function roundingBase(x, acc = 10, sig = 0, max = 1e3) {
+  x = E(x);
+  if (x.gte(E.pow(acc, max)))
+    return x;
+  const powerN = E.floor(E.log(x, acc));
+  let out = x.div(E.pow(acc, powerN));
+  out = out.mul(E.pow(acc, sig)).round();
+  out = out.div(E.pow(acc, sig));
+  out = out.mul(E.pow(acc, powerN));
+  return out;
+}
 
 // src/classes/Upgrade.ts
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
@@ -5345,12 +5356,11 @@ var AttributeStatic = class {
    * @param useBoost - Indicates whether to use boost for the attribute.
    * @param initial - The initial value of the attribute.
    */
-  constructor(pointer, useBoost = true, initial = 0) {
+  constructor(pointer, useBoost, initial = 0) {
     this.initial = E(initial);
     pointer = pointer ? typeof pointer === "function" ? pointer : () => pointer : () => new Attribute(this.initial);
     this.pointerFn = pointer;
-    if (useBoost)
-      this.boost = new Boost(this.initial);
+    this.boost = useBoost ? new Boost(this.initial) : void 0;
   }
   /**
    * Updates the value of the attribute.
@@ -5586,5 +5596,6 @@ export {
   calculateUpgrade,
   decimalToJSONString,
   inverseFunctionApprox,
+  roundingBase,
   upgradeToCacheNameEL
 };

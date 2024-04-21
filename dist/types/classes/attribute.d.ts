@@ -20,6 +20,7 @@ declare class Attribute {
 }
 /**
  * Represents a static attribute, which is number that can effected by boosts.
+ * @template B - Indicates whether the boost is enabled. Defaults to true.
  * @example
  * const health = new attributeStatic(undefined, true, 100);
  * // Set a health boost that multiplies the health by 1.1
@@ -29,7 +30,7 @@ declare class Attribute {
  * });
  * console.log(health.value); // 110
  */
-declare class AttributeStatic {
+declare class AttributeStatic<B extends boolean = true> {
     /** The data for the attribute. */
     protected readonly pointerFn: (() => Attribute);
     /** @returns The data for the attribute. */
@@ -40,14 +41,14 @@ declare class AttributeStatic {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    readonly boost?: Boost;
+    readonly boost: B extends true ? Boost : undefined;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor(pointer?: Pointer<Attribute>, useBoost?: boolean, initial?: ESource);
+    constructor(pointer?: Pointer<Attribute>, useBoost?: B, initial?: ESource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.

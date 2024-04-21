@@ -7,12 +7,7 @@ import { Boost } from "./classes/Boost";
 import { Currency, CurrencyStatic } from "./classes/Currency";
 import { Attribute } from "./classes/Attribute";
 import { Grid, GridCell } from "./classes/Grid";
-// import { skillNode, skillTree } from "classes/skillTree";
 
-// import { game } from "./game/game";
-// import { keyManager } from "./game/managers/keyManager";
-// import { eventManager } from "./game/main";
-// import { dataManager } from "./game/managers/dataManager";
 const eMathWeb = {
     /**
      * @deprecated Use `import { E } from "emath.js"` instead.

@@ -182,4 +182,30 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
     }
 }
 
-export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, MeanMode, DEFAULT_ITERATIONS };
+/**
+ * Function to round a number to the nearest power of a specified base. Warning: Experimental.
+ * @param x - The number to round.
+ * @param acc - The accuracy to round to (power)
+ * @param sig - The significant figures to round to.
+ * @param max - The maximum power to round to.
+ * @returns - The rounded number.
+ * @example
+ * console.log(roundingBase(123456789, 10, 0, 10)); // 120000000
+ * console.log(roundingBase(123456789, 10, 1, 10)); // 123000000
+ * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
+ * console.log(roundingBase(245, 2, 0, 10)); // 256
+ */
+function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000) {
+    x = E(x);
+    // If the number is too large, don't round it
+    if (x.gte(E.pow(acc, max))) return x;
+    /** The power of the number, rounded. acc^power = x */
+    const powerN = E.floor(E.log(x, acc));
+    let out = x.div(E.pow(acc, powerN));
+    out = out.mul(E.pow(acc, sig)).round();
+    out = out.div(E.pow(acc, sig));
+    out = out.mul(E.pow(acc, powerN));
+    return out;
+}
+
+export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };

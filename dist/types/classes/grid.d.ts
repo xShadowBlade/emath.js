@@ -7,8 +7,11 @@ import type { UnknownObject } from "../game/managers/DataManager";
  * @template P - The type of the properties of the grid cell.
  */
 declare class GridCell<P extends UnknownObject = UnknownObject> {
+    /** The x-coordinate of the cell. */
     x: number;
+    /** The y-coordinate of the cell. */
     y: number;
+    /** The properties of the cell. */
     properties: P;
     /**
      * Initializes a new instance of the grid cell.
@@ -36,11 +39,11 @@ declare class GridCell<P extends UnknownObject = UnknownObject> {
  * @template P - The type of the properties of the grid cells.
  */
 declare class Grid<P extends UnknownObject = UnknownObject> {
+    /** The size of the grid along the x-axis. */
     xSize: number;
+    /** The size of the grid along the x-axis. */
     ySize: number;
-    /**
-     * Represents the cells of the grid.
-     */
+    /** Represents the cells of the grid. */
     cells: GridCell<P>[][];
     /**
      * Initializes a new instance of the grid.

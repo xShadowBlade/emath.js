@@ -28,6 +28,7 @@ class Attribute {
 
 /**
  * Represents a static attribute, which is number that can effected by boosts.
+ * @template B - Indicates whether the boost is enabled. Defaults to true.
  * @example
  * const health = new attributeStatic(undefined, true, 100);
  * // Set a health boost that multiplies the health by 1.1
@@ -37,7 +38,7 @@ class Attribute {
  * });
  * console.log(health.value); // 110
  */
-class AttributeStatic {
+class AttributeStatic<B extends boolean = true> {
     /** The data for the attribute. */
     protected readonly pointerFn: (() => Attribute);
 
@@ -53,7 +54,7 @@ class AttributeStatic {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    public readonly boost?: Boost;
+    public readonly boost: B extends true ? Boost : undefined;
 
     /**
      * Constructs a new instance of the Attribute class.
@@ -61,12 +62,11 @@ class AttributeStatic {
      * @param useBoost - Indicates whether to use boost for the attribute.
      * @param initial - The initial value of the attribute.
      */
-    constructor (pointer?: Pointer<Attribute>, useBoost: boolean = true, initial: ESource = 0) {
+    constructor (pointer?: Pointer<Attribute>, useBoost?: B, initial: ESource = 0) {
         this.initial = E(initial);
         pointer = (pointer ? (typeof pointer === "function" ? pointer : () => pointer) : () => new Attribute(this.initial)) as (() => Attribute);
-        // this.pointerFn = typeof pointer === "function" ? pointer() : pointer;
         this.pointerFn = pointer;
-        if (useBoost) this.boost = new Boost(this.initial);
+        this.boost = (useBoost ? new Boost(this.initial) : undefined) as typeof this.boost;
     }
 
     /**

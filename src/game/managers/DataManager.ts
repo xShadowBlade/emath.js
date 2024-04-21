@@ -9,10 +9,6 @@ import type { Game, Pointer } from "../Game";
 
 // Recursive plain to class
 import { Currency } from "../../classes/Currency";
-// import { boost, boostObject } from "../../classes/boost";
-import { Attribute } from "../../classes/Attribute";
-// import { Decimal } from "../../E/old/e";
-import { Decimal } from "../../E/e";
 import { UpgradeData } from "../../classes/Upgrade";
 import { E } from "../../E/eMain";
 
@@ -425,7 +421,13 @@ class DataManager {
          */
         function plainToInstanceRecursive (normal: UnknownObject, plain: UnknownObject): UnknownObject {
             const out = plain;
-            for (const key in plain) {
+            for (const key in normal) {
+                if (!plain[key]) {
+                    // Should not happen
+                    console.warn(`Missing property "${key}" in loaded data.`);
+                    continue;
+                }
+
                 // If it's not an object, skip
                 if (!isPlainObject(plain[key])) continue;
 

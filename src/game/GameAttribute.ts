@@ -10,10 +10,11 @@ import type { Game, Pointer } from "./Game";
  * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
  * WIP, not fully implemented.
+ * @template B - Indicates whether the boost is enabled. Defaults to true.
  */
-class GameAttribute {
+class GameAttribute<B extends boolean = true> {
     public data: Attribute;
-    public static: AttributeStatic;
+    public static: AttributeStatic<B>;
 
     public game?: Game;
 
@@ -23,7 +24,7 @@ class GameAttribute {
      * @param staticPointer - A function that returns the static data for the attribute.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor (attributePointer: Pointer<Attribute>, staticPointer: Pointer<AttributeStatic>, gamePointer?: Game) {
+    constructor (attributePointer: Pointer<Attribute>, staticPointer: Pointer<AttributeStatic<B>>, gamePointer?: Game) {
         this.data = typeof attributePointer === "function" ? attributePointer() : attributePointer;
         this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 

@@ -5656,12 +5656,11 @@ var AttributeStatic = class {
    * @param useBoost - Indicates whether to use boost for the attribute.
    * @param initial - The initial value of the attribute.
    */
-  constructor(pointer, useBoost = true, initial = 0) {
+  constructor(pointer, useBoost, initial = 0) {
     this.initial = E(initial);
     pointer = pointer ? typeof pointer === "function" ? pointer : () => pointer : () => new Attribute(this.initial);
     this.pointerFn = pointer;
-    if (useBoost)
-      this.boost = new Boost(this.initial);
+    this.boost = useBoost ? new Boost(this.initial) : void 0;
   }
   /**
    * Updates the value of the attribute.
@@ -6175,7 +6174,7 @@ var DataManager = class {
    * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
-  decompileData(data = localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
+  decompileData(data = window?.localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     if (!data)
       return null;
     let parsedData;
@@ -6215,7 +6214,7 @@ var DataManager = class {
     this.data = this.normalData;
     this.saveData();
     if (reload)
-      window.location.reload();
+      window?.location.reload();
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
@@ -6223,7 +6222,11 @@ var DataManager = class {
    * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
    */
   saveData(dataToSave = this.compileData()) {
-    localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+    if (!dataToSave)
+      throw new Error("dataManager.saveData(): Data to save is empty.");
+    if (!window.localStorage)
+      throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+    window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
   }
   /**
    * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
@@ -6284,52 +6287,9 @@ var DataManager = class {
       return out;
     }
     let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
-    const templateClasses = function(templateClassesInit) {
-      const out = [];
-      for (const templateClassConvert of templateClassesInit) {
-        out.push({
-          class: templateClassConvert.class,
-          name: templateClassConvert.name,
-          // subclasses: templateClassConvert.subclasses,
-          properties: Object.getOwnPropertyNames((0, import_class_transformer5.instanceToPlain)(new templateClassConvert.class()))
-        });
-      }
-      return out;
-    }([
-      {
-        class: Attribute,
-        name: "attribute"
-        // subclasses: {
-        //     value: Decimal,
-        // },
-      },
-      // {
-      //     class: boost,
-      //     subclasses: {
-      //         baseEffect: Decimal,
-      //         boostArray: [boostObject],
-      //     },
-      // },
-      {
-        class: Currency,
-        name: "currency"
-        // subclasses: {
-        //     // boost: boost,
-        //     upgrades: [upgradeData],
-        //     value: Decimal,
-        // },
-      },
-      {
-        class: Decimal,
-        name: "Decimal"
-      }
-    ]);
-    function compareArrays(arr1, arr2) {
-      return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
-    }
     const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
     function convertTemplateClass(templateClassToConvert, plain) {
-      const out = (0, import_class_transformer5.plainToInstance)(templateClassToConvert.class, plain);
+      const out = (0, import_class_transformer5.plainToInstance)(templateClassToConvert, plain);
       if (out instanceof Currency) {
         for (const upgradeName in out.upgrades) {
           const upgrade = out.upgrades[upgradeName];
@@ -6344,26 +6304,25 @@ var DataManager = class {
         throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
       return out;
     }
-    function plainToInstanceRecursive(plain) {
+    function plainToInstanceRecursive(normal, plain) {
       const out = plain;
-      for (const key in plain) {
-        if (!(plain[key] instanceof Object && plain[key].constructor === Object))
+      for (const key in normal) {
+        if (!plain[key]) {
+          console.warn(`Missing property "${key}" in loaded data.`);
           continue;
-        if ((() => {
-          for (const templateClassR of templateClasses) {
-            if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClassR.properties)) {
-              out[key] = convertTemplateClass(templateClassR, plain[key]);
-              return false;
-            }
-          }
-          return true;
-        })()) {
-          out[key] = plainToInstanceRecursive(plain[key]);
         }
+        if (!isPlainObject(plain[key]))
+          continue;
+        const normalDataClass = normal[key].constructor;
+        if (normalDataClass === Object) {
+          out[key] = plainToInstanceRecursive(normal[key], plain[key]);
+          continue;
+        }
+        out[key] = convertTemplateClass(normalDataClass, plain[key]);
       }
       return out;
     }
-    loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+    loadedDataProcessed = plainToInstanceRecursive(this.normalData, loadedDataProcessed);
     return loadedDataProcessed;
   }
   /**
@@ -6470,7 +6429,7 @@ var GameReset = class {
    */
   constructor(currenciesToReset, extender) {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
-    this.extender = extender;
+    this.extender = Array.isArray(extender) ? extender : extender ? [extender] : [];
     this.id = Symbol();
   }
   /**
@@ -6481,9 +6440,11 @@ var GameReset = class {
     this.currenciesToReset.forEach((currency) => {
       currency.static.reset();
     });
-    if (this.extender && this.extender.id !== this.id) {
-      this.extender.reset();
-    }
+    this.extender.forEach((extender) => {
+      if (extender && extender.id !== this.id) {
+        extender.reset();
+      }
+    });
   }
 };
 

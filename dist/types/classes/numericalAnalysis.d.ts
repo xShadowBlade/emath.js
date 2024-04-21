@@ -74,4 +74,18 @@ declare function calculateSumApprox(f: (n: E) => E, b: ESource, a?: ESource, ite
  * console.log(sum); // ~385
  */
 declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?: ESource, iterations?: number): E;
-export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, MeanMode, DEFAULT_ITERATIONS };
+/**
+ * Function to round a number to the nearest power of a specified base. Warning: Experimental.
+ * @param x - The number to round.
+ * @param acc - The accuracy to round to (power)
+ * @param sig - The significant figures to round to.
+ * @param max - The maximum power to round to.
+ * @returns - The rounded number.
+ * @example
+ * console.log(roundingBase(123456789, 10, 0, 10)); // 120000000
+ * console.log(roundingBase(123456789, 10, 1, 10)); // 123000000
+ * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
+ * console.log(roundingBase(245, 2, 0, 10)); // 256
+ */
+declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): import("../E/e").Decimal;
+export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };

@@ -3,7 +3,6 @@
  */
 
 import { ESource } from "../E/eMain";
-// import { boost } from "../classes/boost";
 import { Currency, CurrencyStatic } from "../classes/Currency";
 import { Attribute, AttributeStatic } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
@@ -41,12 +40,6 @@ interface GameConfigOptions {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
     };
-    /** The managers for the game if you want to manually init them */
-    // managers?: {
-    //     keyManager?: KeyManager;
-    //     eventManager?: EventManager;
-    //     dataManager?: DataManager;
-    // };
     /**
      * Whether or not to automatically initialize the interval-based managers.
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
@@ -55,7 +48,6 @@ interface GameConfigOptions {
 }
 
 /** The default configuration for the game. */
-// const gameDefaultConfig: RequiredDeep<Omit<GameConfigOptions, "managers">> & GameConfigOptions["managers"] = {
 const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
     mode: "production",
     name: {
@@ -78,9 +70,6 @@ class Game {
 
     /** The config object */
     public readonly config: typeof Game.configManager.options;
-
-    // public data: gameData;
-    // public static: gameStatic;
 
     /**
      * The data manager for the game.
@@ -111,8 +100,7 @@ class Game {
      */
     constructor (config?: GameConfigOptions) {
         this.config = Game.configManager.parse(config);
-        // this.data = new gameData();
-        // this.static = new gameStatic();
+
         this.dataManager = new DataManager(this); // Init separately
         this.keyManager = new KeyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
@@ -122,6 +110,7 @@ class Game {
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
+
         this.tickers = [];
     }
 
@@ -210,5 +199,4 @@ class Game {
     }
 }
 
-// export { Game as Game, gameCurrency, gameAttribute, GameConfigOptions as gameConfigOptions, gameDefaultConfig, Pointer };
 export { Game, GameConfigOptions, gameDefaultConfig, Pointer };
