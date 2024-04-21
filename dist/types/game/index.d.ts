@@ -3,10 +3,10 @@
  */
 import "reflect-metadata";
 import "../E/eMain";
-export * from "./game";
-export * from "./gameCurrency";
-export * from "./gameAttribute";
-export * from "./resetLayer";
-export * from "./managers/keyManager";
-export * from "./managers/eventManager";
-export * from "./managers/dataManager";
+export * from "./Game";
+export * from "./GameCurrency";
+export * from "./GameAttribute";
+export * from "./ResetLayer";
+export * from "./managers/KeyManager";
+export * from "./managers/EventManager";
+export * from "./managers/DataManager";

@@ -5452,7 +5452,7 @@ var GridCell = class {
   constructor(x, y, props) {
     this.x = x;
     this.y = y;
-    this.properties = props ? props : {};
+    this.properties = props ?? {};
   }
   /**
    * Sets the value of a property on the cell.
@@ -5477,17 +5477,17 @@ var Grid = class {
   // Add this index signature
   /**
    * Initializes a new instance of the grid.
-   * @param x_size - The size of the grid along the x-axis.
-   * @param y_size - The size of the grid along the y-axis.
+   * @param xSize - The size of the grid along the x-axis.
+   * @param ySize - The size of the grid along the y-axis.
    * @param starterProps - The properties to initialize with.
    */
-  constructor(x_size, y_size, starterProps) {
-    this.xSize = x_size;
-    this.ySize = y_size;
+  constructor(xSize, ySize, starterProps) {
+    this.xSize = xSize;
+    this.ySize = ySize;
     this.cells = [];
-    for (let a = 0; a < y_size; a++) {
+    for (let a = 0; a < ySize; a++) {
       this.cells[a] = [];
-      for (let b = 0; b < x_size; b++) {
+      for (let b = 0; b < xSize; b++) {
         this.cells[a][b] = new GridCell(b, a, starterProps);
       }
     }

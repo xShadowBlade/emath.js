@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
 /**

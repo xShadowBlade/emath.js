@@ -1,2 +1,2 @@
-export * from "./pixiGame";
-export * from "./sprite";
+export * from "./PixiGame";
+export * from "./Sprite";

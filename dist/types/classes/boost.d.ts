@@ -2,7 +2,7 @@
  * @file Declares the boost class and other helper classes and interfaces.
  */
 import { E, ESource } from "../E/eMain";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 /** An object representing a boost. */
 interface BoostsObjectInit {
     /** The ID of the boost. */

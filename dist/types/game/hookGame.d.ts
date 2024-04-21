@@ -2,10 +2,10 @@
  * @file Declares a function that hooks the game to the window object.
  */
 import "reflect-metadata";
-import { Game } from "./game";
-import { KeyManager } from "./managers/keyManager";
-import { EventManager } from "./managers/eventManager";
-import { DataManager } from "./managers/dataManager";
+import { Game } from "./Game";
+import { KeyManager } from "./managers/KeyManager";
+import { EventManager } from "./managers/EventManager";
+import { DataManager } from "./managers/DataManager";
 declare const eMathGameWeb: {
     game: typeof Game;
     managers: {

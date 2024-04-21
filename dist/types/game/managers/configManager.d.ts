@@ -1,7 +1,7 @@
 /**
  * @file Declares classes for managing configuration objects.
  */
-import type { UnknownObject } from "./dataManager";
+import type { UnknownObject } from "./DataManager";
 /**
  * Represents a configuration object.
  * @template T - The type of the configuration object.

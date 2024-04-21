@@ -1,7 +1,7 @@
 /**
  * @file This file contains all the reset layer related classes.
  */
-import type { GameCurrency } from "./gameCurrency";
+import type { GameCurrency } from "./GameCurrency";
 /**
  * Represents a game reset.
  */

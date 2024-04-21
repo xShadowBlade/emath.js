@@ -2,13 +2,13 @@
  * @file Declares the main game class.
  */
 import { ESource } from "../E/eMain";
-import { KeyManager } from "./managers/keyManager";
-import { EventManager } from "./managers/eventManager";
-import { DataManager } from "./managers/dataManager";
-import { GameCurrency } from "./gameCurrency";
-import { GameAttribute } from "./gameAttribute";
-import { GameReset } from "./resetLayer";
-import { ConfigManager, RequiredDeep } from "./managers/configManager";
+import { KeyManager } from "./managers/KeyManager";
+import { EventManager } from "./managers/EventManager";
+import { DataManager } from "./managers/DataManager";
+import { GameCurrency } from "./GameCurrency";
+import { GameAttribute } from "./GameAttribute";
+import { GameReset } from "./ResetLayer";
+import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
 /**
  * A pointer to a value or a function that returns a value by reference.
  * @template T - The type of the value to point to.

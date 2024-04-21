@@ -4,21 +4,30 @@
 
 import type { UnknownObject } from "../game/managers/DataManager";
 
-/** Represents a grid cell with coordinates and properties. */
-class GridCell {
+/**
+ * Represents a grid cell with coordinates and properties.
+ * @template P - The type of the properties of the grid cell.
+ */
+class GridCell<P extends UnknownObject = UnknownObject> {
+    /** The x-coordinate of the cell. */
     public x: number;
+
+    /** The y-coordinate of the cell. */
     public y: number;
-    public properties: UnknownObject;
+
+    /** The properties of the cell. */
+    public properties: P;
+
     /**
      * Initializes a new instance of the grid cell.
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.
      */
-    constructor (x: number, y: number, props?: UnknownObject) {
+    constructor (x: number, y: number, props?: P) {
         this.x = x;
         this.y = y;
-        this.properties = props ? props : {};
+        this.properties = props ?? {} as P;
     }
 
     /**
@@ -27,7 +36,7 @@ class GridCell {
      * @param value - The value to set.
      * @returns The set value.
      */
-    public setValue (name: string, value: unknown): typeof value {
+    public setValue (name: keyof P, value: P[keyof P]): typeof value {
         this.properties[name] = value;
         return value;
     }
@@ -44,28 +53,32 @@ class GridCell {
 
 /**
  * Represents a grid with cells.
+ * @template P - The type of the properties of the grid cells.
  */
-class Grid {
+class Grid<P extends UnknownObject = UnknownObject> {
+    /** The size of the grid along the x-axis. */
     public xSize: number;
+
+    /** The size of the grid along the x-axis. */
     public ySize: number;
-    /**
-     * Represents the cells of the grid.
-     */
-    public cells: GridCell[][]; // Add this index signature
+
+    /** Represents the cells of the grid. */
+    public cells: GridCell<P>[][]; // Add this index signature
+
     /**
      * Initializes a new instance of the grid.
-     * @param x_size - The size of the grid along the x-axis.
-     * @param y_size - The size of the grid along the y-axis.
+     * @param xSize - The size of the grid along the x-axis.
+     * @param ySize - The size of the grid along the y-axis.
      * @param starterProps - The properties to initialize with.
      */
-    constructor (x_size: number, y_size: number, starterProps?: UnknownObject) {
-        this.xSize = x_size;
-        this.ySize = y_size;
+    constructor (xSize: number, ySize: number, starterProps?: P) {
+        this.xSize = xSize;
+        this.ySize = ySize;
         this.cells = [];
 
-        for (let a = 0; a < y_size; a++) {
+        for (let a = 0; a < ySize; a++) {
             this.cells[a] = [];
-            for (let b = 0; b < x_size; b++) {
+            for (let b = 0; b < xSize; b++) {
                 // iterates through every cell
                 this.cells[a][b] = new GridCell(b, a, starterProps);
             }
@@ -76,8 +89,8 @@ class Grid {
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.
      */
-    public getAll (): GridCell[] {
-        const output: GridCell[] = [];
+    public getAll (): GridCell<P>[] {
+        const output: GridCell<P>[] = [];
         for (let a = 0; a < this.ySize; a++) {
             for (let b = 0; b < this.xSize; b++) {
                 // iterates through every cell
@@ -91,7 +104,7 @@ class Grid {
      * @returns An array of all grid cells.
      * @deprecated Use getAll() instead.
      */
-    public all (): GridCell[] {
+    public all (): GridCell<P>[] {
         return this.getAll();
     }
 
@@ -100,8 +113,8 @@ class Grid {
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      */
-    public getAllX (x: number): GridCell[] {
-        const output: GridCell[] = [];
+    public getAllX (x: number): GridCell<P>[] {
+        const output: GridCell<P>[] = [];
         for (let i = 0; i < this.ySize; i++) {
             output.push(this.cells[i][x]);
         }
@@ -113,7 +126,7 @@ class Grid {
      * @returns An array of all grid cells with the same x coordinate.
      * @deprecated Use getAllX() instead.
      */
-    public allX (x: number): GridCell[] {
+    public allX (x: number): GridCell<P>[] {
         return this.getAllX(x);
     }
 
@@ -122,7 +135,7 @@ class Grid {
      * @returns - An array of all cells.
      * @param y - The y coordinate to check.
      */
-    public getAllY (y: number): GridCell[] {
+    public getAllY (y: number): GridCell<P>[] {
         return this.cells[y];
     }
     /**
@@ -131,7 +144,7 @@ class Grid {
      * @returns An array of all grid cells with the same y coordinate.
      * @deprecated Use allY() instead.
      */
-    public allY (y: number): GridCell[] {
+    public allY (y: number): GridCell<P>[] {
         return this.getAllY(y);
     }
 
@@ -141,7 +154,7 @@ class Grid {
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    public getCell (x: number, y: number): GridCell {
+    public getCell (x: number, y: number): GridCell<P> {
         return this.cells[y][x];
     }
 
@@ -151,7 +164,7 @@ class Grid {
      * @param y The y-coordinate of the cell.
      * @param value The value to set for the cell.
      */
-    public setCell (x: number, y: number, value: GridCell): void {
+    public setCell (x: number, y: number, value: GridCell<P>): void {
         this.cells[y][x] = value;
     }
 
@@ -161,8 +174,8 @@ class Grid {
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    public getAdjacent (x: number, y: number): GridCell[] {
-        const output: GridCell[] = [];
+    public getAdjacent (x: number, y: number): GridCell<P>[] {
+        const output: GridCell<P>[] = [];
         output[0] = this.getCell(x, y + 1);
         output[1] = this.getCell(x + 1, y);
         output[2] = this.getCell(x, y - 1);
@@ -176,8 +189,8 @@ class Grid {
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    public getDiagonal (x: number, y: number): GridCell[] {
-        const output: GridCell[] = [];
+    public getDiagonal (x: number, y: number): GridCell<P>[] {
+        const output: GridCell<P>[] = [];
         output[0] = this.getCell(x - 1, y + 1);
         output[1] = this.getCell(x + 1, y + 1);
         output[2] = this.getCell(x + 1, y - 1);
@@ -191,7 +204,7 @@ class Grid {
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    public getEncircling (x: number, y: number): GridCell[] {
+    public getEncircling (x: number, y: number): GridCell<P>[] {
         return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
     }
 

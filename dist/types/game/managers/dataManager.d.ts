@@ -3,7 +3,7 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import "reflect-metadata";
-import type { Game, Pointer } from "../game";
+import type { Game, Pointer } from "../Game";
 /** A class constructor */
 type ClassType = new (...args: any[]) => any;
 /** A plain object with unknown properties. */

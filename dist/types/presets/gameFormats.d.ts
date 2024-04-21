@@ -2,7 +2,7 @@
  * @file Game formats class.
  */
 import { ESource, FormatType } from "../E/eMain";
-import type { Pointer } from "../game/game";
+import type { Pointer } from "../game/Game";
 /**
  * Interface for format gain settings.
  */

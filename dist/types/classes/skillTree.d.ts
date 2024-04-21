@@ -1,9 +1,10 @@
 /**
  * @file Skill tree class
+ * Work in progress
  */
 import { E, ESource } from "../E/eMain";
-import type { CurrencyStatic } from "./currency";
-import type { IUpgradeStatic } from "./upgrade";
+import type { CurrencyStatic } from "./Currency";
+import type { IUpgradeStatic } from "./Upgrade";
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
     cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
     costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
@@ -14,7 +15,7 @@ interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "
  * Represents a skill tree node.
  * WIP
  */
-declare class skillNode implements ISkill {
+declare class SkillNode implements ISkill {
     id: string;
     name: string;
     description: string;
@@ -38,22 +39,22 @@ declare class skillNode implements ISkill {
      * @param skillObj - The skill to convert to a skill tree node.
      * @returns The skill tree node.
      */
-    static fromSkill(skillObj: ISkill): skillNode;
+    static fromSkill(skillObj: ISkill): SkillNode;
 }
 /**
  * Represents a skill tree.
  */
-declare class skillTree {
+declare class SkillTree {
     skills: ISkill[];
     /**
      * Represents a skill tree.
      * @param skills - The skills in the skill tree.
      */
-    constructor(skills: (ISkill | skillNode)[]);
+    constructor(skills: (ISkill | SkillNode)[]);
     /**
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    addSkill(skillNodeMember: (ISkill | skillNode)[]): void;
+    addSkill(skillNodeMember: (ISkill | SkillNode)[]): void;
 }
-export { skillNode, skillTree, ISkill };
+export { SkillNode, SkillTree, ISkill };

@@ -22,9 +22,11 @@ import md5 from "md5";
 /** A class constructor */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ClassType = new (...args: any[]) => any;
+
 /** A plain object with unknown properties. */
 type UnknownObject = Record<string, unknown>;
-// type plainTypes = string | number | boolean | UnknownObject | unknown[];
+
+type ConstructableObject = object & { constructor: ClassType };
 
 /**
  * Interface for the metadata of a save file.
@@ -78,9 +80,6 @@ class DataManager {
      * @param gameRef - A function that returns the game instance.
      */
     constructor (gameRef: Pointer<Game>) {
-        // if (typeof window === "undefined") { // Don't run on serverside
-        //     throw new Error("dataManager cannot be run on serverside");
-        // }
         this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
     }
 
@@ -193,6 +192,8 @@ class DataManager {
     public compileDataRaw (data = this.data): [SaveMetadata, object] {
         const gameDataString = instanceToPlain(data);
         const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+
+        // Get the version of the eMath library
         let version: string;
         try {
             // @ts-expect-error - Replaced by esbuild
@@ -200,6 +201,7 @@ class DataManager {
         } catch (error) {
             version = "8.0.0";
         }
+
         const saveMetadata: SaveMetadata = {
             hash: hasedData,
             game: {
@@ -211,7 +213,7 @@ class DataManager {
                 version,
             },
         };
-        // console.log("Compiled data: ", saveMetadata, gameDataString);
+
         return [saveMetadata, gameDataString];
     }
 
@@ -230,13 +232,18 @@ class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData (data: string | null = localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
+    public decompileData (data: string | null = window?.localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
+        // If the data is empty, return null
         if (!data) return null;
+
         let parsedData: [SaveMetadata, UnknownObject];
+
         try {
+            // Decompress the data
             parsedData = JSON.parse(decompressFromBase64(data));
             return parsedData;
         } catch (error) {
+            // If the data is corrupted, return null
             if (error instanceof SyntaxError) {
                 console.error(`Failed to decompile data (corrupted) "${data}":`, error);
             } else {
@@ -253,14 +260,15 @@ class DataManager {
      */
     public validateData (data: [SaveMetadata, object]): boolean {
         const [saveMetadata, gameDataToValidate] = data;
+
         // Backwards compatibility: In versions before 8.x.x, data was of type [hash: string, data: object]. Now it's of type [SaveMetadata, data: object].
         if (typeof saveMetadata === "string") {
             return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
         }
+
         const hashSave = saveMetadata.hash;
-        // Current hash
         const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
-        // console.log("Hashes: ", hashSave, hashCheck);
+
         return hashSave === hashCheck;
     }
 
@@ -272,7 +280,7 @@ class DataManager {
         if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
         this.data = this.normalData;
         this.saveData();
-        if (reload) window.location.reload();
+        if (reload) window?.location.reload();
     };
 
     /**
@@ -281,7 +289,9 @@ class DataManager {
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
     public saveData (dataToSave = this.compileData()): void {
-        localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+        if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
+        if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+        window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
     };
 
     /**
@@ -289,10 +299,8 @@ class DataManager {
      * If you want to implement a custom data export, use {@link compileData} instead.
      */
     public exportData (): void {
-        // Step 1: Create the content
+        // Create the content
         const content = this.compileData();
-
-        // console.log(content);
 
         // Ask if user wants to download
         if (prompt("Download save data?:", content) != null) {
@@ -317,10 +325,13 @@ class DataManager {
      * @returns The loaded data.
      */
     public parseData (dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
+        // If the normal data is not set, throw an error
         if (mergeData && (!this.normalData || !this.normalDataPlain)) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
+
+        // If the data is empty, return null
         if (!dataToParse) return null;
+
         const [, loadedData] = dataToParse;
-        // console.log(loadedData);
 
         /**
          * Checks if the given object is a plain object.
@@ -350,26 +361,13 @@ class DataManager {
                 }
                 // Special case for currency.upgrades
                 if (source[key] instanceof Currency) {
-                    // console.log("Merging currency: ", sourcePlain[key], target[key]);
-                    // interface currencyPlainType {
-                    //     upgrades: {
-                    //         id: string;
-                    //         level: unknown; // irrelevant so unknown
-                    //     }[]
-                    // }
                     const sourceCurrency = sourcePlain[key] as Currency;
                     const targetCurrency = target[key] as Currency;
-                    // for (const upgrade of sourceCurrency.upgrades) {
-                    //     if (!targetCurrency.upgrades.find((upgrade2) => upgrade2.id === upgrade.id)) {
-                    //         targetCurrency.upgrades.push(instanceToPlain(upgrade) as currencyPlainType["upgrades"][0]);
-                    //     }
-                    // }
 
                     // Backwards compatibility: In versions before 8.x.x, upgrades was of type UpgradeData[]. Now it's of type Record<string, UpgradeData>.
                     // Convert the old format to the new format
                     if (Array.isArray(targetCurrency.upgrades)) {
                         const upgrades = targetCurrency.upgrades;
-                        // targetCurrency.upgrades = {};
                         targetCurrency.upgrades = {};
                         for (const upgrade of upgrades) {
                             targetCurrency.upgrades[upgrade.id] = upgrade.level;
@@ -377,8 +375,6 @@ class DataManager {
                     }
 
                     // Merge upgrades
-                    // console.log("Merging upgrades: ");
-                    // console.log({ source: sourceCurrency.upgrades, target: targetCurrency.upgrades, combined: { ...sourceCurrency.upgrades, ...targetCurrency.upgrades }});
                     targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
                     out[key] = targetCurrency;
                 } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
@@ -388,94 +384,29 @@ class DataManager {
             }
             return out;
         }
-        // let loadedDataProcessed = Object.assign({}, this.normalData, loadedData);
+
         let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain!, this.normalData!, loadedData); // TODO: Fix this
-        // console.log("Merged data: ", loadedData, this.normalData, loadedDataProcessed);
-        interface templateClass {
-            name: string;
-            // Class constructor is Function
-            class: ClassType;
-            /** If the value is an array, it's an array of the given type */
-            // subclasses?: Record<string, any | [any]>;
-            properties: string[];
-        }
 
         // Convert plain object to class instance (recursive)
-        // TODO: use class-transformer and metadata
-        const templateClasses = (function (templateClassesInit: Omit<templateClass, "properties">[]) {
-            const out: templateClass[] = [];
-            for (const templateClassConvert of templateClassesInit) {
-                out.push({
-                    class: templateClassConvert.class,
-                    name: templateClassConvert.name,
-                    // subclasses: templateClassConvert.subclasses,
-                    properties: Object.getOwnPropertyNames(instanceToPlain(new templateClassConvert.class())),
-                });
-            }
-            return out;
-        })([
-            {
-                class: Attribute,
-                name: "attribute",
-                // subclasses: {
-                //     value: Decimal,
-                // },
-            },
-            // {
-            //     class: boost,
-            //     subclasses: {
-            //         baseEffect: Decimal,
-            //         boostArray: [boostObject],
-            //     },
-            // },
-            {
-                class: Currency,
-                name: "currency",
-                // subclasses: {
-                //     // boost: boost,
-                //     upgrades: [upgradeData],
-                //     value: Decimal,
-                // },
-            },
-            {
-                class: Decimal,
-                name: "Decimal",
-            },
-        ]);
 
-        // console.log("Temp", templateClasses);
-
-        /**
-         * Compares two arrays. If they have the same elements, returns true.
-         * @param arr1 - The first array.
-         * @param arr2 - The second array.
-         * @returns Whether the arrays are the same.
-         */
-        function compareArrays (arr1: unknown[], arr2: unknown[]): boolean {
-            return arr1.length === arr2.length && arr1.every((val) => arr2.includes(val));
-        }
-
-        /** A queue of objects to call onLoadData on. */
-        // const loadDataQueue: any = [];
         const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
+
         /**
          * Converts a plain object to a class instance.
          * @param templateClassToConvert - The template class to convert to.
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function convertTemplateClass (templateClassToConvert: templateClass, plain: UnknownObject): ClassType {
-            // let out: object = plain;
+        function convertTemplateClass (templateClassToConvert: ClassType, plain: UnknownObject): ClassType {
             // Convert the object
-            const out = plainToInstance(templateClassToConvert.class, plain);
+            const out = plainToInstance(templateClassToConvert, plain);
+
+            // Special case for Currency.upgrades
             if (out instanceof Currency) {
-                // console.log("Converted currency: ", out);
                 for (const upgradeName in out.upgrades) {
                     const upgrade = out.upgrades[upgradeName];
-                    // console.log("Upgrade: ", upgrade);
                     if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
-                        // console.log("invalid upgrade: ", upgrade);
+                        // Delete the upgrade if it's invalid (extraneous properties, etc.)
                         delete out.upgrades[upgradeName];
                         continue;
                     }
@@ -488,38 +419,32 @@ class DataManager {
 
         /**
          * Converts a plain object to a class instance.
+         * @param normal - The normal data to reference.
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function plainToInstanceRecursive (plain: UnknownObject): UnknownObject {
+        function plainToInstanceRecursive (normal: UnknownObject, plain: UnknownObject): UnknownObject {
             const out = plain;
             for (const key in plain) {
-                // console.log(key);
-                // If it's not an object, skip it
-                if (!(plain[key] instanceof Object && (plain as Record<string, object>)[key].constructor === Object)) continue;
-                // If it matches a template class, convert it
-                if (((): boolean => {
-                    // Iterate through each template class
-                    for (const templateClassR of templateClasses) {
-                        // If the object has the same properties as the template class, convert it
-                        if (compareArrays(Object.getOwnPropertyNames(plain[key]), templateClassR.properties)) {
-                            out[key] = convertTemplateClass(templateClassR, (plain as Record<string, UnknownObject>)[key]);
+                // If it's not an object, skip
+                if (!isPlainObject(plain[key])) continue;
 
-                            // Return false if it matches a template class
-                            return false;
-                        }
-                    }
-                    // Return true if it doesn't match a template class
-                    return true;
-                })()) {
+                // Convert the object using the normal data
+                const normalDataClass = (normal[key] as ConstructableObject).constructor;
+
+                if (normalDataClass === Object) {
                     // If the object doesn't match a template class, convert it recursively
-                    (out as Record<string, object>)[key] = plainToInstanceRecursive((plain as Record<string, UnknownObject>)[key]);
+                    (out as Record<string, object>)[key] = plainToInstanceRecursive((normal as Record<string, UnknownObject>)[key], (plain as Record<string, UnknownObject>)[key]);
+                    continue;
                 }
+
+                // console.log("Normal data class: ", normalDataClass);
+                out[key] = convertTemplateClass(normalDataClass, (plain as Record<string, UnknownObject>)[key]);
             }
             return out;
         }
 
-        loadedDataProcessed = plainToInstanceRecursive(loadedDataProcessed);
+        loadedDataProcessed = plainToInstanceRecursive(this.normalData!, loadedDataProcessed);
         return loadedDataProcessed;
     }
 
@@ -530,15 +455,17 @@ class DataManager {
      */
     public loadData (dataToLoad: [SaveMetadata, UnknownObject] | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
+
+        // If the data is empty, return null
         if (!dataToLoad) return null;
+
         const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??
-        // console.log("Loaded data1: ", dataToLoad);
         const parsedData = this.parseData(dataToLoad);
-        // console.log("Loaded data2: ", dataToLoad);
+
+        // If the data is empty, return null
         if (!parsedData) return null;
 
-        // console.log("Loaded data: ", [dataToLoad[0], instanceToPlain(dataToLoad[1])]);
-
+        // Set the data
         this.data = parsedData;
 
         // Call onLoadData on all objects

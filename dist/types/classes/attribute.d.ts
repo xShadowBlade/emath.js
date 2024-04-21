@@ -3,8 +3,8 @@
  */
 import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
-import { Boost } from "../classes/boost";
-import type { Pointer } from "../game/game";
+import { Boost } from "./Boost";
+import type { Pointer } from "../game/Game";
 /**
  * Represents an attribute in the game.
  * Note: This is only meant for the data of an attribute. Use in combination with {@link AttributeStatic} for the actual attribute.

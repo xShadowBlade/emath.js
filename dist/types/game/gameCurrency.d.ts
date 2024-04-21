@@ -2,8 +2,8 @@
  * @file Declares the game currency class.
  */
 import { E } from "../E/eMain";
-import { Currency, CurrencyStatic } from "../classes/currency";
-import type { Game, Pointer } from "./game";
+import { Currency, CurrencyStatic } from "../classes/Currency";
+import type { Game, Pointer } from "./Game";
 /**
  * Represents a game currency. {@link Currency} is the data class and {@link CurrencyStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.

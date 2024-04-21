@@ -4,10 +4,10 @@
 import "reflect-metadata";
 import { E, ESource } from "../E/eMain";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/game";
-import { Boost } from "./boost";
+import type { Pointer } from "../game/Game";
+import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
-import { UpgradeData, UpgradeStatic, UpgradeInit } from "./upgrade";
+import { UpgradeData, UpgradeStatic, UpgradeInit } from "./Upgrade";
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
