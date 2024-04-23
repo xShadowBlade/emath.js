@@ -13,7 +13,7 @@
   "author": "xShadowBlade",
   "license": "MIT",
   "dependencies": {
-    "emath.js": "file:.."
+    "emath.js": "file:../"
   },
   "devDependencies": {
     "@types/chai": "^4.3.14",
