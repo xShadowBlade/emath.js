@@ -45,8 +45,9 @@
         "doc": "typedoc --options typedoc.config.json",
         "lint": "eslint src/**/*.ts test/**/*.ts",
         "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts",
-        "test": "ts-mocha test/**/*.test.ts",
-        "build-and-test": "node bin/build/build.js && npm run test"
+        "test": "cd test && npm run test && cd ..",
+        "build-and-test": "node bin/build/build.js && cd test && npm run test && cd ..",
+        "build-and-build-and-test": "echo \"worst script name\" && concurrently \"node bin/build/build.js\" \"cd test && npm run build && cd ..\" && cd test && npm run test && cd .."
     },
     "repository": {
         "type": "git",
@@ -60,7 +61,6 @@
     "homepage": "https://github.com/xShadowBlade/emath.js#readme",
     "devDependencies": {
         "@types/md5": "^2.3.5",
-        "@types/mocha": "^10.0.3",
         "@types/node": "^20.10.4",
         "@types/react": "^18.2.48",
         "@typescript-eslint/eslint-plugin": "^7.0.2",
@@ -74,12 +74,10 @@
         "eslint-config-react-app": "^7.0.1",
         "eslint-plugin-jsdoc": "^48.0.2",
         "eslint-plugin-react": "^7.33.2",
-        "mocha": "^10.2.0",
         "pixi.js": "^7.4.0",
         "prettier": "3.2.5",
         "prettier-eslint": "^16.1.1",
         "react": "^18.2.0",
-        "ts-mocha": "^10.0.0",
         "typedoc": "^0.25.11",
         "typescript": "^5.4.5"
     },

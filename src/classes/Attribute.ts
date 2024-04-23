@@ -27,12 +27,12 @@ class Attribute {
 }
 
 /**
- * Represents a static attribute, which is number that can effected by boosts.
+ * Represents a static attribute, which is number that can affected by boosts.
  * @template B - Indicates whether the boost is enabled. Defaults to true.
  * @example
- * const health = new attributeStatic(undefined, true, 100);
+ * const health = new AttributeStatic(undefined, true, 100); // AttributeStatic<true>
  * // Set a health boost that multiplies the health by 1.1
- * health.boost?.setBoost({
+ * health.boost.setBoost({
  *     id: "healthBoost",
  *     value: (e) => e.mul(1.1),
  * });
@@ -54,26 +54,28 @@ class AttributeStatic<B extends boolean = true> {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    public readonly boost: B extends true ? Boost : undefined;
+    public readonly boost: B extends true ? Boost : null;
 
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
-     * @param useBoost - Indicates whether to use boost for the attribute.
-     * @param initial - The initial value of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
+     * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor (pointer?: Pointer<Attribute>, useBoost?: B, initial: ESource = 0) {
+    constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: ESource = 0) {
         this.initial = E(initial);
-        pointer = (pointer ? (typeof pointer === "function" ? pointer : () => pointer) : () => new Attribute(this.initial)) as (() => Attribute);
-        this.pointerFn = pointer;
-        this.boost = (useBoost ? new Boost(this.initial) : undefined) as typeof this.boost;
+        pointer ??= new Attribute(this.initial);
+        this.pointerFn = (typeof pointer === "function" ? pointer : () => pointer);
+        this.boost = (useBoost ? new Boost(this.initial) : null) as typeof this.boost;
     }
 
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
+     * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
      */
     public update (): void {
+        console.warn("AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.");
         if (this.boost) {
             this.pointer.value = this.boost.calculate();
         }

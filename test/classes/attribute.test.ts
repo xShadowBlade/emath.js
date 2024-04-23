@@ -1,71 +1,84 @@
 /**
  * @file Test suite for the Attribute class
  */
-import { AttributeStatic, E } from "emath.js";
-import assert from "assert";
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
 
-// describe("AttributeStatic", () => {
-//     describe("constructor", () => {
-//         it("should create a new instance of AttributeStatic with default values", () => {
-//             const attribute = new AttributeStatic();
-//             assert(attribute.initial.eq(0));
-//             assert.strictEqual(attribute.boost, undefined);
-//         });
+import { AttributeStatic, Attribute, E } from "emath.js";
 
-//         it("should create a new instance of AttributeStatic with custom values", () => {
-//             const pointerFn = () => new AttributeStatic();
-//             const useBoost = false;
-//             const initial = 10;
-//             const attribute = new AttributeStatic(pointerFn, useBoost, initial);
-//             assert(attribute.initial.eq(initial));
-//         });
-//     });
+describe("Attribute", () => {
+    let testAttribute: Attribute;
 
-//     describe("update", () => {
-//         it("should update the value of the attribute when boost is enabled", () => {
-//             const attribute = new AttributeStatic();
-//             attribute.boost?.setBoost({
-//                 id: "test",
-//                 value: (e) => e.mul(2),
-//             });
-//             attribute.update();
-//             assert(attribute.value.eq(2));
-//         });
+    beforeEach(() => {
+        testAttribute = new Attribute();
+    });
 
-//         it("should not update the value of the attribute when boost is disabled", () => {
-//             const attribute = new AttributeStatic();
-//             attribute.update();
-//             assert(attribute.value.eq(0));
-//         });
-//     });
+    describe("constructor", () => {
+        it("should create an attribute with default value 0", () => {
+            assert(testAttribute.value.equals(E(0)));
+        });
 
-//     describe("value", () => {
-//         it("should get the value of the attribute and update the value stored when boost is enabled", () => {
-//             const attribute = new AttributeStatic();
-//             attribute.boost?.setBoost({
-//                 id: "test",
-//                 value: (e) => e.mul(2),
-//             });
-//             assert(attribute.value.eq(2));
-//             assert(attribute.pointer.value.eq(2));
-//         });
+        it("should create an attribute with specified initial value", () => {
+            const initialValue = E(100);
+            testAttribute = new Attribute(initialValue);
+            assert(testAttribute.value.equals(initialValue));
+        });
+    });
+});
 
-//         it("should set the value of the attribute when boost is disabled", () => {
-//             const attribute = new AttributeStatic();
-//             attribute.value = E(40);
-//             assert(attribute.value.eq(40));
-//             assert(attribute.pointer.value.eq(40));
-//         });
+describe("AttributeStatic", () => {
+    describe("constructor", () => {
+        it("should create an attribute static with default initial value and boost disabled", () => {
+            const attributeStatic = new AttributeStatic(undefined, false);
+            assert(attributeStatic.value.equals(E(0)));
+            assert.isNull(attributeStatic.boost);
+        });
 
-//         it("should throw an error when trying to set the value of the attribute when boost is enabled", () => {
-//             const attribute = new AttributeStatic();
-//             attribute.boost?.setBoost({
-//                 id: "test",
-//                 value: (e) => e.mul(2),
-//             });
-//             assert.throws(() => {
-//                 attribute.value = E(60);
-//             }, Error, "Cannot set value of attributeStatic when boost is enabled.");
-//         });
-//     });
-// });
+        it("should create an attribute static with specified initial value and boost enabled", () => {
+            const initialValue = E(100);
+            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+            assert(attributeStatic.value.equals(initialValue));
+            assert.isNotNull(attributeStatic.boost);
+        });
+    });
+
+    describe("value", () => {
+        it("should return the value of the attribute static", () => {
+            const initialValue = E(100);
+            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+            assert(attributeStatic.value.equals(initialValue));
+        });
+
+        it("should update the value when the boost is updated", () => {
+            const initialValue = E(100);
+            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+
+            // Set boost
+            attributeStatic.boost.setBoost({
+                id: "testBoost",
+                value: (e) => e.mul(2),
+            });
+
+            // Check updated value
+            console.log(attributeStatic.value);
+            assert(attributeStatic.value.equals(E(200)));
+        });
+    });
+
+    describe("set value", () => {
+        it("should throw an error when boost is enabled", () => {
+            const attributeStatic = new AttributeStatic(undefined, true);
+            assert.throws(() => {
+                attributeStatic.value = E(100);
+            }, "Cannot set value of attributeStatic when boost is enabled.");
+        });
+
+        it("should set the value when boost is disabled", () => {
+            const attributeStatic = new AttributeStatic(undefined, false);
+            const newValue = E(100);
+            attributeStatic.value = newValue;
+            console.log(attributeStatic.value);
+            assert(attributeStatic.value.equals(newValue));
+        });
+    });
+});

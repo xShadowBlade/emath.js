@@ -1,9 +1,10 @@
 /**
  * @file Test suite for the E class
  */
-// import { E } from "../src/index";
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
+
 import { E } from "emath.js";
-import assert from "assert";
 
 interface TestE {
     value: E;

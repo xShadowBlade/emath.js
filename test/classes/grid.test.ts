@@ -1,9 +1,10 @@
 /**
  * @file Test suite for the Grid class
  */
-// import { Grid, GridCell } from "../src/classes/grid";
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
+
 import { Grid, GridCell } from "emath.js";
-import assert from "assert";
 
 describe("Grid", () => {
     let grid: Grid;

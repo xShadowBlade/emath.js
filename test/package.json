@@ -1,13 +1,25 @@
 {
   "name": "test",
   "version": "0.1.0",
-  "description": "",
+  "private": true,
+  "description": "eMath.js test",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai",
+    "build-and-test": "npm run build && npm run test",
+    "build:watch": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai --watch",
+    "test": "mocha build/**/*.test.js"
   },
   "author": "xShadowBlade",
   "license": "MIT",
   "dependencies": {
     "emath.js": "file:.."
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.1.0",
+    "esbuild": "^0.20.2",
+    "mocha": "^10.4.0"
   }
 }

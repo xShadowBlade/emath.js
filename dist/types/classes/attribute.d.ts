@@ -19,12 +19,12 @@ declare class Attribute {
     constructor(initial?: ESource);
 }
 /**
- * Represents a static attribute, which is number that can effected by boosts.
+ * Represents a static attribute, which is number that can affected by boosts.
  * @template B - Indicates whether the boost is enabled. Defaults to true.
  * @example
- * const health = new attributeStatic(undefined, true, 100);
+ * const health = new AttributeStatic(undefined, true, 100); // AttributeStatic<true>
  * // Set a health boost that multiplies the health by 1.1
- * health.boost?.setBoost({
+ * health.boost.setBoost({
  *     id: "healthBoost",
  *     value: (e) => e.mul(1.1),
  * });
@@ -41,17 +41,18 @@ declare class AttributeStatic<B extends boolean = true> {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    readonly boost: B extends true ? Boost : undefined;
+    readonly boost: B extends true ? Boost : null;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
-     * @param useBoost - Indicates whether to use boost for the attribute.
-     * @param initial - The initial value of the attribute.
+     * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
+     * @param initial - The initial value of the attribute. Defaults to 0.
      */
     constructor(pointer?: Pointer<Attribute>, useBoost?: B, initial?: ESource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
+     * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
      */
     update(): void;
     /**

@@ -1,8 +1,11 @@
 /**
  * @file Test suite for the numerical analysis functions
  */
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
+
 import { E, inverseFunctionApprox, calculateSum } from "emath.js";
-import assert from "assert";
+
 import { EEqualsTolerance, EEqualsToleranceConfig } from "../shared/EShared";
 
 const equalTolerance = 1e-3;

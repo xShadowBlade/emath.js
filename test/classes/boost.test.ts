@@ -1,12 +1,11 @@
 /**
  * @file Test suite for the Boost class
  */
-// import { E, Boost } from "../src/index";
-// import { E, Boost } from "../dist/main/eMath.mjs";
-// import type { BoostObject, BoostsObjectInit } from "../src/index";
+import { describe, it, beforeEach } from "mocha";
+import { assert } from "chai";
+
 import { E, Boost } from "emath.js";
-import type { BoostObject, BoostsObjectInit } from "emath.js";
-import assert from "assert";
+import type { BoostsObjectInit } from "emath.js";
 
 describe("Boost", () => {
     let testBoost: Boost;

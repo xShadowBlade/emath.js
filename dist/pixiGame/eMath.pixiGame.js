@@ -5657,20 +5657,22 @@ var AttributeStatic = class {
   /**
    * Constructs a new instance of the Attribute class.
    * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
-   * @param useBoost - Indicates whether to use boost for the attribute.
-   * @param initial - The initial value of the attribute.
+   * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
+   * @param initial - The initial value of the attribute. Defaults to 0.
    */
-  constructor(pointer, useBoost, initial = 0) {
+  constructor(pointer, useBoost = true, initial = 0) {
     this.initial = E(initial);
-    pointer = pointer ? typeof pointer === "function" ? pointer : () => pointer : () => new Attribute(this.initial);
-    this.pointerFn = pointer;
-    this.boost = useBoost ? new Boost(this.initial) : void 0;
+    pointer ??= new Attribute(this.initial);
+    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+    this.boost = useBoost ? new Boost(this.initial) : null;
   }
   /**
    * Updates the value of the attribute.
    * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
+   * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
    */
   update() {
+    console.warn("AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.");
     if (this.boost) {
       this.pointer.value = this.boost.calculate();
     }
@@ -6142,7 +6144,7 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "8.0.0-rc.1";
+      version = "8.0.0-rc.2";
     } catch (error) {
       version = "8.0.0";
     }
