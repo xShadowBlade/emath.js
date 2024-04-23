@@ -1,7 +1,7 @@
 ![Header](https://raw.githubusercontent.com/xShadowBlade/emath.js/main/documentation/static/img/banner.png)
 
 <div align="center">
-eMath.js is a JavaScript library designed to provide tools for incremental game development, built upon [break_eternity.js](https://github.com/Patashu/break_eternity.js). It provides classes for upgrades, saving/loading, and more!
+eMath.js is a JavaScript library designed to provide tools for incremental game development, built upon <a href="https://github.com/Patashu/break_eternity.js">break_eternity.js</a>. It provides classes for upgrades, saving/loading, and more!
 
 **NOTE: THIS PACKAGE IS IN DEVELOPMENT AND IS SUBJECT TO MAJOR CHANGES**
 <br>
