@@ -1,7 +1,7 @@
 ![Header](https://raw.githubusercontent.com/xShadowBlade/emath.js/main/documentation/static/img/banner.png)
 
 <div align="center">
-eMath.js is a JavaScript library designed to provide tools for incremental game development. It includes support for the break_eternity.js library, advanced formatting capabilities, and classes for managing boosts, currency, and attributes in game development.
+eMath.js is a JavaScript library designed to provide tools for incremental game development, built upon [break_eternity.js](https://github.com/Patashu/break_eternity.js). It provides classes for upgrades, saving/loading, and more!
 
 **NOTE: THIS PACKAGE IS IN DEVELOPMENT AND IS SUBJECT TO MAJOR CHANGES**
 <br>
@@ -14,7 +14,68 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 <br><img src="https://img.shields.io/badge/Made%20by%3A-xShadowBlade%232720-blue?style=social&logo=discord">
 </div>
 
-Credits to [MrRedShark77](https://github.com/MrRedShark77/) for the formats and inspiration.
+## Abstract
+
+This project started when I was trying to create my first incremental game. I found it difficult to implement certain systems like upgrades and saving. When I eventually made those systems, I wanted to make a package so I could streamline those tools. After a few months of development, I have finally developed it into a presentable state (I should have started it with v0.1.0 instead of v1.0.0).
+
+## Example Usage
+
+```js
+import { E } from "emath.js";
+import { Game } from "emath.js/game";
+
+// Initialize game
+const coinGame = new Game();
+
+// Create a new currency
+const coins = coinGame.addCurrency("coins");
+
+// Create upgrades
+coins.static.addUpgrade({
+    id: "upg1Coins", // Unique ID
+    cost: level => level.mul(10), // Cost of 10 times the level
+    maxLevel: E(1000),
+    effect: (level) => {
+        coins.static.boost.setBoost({
+            id: "boostUpg1Coins",
+            effect: n => n.plus(level.mul(11)).sub(1),
+        });
+    },
+});
+
+// Initialize / Load game
+coinGame.init();
+coinGame.dataManager.loadData();
+
+// Gain coins
+coins.static.gain();
+
+// Buy (max) upgrades
+coins.static.buyUpgrade("upg1Coins");
+
+// Hotkeys
+coinGame.keyManager.addKey([
+    {
+        name: "Gain Coins",
+        key: "g",
+        onDownContinuous: () => coins.static.gain(),
+    },
+    {
+        name: "Buy Upgrades",
+        key: "b",
+        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+    },
+]);
+
+// Saving and Loading
+window.addEventListener("beforeunload", () => {
+    coinGame.dataManager.saveData();
+});
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
+    console.log("Auto Saved!");
+});
+```
 
 ## Installation
 
@@ -24,19 +85,9 @@ Credits to [MrRedShark77](https://github.com/MrRedShark77/) for the formats and 
 npm install emath.js
 ```
 
-The package has no default exports. Use as the following:
-
-```js
-import { boost, currency, /* import more here */ } from "emath.js";
-```
-
-> [!WARNING]
-> If you are using typescript with webpack, import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` instead. This fixes a bug that causes unexpected behavior when working with the E instance.
-
 ### Include using CDN
 
-> [!NOTE]
-> There is no development build for CDN, as it is used for nodejs.
+> Note: There is no development build for CDN, as it is used for nodejs.
 
 #### emath.js
 
