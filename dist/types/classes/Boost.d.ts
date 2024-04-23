@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 import type { Pointer } from "../game/Game";
 /** An object representing a boost. */
 interface BoostsObjectInit {
@@ -39,7 +39,7 @@ interface BoostsObjectInit {
      * // A boost that multiplies the input value by 2.
      * (input) => input.mul(2)
      */
-    value: (input: E) => E;
+    value: (input: Decimal) => Decimal;
     /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
 }
@@ -51,7 +51,7 @@ declare class BoostObject implements BoostsObjectInit {
     /** @deprecated Use {@link description} instead */
     get desc(): string;
     get description(): string;
-    value: (input: E) => E;
+    value: (input: Decimal) => Decimal;
     order: number;
     constructor(init: BoostObject | BoostsObjectInit);
 }
@@ -63,13 +63,13 @@ declare class Boost {
     /** An array of boost objects. */
     readonly boostArray: BoostObject[];
     /** The base effect value. */
-    readonly baseEffect: E;
+    readonly baseEffect: Decimal;
     /**
      * Constructs a new boost manager.
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: ESource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
+    constructor(baseEffect?: DecimalSource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
@@ -113,7 +113,7 @@ declare class Boost {
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
-    setBoost(id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
+    setBoost(id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -132,7 +132,7 @@ declare class Boost {
      * @deprecated Use {@link setBoost} instead.
      */
     addBoost: {
-        (id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
+        (id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
         (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     };
     /**
@@ -143,6 +143,6 @@ declare class Boost {
      * // Calculate the effect of all boosts
      * const finalEffect = boost.calculate();
      */
-    calculate(base?: ESource): E;
+    calculate(base?: DecimalSource): Decimal;
 }
 export { Boost, BoostObject, BoostsObjectInit };

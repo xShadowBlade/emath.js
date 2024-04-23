@@ -1,7 +1,7 @@
 /**
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
@@ -38,18 +38,18 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS) {
+function inverseFunctionApprox (f: (x: Decimal) => Decimal, n: DecimalSource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS) {
     // Set the initial bounds
-    let lowerBound = E(1);
-    // let upperBound = E(n);
-    let upperBound = E(n);
+    let lowerBound = new Decimal(1);
+    // let upperBound = new Decimal(n);
+    let upperBound = new Decimal(n);
 
     // If the function evaluates to 0, return 0
     if (f(upperBound).eq(0)) {
         return {
-            value: E(0),
-            lowerBound: E(0),
-            upperBound: E(0),
+            value: new Decimal(0),
+            lowerBound: new Decimal(0),
+            upperBound: new Decimal(0),
         };
     }
 
@@ -67,7 +67,7 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
     // console.log({ lowerBound, upperBound, iterations });
     // Perform the bisection / binary search
     for (let i = 0; i < iterations; i++) {
-        let mid: E;
+        let mid: Decimal;
         switch (mode) {
         case "arithmetic":
         case 1:
@@ -114,13 +114,13 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: ESource = E("1e-3")): E {
+function calculateSumLoop (f: (n: Decimal) => Decimal, b: DecimalSource, a: DecimalSource = 0, epsilon: DecimalSource = new Decimal("1e-3")): Decimal {
     // epsilon = epsilon;
-    let sum: E = E();
+    let sum: Decimal = new Decimal();
 
-    let n = E(b);
+    let n = new Decimal(b);
 
-    // for (let n = E(a); n.lte(b); n = n.add(1)) {
+    // for (let n = new Decimal(a); n.lte(b); n = n.add(1)) {
     for (; n.gte(a); n = n.sub(1)) {
         // if (f(n).div(n).lt(epsilon)) break;
         const initSum = sum;
@@ -130,9 +130,9 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
 
         // If the difference/quotent between the inital sum and the new sum is less than epsilon, break
         const diff = initSum.div(sum);
-        if (diff.lte(1) && diff.gt(E(1).sub(epsilon))) break;
+        if (diff.lte(1) && diff.gt(new Decimal(1).sub(epsilon))) break;
     }
-    // console.log({ sum, iterations: E(b).sub(n).add(a) });
+    // console.log({ sum, iterations: new Decimal(b).sub(n).add(a) });
     return sum;
 }
 
@@ -145,11 +145,11 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterations: number = DEFAULT_ITERATIONS): E {
-    a = E(a);
-    b = E(b);
+function calculateSumApprox (f: (n: Decimal) => Decimal, b: DecimalSource, a: DecimalSource = 0, iterations: number = DEFAULT_ITERATIONS): Decimal {
+    a = new Decimal(a);
+    b = new Decimal(b);
 
-    let sum = E(0);
+    let sum = new Decimal(0);
     const intervalWidth = b.sub(a).div(iterations);
     for (let i = 0; i < iterations; i++) {
         const x0 = a.add(intervalWidth.mul(i));
@@ -172,9 +172,9 @@ function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterati
  * const sum = calculateSum(f, 10);
  * console.log(sum); // ~385
  */
-function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESource, iterations?: number): E {
-    a = E(a);
-    b = E(b);
+function calculateSum (f: (n: Decimal) => Decimal, b: DecimalSource, a: DecimalSource = 0, epsilon?: DecimalSource, iterations?: number): Decimal {
+    a = new Decimal(a);
+    b = new Decimal(b);
     if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
         return calculateSumLoop(f, b, a, epsilon);
     } else {
@@ -195,16 +195,16 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000) {
-    x = E(x);
+function roundingBase (x: DecimalSource, acc: DecimalSource = 10, sig: DecimalSource = 0, max: DecimalSource = 1000) {
+    x = new Decimal(x);
     // If the number is too large, don't round it
-    if (x.gte(E.pow(acc, max))) return x;
+    if (x.gte(Decimal.pow(acc, max))) return x;
     /** The power of the number, rounded. acc^power = x */
-    const powerN = E.floor(E.log(x, acc));
-    let out = x.div(E.pow(acc, powerN));
-    out = out.mul(E.pow(acc, sig)).round();
-    out = out.div(E.pow(acc, sig));
-    out = out.mul(E.pow(acc, powerN));
+    const powerN = Decimal.floor(Decimal.log(x, acc));
+    let out = x.div(Decimal.pow(acc, powerN));
+    out = out.mul(Decimal.pow(acc, sig)).round();
+    out = out.div(Decimal.pow(acc, sig));
+    out = out.mul(Decimal.pow(acc, powerN));
     return out;
 }
 

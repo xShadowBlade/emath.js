@@ -1,7 +1,7 @@
 /**
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
  * Can be overriden by passing a custom amount of iterations.
@@ -35,10 +35,10 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number): {
-    value: import("../E/e").Decimal;
-    lowerBound: import("../E/e").Decimal;
-    upperBound: import("../E/e").Decimal;
+declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number): {
+    value: Decimal;
+    lowerBound: Decimal;
+    upperBound: Decimal;
 };
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
@@ -49,7 +49,7 @@ declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMo
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`.
  * @returns The calculated sum of `f(n)`.
  */
-declare function calculateSumLoop(f: (n: E) => E, b: ESource, a?: ESource, epsilon?: ESource): E;
+declare function calculateSumLoop(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, epsilon?: DecimalSource): Decimal;
 /**
  * Approximates the sum of `f(n)` from `a` to `b` using the trapezoidal rule.
  * See {@link calculateSum} for a more general function.
@@ -59,7 +59,7 @@ declare function calculateSumLoop(f: (n: E) => E, b: ESource, a?: ESource, epsil
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @returns The calculated sum of `f(n)`.
  */
-declare function calculateSumApprox(f: (n: E) => E, b: ESource, a?: ESource, iterations?: number): E;
+declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number): Decimal;
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using either the trapezoidal rule or a basic loop depending on the size of `b - a`.
  * @param f - The function `f(n)` to calculate the sum.
@@ -73,7 +73,7 @@ declare function calculateSumApprox(f: (n: E) => E, b: ESource, a?: ESource, ite
  * const sum = calculateSum(f, 10);
  * console.log(sum); // ~385
  */
-declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?: ESource, iterations?: number): E;
+declare function calculateSum(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, epsilon?: DecimalSource, iterations?: number): Decimal;
 /**
  * Function to round a number to the nearest power of a specified base. Warning: Experimental.
  * @param x - The number to round.
@@ -87,5 +87,5 @@ declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?:
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): import("../E/e").Decimal;
+declare function roundingBase(x: DecimalSource, acc?: DecimalSource, sig?: DecimalSource, max?: DecimalSource): Decimal;
 export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };

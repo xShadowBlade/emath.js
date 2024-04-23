@@ -1,5 +1,5 @@
 /**
- * @file The main file for the E library.
+ * @file The main file for the Decimal library.
  */
 // import "./formats";
 import { Decimal } from "./e";
@@ -13,10 +13,10 @@ import type { DecimalSource } from "./e";
  * @returns - The Decimal instance.
  */
 // @ts-expect-error Declared as a function, but adds properties later
-const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = (() => {
+const Decimal: ((x?: DecimalSource) => Decimal) & typeof Decimal = (() => {
     const out = (x?: DecimalSource) => new Decimal(x);
 
-    // Copy properties from Decimal to E
+    // Copy properties from Decimal to Decimal
     (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b)) as string[]).forEach((prop) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (out as any)[prop] = (Decimal as any)[prop];
@@ -24,16 +24,16 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = (() => {
     return out;
 })();
 
-type E = Decimal;
+type Decimal = Decimal;
 
 // test
-// const a = E("1.23e89");
-// const b = E("4.56e78");
+// const a = new Decimal("1.23e89");
+// const b = new Decimal("4.56e78");
 // console.log(a.mul(b).format());
-// console.log(E, Object.getOwnPropertyNames(E));
-// console.log(E.pow(2, 3).format());
+// console.log(Decimal, Object.getOwnPropertyNames(Decimal));
+// console.log(Decimal.pow(2, 3).format());
 
-export { E, DecimalSource as ESource };
+export { Decimal, DecimalSource };
 // export * from "./formats";
 export { FORMATS, FormatTypeList } from "./e";
 export type { FormatType } from "./e";

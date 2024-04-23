@@ -1,8 +1,9 @@
 /**
  * @file Declares the shared constants and types.
  */
-import { E } from "emath.js";
-import type { ESource, MeanMode } from "emath.js";
+// import { E } from "emath.js";
+import Decimal, { DecimalSource } from "break_eternity.js";
+import type { MeanMode } from "emath.js";
 
 interface EEqualsToleranceConfig {
     verbose: boolean | "onlyOnFail";
@@ -17,7 +18,7 @@ interface EEqualsToleranceConfig {
  * @param config - The configuration object.
  * @returns Whether the values are equal within the tolerance.
  */
-function EEqualsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: Partial<EEqualsToleranceConfig>): boolean {
+function EEqualsTolerance (a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EEqualsToleranceConfig>): boolean {
     // Set the default values
     config = Object.assign({}, {
         verbose: false,
@@ -25,11 +26,11 @@ function EEqualsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: 
     } as EEqualsToleranceConfig, config);
 
     // Convert the values to E instances
-    a = E(a);
-    b = E(b);
-    tolerance = E(tolerance);
+    a = new Decimal(a);
+    b = new Decimal(b);
+    tolerance = new Decimal(tolerance);
 
-    let diff: E;
+    let diff: Decimal;
     let result: boolean;
 
     // Compare the values

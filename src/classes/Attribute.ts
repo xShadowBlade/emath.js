@@ -3,9 +3,8 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 import { Boost } from "./Boost";
-import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 
 /**
@@ -15,14 +14,14 @@ import type { Pointer } from "../game/Game";
 class Attribute {
     /** The current value of the attribute. */
     @Type(() => Decimal)
-    public value: E;
+    public value: Decimal;
 
     /**
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
-    constructor (initial: ESource = 0) {
-        this.value = E(initial);
+    constructor (initial: DecimalSource = 0) {
+        this.value = new Decimal(initial);
     }
 }
 
@@ -48,7 +47,7 @@ class AttributeStatic<B extends boolean = true> {
     }
 
     /** The initial value of the attribute. */
-    public readonly initial: E;
+    public readonly initial: Decimal;
 
     /**
      * The boost of the attribute.
@@ -62,8 +61,8 @@ class AttributeStatic<B extends boolean = true> {
      * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: ESource = 0) {
-        this.initial = E(initial);
+    constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: DecimalSource = 0) {
+        this.initial = new Decimal(initial);
         pointer ??= new Attribute(this.initial);
         this.pointerFn = (typeof pointer === "function" ? pointer : () => pointer);
         this.boost = (useBoost ? new Boost(this.initial) : null) as typeof this.boost;
@@ -86,7 +85,7 @@ class AttributeStatic<B extends boolean = true> {
      * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
      * @returns The calculated value of the attribute.
      */
-    public get value (): E {
+    public get value (): Decimal {
         if (this.boost) {
             this.pointer.value = this.boost.calculate();
         }
@@ -98,7 +97,7 @@ class AttributeStatic<B extends boolean = true> {
      * NOTE: This setter should not be used when boost is enabled.
      * @param value - The value to set the attribute to.
      */
-    public set value (value: E) {
+    public set value (value: Decimal) {
         if (this.boost) {
             throw new Error("Cannot set value of attributeStatic when boost is enabled.");
         }

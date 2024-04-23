@@ -2,7 +2,7 @@
  * @file Declares the attribute and attributeStatic classes.
  */
 import "reflect-metadata";
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 import { Boost } from "./Boost";
 import type { Pointer } from "../game/Game";
 /**
@@ -11,12 +11,12 @@ import type { Pointer } from "../game/Game";
  */
 declare class Attribute {
     /** The current value of the attribute. */
-    value: E;
+    value: Decimal;
     /**
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
-    constructor(initial?: ESource);
+    constructor(initial?: DecimalSource);
 }
 /**
  * Represents a static attribute, which is number that can affected by boosts.
@@ -36,7 +36,7 @@ declare class AttributeStatic<B extends boolean = true> {
     /** @returns The data for the attribute. */
     get pointer(): Attribute;
     /** The initial value of the attribute. */
-    readonly initial: E;
+    readonly initial: Decimal;
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
@@ -48,7 +48,7 @@ declare class AttributeStatic<B extends boolean = true> {
      * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor(pointer?: Pointer<Attribute>, useBoost?: B, initial?: ESource);
+    constructor(pointer?: Pointer<Attribute>, useBoost?: B, initial?: DecimalSource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
@@ -60,12 +60,12 @@ declare class AttributeStatic<B extends boolean = true> {
      * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
      * @returns The calculated value of the attribute.
      */
-    get value(): E;
+    get value(): Decimal;
     /**
      * Sets the value of the attribute.
      * NOTE: This setter should not be used when boost is enabled.
      * @param value - The value to set the attribute to.
      */
-    set value(value: E);
+    set value(value: Decimal);
 }
 export { Attribute, AttributeStatic };

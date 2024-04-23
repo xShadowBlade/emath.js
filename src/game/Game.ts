@@ -2,9 +2,9 @@
  * @file Declares the main game class.
  */
 
-import { ESource } from "../E/eMain";
 import { Currency, CurrencyStatic } from "../classes/Currency";
 import { Attribute, AttributeStatic } from "../classes/Attribute";
+import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
@@ -12,7 +12,8 @@ import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
 
-import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import type { DecimalSource } from "break_eternity.js";
+
 
 /**
  * A pointer to a value or a function that returns a value by reference.
@@ -137,7 +138,7 @@ class Game {
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
-     * console.log(currency.value); // E(1)
+     * console.log(currency.value); // new Decimal(1)
      */
     public addCurrency<N extends string> (name: N): GameCurrency<N> {
         this.dataManager.setData(name, {
@@ -173,7 +174,7 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): GameAttribute {
+    public addAttribute (name: string, useBoost: boolean = true, initial: DecimalSource = 0): GameAttribute {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const dataRef = this.dataManager.setData(name, new Attribute(initial));
         // @ts-expect-error - fix this

@@ -8,7 +8,7 @@ import "reflect-metadata";
 // hookGame();
 
 // Module augmentation
-import "../E/eMain";
+// import "../Decimal/eMain";
 
 export * from "./Game";
 export * from "./GameCurrency";

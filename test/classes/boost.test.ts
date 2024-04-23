@@ -4,7 +4,8 @@
 import { describe, it, beforeEach } from "mocha";
 import { assert } from "chai";
 
-import { E, Boost } from "emath.js";
+import Decimal from "break_eternity.js";
+import { Boost } from "emath.js";
 import type { BoostsObjectInit } from "emath.js";
 
 describe("Boost", () => {
@@ -16,7 +17,7 @@ describe("Boost", () => {
 
     describe("constructor", () => {
         it("should create a boost with default values", () => {
-            assert(testBoost.baseEffect.equals(E(1)));
+            assert(testBoost.baseEffect.equals(new Decimal(1)));
             assert.equal(testBoost.boostArray.length, 0);
         });
 
@@ -25,7 +26,7 @@ describe("Boost", () => {
             const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
             const b3: BoostsObjectInit = { id: "b3", name: "Boost 3", description: "Description 3", value: (x) => x.add(4), order: 3 };
             testBoost = new Boost(10, [b1, b2, b3]);
-            assert(testBoost.baseEffect.equals(E(10)));
+            assert(testBoost.baseEffect.equals(new Decimal(10)));
             assert.equal(testBoost.boostArray.length, 3);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[1].id, "b2");
@@ -43,7 +44,7 @@ describe("Boost", () => {
             assert.equal(boosts[0].id, "b2");
             assert.equal(boosts[0].name, "Boost 2");
             assert.equal(boosts[0].description, "Description 2");
-            assert(boosts[0].value(E(0)).equals(E(3)));
+            assert(boosts[0].value(new Decimal(0)).equals(new Decimal(3)));
             assert.equal(boosts[0].order, 2);
         });
 
@@ -56,7 +57,7 @@ describe("Boost", () => {
             assert.equal(boosts[0].id, "b2");
             assert.equal(boosts[0].name, "Boost 2");
             assert.equal(boosts[0].description, "Description 2");
-            assert(boosts[0].value(E(0)).equals(E(3)));
+            assert(boosts[0].value(new Decimal(0)).equals(new Decimal(3)));
             assert.equal(boosts[0].order, 2);
             assert.equal(indexes.length, 1);
             assert.equal(indexes[0], 1);
@@ -80,7 +81,7 @@ describe("Boost", () => {
             assert.equal(boost?.id, "b2");
             assert.equal(boost?.name, "Boost 2");
             assert.equal(boost?.description, "Description 2");
-            assert(boost?.value(E(0)).equals(E(3)));
+            assert(boost?.value(new Decimal(0)).equals(new Decimal(3)));
             assert.equal(boost?.order, 2);
         });
 
@@ -119,7 +120,7 @@ describe("Boost", () => {
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1");
             assert.equal(testBoost.boostArray[0].description, "Description 1");
-            assert(testBoost.boostArray[0].value(E(0)).equals(E(2)));
+            assert(testBoost.boostArray[0].value(new Decimal(0)).equals(new Decimal(2)));
             assert.equal(testBoost.boostArray[0].order, 1);
         });
 
@@ -130,7 +131,7 @@ describe("Boost", () => {
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
             assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
-            assert(testBoost.boostArray[0].value(E(0)).equals(E(3)));
+            assert(testBoost.boostArray[0].value(new Decimal(0)).equals(new Decimal(3)));
             assert.equal(testBoost.boostArray[0].order, 2);
         });
 
@@ -152,7 +153,7 @@ describe("Boost", () => {
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
             assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
-            assert(testBoost.boostArray[0].value(E(0)).equals(E(4)));
+            assert(testBoost.boostArray[0].value(new Decimal(0)).equals(new Decimal(4)));
             assert.equal(testBoost.boostArray[0].order, 3);
             assert.equal(testBoost.boostArray[1].id, "b2");
         });

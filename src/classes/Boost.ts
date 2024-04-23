@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../E/eMain";
+import Decimal, { DecimalSource } from "break_eternity.js";
 // import { Type, Expose } from "class-transformer";
 import type { Pointer } from "../game/Game";
 
@@ -46,7 +46,7 @@ interface BoostsObjectInit {
      * // A boost that multiplies the input value by 2.
      * (input) => input.mul(2)
      */
-    value: (input: E) => E;
+    value: (input: Decimal) => Decimal;
 
     /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
@@ -65,7 +65,7 @@ class BoostObject implements BoostsObjectInit {
     public get description (): string {
         return this.descriptionFn();
     }
-    public value: (input: E) => E;
+    public value: (input: Decimal) => Decimal;
     public order: number;
 
     constructor (init: BoostObject | BoostsObjectInit) {
@@ -96,16 +96,16 @@ class Boost {
 
     /** The base effect value. */
     // @Expose()
-    public readonly baseEffect: E;
+    public readonly baseEffect: Decimal;
 
     /**
      * Constructs a new boost manager.
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect: ESource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
+    constructor (baseEffect: DecimalSource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
         boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
-        this.baseEffect = E(baseEffect);
+        this.baseEffect = new Decimal(baseEffect);
         this.boostArray = [];
         if (boosts) {
             boosts.forEach((boostObj) => {
@@ -184,7 +184,7 @@ class Boost {
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
-    public setBoost (id: string, name: string, description: string, value: (input: E) => E, order?: number): void;
+    public setBoost (id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -198,7 +198,7 @@ class Boost {
      * });
      */
     public setBoost (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
-    public setBoost (arg1: string | (BoostsObjectInit | BoostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: E) => E, arg5?: number): void {
+    public setBoost (arg1: string | (BoostsObjectInit | BoostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: Decimal) => Decimal, arg5?: number): void {
         if (!arg1) return; // class-transformer bug
         if (typeof arg1 === "string") {
             // Basic set using parameters
@@ -242,8 +242,8 @@ class Boost {
      * // Calculate the effect of all boosts
      * const finalEffect = boost.calculate();
      */
-    public calculate (base: ESource = this.baseEffect): E {
-        let output: E = E(base);
+    public calculate (base: DecimalSource = this.baseEffect): Decimal {
+        let output: Decimal = new Decimal(base);
         let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
         boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);

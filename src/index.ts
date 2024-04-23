@@ -5,7 +5,7 @@
 import "reflect-metadata";
 
 export * from "./E/lru-cache";
-export * from "./E/eMain";
+// export * from "./Decimal/eMain";
 export * from "./classes/Boost";
 export * from "./classes/Upgrade";
 export * from "./classes/Currency";
