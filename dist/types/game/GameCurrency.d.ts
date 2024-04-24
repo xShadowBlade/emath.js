@@ -1,7 +1,7 @@
 /**
  * @file Declares the game currency class.
  */
-import Decimal from "break_eternity.js";
+import { E } from "../E/eMain";
 import { Currency, CurrencyStatic } from "../classes/Currency";
 import type { Game, Pointer } from "./Game";
 /**
@@ -36,6 +36,6 @@ declare class GameCurrency<N extends string = string, U extends string[] = strin
      * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
      * @returns The value of the game currency.
      */
-    get value(): Decimal;
+    get value(): E;
 }
 export { GameCurrency };

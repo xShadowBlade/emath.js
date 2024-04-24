@@ -4,6 +4,4 @@
  */
 // import "reflect-metadata";
 
-// export * from "./GameFormats";
-
-// TODO
+export * from "./GameFormats";

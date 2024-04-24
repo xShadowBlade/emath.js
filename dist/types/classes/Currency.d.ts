@@ -2,7 +2,8 @@
  * @file Declares the currency class and its related classes (upgrade)
  */
 import "reflect-metadata";
-import Decimal, { DecimalSource } from "break_eternity.js";
+import { E, ESource } from "../E/eMain";
+import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
@@ -13,7 +14,7 @@ import { UpgradeData, UpgradeStatic, UpgradeInit } from "./Upgrade";
  */
 declare class Currency {
     /** The current value of the currency. */
-    value: Decimal;
+    value: E;
     /** An array that represents upgrades and their levels. */
     upgrades: Record<string, UpgradeData<string>>;
     /**
@@ -28,7 +29,7 @@ declare class Currency {
  * @example
  * const currency = new currencyStatic();
  * currency.gain();
- * console.log(currency.value); // new Decimal(1)
+ * console.log(currency.value); // E(1)
  */
 declare class CurrencyStatic<U extends string[] = string[]> {
     /** An array that represents upgrades, their costs, and their effects. */
@@ -40,16 +41,16 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     /** A boost object that affects the currency gain. */
     readonly boost: Boost;
     /** The default value of the currency. */
-    readonly defaultVal: Decimal;
+    readonly defaultVal: E;
     /** The default boost of the currency. */
-    readonly defaultBoost: Decimal;
+    readonly defaultBoost: E;
     /**
      * The current value of the currency.
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
      */
-    get value(): Decimal;
-    set value(value: Decimal);
+    get value(): E;
+    set value(value: E);
     /**
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
@@ -69,7 +70,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
      * @example
      * currency.reset();
-     * console.log(currency.value); // new Decimal(0), or the default value
+     * console.log(currency.value); // E(0), or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
     /**
@@ -80,7 +81,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    gain(dt?: DecimalSource): Decimal;
+    gain(dt?: ESource): E;
     /**
      * Adds an upgrade to the data class.
      * @param upgrades - Upgrade to add
@@ -122,7 +123,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *             "healthBoost",
      *             "Health Boost",
      *             "Boosts health by 2x per level.",
-     *             n => n.mul(Decimal.pow(2, level.sub(1))),
+     *             n => n.mul(E.pow(2, level.sub(1))),
      *             2,
      *         );
      *     }
@@ -151,12 +152,12 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: string, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal];
+    calculateUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
      * @param id - Index or ID of the upgrade
@@ -168,7 +169,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: string, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
+    getNextCost(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
@@ -180,6 +181,6 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: string, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
+    buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
 export { Currency, CurrencyStatic };

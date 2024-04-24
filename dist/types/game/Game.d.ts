@@ -1,14 +1,14 @@
 /**
  * @file Declares the main game class.
  */
-import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import { ESource } from "../E/eMain";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
 import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
-import type { DecimalSource } from "break_eternity.js";
+import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
 /**
  * A pointer to a value or a function that returns a value by reference.
  * @template T - The type of the value to point to.
@@ -90,7 +90,7 @@ declare class Game {
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
-     * console.log(currency.value); // new Decimal(1)
+     * console.log(currency.value); // E(1)
      */
     addCurrency<N extends string>(name: N): GameCurrency<N>;
     /**
@@ -103,7 +103,7 @@ declare class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    addAttribute(name: string, useBoost?: boolean, initial?: DecimalSource): GameAttribute;
+    addAttribute(name: string, useBoost?: boolean, initial?: ESource): GameAttribute;
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.

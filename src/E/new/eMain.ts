@@ -37,23 +37,23 @@ interface DecimalAddedMethodsInterface {
      */
     scale (this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
     /**
-     * Formats the Decimal instance with a specified accuracy and maximum Decimal places.
+     * Formats the E instance with a specified accuracy and maximum Decimal places.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted Decimal value.
+     * @returns A string representing the formatted E value.
      */
     format (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of Decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted Decimal value.
+     * @returns A string representing the formatted E value.
      */
     formatST (this: Decimal, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the gain rate using the Decimal instance.
+     * Formats the gain rate using the E instance.
      * @param gain - The gain value to compare
      * @param [type] - The type of format (default mixed scientific)
      * @param [acc] - The desired accuracy (number of significant figures).
@@ -67,10 +67,10 @@ interface DecimalAddedMethodsInterface {
      */
     formatGain (gain: DecimalSource, type: FormatType, acc?: number, max?: number): string;
     /**
-     * Converts the Decimal instance to a Roman numeral representation.
+     * Converts the E instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the Decimal value,
-     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the E value,
+     * or the original E instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman (this: Decimal, max?: DecimalSource): string | Decimal;
 }
@@ -78,7 +78,7 @@ interface DecimalAddedMethodsInterface {
 // Class and interface merging / Module Augmentation
 declare module "./declare" {
     /**
-     * @deprecated If you are using `emath.js`, use {@link Decimal} instead
+     * @deprecated If you are using `emath.js`, use {@link E} instead
      */
     // eslint-disable-next-line no-shadow
     interface Decimal extends DecimalAddedMethodsInterface {}
@@ -206,7 +206,7 @@ const DecimalAddedStaticMethods = {
     },
 
     /**
-     * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
+     * Creates a clone of the E instance. Helps with a webpack(?) bug
      * @alias Decimal.normalizeFromComponents
      * @param x - The number to clone
      * @returns - The cloned number
@@ -245,33 +245,33 @@ const DecimalAddedStaticMethods = {
     },
 
     /**
-     * Formats the Decimal instance with a specified accuracy and maximum Decimal places.
+     * Formats the E instance with a specified accuracy and maximum Decimal places.
      * See {@link DecimalAddedMethods.format} for more details.
-     * @param e - The Decimal instance to format.
+     * @param e - The E instance to format.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted Decimal value.
+     * @returns A string representing the formatted E value.
      */
     format (e: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string {
         return formats.format(new Decimal(e), acc, max, type);
     },
 
     /**
-     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
      * See {@link DecimalAddedMethods.formatST} for more details.
      * @param value - The value to format.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of Decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted Decimal value.
+     * @returns A string representing the formatted E value.
      */
     formatST (value: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "st"): string {
         return formats.format(new Decimal(value), acc, max, type);
     },
 
     /**
-     * Formats the gain rate using the Decimal instance.
+     * Formats the gain rate using the E instance.
      * See {@link DecimalAddedMethods.formatGain} for more details.
      * @param value - The value to compare
      * @param gain - The gain value to compare
@@ -285,12 +285,12 @@ const DecimalAddedStaticMethods = {
     },
 
     /**
-     * Converts the Decimal instance to a Roman numeral representation.
+     * Converts the E instance to a Roman numeral representation.
      * See {@link DecimalAddedMethods.toRoman} for more details.
      * @param value - The value to convert to a Roman numeral.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the Decimal value,
-     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the E value,
+     * or the original E instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman (value: DecimalSource, max: DecimalSource): string | Decimal {
         return new Decimal(value).toRoman(max);
@@ -337,7 +337,7 @@ for (const key in DecimalAddedStaticMethods) {
  * @returns - The Decimal instance.
  */
 // @ts-expect-error Declared as a function, but adds properties later
-const Decimal: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & { formats: typeof formats } = (() => {
+const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & { formats: typeof formats } = (() => {
     // const out = (x?: DecimalSource) => {
     //     const instance = new Decimal(x);
     //     addMethods(instance, DecimalAddedMethods);
@@ -345,7 +345,7 @@ const Decimal: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof Decima
     // };
     const out = (x?: DecimalSource) => new Decimal(x);
 
-    // Copy properties from Decimal to Decimal
+    // Copy properties from Decimal to E
     (Object.getOwnPropertyNames(Decimal).filter((b) => ![...Object.getOwnPropertyNames(class {}), "arguments", "caller", "callee"].includes(b)) as string[]).forEach((prop) => {
         // console.log(prop);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -354,9 +354,9 @@ const Decimal: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof Decima
     return out;
 })();
 
-type Decimal = Decimal;
+type E = Decimal;
 
-// console.log("clone test", new Decimal(5).format());
+// console.log("clone test", E(5).format());
 
 // Formats
 const { formats } = decimalFormatGenerator(Decimal as unknown as Parameters<typeof decimalFormatGenerator>[0]);
@@ -364,17 +364,17 @@ const { formats } = decimalFormatGenerator(Decimal as unknown as Parameters<type
 /*
 // Test
 const mag = 1e6;
-const testA = new Decimal(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
+const testA = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
 console.log(testA);
-const testB = new Decimal(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
+const testB = E(Math.random()).mul("1e" + Math.floor(Math.random() * mag));
 console.log(testB);
-// const testShort = new Decimal(Math.random()).mul(10e3);
+// const testShort = E(Math.random()).mul(10e3);
 
 const { format, formatGain, metric, ev, formatTime, formatTimeLong, formatReduction, formatPercent, formatMult } = formats;
 
 const testFormats = {
-    toString: (x: DecimalSource) => new Decimal(x).toString(),
-    prototype: (x: DecimalSource) => new Decimal(x).format(),
+    toString: (x: DecimalSource) => E(x).toString(),
+    prototype: (x: DecimalSource) => E(x).format(),
     standard: (x: DecimalSource) => format(x, 2, 9, "st"),
     sc: (x: DecimalSource) => format(x, 2, 9, "sc"),
     default: format,
@@ -427,12 +427,12 @@ export type { FormatType } from "../format";
 
 // import { formats, FormatType } from "./formats";
 
-Decimal.formats = formats;
+E.formats = formats;
 
-export { Decimal };
+export { E };
 export type { CompareResult, DecimalSource as ESource };
 /**
- * @deprecated Use {@link Decimal} instead
+ * @deprecated Use {@link E} instead
  */
 export { Decimal };
 

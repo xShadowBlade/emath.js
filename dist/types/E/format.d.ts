@@ -1,5 +1,5 @@
 /**
- * @file Declares a generator function for formats for the Decimal library.
+ * @file Declares a generator function for formats for the E library.
  */
 import type { Decimal as DecimalType, DecimalSource } from "./e";
 type Decimal = DecimalType;
@@ -8,7 +8,7 @@ type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemen
 declare const ST_NAMES: string[][][];
 declare const FormatTypeList: FormatType[];
 /**
- * Generates a format function for the Decimal library.
+ * Generates a format function for the E library.
  * @param Decimal - The Decimal constructor to use.
  * @returns - The format function.
  */

@@ -2,7 +2,8 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import Decimal, { DecimalSource } from "break_eternity.js";
+import { E, ESource } from "../E/eMain";
+import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
@@ -17,9 +18,9 @@ import { MeanMode } from "./numericalAnalysis";
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+ * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic<string>, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
+declare function calculateUpgrade(value: ESource, upgrade: UpgradeStatic<string>, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
 /**
  * Interface for initializing an upgrade.
  * @template N - The ID of the upgrade.
@@ -61,32 +62,32 @@ interface UpgradeInit<N extends string = string> {
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
      */
-    cost: (level: Decimal) => Decimal;
+    cost: (level: E) => E;
     /**
      * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
      * EL is automatically applied to the cost.
      * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade.
-     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
      * @example
      * // A cost function that returns the sum of the levels and the target.
      * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal];
+    costBulk?: (currencyValue: E, level: E, target: E) => [amount: E, cost: E];
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
      */
-    maxLevel?: Decimal;
+    maxLevel?: E;
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: Decimal, context: UpgradeStatic<N>) => void;
+    effect?: (level: E, context: UpgradeStatic<N>) => void;
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
@@ -97,14 +98,14 @@ interface UpgradeInit<N extends string = string> {
      * The default level of the upgrade.
      * Automatically set to `1` if not provided.
      */
-    level?: Decimal;
+    level?: E;
 }
 /**
  * Interface for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
-    maxLevel?: Decimal;
+    maxLevel?: E;
     name: string;
     description: string;
     /**
@@ -143,14 +144,14 @@ type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
  * @param n - The decimal number to convert.
  * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
  */
-declare function decimalToJSONString(n: DecimalSource): DecimalJSONString;
+declare function decimalToJSONString(n: ESource): DecimalJSONString;
 /**
  * Converts an upgrade to a cache name (EL)
  * @deprecated Use an object index instead.
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
-declare function upgradeToCacheNameEL(level: DecimalSource): UpgradeCachedELName;
+declare function upgradeToCacheNameEL(level: ESource): UpgradeCachedELName;
 /**
  * Interface for an upgrade that is cached.
  * @template EL - Whether the upgrade is EL or not.
@@ -160,18 +161,18 @@ interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "i
 }
 /** Interface for an upgrade that is cached. (EL) */
 interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
-    level: Decimal;
+    level: E;
     /** The cost of the upgrade at level (el) */
-    cost: Decimal;
+    cost: E;
 }
 /** Interface for an upgrade that is cached. (Not EL) */
 interface UpgradeCachedSum extends UpgradeCached<false> {
-    start: Decimal;
-    end: Decimal;
+    start: E;
+    end: E;
     /**
      * The cost of the upgrade from start to end. (summation)
      */
-    cost: Decimal;
+    cost: E;
 }
 /**
  * Represents the frontend for an upgrade.
@@ -212,8 +213,8 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
      */
-    get level(): Decimal;
-    set level(n: DecimalSource);
+    get level(): E;
+    set level(n: ESource);
     /**
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
@@ -228,8 +229,8 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
      * @param end - The ending level or quantity to reach for the upgrade.
      * @returns The data of the upgrade.
      */
-    getCached(type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
-    getCached(type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
+    getCached(type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
+    getCached(type: "el", start: ESource): UpgradeCachedEL | undefined;
     /**
      * Sets the cached data of the upgrade.
      * @param type - The type of the cache. "sum" or "el"
@@ -237,8 +238,8 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
      * @param end - The ending level or quantity to reach for the upgrade.
      * @param cost - The cost of the upgrade.
      */
-    setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
-    setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
+    setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
+    setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
 }
 export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, calculateUpgrade };
 export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };

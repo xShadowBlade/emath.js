@@ -1,7 +1,7 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import Decimal from "break_eternity.js";
+import { E } from "../../E/eMain";
 import { ConfigManager } from "./ConfigManager";
 import type { Application } from "pixi.js";
 
@@ -186,7 +186,7 @@ class EventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void) {
+    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
         this.events[name] = (() => {
             switch (type) {
             case "interval": {

@@ -5,14 +5,14 @@
   "description": "eMath.js test",
   "type": "module",
   "scripts": {
-    "build": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:break_eternity.js --external:mocha --external:chai",
+    "build": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai",
     "build-and-test": "npm run build && npm run test",
+    "build:watch": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai --watch",
     "test": "mocha build/**/*.test.js"
   },
   "author": "xShadowBlade",
   "license": "MIT",
   "dependencies": {
-    "break_eternity.js": "^1.4.2",
     "emath.js": "file:../"
   },
   "devDependencies": {

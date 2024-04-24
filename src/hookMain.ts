@@ -2,13 +2,17 @@
  * @file Declares a function that hooks the game to the window object.
  */
 import "reflect-metadata";
-// import { Decimal } from "./Decimal/eMain";
+import { E } from "./E/eMain";
 import { Boost } from "./classes/Boost";
 import { Currency, CurrencyStatic } from "./classes/Currency";
 import { Attribute } from "./classes/Attribute";
 import { Grid, GridCell } from "./classes/Grid";
 
 const eMathWeb = {
+    /**
+     * @deprecated Use `import { E } from "emath.js"` instead.
+     */
+    E: E,
     classes: {
         /**
          * @deprecated Use `import { boost } from "emath.js"` instead.

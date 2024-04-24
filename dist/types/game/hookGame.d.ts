@@ -13,6 +13,7 @@ declare const eMathGameWeb: {
         eventManager: typeof EventManager;
         dataManager: typeof DataManager;
     };
+    E: ((x?: import("..").ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
     classes: {
         boost: typeof import("..").Boost;
         currency: typeof import("..").Currency;

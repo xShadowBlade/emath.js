@@ -1,7 +1,7 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import Decimal from "break_eternity.js";
+import { E } from "../../E/eMain";
 import type { Application } from "pixi.js";
 /**
  * The type of event
@@ -104,13 +104,13 @@ declare class EventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    setEvent(name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void): void;
+    setEvent(name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void;
     /**
      * Adds a new event
      * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
-    addEvent: (name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void) => void;
+    addEvent: (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) => void;
     /**
      * Removes an event from the event system.
      * @param name - The name of the event to remove.

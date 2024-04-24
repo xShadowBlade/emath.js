@@ -1,7 +1,7 @@
 /**
  * @file Declares the game currency class.
  */
-import Decimal from "break_eternity.js";
+import { E } from "../E/eMain";
 import { Attribute, AttributeStatic } from "../classes/Attribute";
 import type { Game, Pointer } from "./Game";
 /**
@@ -26,12 +26,12 @@ declare class GameAttribute<B extends boolean = true> {
      * NOTE: This getter is sometimes inaccurate.
      * @returns The value of the attribute.
      */
-    get value(): Decimal;
+    get value(): E;
     /**
      * Sets the value of the attribute.
      * NOTE: This setter should not be used when boost is enabled.
      * @param value - The value to set the attribute to.
      */
-    set value(value: Decimal);
+    set value(value: E);
 }
 export { GameAttribute };
