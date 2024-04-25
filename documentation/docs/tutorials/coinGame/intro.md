@@ -2,6 +2,7 @@
 id: intro
 title: Intro to Coin Game tutorial
 sidebar_label: Introduction
+sidebar_position: 1
 ---
 
 ---

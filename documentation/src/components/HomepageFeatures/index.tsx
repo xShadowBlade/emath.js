@@ -1,8 +1,18 @@
+/**
+ * @file Declares the HomepageFeatures component.
+ */
 import React from "react";
+import Heading from "@theme/Heading";
 import clsx from "clsx";
 import styles from "./styles.module.css";
 
-const FeatureList = [
+type FeatureItem = {
+    title: string;
+    Svg?: React.ComponentType<React.ComponentProps<"svg">>;
+    description: JSX.Element;
+};
+
+const FeatureList: FeatureItem[] = [
     {
         title: "Integration With break_eternity.js",
         // Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
@@ -36,15 +46,17 @@ const FeatureList = [
     },
 ];
 
-// eslint-disable-next-line jsdoc/require-param
+interface FeatureProps extends FeatureItem {}
 /**
- * @returns {JSX.Element} Feature
+ * @param props FeatureProps
+ * @returns Feature
  */
-function Feature ({Svg, title, description}) {
+function Feature (props: FeatureProps) {
+    const { Svg, title, description } = props;
     return (
         <div className={clsx("col col--4")}>
             <div className="text--center">
-                {/* <Svg className={styles.featureSvg} role="img" /> */}
+                {Svg && <Svg className={styles.featureSvg} role="img" />}
             </div>
             <div className="text--center padding-horiz--md">
                 <h3>{title}</h3>
@@ -55,9 +67,9 @@ function Feature ({Svg, title, description}) {
 }
 
 /**
- * @returns {JSX.Element} HomepageFeatures
+ * @returns HomepageFeatures
  */
-export default function HomepageFeatures () {
+function HomepageFeatures () {
     return (
         <section className={styles.features}>
             <div className="container">
@@ -70,3 +82,5 @@ export default function HomepageFeatures () {
         </section>
     );
 }
+
+export default HomepageFeatures;

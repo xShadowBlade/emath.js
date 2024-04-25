@@ -2,6 +2,7 @@
 id: upgrades
 title: Setting up Upgrading
 sidebar_label: Upgrades
+sidebar_position: 4
 ---
 
 ---

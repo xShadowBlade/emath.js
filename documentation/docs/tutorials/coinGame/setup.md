@@ -2,6 +2,7 @@
 id: setup
 title: Setting up the game
 sidebar_label: Setup
+sidebar_position: 2
 ---
 
 ---

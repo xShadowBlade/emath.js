@@ -2,6 +2,7 @@
 id: currency
 title: Setting up Currencies
 sidebar_label: Currencies
+sidebar_position: 3
 ---
 
 ---
@@ -10,9 +11,9 @@ After you have set up the basics, now it's time to configure the currencies!
 
 ```js
 window.addEventListener("load", () => {
-	// ... (setup)
+    // ... (setup)
 
-	// Initialize currency and static currency
+    // Initialize currency and static currency
     const currency = new eMath.classes.currency();
     const staticC = new eMath.classes.currencyStatic(() => currency);
 });
@@ -23,12 +24,12 @@ Explanation:
 
 ```js
 window.addEventListener("load", () => {
-	// ... (setup)
-	// ... (currencies init)
-	// Create Coins Display
-	const coinsDisplay = document.createElement("p");
-	document.body.appendChild(coinsDisplay);
-	coinsDisplay.id = "coinsDisplay";
+    // ... (setup)
+    // ... (currencies init)
+    // Create Coins Display
+    const coinsDisplay = document.createElement("p");
+    document.body.appendChild(coinsDisplay);
+    coinsDisplay.id = "coinsDisplay";
 });
 ```
 
@@ -39,15 +40,15 @@ Explanation:
 
 ```js
 window.addEventListener("load", () => {
-	// ... (setup)
-	// ... (currencies init)
-	// ... (create coins display)
+    // ... (setup)
+    // ... (currencies init)
+    // ... (create coins display)
 
-	// Function to update the coins display
+    // Function to update the coins display
     function updateDisplay () {
         document.getElementById("coinsDisplay").innerHTML = `Coins: ${currency.value.format()} (x${staticC.boost.calculate().format()})`; // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     }
-	updateDisplay();
+    updateDisplay();
 });
     
 ```
@@ -59,10 +60,10 @@ Explanation:
 
 ```js
 window.addEventListener("load", () => {
-	// ... (setup)
-	// ... (currencies init)
-	// ... (create coins display)
-	// ... (Function to update the coins display)
+    // ... (setup)
+    // ... (currencies init)
+    // ... (create coins display)
+    // ... (Function to update the coins display)
 
     // Create gain button
 
@@ -70,7 +71,7 @@ window.addEventListener("load", () => {
     gainButton.innerHTML = "Gain Coins";
     document.body.appendChild(gainButton);
     gainButton.addEventListener("click", () => {
-		// Triggers when button is pressed
+        // Triggers when button is pressed
         staticC.gain(); // Gain
         updateDisplay(); // Updates the display for the amount of coins
         updateDisplayUpgrade(); // Next tutorial
@@ -88,7 +89,7 @@ Final code:
 window.addEventListener("load", () => {
     const { E } = eMath;
 
-	// Initialize currency and static currency
+    // Initialize currency and static currency
 
     const currency = new eMath.classes.currency();
     const staticC = new eMath.classes.currencyStatic(() => currency);
@@ -99,14 +100,14 @@ window.addEventListener("load", () => {
     document.body.appendChild(coinsDisplay);
     coinsDisplay.id = "coinsDisplay";
 
-	// Function to update the coins display
+    // Function to update the coins display
 
     function updateDisplay () {
         document.getElementById("coinsDisplay").innerHTML = `Coins: ${currency.value.format()} (x${staticC.boost.calculate().format()})`; // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     }
     updateDisplay();
 
-	// Create gain button
+    // Create gain button
 
     const gainButton = document.createElement("button");
     gainButton.innerHTML = "Gain Coins";

@@ -1,24 +1,17 @@
 ---
 id: intro
-title: Welcome to eMath.js Documentation
+title: Welcome
 sidebar_label: Introduction
+sidebar_position: 1
 ---
 
 ---
 
-Welcome to the documentation for eMath.js - a JavaScript library for enhancing incremental game development.
+Welcome to the documentation for eMath.js - a JavaScript library designed to provide tools for incremental game development, built upon [break_eternity.js](https://github.com/Patashu/break_eternity.js).
 
-### Features
+### About
 
-- **Support for Node.js and HTML**: eMath.js can be used in both Node.js and HTML projects.
-
-- **Support for Typescript**: eMath.js exports type definitions to help develop your projects.
-
-- **Integration**: eMath.js integrates with break_eternity.js, providing a robust foundation for your game development projects.
-
-- **Advanced Formatting**: Enjoy advanced formatting capabilities to enhance the visual appeal of your in-game elements.
-
-- **Boosts, Currency, and Attributes Management**: Leverage eMath.js classes to effortlessly manage boosts, currency, and attributes within your game.
+This documentation website includes curated guides as well as [typedoc auto generated documentation](https://xshadowblade.github.io/emath.js/typedoc/index.html). Generally, the curated guides are more in depth at explaining, and the auto generated docs list all methods and functions.
 
 ### Getting Started
 
