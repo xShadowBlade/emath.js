@@ -14,7 +14,7 @@ const coinGame = new Game({
         id: "coinGame",
     },
     settings: {
-        framerate: 30, // 15 fps for testing
+        framerate: 30,
     },
 });
 (window as typeof window & { coinGame: typeof coinGame }).coinGame = coinGame; // For debugging
@@ -28,19 +28,6 @@ coins.static.addUpgrade({
     id: "upg1Coins", // Unique ID
     name: "Basic Coin Boost",
     cost: level => level.mul(10), // Cost of 10 times the level
-    // costBulk: (coinsAmt, level, target) => { // Math - Optional, if not defined, it will use a binary search to find the max affordable. (slow for large numbers)
-    //     // Summation of levels to target of 10 times the level
-    //     const costFn = (a: E, b: E) => E(-5).mul(a.sub(b).sub(1)).mul(a.add(b));
-    //     // \operatorname{floor}\left(\frac{-1+\sqrt{1+4\left(a^{2}-a+\frac{v}{5}\right)}}{2}\right)-a
-    //     const discriminant = level.pow(2).sub(level).add(coinsAmt.div(5)).mul(4).add(1);
-    //     let maxAffordable = E.floor(E.sqrt(discriminant).sub(1).div(2)).sub(level);
-    //     maxAffordable = target.gt(0) ? E.min(maxAffordable, (target.sub(1))) : maxAffordable;
-    //     const cost = costFn(level, maxAffordable.add(level));
-    //     // console.log({ coinsAmt, level, target }); // Debugging
-    //     // console.log({ cost, maxAffordable }); // Debugging
-    //     return [cost, maxAffordable.add(1)] as [E, E];
-    // },
-    maxLevel: E(1000),
     effect: function (level) {
         coins.static.boost.setBoost(
             "boostUpg1Coins",
@@ -57,7 +44,6 @@ coinGame.init();
 console.log(coinGame.dataManager.loadData());
 
 // Create Coins Display
-
 const coinsDisplay = document.getElementById("coinsDisplay");
 
 /** Function to update the coins display */
@@ -67,8 +53,8 @@ function updateDisplay () {
 updateDisplay();
 
 // Create gain button
-
 const gainButton = document.getElementById("coinGain");
+
 /** Function to gain coins */
 function gainCoins () {
     // Triggers when button is pressed

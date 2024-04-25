@@ -6,7 +6,7 @@ sidebar_label: Tutorials
 
 ---
 
-Welcome to the tutorials section, where you can find a collection of guides and examples to enhance your skills in various programming topics.
+Welcome to the tutorials section, where you can find a collection of guides and examples about eMath.js.
 
 This is a list of the current tutorials in the game.
 

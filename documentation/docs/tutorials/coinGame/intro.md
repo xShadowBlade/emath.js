@@ -7,7 +7,7 @@ sidebar_position: 1
 
 ---
 
-Welcome to this step-by-step tutorial on creating an incremental game.
+Welcome to this tutorial about the basics of eMath.js.
 
 In this tutorial, we'll walk through the process of building a simple incremental game where users can gain coins and invest in upgrades to increase their coin earnings. We'll leverage the capabilities of eMath.js to manage currency, boosts, and upgrades efficiently.
 
@@ -22,6 +22,7 @@ Before we dive in, ensure you have the following:
 	- or a browser to view HTML
 
 ## What You'll Learn
+
 Throughout this tutorial, you'll gain hands-on experience in:
 
 - Using eMath.js for managing currency and boosts.
