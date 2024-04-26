@@ -8,7 +8,7 @@ This category lists the primary exports of the package `emath.js/game`
 
 ## Table of Contents
 
-- Game
+- [Game](./game-class)
 - GameAttribute (work in progress)
 - GameCurrency (work in progress)
 - ResetLayer (work in progress)
