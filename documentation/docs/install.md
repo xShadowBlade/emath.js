@@ -9,7 +9,7 @@ sidebar_position: 2
 
 You can install ``eMath.js`` via [npm](#install-via-npm-recommended) or include it in your HTML file via a [CDN](#include-using-cdn).
 
-> Note: For advanced usage, using npm and nodejs is prefered.
+> Note: For advanced usage, using npm and Node.js is prefered.
 
 > Warning: HTML CDN as well as nodejs(?) is possibly bugged, causing unexpected behavior when working with the E instance. Typescript usage is prefered.
 
