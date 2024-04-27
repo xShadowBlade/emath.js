@@ -31,12 +31,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build the documentation
-  build:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
+
+      # Build the documentation
       - name: Build documentation
         uses: actions/setup-node@v3
         with:
@@ -46,13 +49,7 @@ jobs:
       - run: npm run doc
       - run: cd documentation && npm ci && npm run build
 
-  # Deploy the documentation to GitHub Pages
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
+      # Deploy the documentation to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
