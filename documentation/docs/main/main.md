@@ -11,6 +11,6 @@ This category lists the primary exports of the package `emath.js`.
 - [Attribute](./attribute)
 - [Boost](./boost)
 - [Currency](./currency)
-- Grid (work in progress)
+- [Grid](./grid)
 - [Numerical Analysis](./numerical-analysis)
 - [Upgrade](./upgrade)

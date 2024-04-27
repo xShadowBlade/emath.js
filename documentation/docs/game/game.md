@@ -15,7 +15,7 @@ This category lists the primary exports of the package `emath.js/game`
 
 - ### Managers
 
-  - ConfigManager (work in progress)
-  - DataManager (work in progress)
-  - EventManager (work in progress)
-  - KeyManager (work in progress)
+  - [ConfigManager](./configManager)
+  - [DataManager](./dataManager)
+  - [EventManager](./eventManager)
+  - [KeyManager](./keyManager)

@@ -2,6 +2,7 @@
 id: game-class
 title: Game
 sidebar_label: Game
+sidebar_position: 1
 ---
 
 [Link to auto generated docs](https://xshadowblade.github.io/emath.js/typedoc/classes/game_Game.Game.html)
