@@ -5,6 +5,15 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
+    # Run only on pushes to /src/ or /documentation/ directories
+    paths:
+      - 'src/**'
+      - 'documentation/**'
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'src/**'
+      - 'documentation/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -22,17 +31,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
+  # Build the documentation
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x, 20.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run doc
+      - run: cd documentation && npm ci && npm run build
+
+  # Deploy the documentation to GitHub Pages
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Build
-        run: npm ci && npm run doc && cd documentation && npm ci && npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
