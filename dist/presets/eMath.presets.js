@@ -1,14 +1,14 @@
 (function (g, f) {
     var hasExports = typeof exports === 'object';
     if (typeof define === "function" && define.amd) {
-      define(['reflect-metadata', 'class-transformer', 'lz-string'], f);
+      define(['reflect-metadata', 'class-transformer'], f);
     } else if (typeof module === "object" && module.exports) {
-      module.exports = f(require('reflect-metadata'), require('class-transformer'), require('lz-string'));
+      module.exports = f(require('reflect-metadata'), require('class-transformer'));
     } else {
-      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer'), require('lz-string')) : f(g["reflect-metadata"], g["class-transformer"], g["lz-string"]);
+      var m = hasExports ? f(require('reflect-metadata'), require('class-transformer')) : f(g["reflect-metadata"], g["class-transformer"]);
       var root = hasExports ? exports : g;
       for(var i in m) root[i] = m[i];
-    }}(typeof self !== 'undefined' ? self : this, (__da, __db, __dc) => {
+    }}(typeof self !== 'undefined' ? self : this, (__da, __db) => {
   var exports = {};
   var module = { exports };
 "use strict";

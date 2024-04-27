@@ -38,13 +38,13 @@ const replacePlugin = replace({
 const dev = {
     format: "umd",
     plugins: [umdWrapper(), replacePlugin],
-    external: ["reflect-metadata", "class-transformer", "lz-string"],
+    external: ["reflect-metadata", "class-transformer"],
 };
 
 const devEsm = {
     format: "esm",
     plugins: [replacePlugin],
-    external: ["reflect-metadata", "class-transformer", "lz-string"],
+    external: ["reflect-metadata", "class-transformer"],
 };
 
 const min = {
