@@ -1,5 +1,5 @@
 ---
-id: game
+id: game-class
 title: Game
 sidebar_label: Game
 ---
@@ -35,7 +35,7 @@ There are various managers/methods. Here are some examples:
 import { myGame } from "./game.js";
 
 // See <GameCurrency>
-const myCurrency = myGame.add
+const myCurrency = myGame.addCurrency("myCurrency");
 
 // See <EventManager>
 myGame.eventManager.addEvent("IntervalEvent", "interval", 2000, () => {
@@ -43,6 +43,13 @@ myGame.eventManager.addEvent("IntervalEvent", "interval", 2000, () => {
 });
 
 // See <KeyManager>
+myGame.keyManager.addKey([
+    {
+        name: "Gain Coins",
+        key: "g",
+        onDownContinuous: () => myCurrency.static.gain(),
+    },
+]);
 ```
 
 For for information on constructor parameters, see the interface [`GameConfigOptions`](https://xshadowblade.github.io/emath.js/typedoc/interfaces/game_Game.GameConfigOptions.html).

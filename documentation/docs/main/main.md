@@ -4,14 +4,13 @@ title: Main
 sidebar_label: Main
 ---
 
-This category lists the primary exports of the package `emath.js`
+This category lists the primary exports of the package `emath.js`.
 
 ## Table of Contents
 
-- Attribute (work in progress)
+- [Attribute](./attribute)
 - [Boost](./boost)
 - [Currency](./currency)
 - Grid (work in progress)
-- Numerical Analysis (work in progress)
-- SkillTree (work in progress, unfinished)
-- Upgrade (work in progress)
+- [Numerical Analysis](./numerical-analysis)
+- [Upgrade](./upgrade)

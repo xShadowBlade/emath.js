@@ -1,6 +1,6 @@
 ---
 id: currency
-title: Currency Guide
+title: Currency
 sidebar_label: Currency
 ---
 
@@ -16,8 +16,8 @@ To create a currency, do either of the following:
 
 1. Using `Game` class (recommended)
 
-    ```js
-    // myGame: Game
+    ```js title="currency.js"
+    import { myGame } from "./game.js";
 
     // 1 parameter - `name` is required. It must be unique,
     // as it is used for saving/loading to identify the currnecy.
@@ -31,7 +31,9 @@ To create a currency, do either of the following:
 
 2. Using without `Game` class
 
-    ```js
+    ```js title="currency.js"
+    import { CurrencyStatic } from "emath.js";
+
     const myCurrency = new CurrencyStatic();
     myCurrency.gain();
     console.log(myCurrency.value); // E(1)

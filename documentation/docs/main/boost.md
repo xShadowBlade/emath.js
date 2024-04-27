@@ -1,6 +1,6 @@
 ---
 id: boost
-title: Boost Guide
+title: Boost
 sidebar_label: Boost
 ---
 

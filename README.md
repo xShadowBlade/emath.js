@@ -16,13 +16,16 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 
 ## Abstract
 
-This project started when I was trying to create my first incremental game. I found it difficult to implement certain systems like upgrades and saving. When I eventually made those systems, I wanted to make a package so I could streamline those tools. After a few months of development, I have finally developed it into a presentable state (I should have started it with v0.1.0 instead of v1.0.0).
+This project started when I was trying to create my first incremental game. I found it difficult to implement certain systems like upgrades and saving. When I eventually made those systems, I wanted to make a package so I could streamline those tools. After a few months of development, I have finally developed it into a presentable state (I should have started it with v0.1.0 instead of v1.0.0 . . .).
 
 ## Example Usage
 
 ```js
 import { E } from "emath.js";
 import { Game } from "emath.js/game";
+
+// For CDN usage:
+// const { E, Game } = eMath; 
 
 // Initialize game
 const coinGame = new Game();

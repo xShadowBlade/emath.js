@@ -89,11 +89,7 @@ The package exports a variable ``eMath`` and sets it to the window, so you don't
 This will set the `eMath` variable to the `window`, and augments it with the game variables.
 
 ```js title="index.js"
-// Temporarily camelCase
-const { E, game } = eMath;
-
-// This usage is being phased out in favor of setting directly to `eMath`
-const { currency, boost } = eMath.class;
+const { E, Currency, Game } = eMath;
 
 // rest of code here ...
 ```
