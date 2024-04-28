@@ -47,15 +47,15 @@ class GameCurrency<N extends string = string, U extends string[] = string[]> {
         // this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
         // this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 
-        this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
-        this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
+        this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
+        this.staticPointer = typeof staticPointer === "function" ? staticPointer : (): CurrencyStatic => staticPointer;
 
         this.game = gamePointer;
 
         this.name = name;
 
         // Add an event on load to update upgrade effects
-        this.game?.dataManager.addEventOnLoad(() => {
+        this.game.dataManager.addEventOnLoad(() => {
             this.static.onLoadData();
         });
     }

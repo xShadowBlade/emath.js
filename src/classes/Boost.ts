@@ -75,7 +75,7 @@ class BoostObject implements BoostsObjectInit {
         this.id = init.id;
         this.name = init.name ?? "";
         // this.desc = init.desc ?? "";
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
+        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
         // this.descriptionFn = init.description || init.desc ?
         //     (init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : (
         //         init.desc ? (typeof init.desc === "function" ? init.desc : () => init.desc as string) : () => ""
@@ -205,7 +205,7 @@ class Boost {
             const id = arg1;
             const name = arg2 ?? "";
             const description = arg3 ?? "";
-            const value = arg4 ?? ((e) => e);
+            const value = arg4 ?? ((e): E => e);
             const order = arg5;
             const bCheck = this.getBoosts(id, true);
 
@@ -232,7 +232,7 @@ class Boost {
      * @alias setBoost
      * @deprecated Use {@link setBoost} instead.
      */
-    public addBoost = this.setBoost;
+    public addBoost = this.setBoost.bind(this);
 
     /**
      * Calculates the cumulative effect of all boosts on the base effect.

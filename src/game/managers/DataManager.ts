@@ -115,7 +115,7 @@ class DataManager {
             console.warn("After initializing data, you should not add new properties to data.");
         }
         this.data[key] = value;
-        const thisData = () => this.data;
+        const thisData = (): UnknownObject => this.data;
 
         return {
             get value (): T {
@@ -139,7 +139,7 @@ class DataManager {
      * @param key - The key to get the data for.
      * @returns The data for the given key.
      */
-    public getData (key: string): unknown | undefined {
+    public getData (key: string): unknown {
         return this.data[key];
     }
 
@@ -164,7 +164,7 @@ class DataManager {
      * @param key - The key to get the static data for.
      * @returns The static data for the given key.
      */
-    public getStatic (key: string): unknown | undefined {
+    public getStatic (key: string): unknown {
         return this.static[key];
     }
 
@@ -193,7 +193,7 @@ class DataManager {
         let version: string;
         try {
             // @ts-expect-error - Replaced by esbuild
-            version = PKG_VERSION;
+            version = PKG_VERSION as string;
         } catch (error) {
             version = "8.0.0";
         }
@@ -228,7 +228,7 @@ class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData (data: string | null = window?.localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
+    public decompileData (data: string | null = window.localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
         // If the data is empty, return null
         if (!data) return null;
 
@@ -236,7 +236,7 @@ class DataManager {
 
         try {
             // Decompress the data
-            parsedData = JSON.parse(decompressFromBase64(data));
+            parsedData = JSON.parse(decompressFromBase64(data)) as [SaveMetadata, UnknownObject];
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
@@ -276,7 +276,7 @@ class DataManager {
         if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
         this.data = this.normalData;
         this.saveData();
-        if (reload) window?.location.reload();
+        if (reload) window.location.reload();
     };
 
     /**
@@ -286,6 +286,7 @@ class DataManager {
      */
     public saveData (dataToSave = this.compileData()): void {
         if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
         window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
     };
@@ -322,7 +323,7 @@ class DataManager {
      */
     public parseData (dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
         // If the normal data is not set, throw an error
-        if (mergeData && (!this.normalData || !this.normalDataPlain)) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
+        if ((!this.normalData || !this.normalDataPlain) && mergeData) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
 
         // If the data is empty, return null
         if (!dataToParse) return null;
@@ -366,7 +367,8 @@ class DataManager {
                         const upgrades = targetCurrency.upgrades;
                         targetCurrency.upgrades = {};
                         for (const upgrade of upgrades) {
-                            targetCurrency.upgrades[upgrade.id] = upgrade.level;
+                            // ! warning: might not work
+                            targetCurrency.upgrades[(upgrade as UpgradeData).id] = (upgrade as UpgradeData);
                         }
                     }
 
@@ -381,7 +383,7 @@ class DataManager {
             return out;
         }
 
-        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain!, this.normalData!, loadedData); // TODO: Fix this
+        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain as UnknownObject, this.normalData as UnknownObject, loadedData); // TODO: Fix this
 
         // Convert plain object to class instance (recursive)
 
@@ -395,20 +397,23 @@ class DataManager {
          */
         function convertTemplateClass (templateClassToConvert: ClassType, plain: UnknownObject): ClassType {
             // Convert the object
-            const out = plainToInstance(templateClassToConvert, plain);
+            const out = plainToInstance(templateClassToConvert, plain) as ClassType;
 
             // Special case for Currency.upgrades
             if (out instanceof Currency) {
                 for (const upgradeName in out.upgrades) {
                     const upgrade = out.upgrades[upgradeName];
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
                         // Delete the upgrade if it's invalid (extraneous properties, etc.)
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                         delete out.upgrades[upgradeName];
                         continue;
                     }
                     out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
             return out;
         }
@@ -446,7 +451,7 @@ class DataManager {
             return out;
         }
 
-        loadedDataProcessed = plainToInstanceRecursive(this.normalData!, loadedDataProcessed);
+        loadedDataProcessed = plainToInstanceRecursive(this.normalData as UnknownObject, loadedDataProcessed);
         return loadedDataProcessed;
     }
 

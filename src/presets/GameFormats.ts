@@ -93,7 +93,7 @@ class GameFormatClass {
     }
     constructor (settings: Pointer<FormatSettings>) {
         // this.settings = settings;
-        this.settingsFn = typeof settings === "function" ? settings : () => settings;
+        this.settingsFn = typeof settings === "function" ? settings : (): FormatSettings => settings;
     }
 
     /**
@@ -101,7 +101,7 @@ class GameFormatClass {
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public format = (x: ESource) => gameFormat(x, this.settings);
+    public format = (x: ESource): string => gameFormat(x, this.settings);
 
     /**
      * Formats the gain of a game format based on the provided settings.
@@ -109,21 +109,21 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain = (x: ESource, gain: ESource) => gameFormatGain(x, gain, this.settings);
+    public gain = (x: ESource, gain: ESource): string => gameFormatGain(x, gain, this.settings);
 
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public time = (x: ESource) => gameFormat(x, { ...this.settings, time: true });
+    public time = (x: ESource): string => gameFormat(x, { ...this.settings, time: true });
 
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public multi = (x: ESource) => gameFormat(x, { ...this.settings, multi: true });
+    public multi = (x: ESource): string => gameFormat(x, { ...this.settings, multi: true });
 }
 
 /**

@@ -762,7 +762,7 @@ function decimalFormatGenerator(Decimal2) {
       default:
         if (!FORMATS2[type])
           console.error(`Invalid format type "`, type, `"`);
-        return neg + FORMATS2[type]?.format(ex, acc, max);
+        return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
   function formatGain(amt, gain, type = "mixed_sc", acc, max) {
@@ -892,7 +892,7 @@ function decimalFormatGenerator(Decimal2) {
         output = abbMax["name"];
         break;
       case 2:
-        output = `${num.divide(abbMax["value"]).format()}`;
+        output = num.divide(abbMax["value"]).format();
         break;
       case 3:
         output = abbMax["altName"];
@@ -4787,7 +4787,7 @@ var Boost = class {
      * @alias setBoost
      * @deprecated Use {@link setBoost} instead.
      */
-    this.addBoost = this.setBoost;
+    this.addBoost = this.setBoost.bind(this);
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
     this.baseEffect = E(baseEffect);
     this.boostArray = [];
@@ -5098,7 +5098,7 @@ var UpgradeStatic = class _UpgradeStatic {
   }
   getCached(type, start, end) {
     if (type === "sum") {
-      return this.cache.get(upgradeToCacheNameSum(start, end));
+      return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
     } else {
       return this.cache.get(upgradeToCacheNameEL(start));
     }
@@ -5183,7 +5183,6 @@ var CurrencyStatic = class {
     };
     if (upgrades)
       this.addUpgrade(upgrades);
-    this.upgrades = this.upgrades;
   }
   /**
    * Updates / applies effects to the currency on load.

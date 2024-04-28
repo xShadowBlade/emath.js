@@ -22,7 +22,7 @@ class Currency {
 
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
-    public upgrades: Record<string, UpgradeData<string>>;
+    public upgrades: Record<string, UpgradeData>;
     // public upgrades: UpgradeData<string>[];
 
     // /** A boost object that affects the currency gain. */
@@ -62,7 +62,9 @@ class CurrencyStatic<U extends string[] = string[]> {
     protected readonly pointerFn: (() => Currency);
 
     /** @returns The pointer of the data. */
-    protected get pointer () { return this.pointerFn(); }
+    protected get pointer (): Currency {
+        return this.pointerFn();
+    }
 
     /** A boost object that affects the currency gain. */
     public readonly boost: Boost;
@@ -96,7 +98,7 @@ class CurrencyStatic<U extends string[] = string[]> {
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
 
-        this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+        this.pointerFn = typeof pointer === "function" ? pointer : (): Currency => pointer;
         this.boost = new Boost(this.defaultBoost);
         // this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
 
@@ -114,13 +116,13 @@ class CurrencyStatic<U extends string[] = string[]> {
 
         if (upgrades) this.addUpgrade(upgrades);
 
-        this.upgrades = this.upgrades as Record<U[number] | string, UpgradeStatic<U[number]>>;
+        // this.upgrades = this.upgrades;
     }
 
     /**
      * Updates / applies effects to the currency on load.
      */
-    public onLoadData () {
+    public onLoadData (): void {
         for (const upgrade of Object.values(this.upgrades)) {
             upgrade.effect?.(upgrade.level, upgrade);
         }
@@ -178,7 +180,7 @@ class CurrencyStatic<U extends string[] = string[]> {
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
-    private pointerGetUpgrade (id: string): UpgradeData<string> | null {
+    private pointerGetUpgrade (id: string): UpgradeData | null {
         // console.log("pointerGet", { id, upgrades: this.pointer });
         return this.pointer.upgrades[id] ?? null;
     }
@@ -222,19 +224,19 @@ class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    public addUpgrade (upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly: boolean = true): UpgradeStatic<string>[] {
+    public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly: boolean = true): UpgradeStatic[] {
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
         // console.log({ upgrades });
 
         // Adds standard (object instead of array)
-        const addedUpgradeList: Record<string, UpgradeStatic<string>> = {};
+        const addedUpgradeList: Record<string, UpgradeStatic> = {};
         for (const upgrade of upgrades) {
             // console.log(upgrade.id);
 
             const addedUpgradeData = this.pointerAddUpgrade(upgrade);
             // const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
-            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!);
+            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id) as UpgradeData<U[number]>);
 
             if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
             addedUpgradeList[upgrade.id] = addedUpgradeStatic;
@@ -261,7 +263,7 @@ class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    public updateUpgrade (id: string, upgrade: UpgradeInit<string>): void {
+    public updateUpgrade (id: string, upgrade: Partial<UpgradeInit>): void {
         const upgrade1 = this.getUpgrade(id);
         if (upgrade1 === null) return;
 

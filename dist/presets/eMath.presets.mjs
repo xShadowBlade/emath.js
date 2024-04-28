@@ -701,7 +701,7 @@ function decimalFormatGenerator(Decimal2) {
       default:
         if (!FORMATS2[type])
           console.error(`Invalid format type "`, type, `"`);
-        return neg + FORMATS2[type]?.format(ex, acc, max);
+        return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
   function formatGain(amt, gain, type = "mixed_sc", acc, max) {
@@ -831,7 +831,7 @@ function decimalFormatGenerator(Decimal2) {
         output = abbMax["name"];
         break;
       case 2:
-        output = `${num.divide(abbMax["value"]).format()}`;
+        output = num.divide(abbMax["value"]).format();
         break;
       case 3:
         output = abbMax["altName"];

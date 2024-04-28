@@ -1753,7 +1753,7 @@ class Decimal {
      *
      * Note: this function mutates the Decimal it is called on.
      */
-    public fromString (value: string, linearhyper4: boolean = false): Decimal {
+    public fromString (value: string, linearhyper4: boolean = false): this {
         const originalValue = value;
         const cached = Decimal.fromStringCache.get(originalValue);
         if (cached !== undefined) {
@@ -2032,7 +2032,7 @@ class Decimal {
      *
      * Note: this function mutates the Decimal it is called on.
      */
-    public fromValue (value: DecimalSource): Decimal {
+    public fromValue (value: DecimalSource): this {
         if (value instanceof Decimal) {
             return this.fromDecimal(value);
         }
@@ -4227,7 +4227,7 @@ class Decimal {
      * @deprecated
      * @returns A EClone instance that is a clone of the original.
      */
-    public clone (): Decimal {
+    public clone (): this {
         return this;
     }
 
@@ -4249,11 +4249,11 @@ class Decimal {
      *                       or "exp" for exponential soft cap.
      * @returns - The DecimalClone value after applying the soft cap.
      */
-    public softcap (start: DecimalSource, power: number, mode: string): Decimal {
+    public softcap (start: DecimalSource, power: number, mode: string): this {
         let x = this.clone();
         if (x.gte(start)) {
-            if ([0, "pow"].includes(mode)) x = x.div(start).pow(power).mul(start);
-            if ([1, "mul"].includes(mode)) x = x.sub(start).div(power).add(start);
+            if ([0, "pow"].includes(mode)) (x as Decimal) = x.div(start).pow(power).mul(start);
+            if ([1, "mul"].includes(mode)) (x as Decimal) = x.sub(start).div(power).add(start);
             // if ([2, "exp"].includes(mode)) x = expMult(x.div(start), power).mul(start);
         }
         return x;
@@ -4270,15 +4270,15 @@ class Decimal {
      * @param [rev] - Whether to reverse the scaling operation (unscaling).
      * @returns - The scaled currency value.
      */
-    public scale (s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): Decimal {
+    public scale (s: DecimalSource, p: DecimalSource, mode: string | number, rev: boolean = false): this {
         s = new Decimal(s);
         p = new Decimal(p);
         let x = this.clone();
         if (x.gte(s)) {
-            if ([0, "pow"].includes(mode)) {x = rev ?
+            if ([0, "pow"].includes(mode)) {(x as Decimal) = rev ?
                 x.mul(s.pow(p.sub(1))).root(p) : // (x * s^(p - 1))^(1 / p)
                 x.pow(p).div(s.pow(p.sub(1)));} // x^p / s^(p - 1)
-            if ([1, "exp"].includes(mode)) {x = rev ?
+            if ([1, "exp"].includes(mode)) {(x as Decimal) = rev ?
                 x.div(s).max(1).log(p).add(s) : // log_p((x / s).max(1)) + s
                 Decimal.pow(p, x.sub(s)).mul(s);} // p^(x - s) * s
         }

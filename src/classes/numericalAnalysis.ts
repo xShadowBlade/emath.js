@@ -38,7 +38,7 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS) {
+function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS): { value: E; lowerBound: E; upperBound: E } {
     // Set the initial bounds
     let lowerBound = E(1);
     // let upperBound = E(n);
@@ -195,7 +195,7 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000) {
+function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000): E {
     x = E(x);
     // If the number is too large, don't round it
     if (x.gte(E.pow(acc, max))) return x;

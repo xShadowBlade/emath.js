@@ -1481,7 +1481,7 @@ function decimalFormatGenerator(Decimal2) {
       default:
         if (!FORMATS2[type])
           console.error(`Invalid format type "`, type, `"`);
-        return neg + FORMATS2[type]?.format(ex, acc, max);
+        return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
   function formatGain(amt, gain, type = "mixed_sc", acc, max) {
@@ -1611,7 +1611,7 @@ function decimalFormatGenerator(Decimal2) {
         output = abbMax["name"];
         break;
       case 2:
-        output = `${num.divide(abbMax["value"]).format()}`;
+        output = num.divide(abbMax["value"]).format();
         break;
       case 3:
         output = abbMax["altName"];
@@ -5510,7 +5510,7 @@ var Boost = class {
      * @alias setBoost
      * @deprecated Use {@link setBoost} instead.
      */
-    this.addBoost = this.setBoost;
+    this.addBoost = this.setBoost.bind(this);
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
     this.baseEffect = E(baseEffect);
     this.boostArray = [];
@@ -5810,7 +5810,7 @@ var UpgradeStatic = class _UpgradeStatic {
   }
   getCached(type, start, end) {
     if (type === "sum") {
-      return this.cache.get(upgradeToCacheNameSum(start, end));
+      return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
     } else {
       return this.cache.get(upgradeToCacheNameEL(start));
     }
@@ -5893,7 +5893,6 @@ var CurrencyStatic = class {
     };
     if (upgrades)
       this.addUpgrade(upgrades);
-    this.upgrades = this.upgrades;
   }
   /**
    * Updates / applies effects to the currency on load.
@@ -6216,7 +6215,7 @@ var KeyManager = class _KeyManager {
    */
   constructor(config) {
     /** @deprecated Use {@link addKey} instead. */
-    this.addKeys = this.addKey;
+    this.addKeys = this.addKey.bind(this);
     this.keysPressed = [];
     this.binds = [];
     this.tickers = [];
@@ -6369,7 +6368,7 @@ var EventManager = class _EventManager {
      * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
-    this.addEvent = this.setEvent;
+    this.addEvent = this.setEvent.bind(this);
     this.config = _EventManager.configManager.parse(config);
     this.events = {};
     if (this.config.autoAddInterval) {
@@ -6395,18 +6394,27 @@ var EventManager = class _EventManager {
   tickerFunction() {
     const currentTime = Date.now();
     for (const event of Object.values(this.events)) {
-      if (event.type === "interval") {
-        if (currentTime - event.intervalLast >= event.delay) {
-          const dt = currentTime - event.intervalLast;
-          event.callbackFn(dt);
-          event.intervalLast = currentTime;
-        }
-      } else if (event.type === "timeout") {
-        const dt = currentTime - event.timeCreated;
-        if (currentTime - event.timeCreated >= event.delay) {
-          event.callbackFn(dt);
-          delete this.events[event.name];
-        }
+      switch (event.type) {
+        case "interval" /* interval */:
+          {
+            if (currentTime - event.intervalLast >= event.delay) {
+              const dt = currentTime - event.intervalLast;
+              event.callbackFn(dt);
+              event.intervalLast = currentTime;
+            }
+          }
+          ;
+          break;
+        case "timeout" /* timeout */:
+          {
+            const dt = currentTime - event.timeCreated;
+            if (currentTime - event.timeCreated >= event.delay) {
+              event.callbackFn(dt);
+              delete this.events[event.name];
+            }
+          }
+          ;
+          break;
       }
     }
   }
@@ -6431,11 +6439,19 @@ var EventManager = class _EventManager {
    */
   timeWarp(dt) {
     for (const event of Object.values(this.events)) {
-      if (event.type === "interval") {
-        event.intervalLast -= dt;
-      }
-      if (event.type === "timeout") {
-        event.timeCreated -= dt;
+      switch (event.type) {
+        case "interval" /* interval */:
+          {
+            event.intervalLast -= dt;
+          }
+          ;
+          break;
+        case "timeout" /* timeout */:
+          {
+            event.timeCreated -= dt;
+          }
+          ;
+          break;
       }
     }
   }
@@ -6643,7 +6659,7 @@ var DataManager = class {
    * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
-  decompileData(data = window?.localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
+  decompileData(data = window.localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
     if (!data)
       return null;
     let parsedData;
@@ -6683,7 +6699,7 @@ var DataManager = class {
     this.data = this.normalData;
     this.saveData();
     if (reload)
-      window?.location.reload();
+      window.location.reload();
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
@@ -6722,7 +6738,7 @@ var DataManager = class {
    * @returns The loaded data.
    */
   parseData(dataToParse = this.decompileData(), mergeData = true) {
-    if (mergeData && (!this.normalData || !this.normalDataPlain))
+    if ((!this.normalData || !this.normalDataPlain) && mergeData)
       throw new Error("dataManager.parseData(): You must call init() before writing to data.");
     if (!dataToParse)
       return null;
@@ -6744,7 +6760,7 @@ var DataManager = class {
             const upgrades = targetCurrency.upgrades;
             targetCurrency.upgrades = {};
             for (const upgrade of upgrades) {
-              targetCurrency.upgrades[upgrade.id] = upgrade.level;
+              targetCurrency.upgrades[upgrade.id] = upgrade;
             }
           }
           targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
@@ -6837,7 +6853,7 @@ var GameCurrency = class {
     this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
     this.game = gamePointer;
     this.name = name;
-    this.game?.dataManager.addEventOnLoad(() => {
+    this.game.dataManager.addEventOnLoad(() => {
       this.static.onLoadData();
     });
   }
@@ -6910,7 +6926,7 @@ var GameReset = class {
       currency.static.reset();
     });
     this.extender.forEach((extender) => {
-      if (extender && extender.id !== this.id) {
+      if (extender.id !== this.id) {
         extender.reset();
       }
     });

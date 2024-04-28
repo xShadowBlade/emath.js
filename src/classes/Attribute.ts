@@ -43,7 +43,7 @@ class AttributeStatic<B extends boolean = true> {
     protected readonly pointerFn: (() => Attribute);
 
     /** @returns The data for the attribute. */
-    public get pointer () {
+    public get pointer (): Attribute {
         return this.pointerFn();
     }
 
@@ -65,7 +65,7 @@ class AttributeStatic<B extends boolean = true> {
     constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: ESource = 0) {
         this.initial = E(initial);
         pointer ??= new Attribute(this.initial);
-        this.pointerFn = (typeof pointer === "function" ? pointer : () => pointer);
+        this.pointerFn = (typeof pointer === "function" ? pointer : (): Attribute => pointer);
         this.boost = (useBoost ? new Boost(this.initial) : null) as typeof this.boost;
     }
 

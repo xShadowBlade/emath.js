@@ -16,7 +16,7 @@ declare class Currency {
     /** The current value of the currency. */
     value: E;
     /** An array that represents upgrades and their levels. */
-    upgrades: Record<string, UpgradeData<string>>;
+    upgrades: Record<string, UpgradeData>;
     /**
      * Constructs a new currency object with an initial value of 0.
      */
@@ -129,7 +129,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    addUpgrade(upgrades: UpgradeInit<string> | UpgradeInit<string>[], runEffectInstantly?: boolean): UpgradeStatic<string>[];
+    addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly?: boolean): UpgradeStatic[];
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
@@ -144,7 +144,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    updateUpgrade(id: string, upgrade: UpgradeInit<string>): void;
+    updateUpgrade(id: string, upgrade: Partial<UpgradeInit>): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.

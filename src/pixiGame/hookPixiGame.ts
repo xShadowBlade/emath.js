@@ -10,11 +10,11 @@
  * Hooks the pixiGame package into the eMath.js game package.
  */
 export function hookPixiGame () {
-    if (!(typeof process! !== "object" && typeof window! !== "undefined")) {
+    if (!(typeof process !== "object" && typeof window !== "undefined")) {
         // Environment is not a browser.
         return;
     }
-    if (typeof process! !== "undefined") {
+    if (typeof process !== "undefined") {
         // Environment is not a browser AND is not node.
         console.error("eMath.js/pixiGame is not supported in browser environments. \n This requirement might be removed in the future.");
         return;

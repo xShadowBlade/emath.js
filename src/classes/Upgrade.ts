@@ -22,7 +22,7 @@ import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalys
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
+function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
     end = E(end ?? Infinity);
@@ -96,7 +96,7 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
     // Special case for endless upgrades
     if (el) {
         // console.log("el");
-        const costTargetFn = (level: E) => upgrade.cost(level.add(start!));
+        const costTargetFn = (level: E): E => upgrade.cost(level.add(start));
         const maxLevelAffordable = E.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
         // const cost = upgrade.cost(maxLevelAffordable);
         const cost = E(0);
@@ -269,7 +269,7 @@ type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
  */
 function decimalToJSONString (n: ESource): DecimalJSONString {
     n = E(n);
-    return `${n.sign}/${n.mag}/${n.layer}` as DecimalJSONString;
+    return `${n.sign}/${n.mag}/${n.layer}`;
 }
 
 /**
@@ -292,7 +292,7 @@ function upgradeToCacheNameSum (start: ESource, end: ESource): UpgradeCachedSumN
  */
 function upgradeToCacheNameEL (level: ESource): UpgradeCachedELName {
     // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
-    return `el/${decimalToJSONString(level)}` as UpgradeCachedELName;
+    return `el/${decimalToJSONString(level)}`;
 }
 
 /**
@@ -312,7 +312,7 @@ interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"
 }
 
 /** Interface for an upgrade that is cached. (Not EL) */
-interface UpgradeCachedSum extends UpgradeCached<false> {
+interface UpgradeCachedSum extends UpgradeCached {
     start: E;
     end: E;
 
@@ -335,6 +335,7 @@ class UpgradeData<N extends string = string> implements IUpgradeData<N> {
      * @param init - The upgrade object to initialize.
      */
     constructor (init: Pick<UpgradeInit<N>, "id" | "level">) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
         this.id = init.id;
         this.level = init.level ? E(init.level) : E(1);
@@ -372,6 +373,7 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
      */
     get level (): E {
         // many fallbacks for some reason
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
     }
     set level (n: ESource) {
@@ -386,11 +388,11 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
      */
     constructor (init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
-        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData<N> => data;
         this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : () => "";
+        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
         this.cost = init.cost;
         this.costBulk = init.costBulk;
         this.maxLevel = init.maxLevel;
@@ -407,9 +409,9 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
      */
     public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
     public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
-    public getCached (type: "sum" | "el", start: ESource, end?: ESource) {
+    public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
         if (type === "sum") {
-            return this.cache.get(upgradeToCacheNameSum(start, end!));
+            return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
         } else {
             return this.cache.get(upgradeToCacheNameEL(start));
         }
@@ -424,7 +426,7 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
      */
     public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
     public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
-    public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource) {
+    public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
         const data = type === "sum" ? {
             id: this.id,
             el: false,
@@ -439,7 +441,7 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
         };
 
         if (type === "sum") {
-            this.cache.set(upgradeToCacheNameSum(start, endOrStart!), data as UpgradeCachedSum);
+            this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
         } else {
             this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
         }

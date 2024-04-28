@@ -145,12 +145,12 @@ class Game {
         });
         this.dataManager.setStatic(name, {
             // @ts-expect-error - fix this
-            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency),
+            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency as Currency),
             // attributes: {},
         });
 
         // @ts-expect-error - fix this
-        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
+        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency as Currency, () => this.dataManager.getStatic(name).currency as Currency, this, name);
 
 
         // const dataRef = this.dataManager.setData(name, {
@@ -193,7 +193,7 @@ class Game {
      * @param extender - An optional object to extend the game reset object with.
      * @returns The newly created game reset object.
      */
-    public addReset (currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset): GameReset {
+    public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
         const reset = new GameReset(currenciesToReset, extender);
         return reset;
     }

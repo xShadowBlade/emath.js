@@ -5,10 +5,10 @@
  * created from a PIXI.Sprite. It provides functionality for managing sprite properties, collision
  * detection, and rendering offset by the camera.
  */
-import { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
+import Intersects, { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects.js";
 import type { PixiGame } from "./PixiGame.js";
 import type { Sprite, Graphics } from "pixi.js";
-type CollisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
+type CollisionShapeType = Exclude<keyof typeof Intersects, "Shape">;
 /**
  * Represents a game sprite
  */
@@ -34,6 +34,9 @@ declare class GameSprite {
      * Allowed values: "Circle", "Polygon", "Rectangle", "Shape", "Line".
      */
     constructor(gameRef: PixiGame, spr: Sprite | Graphics, collisionShape?: CollisionShapeType);
+    /**
+     * The ticker function for the sprite, used to offset the sprite by the camera.
+     */
     private tickerFn;
     /**
      * Checks if this sprite collides with another sprite.

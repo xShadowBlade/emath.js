@@ -174,7 +174,7 @@ const DecimalAddedMethods: DecimalAddedMethodsInterface = {
 function addMethods (obj: Record<string, any>, methods: Record<string, any>): void {
     for (const key in methods) {
         // (obj as any)[key] = (methods[key as keyof typeof methods] as (...args: any[]) => any).bind(obj);
-        (obj as any)[key] = methods[key as keyof typeof methods];
+        (obj as any)[key] = methods[key];
     }
 }
 addMethods(Decimal.prototype, DecimalAddedMethods);
@@ -346,7 +346,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAdded
     const out = (x?: DecimalSource) => new Decimal(x);
 
     // Copy properties from Decimal to E
-    (Object.getOwnPropertyNames(Decimal).filter((b) => ![...Object.getOwnPropertyNames(class {}), "arguments", "caller", "callee"].includes(b)) as string[]).forEach((prop) => {
+    (Object.getOwnPropertyNames(Decimal).filter((b) => ![...Object.getOwnPropertyNames(class {}), "arguments", "caller", "callee"].includes(b))).forEach((prop) => {
         // console.log(prop);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (out as any)[prop] = (Decimal as any)[prop];

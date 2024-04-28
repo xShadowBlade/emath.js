@@ -36,9 +36,9 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * console.log(inverse.value); // ~3.9999999999999996
  */
 declare function inverseFunctionApprox(f: (x: E) => E, n: ESource, mode?: MeanMode, iterations?: number): {
-    value: import("../E/e").Decimal;
-    lowerBound: import("../E/e").Decimal;
-    upperBound: import("../E/e").Decimal;
+    value: E;
+    lowerBound: E;
+    upperBound: E;
 };
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
@@ -87,5 +87,5 @@ declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?:
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): import("../E/e").Decimal;
+declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): E;
 export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };

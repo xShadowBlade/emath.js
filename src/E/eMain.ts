@@ -17,7 +17,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = (() => {
     const out = (x?: DecimalSource) => new Decimal(x);
 
     // Copy properties from Decimal to E
-    (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b)) as string[]).forEach((prop) => {
+    (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b))).forEach((prop) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (out as any)[prop] = (Decimal as any)[prop];
     });

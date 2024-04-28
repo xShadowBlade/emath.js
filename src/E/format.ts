@@ -568,7 +568,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         default:
             // Other formats
             if (!FORMATS[type]) console.error(`Invalid format type "`, type, `"`);
-            return neg + FORMATS[type]?.format(ex, acc, max);
+            return neg + FORMATS[type].format(ex, acc, max);
         }
     }
 
@@ -775,7 +775,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
             output = abbMax["name"];
             break;
         case 2:
-            output = `${num.divide(abbMax["value"]).format()}`;
+            output = num.divide(abbMax["value"]).format();
             break;
         case 3:
             output = abbMax["altName"];

@@ -644,13 +644,13 @@ declare class Decimal {
      *
      * Note: this function mutates the Decimal it is called on.
      */
-    fromString(value: string, linearhyper4?: boolean): Decimal;
+    fromString(value: string, linearhyper4?: boolean): this;
     /**
      * The function used by new Decimal() to create a new Decimal. Accepts a DecimalSource: uses fromNumber if given a number, uses fromString if given a string, and uses fromDecimal if given a Decimal.
      *
      * Note: this function mutates the Decimal it is called on.
      */
-    fromValue(value: DecimalSource): Decimal;
+    fromValue(value: DecimalSource): this;
     /**
      * Returns the numeric value of the Decimal it's called on. Will return Infinity (or -Infinity for negatives) for Decimals that are larger than Number.MAX_VALUE.
      */
@@ -1191,7 +1191,7 @@ declare class Decimal {
      * @deprecated
      * @returns A EClone instance that is a clone of the original.
      */
-    clone(): Decimal;
+    clone(): this;
     /**
      * Creates a clone of the E instance. Helps with a webpack(?) bug
      * @alias Decimal.normalizeFromComponents
@@ -1207,7 +1207,7 @@ declare class Decimal {
      *                       or "exp" for exponential soft cap.
      * @returns - The DecimalClone value after applying the soft cap.
      */
-    softcap(start: DecimalSource, power: number, mode: string): Decimal;
+    softcap(start: DecimalSource, power: number, mode: string): this;
     static softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal;
     /**
      * Scales a currency value using a specified scaling function.
@@ -1217,7 +1217,7 @@ declare class Decimal {
      * @param [rev] - Whether to reverse the scaling operation (unscaling).
      * @returns - The scaled currency value.
      */
-    scale(s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    scale(s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): this;
     static scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
     /**
      * Formats the E instance with a specified accuracy and maximum decimal places.
@@ -1298,7 +1298,8 @@ declare const formats: {
     formatTimeLong: (ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;
     formatReduction: (ex: DecimalSource) => string;
     formatPercent: (ex: DecimalSource) => string;
-    formatMult: (ex: DecimalSource, acc?: number) => string; /**
+    formatMult: (ex: DecimalSource, acc?: number) => string;
+    /**
      * Returns true if 'value' is greater than or equal to 'other'.
      * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
      * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.

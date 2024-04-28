@@ -3,7 +3,7 @@
         "eslint:recommended",
         "prettier",
         "plugin:jsdoc/recommended-typescript",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/strict-type-checked"
     ],
     "env": {
         "node": true,
@@ -12,7 +12,8 @@
     },
     "parserOptions": {
         "sourceType": "module",
-        "ecmaVersion": "latest"
+        "ecmaVersion": "latest",
+        "project": "./tsconfig.json"
     },
     "parser": "@typescript-eslint/parser",
     "rules": {
@@ -53,6 +54,8 @@
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
         "@typescript-eslint/member-delimiter-style": "warn",
+        "@typescript-eslint/explicit-function-return-type": "warn",
+        "@typescript-eslint/restrict-template-expressions": ["warn", { "allowNumber": true, "allowBoolean": true }],
 
         "jsdoc/require-param-type": "off",
         "jsdoc/require-returns-type": "off",

@@ -270,7 +270,7 @@ class KeyManager {
     }
 
     /** @deprecated Use {@link addKey} instead. */
-    public addKeys = this.addKey;
+    public addKeys = this.addKey.bind(this);
 };
 
 // keys.addKey("Debug - Reload", "`", () => window.location.reload());

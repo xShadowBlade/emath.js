@@ -85,7 +85,7 @@ declare class DataManager {
      * @param key - The key to get the data for.
      * @returns The data for the given key.
      */
-    getData(key: string): unknown | undefined;
+    getData(key: string): unknown;
     /**
      * Sets the static data for the given key.
      * This data is not affected by data loading and saving, and is mainly used internally.
@@ -100,7 +100,7 @@ declare class DataManager {
      * @param key - The key to get the static data for.
      * @returns The static data for the given key.
      */
-    getStatic(key: string): unknown | undefined;
+    getStatic(key: string): unknown;
     /**
      * Initializes / sets data that is unmodified by the player.
      * This is used to merge the loaded data with the default data.

@@ -112,26 +112,31 @@ class EventManager {
     /**
      * The function that is called every frame, executes all events.
      */
-    protected tickerFunction () {
+    protected tickerFunction (): void {
         const currentTime = Date.now();
         for (const event of Object.values(this.events)) {
             // const event = this.events[i];
-            if (event.type === "interval") {
+
+            switch (event.type) {
+            case EventTypes.interval: {
                 // If interval
                 if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
                     const dt = currentTime - (event as IntervalEvent).intervalLast;
                     event.callbackFn(dt);
                     (event as IntervalEvent).intervalLast = currentTime;
                 }
-            } else if (event.type === "timeout") {
+            }; break;
+            case EventTypes.timeout: {
                 const dt = currentTime - event.timeCreated;
                 // If timeout
                 if (currentTime - event.timeCreated >= event.delay) {
                     event.callbackFn(dt);
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                     delete this.events[event.name];
                     // this.events.splice(i, 1);
                     // i--;
                 }
+            }; break;
             }
         }
     }
@@ -158,12 +163,15 @@ class EventManager {
      */
     public timeWarp (dt: number): void {
         for (const event of Object.values(this.events)) {
-            if (event.type === "interval") {
+            switch (event.type) {
+            case EventTypes.interval: {
                 (event as IntervalEvent).intervalLast -= dt;
-            }
-            if (event.type === "timeout") {
+            }; break;
+            case EventTypes.timeout: {
                 // ! might cause issues
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                 (event as TimeoutEvent).timeCreated -= dt;
+            }; break;
             }
         }
     }
@@ -186,8 +194,8 @@ class EventManager {
      *   console.log("Timeout event executed.");
      * });
      */
-    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void) {
-        this.events[name] = (() => {
+    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void {
+        this.events[name] = ((): IntervalEvent | TimeoutEvent => {
             switch (type) {
             case "interval": {
                 const event: IntervalEvent = {
@@ -221,7 +229,7 @@ class EventManager {
      * @deprecated Use {@link EventManager.setEvent} instead.
      * @alias eventManager.setEvent
      */
-    public addEvent = this.setEvent;
+    public addEvent = this.setEvent.bind(this);
 
     /**
      * Removes an event from the event system.
@@ -229,7 +237,8 @@ class EventManager {
      * @example
      * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
      */
-    public removeEvent (name: string) {
+    public removeEvent (name: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.events[name];
     }
 };

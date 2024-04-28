@@ -13,7 +13,7 @@ import Intersects, { Shape, Rectangle, Polygon, Circle } from "./pixi-intersects
 import type { PixiGame } from "./PixiGame.js";
 import type { Sprite, Graphics } from "pixi.js";
 
-type CollisionShapeType = "Circle" | "Polygon" | "Rectangle" | "Line";
+type CollisionShapeType = Exclude<keyof typeof Intersects, "Shape">;
 
 /**
  * Represents a game sprite
@@ -51,9 +51,13 @@ class GameSprite {
         this.intersects = new Intersects[this.collisionShape](this.sprite);
 
         // Offset by camera
-        this.gameRef.PIXI.app.ticker.add(this.tickerFn, this);
+        this.gameRef.PIXI.app.ticker.add(this.tickerFn.bind(this), this);
     }
-    private tickerFn () {
+
+    /**
+     * The ticker function for the sprite, used to offset the sprite by the camera.
+     */
+    private tickerFn (): void {
         this.sprite.x = this.x - this.gameRef.PIXI.camera.x;
         this.sprite.y = this.y - this.gameRef.PIXI.camera.y;
     }

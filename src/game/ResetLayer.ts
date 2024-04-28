@@ -13,7 +13,7 @@ class GameReset {
     private readonly id: symbol;
 
     /** The currencies to reset. */
-    public readonly currenciesToReset: GameCurrency<string>[];
+    public readonly currenciesToReset: GameCurrency[];
 
     /** The extender for the game reset. */
     public readonly extender: GameReset[];
@@ -26,7 +26,7 @@ class GameReset {
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
      */
-    constructor (currenciesToReset: GameCurrency<string> | GameCurrency<string>[], extender?: GameReset | GameReset[]) {
+    constructor (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset | GameReset[]) {
         this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
         this.extender = Array.isArray(extender) ? extender : extender ? [extender] : [];
         this.id = Symbol();
@@ -44,7 +44,7 @@ class GameReset {
 
         // this.extender?.reset();
         this.extender.forEach((extender) => {
-            if (extender && extender.id !== this.id) {
+            if (extender.id !== this.id) {
                 extender.reset();
             }
         });
