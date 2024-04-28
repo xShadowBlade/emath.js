@@ -889,17 +889,17 @@ function decimalFormatGenerator(Decimal2) {
     }
     switch (type) {
       case 1:
-        output = abbMax["name"];
+        output = abbMax.name;
         break;
       case 2:
-        output = num.divide(abbMax["value"]).format();
+        output = num.divide(abbMax.value).format();
         break;
       case 3:
-        output = abbMax["altName"];
+        output = abbMax.altName;
         break;
       case 0:
       default:
-        output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+        output = `${num.divide(abbMax.value).format()} ${abbMax.name}`;
         break;
     }
     return output;
@@ -4849,12 +4849,12 @@ var Boost = class {
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
-      for (let i = 0; i < arg1.length; i++) {
-        const bCheck = this.getBoosts(arg1[i].id, true);
+      for (const boost of arg1) {
+        const bCheck = this.getBoosts(boost.id, true);
         if (!bCheck[0][0]) {
-          this.boostArray.push(new BoostObject(arg1[i]));
+          this.boostArray.push(new BoostObject(boost));
         } else {
-          this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new BoostObject(boost);
         }
       }
     }
@@ -4871,8 +4871,8 @@ var Boost = class {
     let output = E(base);
     let boosts = this.boostArray;
     boosts = boosts.sort((a, b) => a.order - b.order);
-    for (let i = 0; i < boosts.length; i++) {
-      output = boosts[i].value(output);
+    for (const boost of boosts) {
+      output = boost.value(output);
     }
     return output;
   }

@@ -119,8 +119,7 @@ interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>,
  * Interface for upgrade data.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "id" | "level"> {
-}
+type IUpgradeData<N extends string = string> = Pick<UpgradeInit<N>, "id" | "level">;
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
  * @deprecated Use an object index instead.

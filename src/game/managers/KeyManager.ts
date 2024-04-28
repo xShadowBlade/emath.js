@@ -129,7 +129,7 @@ class KeyManager {
         this.tickers.push((dt) => {
             for (const bind of this.binds) {
                 // console.log(bind);
-                if ((bind.onDownContinuous || bind.fn) && this.isPressing(bind.name)) {
+                if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.name)) {
                     bind.onDownContinuous?.(dt);
                     bind.fn?.(dt);
                 }
@@ -214,9 +214,7 @@ class KeyManager {
      * @returns True if the key binding is being pressed, otherwise false.
      */
     private isPressing (name: string): boolean {
-        for (let i = 0; i < this.binds.length; i++) {
-            const current = this.binds[i];
-            // console.log(current);
+        for (const current of this.binds) {
             if (current.name === name) {
                 return this.keysPressed.includes(current.key);
             }
@@ -257,7 +255,7 @@ class KeyManager {
      */
     public addKey (keysToAdd: KeyBinding | KeyBinding[]): void;
     public addKey (nameOrKeysToAdd: string | KeyBinding | KeyBinding[], key?: string, fn?: (dt: number) => void): void {
-        nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key: (key as string), fn }] : nameOrKeysToAdd;
+        nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key: (key ?? ""), fn }] : nameOrKeysToAdd;
         nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
         for (const keyBinding of nameOrKeysToAdd) {
             const existing = this.getBind(keyBinding.name);

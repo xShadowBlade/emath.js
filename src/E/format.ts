@@ -190,7 +190,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 }
                 return `${n} ${abbreviation}`;
             },
-            format (value: Decimal, acc: number = 2): string {
+            format (value: Decimal, acc = 2): string {
                 if (value.gt(new Decimal(118).pow(new Decimal(118).pow(new Decimal(118).pow(4))))) return "e" + FORMATS.elemental.format(value.log10(), acc);
 
                 let log = value.log(118);
@@ -256,7 +256,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @example
              * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
              */
-            format (ex: DecimalSource, acc: number = 2): string {
+            format (ex: DecimalSource, acc = 2): string {
                 ex = new Decimal(ex);
                 const e = ex.log10().floor();
                 if (e.lt(9)) {
@@ -287,7 +287,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
              * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
              */
-            format (ex: DecimalSource, acc?: number, max: number = 9): string {
+            format (ex: DecimalSource, acc?: number, max = 9): string {
                 ex = new Decimal(ex);
                 const e = ex.log10().floor();
                 if (e.lt(303) && e.gte(max)) return format(ex, acc, max, "st");
@@ -297,7 +297,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         /** Layer format */
         layer: {
             layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
-            format (ex: DecimalSource, acc: number = 2, max?: number): string {
+            format (ex: DecimalSource, acc = 2, max?: number): string {
                 ex = new Decimal(ex);
                 const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
                 if (layer.lte(0)) return format(ex, acc, max, "sc");
@@ -372,7 +372,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param abbStart - The starting value for abbreviations
              * @returns - The abbreviation
              */
-            getAbbreviation (ex: DecimalSource, start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart: number = 9): string {
+            getAbbreviation (ex: DecimalSource, start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart = 9): string {
                 // there were so many off by one errors in this function
 
                 ex = new Decimal(ex);
@@ -442,7 +442,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param abbStart - The starting value for abbreviations. Defaults to 9.
              * @returns - The formatted value
              */
-            format (ex: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc", start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart?: number): string {
+            format (ex: DecimalSource, acc = 2, max = 9, type: FormatType = "mixed_sc", start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart?: number): string {
                 ex = new Decimal(ex);
                 start = new Decimal(start).div(1e3);
 
@@ -492,7 +492,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * Format the value into standard (letter abbv) format
      * @deprecated Use {@link format} instead (with the type "st")
      */
-    function formatST (ex: DecimalSource, acc: number = 2, max: number = 9, type: "sc" | "st" | FormatType = "st"): string { return format(ex, acc, max, type); }
+    function formatST (ex: DecimalSource, acc = 2, max = 9, type: "sc" | "st" | FormatType = "st"): string { return format(ex, acc, max, type); }
 
     /**
      * Format the value into a specific format type
@@ -502,7 +502,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param type - The type of format to use (default "mixed_sc")
      * @returns - The formatted value
      */
-    function format (ex: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string {
+    function format (ex: DecimalSource, acc = 2, max = 9, type: FormatType = "mixed_sc"): string {
         ex = new Decimal(ex);
         const neg = ex.lt(0) ? "-" : "";
         if (ex.mag == Infinity) return neg + "Infinity";
@@ -605,7 +605,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param type - The type
      * @returns - The formatted time
      */
-    function formatTime (ex: DecimalSource, acc: number = 2, type: string = "s"): string {
+    function formatTime (ex: DecimalSource, acc = 2, type = "s"): string {
         ex = new Decimal(ex);
         if (ex.gte(86400)) return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
         if (ex.gte(3600) || type == "d") return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
@@ -666,7 +666,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param acc - The accuracy
      * @returns - The formatted multiplier
      */
-    function formatMult (ex: DecimalSource, acc: number = 2): string {
+    function formatMult (ex: DecimalSource, acc = 2): string {
         ex = new Decimal(ex);
         return ex.gte(1) ? "×" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
     }
@@ -678,7 +678,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param base - The base
      * @returns - The value after being exponentiated
      */
-    function expMult (a: DecimalSource, b: DecimalSource, base: number = 10) {
+    function expMult (a: DecimalSource, b: DecimalSource, base = 10) {
         return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : new Decimal(a);
     }
 
@@ -772,17 +772,17 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         }
         switch (type) {
         case 1:
-            output = abbMax["name"];
+            output = abbMax.name;
             break;
         case 2:
-            output = num.divide(abbMax["value"]).format();
+            output = num.divide(abbMax.value).format();
             break;
         case 3:
-            output = abbMax["altName"];
+            output = abbMax.altName;
             break;
         case 0:
         default:
-            output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+            output = `${num.divide(abbMax.value).format()} ${abbMax.name}`;
             break;
         }
         return output;

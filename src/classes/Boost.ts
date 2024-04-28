@@ -217,13 +217,12 @@ class Boost {
         } else {
             // Advanced set using boost object
             arg1 = Array.isArray(arg1) ? arg1 : [arg1];
-            for (let i = 0; i < arg1.length; i++) {
-                const bCheck = this.getBoosts(arg1[i].id, true);
+            for (const boost of arg1) {
+                const bCheck = this.getBoosts(boost.id, true);
                 if (!bCheck[0][0]) {
-                    // this.boostArray = this.boostArray.concat(new BoostObject(arg1[i]));
-                    this.boostArray.push(new BoostObject(arg1[i]));
+                    this.boostArray.push(new BoostObject(boost));
                 } else {
-                    this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
+                    this.boostArray[bCheck[1][0]] = new BoostObject(boost);
                 }
             }
         }
@@ -247,8 +246,8 @@ class Boost {
         let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
         boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);
-        for (let i = 0; i < boosts.length; i++) {
-            output = boosts[i].value(output);
+        for (const boost of boosts) {
+            output = boost.value(output);
         }
         return output;
     }

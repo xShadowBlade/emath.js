@@ -173,7 +173,7 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute (name: string, useBoost: boolean = true, initial: ESource = 0): GameAttribute {
+    public addAttribute (name: string, useBoost = true, initial: ESource = 0): GameAttribute {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const dataRef = this.dataManager.setData(name, new Attribute(initial));
         // @ts-expect-error - fix this

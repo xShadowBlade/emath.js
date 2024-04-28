@@ -828,17 +828,17 @@ function decimalFormatGenerator(Decimal2) {
     }
     switch (type) {
       case 1:
-        output = abbMax["name"];
+        output = abbMax.name;
         break;
       case 2:
-        output = num.divide(abbMax["value"]).format();
+        output = num.divide(abbMax.value).format();
         break;
       case 3:
-        output = abbMax["altName"];
+        output = abbMax.altName;
         break;
       case 0:
       default:
-        output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+        output = `${num.divide(abbMax.value).format()} ${abbMax.name}`;
         break;
     }
     return output;

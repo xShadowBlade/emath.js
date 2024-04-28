@@ -1616,17 +1616,17 @@ function decimalFormatGenerator(Decimal2) {
     }
     switch (type) {
       case 1:
-        output = abbMax["name"];
+        output = abbMax.name;
         break;
       case 2:
-        output = num.divide(abbMax["value"]).format();
+        output = num.divide(abbMax.value).format();
         break;
       case 3:
-        output = abbMax["altName"];
+        output = abbMax.altName;
         break;
       case 0:
       default:
-        output = `${num.divide(abbMax["value"]).format()} ${abbMax["name"]}`;
+        output = `${num.divide(abbMax.value).format()} ${abbMax.name}`;
         break;
     }
     return output;
@@ -5576,12 +5576,12 @@ var Boost = class {
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
-      for (let i = 0; i < arg1.length; i++) {
-        const bCheck = this.getBoosts(arg1[i].id, true);
+      for (const boost of arg1) {
+        const bCheck = this.getBoosts(boost.id, true);
         if (!bCheck[0][0]) {
-          this.boostArray.push(new BoostObject(arg1[i]));
+          this.boostArray.push(new BoostObject(boost));
         } else {
-          this.boostArray[bCheck[1][0]] = new BoostObject(arg1[i]);
+          this.boostArray[bCheck[1][0]] = new BoostObject(boost);
         }
       }
     }
@@ -5598,8 +5598,8 @@ var Boost = class {
     let output = E(base);
     let boosts = this.boostArray;
     boosts = boosts.sort((a, b) => a.order - b.order);
-    for (let i = 0; i < boosts.length; i++) {
-      output = boosts[i].value(output);
+    for (const boost of boosts) {
+      output = boost.value(output);
     }
     return output;
   }
@@ -6245,7 +6245,7 @@ var KeyManager = class _KeyManager {
     }
     this.tickers.push((dt) => {
       for (const bind of this.binds) {
-        if ((bind.onDownContinuous || bind.fn) && this.isPressing(bind.name)) {
+        if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.name)) {
           bind.onDownContinuous?.(dt);
           bind.fn?.(dt);
         }
@@ -6320,8 +6320,7 @@ var KeyManager = class _KeyManager {
    * @returns True if the key binding is being pressed, otherwise false.
    */
   isPressing(name) {
-    for (let i = 0; i < this.binds.length; i++) {
-      const current = this.binds[i];
+    for (const current of this.binds) {
       if (current.name === name) {
         return this.keysPressed.includes(current.key);
       }
@@ -6337,7 +6336,7 @@ var KeyManager = class _KeyManager {
     return this.binds.find((current) => current.name === name);
   }
   addKey(nameOrKeysToAdd, key, fn) {
-    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key, fn }] : nameOrKeysToAdd;
+    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key: key ?? "", fn }] : nameOrKeysToAdd;
     nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
     for (const keyBinding of nameOrKeysToAdd) {
       const existing = this.getBind(keyBinding.name);
@@ -6747,6 +6746,8 @@ var DataManager = class {
     }
     const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
     function deepMerge(sourcePlain, source, target) {
+      if (!sourcePlain || !source || !target)
+        throw new Error("dataManager.deepMerge(): Missing arguments.");
       const out = target;
       for (const key in sourcePlain) {
         if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
@@ -6789,6 +6790,8 @@ var DataManager = class {
       return out;
     }
     function plainToInstanceRecursive(normal, plain) {
+      if (!normal || !plain)
+        throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
       const out = plain;
       for (const key in normal) {
         if (!plain[key]) {

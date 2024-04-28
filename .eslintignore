@@ -2,6 +2,7 @@ dist/
 bin/build/umdPlugin.js
 documentation/production/
 build/
+src/E/
 
 # Logs
 logs

@@ -22,7 +22,7 @@ import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalys
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
+function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
     end = E(end ?? Infinity);
@@ -238,8 +238,7 @@ interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>,
  * Interface for upgrade data.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-interface IUpgradeData<N extends string = string> extends Pick<UpgradeInit<N>, "id" | "level"> {
-}
+type IUpgradeData<N extends string = string> = Pick<UpgradeInit<N>, "id" | "level">
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
@@ -350,7 +349,7 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn;
 
     /** The default size of the cache. Should be one less than a power of 2. */
-    public static cacheSize: number = 63;
+    public static cacheSize = 63;
 
     /** The cache to store the values of certain upgrade levels */
     public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;

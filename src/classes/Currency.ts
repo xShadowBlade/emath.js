@@ -224,7 +224,7 @@ class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly: boolean = true): UpgradeStatic[] {
+    public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): UpgradeStatic[] {
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
         // console.log({ upgrades });

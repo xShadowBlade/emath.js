@@ -349,7 +349,8 @@ class DataManager {
          * @param target - The target object.
          * @returns The merged object.
          */
-        function deepMerge (sourcePlain: UnknownObject, source: UnknownObject, target: UnknownObject): UnknownObject {
+        function deepMerge (sourcePlain: UnknownObject | null | undefined, source: UnknownObject | null | undefined, target: UnknownObject | null): UnknownObject {
+            if (!sourcePlain || !source || !target) throw new Error("dataManager.deepMerge(): Missing arguments.");
             const out = target;
             for (const key in sourcePlain) {
                 if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
@@ -383,7 +384,7 @@ class DataManager {
             return out;
         }
 
-        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain as UnknownObject, this.normalData as UnknownObject, loadedData); // TODO: Fix this
+        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData); // TODO: Fix this
 
         // Convert plain object to class instance (recursive)
 
@@ -424,7 +425,8 @@ class DataManager {
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function plainToInstanceRecursive (normal: UnknownObject, plain: UnknownObject): UnknownObject {
+        function plainToInstanceRecursive (normal: UnknownObject | null | undefined, plain?: UnknownObject | null | undefined): UnknownObject {
+            if (!normal || !plain) throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
             const out = plain;
             for (const key in normal) {
                 if (!plain[key]) {
@@ -451,7 +453,7 @@ class DataManager {
             return out;
         }
 
-        loadedDataProcessed = plainToInstanceRecursive(this.normalData as UnknownObject, loadedDataProcessed);
+        loadedDataProcessed = plainToInstanceRecursive(this.normalData, loadedDataProcessed);
         return loadedDataProcessed;
     }
 

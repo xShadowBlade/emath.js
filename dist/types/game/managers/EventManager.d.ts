@@ -36,8 +36,7 @@ interface IntervalEvent extends Event {
 /**
  * The timeout event interface
  */
-interface TimeoutEvent extends Event {
-}
+type TimeoutEvent = Event;
 interface EventManagerConfig {
     /**
      * Whether or not to automatically add an interval

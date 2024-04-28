@@ -1299,13 +1299,6 @@ declare const formats: {
     formatReduction: (ex: DecimalSource) => string;
     formatPercent: (ex: DecimalSource) => string;
     formatMult: (ex: DecimalSource, acc?: number) => string;
-    /**
-     * Returns true if 'value' is greater than or equal to 'other'.
-     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
-     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
-     * For example, if you put in 1e-9, then any number closer to the
-     * larger number than (larger number)*1e-9 will be considered equal.
-     */
     expMult: (a: DecimalSource, b: DecimalSource, base?: number) => Decimal;
     metric: (num: DecimalSource, type?: 0 | 1 | 2 | 3) => string;
     ev: (num: DecimalSource, c2?: boolean) => string;
