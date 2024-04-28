@@ -14,7 +14,7 @@ import { MeanMode } from "./numericalAnalysis";
  * @param value - The current value of the currency.
  * @param upgrade - The upgrade object to calculate.
  * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade.
+ * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)

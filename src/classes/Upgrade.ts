@@ -16,7 +16,7 @@ import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalys
  * @param value - The current value of the currency.
  * @param upgrade - The upgrade object to calculate.
  * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade.
+ * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
@@ -25,7 +25,7 @@ import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalys
 function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el: boolean = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
-    end = E(end ?? value);
+    end = E(end ?? Infinity);
 
     const target = end.sub(start);
 
@@ -113,7 +113,8 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic<string>, start
         value,
         mode,
         iterations,
-    ).value.floor();
+    ).value.floor()
+        .min(start.add(target).sub(1));
     const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
 
     // console.log({ maxLevelAffordable, cost });
@@ -178,8 +179,8 @@ interface UpgradeInit<N extends string = string> {
      * EL is automatically applied to the cost.
      * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
-     * @param target - The target level of the upgrade.
-     * @returns [cost, amount] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
+     * @param target - The target level of the upgrade. If you want to buy the maximum amount of upgrades possible, this will be `Infinity`.
+     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
      * @example
      * // A cost function that returns the sum of the levels and the target.
      * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.

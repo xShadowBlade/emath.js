@@ -4984,7 +4984,7 @@ function roundingBase(x, acc = 10, sig = 0, max = 1e3) {
 function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
-  end = E(end ?? value);
+  end = E(end ?? Infinity);
   const target = end.sub(start);
   if (target.lte(0)) {
     console.warn("calculateUpgrade: Invalid target: ", target);
@@ -5023,7 +5023,7 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
     value,
     mode,
     iterations
-  ).value.floor();
+  ).value.floor().min(start.add(target).sub(1));
   const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
   const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
   return [maxLevelAffordableActual, cost];

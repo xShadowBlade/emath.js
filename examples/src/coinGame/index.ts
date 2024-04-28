@@ -69,13 +69,13 @@ const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
 function updateDisplayUpgrade () {
-    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins", 25)[0].format()} Upgrades for ${coins.static.calculateUpgrade("upg1Coins", 25)[1].format()} Coins (b)`;
+    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins")[0].format()} Upgrades for ${coins.static.calculateUpgrade("upg1Coins")[1].format()} Coins (b)`;
 }
 updateDisplayUpgrade();
 
 /** Function to buy upgrades */
 function buyUpgrades () {
-    coins.static.buyUpgrade("upg1Coins", 25);
+    coins.static.buyUpgrade("upg1Coins");
     updateDisplayUpgrade();
     updateDisplay();
 }
