@@ -17,13 +17,23 @@ import { myGame } from "./game.js";
 
 const keyManager = myGame.keyManager;
 
-// Add a key binding
+// Add a key binding (not recommeneded)
 keyManager.addKey("Move Up", "w", () => player.velocity.y += player.acceleration.y);
 
 // Add multiple key bindings
 keyManager.addKeys([
-    { id: "moveUp", name: "Move Up", key: "w", onDownContinuous: () => player.velocity.y += player.acceleration.y },
-    { id: "moveUp", name: "Move Down", key: "s", onDownContinuous: () => player.velocity.y -= player.acceleration.y },
+    {
+        id: "moveUp", // Required
+        name: "Move Up", // Optional
+        key: "w", // Key to press (required)
+        onDownContinuous: () => player.velocity.y += player.acceleration.y,
+    },
+    {
+        id: "moveUp",
+        name: "Move Down",
+        key: "s",
+        onDownContinuous: () => player.velocity.y -= player.acceleration.y,
+    },
     // Add more key bindings here...
 ]);
 ```

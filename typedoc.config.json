@@ -4,6 +4,7 @@
     "exclude": [
         "**/node_modules/**",
         "**/test/**",
+        "examples/**",
         "src/classes/skillTree.ts",
         "src/index.ts",
         "src/game/index.ts",

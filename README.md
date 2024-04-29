@@ -59,11 +59,13 @@ coins.static.buyUpgrade("upg1Coins");
 // Hotkeys
 coinGame.keyManager.addKey([
     {
+        id: "gainCoins",
         name: "Gain Coins",
         key: "g",
         onDownContinuous: () => coins.static.gain(),
     },
     {
+        id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
         onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
