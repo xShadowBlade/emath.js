@@ -10,13 +10,15 @@ import { E, ESource } from "../E/eMain";
  * - The higher the amount of iterations, the more accurate the result will be, but the longer it will take to calculate.
  * - Time complexity is O(n) where n is the amount of iterations, scaling with the complexity of the function.
  * - At 10 or less iterations, the time it takes to calculate is almost instant.
- * - At 25 iterations, the time it takes to calculate is ~1 ms
+ * - At 25 iterations, the time it takes to calculate is ~1 ms and is accurate to a margin of error of ~1e-3.
+ * - At 35 iterations, the time it takes to calculate is ~2 ms and is accurate to a margin of error of ~1e-5.
+ * - At 50 iterations, the time it takes to calculate is ~3 ms and is accurate to a margin of error of ~1e-7.
  * - At 100 iterations, the time it takes to calculate is ~2 ms but with marginal accuracy improvements.
  * - At 1000 iterations, the time it takes to calculate is ~7 ms but with very marginal accuracy improvements.
  * - At 10000 iterations, the time it takes to calculate is ~30 ms.
- * @default 25
+ * @default 35
  */
-declare const DEFAULT_ITERATIONS = 25;
+declare const DEFAULT_ITERATIONS = 35;
 /**
  * Represents different methods to calculate the mean.
  * Mode 1 `"arithmetic"` `(a+b)/2` is a bit faster but way less accurate for large numbers.

@@ -4826,7 +4826,7 @@ import "reflect-metadata";
 import { Type, Expose as Expose2 } from "class-transformer";
 
 // src/classes/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 25;
+var DEFAULT_ITERATIONS = 35;
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
   let lowerBound = E(1);
   let upperBound = E(n);

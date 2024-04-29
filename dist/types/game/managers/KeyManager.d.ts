@@ -6,8 +6,16 @@ import type { Application } from "pixi.js";
  * The key binding interface.
  */
 interface KeyBinding {
-    /** The name of the key binding, for use when updating */
-    name: string;
+    /**
+     * The id of the key binding, for use when updating.
+     * Note: In versions before 8.2.0, `name` was used as the id.
+     */
+    id: string;
+    /**
+     * The name of the key binding. You can use this for display purposes.
+     * Note: In versions before 8.2.0, this was used as the id.
+     */
+    name?: string;
     /** The key associated with the binding. */
     key: string;
     /** @deprecated Equivalent to {@link onDownContinuous}. Use either that or {@link onDown}, {@link onPress}, {@link onUp} instead. */
@@ -94,25 +102,25 @@ declare class KeyManager {
     private onAll;
     /**
      * Checks if a specific key binding is currently being pressed.
-     * @param name - The name of the key binding to check.
+     * @param id - The name of the key binding to check.
      * @returns True if the key binding is being pressed, otherwise false.
      */
     private isPressing;
     /**
-     * Gets a key binding by its name.
-     * @param name - The name of the key binding to get.
+     * Gets a key binding by its id.
+     * @param id - The id of the key binding to get.
      * @returns The key binding, if found.
      */
     private getBind;
     /**
      * Adds or updates a key binding.
      * @deprecated Use the other overload instead, as it is more flexible.
-     * @param name - The name of the key binding.
+     * @param id - The id of the key binding.
      * @param key - The key associated with the binding.
      * @param fn - The function executed when the binding is pressed
      * @example addKey("Move Up", "w", () => player.velocity.y += player.acceleration.y);
      */
-    addKey(name: string, key: string, fn?: (dt: number) => void): void;
+    addKey(id: string, key: string, fn?: (dt: number) => void): void;
     /**
      * Adds or updates multiple key bindings.
      * @param keysToAdd - An array of key binding objects.
@@ -129,7 +137,7 @@ declare class KeyManager {
     addKey(keysToAdd: KeyBinding | KeyBinding[]): void;
     /** @deprecated Use {@link addKey} instead. */
     addKeys: {
-        (name: string, key: string, fn?: (dt: number) => void): void;
+        (id: string, key: string, fn?: (dt: number) => void): void;
         (keysToAdd: KeyBinding | KeyBinding[]): void;
     };
 }

@@ -5606,7 +5606,7 @@ var import_reflect_metadata = require("reflect-metadata");
 var import_class_transformer2 = require("class-transformer");
 
 // src/classes/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 25;
+var DEFAULT_ITERATIONS = 35;
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
   let lowerBound = E(1);
   let upperBound = E(n);
@@ -6241,7 +6241,7 @@ var KeyManager = class _KeyManager {
     }
     this.tickers.push((dt) => {
       for (const bind of this.binds) {
-        if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.name)) {
+        if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.id)) {
           bind.onDownContinuous?.(dt);
           bind.fn?.(dt);
         }
@@ -6287,10 +6287,11 @@ var KeyManager = class _KeyManager {
    */
   logKey(event, type) {
     const key = event.key;
-    if (type && !this.keysPressed.includes(key))
+    if (type && !this.keysPressed.includes(key)) {
       this.keysPressed.push(key);
-    else if (!type && this.keysPressed.includes(key))
+    } else if (!type && this.keysPressed.includes(key)) {
       this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+    }
   }
   /**
    * Manages onDown, onPress, and onUp events for all key bindings.
@@ -6299,43 +6300,49 @@ var KeyManager = class _KeyManager {
    */
   onAll(eventType, keypress) {
     for (const bind of this.binds) {
-      if (eventType === "down" && bind.key === keypress && bind.onDown) {
-        bind.onDown();
-      }
-      if (eventType === "press" && bind.key === keypress && bind.onPress) {
-        bind.onPress();
-      }
-      if (eventType === "up" && bind.key === keypress && bind.onUp) {
-        bind.onUp();
+      if (bind.key !== keypress)
+        continue;
+      switch (eventType) {
+        case "down":
+          bind.onDown?.();
+          break;
+        case "press":
+        default:
+          bind.onPress?.();
+          break;
+        case "up":
+          bind.onUp?.();
+          break;
       }
     }
   }
   /**
    * Checks if a specific key binding is currently being pressed.
-   * @param name - The name of the key binding to check.
+   * @param id - The name of the key binding to check.
    * @returns True if the key binding is being pressed, otherwise false.
    */
-  isPressing(name) {
+  isPressing(id) {
     for (const current of this.binds) {
-      if (current.name === name) {
+      if (current.id === id) {
         return this.keysPressed.includes(current.key);
       }
     }
     return false;
   }
   /**
-   * Gets a key binding by its name.
-   * @param name - The name of the key binding to get.
+   * Gets a key binding by its id.
+   * @param id - The id of the key binding to get.
    * @returns The key binding, if found.
    */
-  getBind(name) {
-    return this.binds.find((current) => current.name === name);
+  getBind(id) {
+    return this.binds.find((current) => current.id === id);
   }
   addKey(nameOrKeysToAdd, key, fn) {
-    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ name: nameOrKeysToAdd, key: key ?? "", fn }] : nameOrKeysToAdd;
+    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ id: nameOrKeysToAdd, name: nameOrKeysToAdd, key: key ?? "", fn }] : nameOrKeysToAdd;
     nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
     for (const keyBinding of nameOrKeysToAdd) {
-      const existing = this.getBind(keyBinding.name);
+      keyBinding.id = keyBinding.id ?? keyBinding.name;
+      const existing = this.getBind(keyBinding.id);
       if (existing) {
         Object.assign(existing, keyBinding);
         continue;
