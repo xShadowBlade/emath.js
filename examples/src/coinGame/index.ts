@@ -84,12 +84,12 @@ buyUpgradesButton!.addEventListener("click", buyUpgrades);
 // Hotkeys
 coinGame.keyManager.addKey([
     {
-        name: "Gain Coins",
+        id: "Gain Coins",
         key: "g",
         onDownContinuous: gainCoins,
     },
     {
-        name: "Buy Upgrades",
+        id: "Buy Upgrades",
         key: "b",
         onDownContinuous: buyUpgrades,
     },

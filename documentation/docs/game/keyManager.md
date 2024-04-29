@@ -22,8 +22,8 @@ keyManager.addKey("Move Up", "w", () => player.velocity.y += player.acceleration
 
 // Add multiple key bindings
 keyManager.addKeys([
-    { name: "Move Up", key: "w", onDownContinuous: () => player.velocity.y += player.acceleration.y },
-    { name: "Move Down", key: "s", onDownContinuous: () => player.velocity.y -= player.acceleration.y },
+    { id: "moveUp", name: "Move Up", key: "w", onDownContinuous: () => player.velocity.y += player.acceleration.y },
+    { id: "moveUp", name: "Move Down", key: "s", onDownContinuous: () => player.velocity.y -= player.acceleration.y },
     // Add more key bindings here...
 ]);
 ```
