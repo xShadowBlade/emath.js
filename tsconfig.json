@@ -18,7 +18,7 @@
 		"outDir": "./dist",  // Adjust this based on your project structure
 		"sourceMap": true
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx", "examples/**/*.ts"],
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
 	"exclude": [
 	  	"node_modules",
 	]
