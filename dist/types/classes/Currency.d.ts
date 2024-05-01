@@ -68,11 +68,12 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * Resets the currency and upgrade levels.
      * @param resetCurrency - Whether to reset the currency value. Default is true.
      * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+     * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
      * console.log(currency.value); // E(0), or the default value
      */
-    reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean): void;
+    reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
     /**
      * The new currency value after applying the boost.
      * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.

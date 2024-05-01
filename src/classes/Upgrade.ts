@@ -225,6 +225,7 @@ interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>,
     maxLevel?: E;
     name: string;
     description: string;
+    defaultLevel: E;
 
     /**
      * A function that returns a description of the upgrade.
@@ -346,7 +347,7 @@ class UpgradeData<N extends string = string> implements IUpgradeData<N> {
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
-    public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn;
+    public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn; defaultLevel: E;
 
     /** The default size of the cache. Should be one less than a power of 2. */
     public static cacheSize = 63;
@@ -397,6 +398,7 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
         this.maxLevel = init.maxLevel;
         this.effect = init.effect;
         this.el = init.el;
+        this.defaultLevel = init.level ?? E(1);
     }
 
     /**

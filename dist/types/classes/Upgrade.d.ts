@@ -108,6 +108,7 @@ interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>,
     maxLevel?: E;
     name: string;
     description: string;
+    defaultLevel: E;
     /**
      * A function that returns a description of the upgrade.
      * @param args - Arguments to pass to the description function.
@@ -199,6 +200,7 @@ declare class UpgradeStatic<N extends string = string> implements IUpgradeStatic
     effect: ((level: Decimal, context: UpgradeStatic<N>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
+    defaultLevel: E;
     /** The default size of the cache. Should be one less than a power of 2. */
     static cacheSize: number;
     /** The cache to store the values of certain upgrade levels */

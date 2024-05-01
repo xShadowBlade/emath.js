@@ -5,7 +5,7 @@
 import { E, ESource } from "../E/eMain";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
-interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn"> {
+interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
     cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
     costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
     required: ISkill[];

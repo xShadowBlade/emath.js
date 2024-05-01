@@ -6,7 +6,7 @@ import { eMath } from "../hookMain";
 import * as eMathGame from "./index";
 declare const eMathGameWeb: {
     Game: typeof eMathGame.Game;
-    gameDefaultConfig: import("./managers/ConfigManager").RequiredDeep<eMathGame.GameConfigOptions>;
+    gameDefaultConfig: eMathGame.RequiredDeep<eMathGame.GameConfigOptions>;
     GameCurrency: typeof eMathGame.GameCurrency;
     GameAttribute: typeof eMathGame.GameAttribute;
     GameReset: typeof eMathGame.GameReset;
@@ -15,6 +15,7 @@ declare const eMathGameWeb: {
     EventManager: typeof eMathGame.EventManager;
     EventTypes: typeof eMathGame.EventTypes;
     DataManager: typeof eMathGame.DataManager;
+    ConfigManager: typeof eMathGame.ConfigManager;
     LRUCache: typeof eMath.LRUCache;
     ListNode: typeof eMath.ListNode;
     E: ((x?: eMath.ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;

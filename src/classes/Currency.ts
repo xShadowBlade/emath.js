@@ -132,18 +132,20 @@ class CurrencyStatic<U extends string[] = string[]> {
      * Resets the currency and upgrade levels.
      * @param resetCurrency - Whether to reset the currency value. Default is true.
      * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+     * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
      * console.log(currency.value); // E(0), or the default value
      */
-    public reset (resetCurrency = true, resetUpgradeLevels = true): void {
+    public reset (resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true): void {
         if (resetCurrency) this.value = this.defaultVal;
         if (resetUpgradeLevels) {
             // this.upgrades.forEach((upgrade) => {
             //     upgrade.level = E(0);
             // });
             for (const upgrade of Object.values(this.upgrades)) {
-                upgrade.level = E(0);
+                upgrade.level = E(upgrade.defaultLevel);
+                if (runUpgradeEffect) upgrade.effect?.(upgrade.level, upgrade);
             }
         };
     }

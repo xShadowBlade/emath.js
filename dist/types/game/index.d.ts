@@ -10,3 +10,4 @@ export * from "./ResetLayer";
 export * from "./managers/KeyManager";
 export * from "./managers/EventManager";
 export * from "./managers/DataManager";
+export * from "./managers/ConfigManager";

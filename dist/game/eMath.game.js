@@ -776,6 +776,7 @@ var require_md5 = __commonJS({
 // src/game/index.ts
 var game_exports = {};
 __export(game_exports, {
+  ConfigManager: () => ConfigManager,
   DataManager: () => DataManager,
   EventManager: () => EventManager,
   EventTypes: () => EventTypes,
@@ -5807,6 +5808,7 @@ var UpgradeStatic = class _UpgradeStatic {
     this.maxLevel = init.maxLevel;
     this.effect = init.effect;
     this.el = init.el;
+    this.defaultLevel = init.level ?? E(1);
   }
   getCached(type, start, end) {
     if (type === "sum") {
@@ -5906,16 +5908,19 @@ var CurrencyStatic = class {
    * Resets the currency and upgrade levels.
    * @param resetCurrency - Whether to reset the currency value. Default is true.
    * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
+   * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
    * @example
    * currency.reset();
    * console.log(currency.value); // E(0), or the default value
    */
-  reset(resetCurrency = true, resetUpgradeLevels = true) {
+  reset(resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true) {
     if (resetCurrency)
       this.value = this.defaultVal;
     if (resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
-        upgrade.level = E(0);
+        upgrade.level = E(upgrade.defaultLevel);
+        if (runUpgradeEffect)
+          upgrade.effect?.(upgrade.level, upgrade);
       }
     }
     ;
