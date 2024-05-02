@@ -195,7 +195,7 @@ class DataManager {
             // @ts-expect-error - Replaced by esbuild
             version = PKG_VERSION as string;
         } catch (error) {
-            version = "8.0.0";
+            version = "8.2.0";
         }
 
         const saveMetadata: SaveMetadata = {
@@ -429,7 +429,7 @@ class DataManager {
             if (!normal || !plain) throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
             const out = plain;
             for (const key in normal) {
-                if (!plain[key]) {
+                if (plain[key] === undefined) {
                     // Should not happen
                     console.warn(`Missing property "${key}" in loaded data.`);
                     continue;

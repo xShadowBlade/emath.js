@@ -37,6 +37,7 @@ interface UpgradeInit<N extends string = string> {
      * The description of the upgrade.
      * Can be a string or a function that returns a string.
      * Made into a getter function to allow for dynamic descriptions.
+     * Note: The use of a function is deprecated. Use a getter function instead.
      * @example
      * // A dynamic description that returns a string
      * const description = (a, b) => `This is a ${a} that returns a ${b}`;

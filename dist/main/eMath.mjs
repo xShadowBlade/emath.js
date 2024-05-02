@@ -5286,6 +5286,7 @@ var CurrencyStatic = class {
   }
   /**
    * Calculates how much is needed for the next upgrade.
+   * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
    * @param id - Index or ID of the upgrade
    * @param target - How many before the next upgrade
    * @param mode - See the argument in {@link calculateUpgrade}.
@@ -5295,14 +5296,37 @@ var CurrencyStatic = class {
    * // Calculate the cost of the next healthBoost upgrade
    * const nextCost = currency.getNextCost("healthBoost");
    */
-  getNextCost(id, target = 0, mode, iterations) {
+  getNextCost(id, target = 1, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return E(0);
     }
-    const amount = calculateUpgrade(this.value, upgrade, upgrade.level, upgrade.level.add(target), mode, iterations)[1];
+    const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
     const nextCost = upgrade.cost(upgrade.level.add(amount));
+    return nextCost;
+  }
+  /**
+   * Calculates the cost of the next upgrade after the maximum affordable quantity.
+   * @param id - Index or ID of the upgrade
+   * @param target - How many before the next upgrade
+   * @param mode  - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns The cost of the next upgrade.
+   * @example
+   * // Calculate the cost of the next healthBoost upgrade
+   * currency.gain(1e6); // Gain 1 thousand currency
+   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
+   * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
+   */
+  getNextCostMax(id, target = 1, mode, iterations) {
+    const upgrade = this.getUpgrade(id);
+    if (upgrade === null) {
+      console.warn(`Upgrade "${id}" not found.`);
+      return E(0);
+    }
+    const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
+    const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
     return nextCost;
   }
   /**

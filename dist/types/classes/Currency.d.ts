@@ -161,6 +161,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     calculateUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
+     * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
      * @param id - Index or ID of the upgrade
      * @param target - How many before the next upgrade
      * @param mode - See the argument in {@link calculateUpgrade}.
@@ -171,6 +172,20 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * const nextCost = currency.getNextCost("healthBoost");
      */
     getNextCost(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
+    /**
+     * Calculates the cost of the next upgrade after the maximum affordable quantity.
+     * @param id - Index or ID of the upgrade
+     * @param target - How many before the next upgrade
+     * @param mode  - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns The cost of the next upgrade.
+     * @example
+     * // Calculate the cost of the next healthBoost upgrade
+     * currency.gain(1e6); // Gain 1 thousand currency
+     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
+     * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
+     */
+    getNextCostMax(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
