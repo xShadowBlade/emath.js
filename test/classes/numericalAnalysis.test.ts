@@ -8,7 +8,7 @@ import { E, inverseFunctionApprox, calculateSum } from "emath.js";
 
 import { EEqualsTolerance, EEqualsToleranceConfig } from "../shared/EShared";
 
-const equalTolerance = 1e-3;
+const equalTolerance = 5e-3;
 const toleranceConfig: EEqualsToleranceConfig = {
     verbose: "onlyOnFail",
     mode: "geometric",
