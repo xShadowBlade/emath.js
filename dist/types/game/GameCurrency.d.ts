@@ -30,7 +30,7 @@ declare class GameCurrency<N extends string = string, U extends string[] = strin
      * @param gamePointer A pointer to the game instance.
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
-    constructor(currencyPointer: Pointer<Currency>, staticPointer: Pointer<CurrencyStatic>, gamePointer: Game, name: N);
+    constructor(currencyPointer: Pointer<Currency>, staticPointer: Pointer<CurrencyStatic<U>>, gamePointer: Game, name: N);
     /**
      * Gets the value of the game currency.
      * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.

@@ -5190,13 +5190,13 @@ var CurrencyStatic = class {
   }
   /**
    * Retrieves an upgrade object based on the provided id.
+   * @template T - The type of the upgrade ID.
    * @param id - The id of the upgrade to retrieve.
    * @returns The upgrade object if found, otherwise null.
    * @example
    * const upgrade = currency.getUpgrade("healthBoost");
    * console.log(upgrade); // upgrade object
    */
-  // public getUpgrade (id: string): UpgradeStatic | null {
   getUpgrade(id) {
     return this.upgrades[id] ?? null;
   }

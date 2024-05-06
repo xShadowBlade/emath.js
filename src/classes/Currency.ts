@@ -12,6 +12,17 @@ import { MeanMode } from "./numericalAnalysis";
 import { UpgradeData, UpgradeStatic, UpgradeInit, calculateUpgrade } from "./Upgrade";
 
 /**
+ * Determines if a type is a primitive string.
+ * @template T - The type to check.
+ * @example
+ * IsPrimitiveString<string>; // true
+ * IsPrimitiveString<"asdf">; // false
+ * IsPrimitiveString<number>; // false
+ */
+type IsPrimitiveString<T> = "" & T extends "random string that no one should ever get randomly" ? false : true;
+
+
+/**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
  */
@@ -189,14 +200,21 @@ class CurrencyStatic<U extends string[] = string[]> {
 
     /**
      * Retrieves an upgrade object based on the provided id.
+     * @template T - The type of the upgrade ID.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      * @example
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    // public getUpgrade (id: string): UpgradeStatic | null {
-    public getUpgrade (id: string | U[number]): typeof id extends U[number] ? UpgradeStatic<U[number]> : UpgradeStatic<U[number]> | null {
+    public getUpgrade<T extends string | U[number]> (id: T):
+        T extends U[number]
+        ? IsPrimitiveString<U[number]> extends false
+            ? UpgradeStatic<U[number]>
+            : UpgradeStatic<U[number]> | null
+        : UpgradeStatic<U[number]> | null
+    {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.upgrades[id] ?? null;
     }
 

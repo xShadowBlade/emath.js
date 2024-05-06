@@ -5924,13 +5924,13 @@ var CurrencyStatic = class {
   }
   /**
    * Retrieves an upgrade object based on the provided id.
+   * @template T - The type of the upgrade ID.
    * @param id - The id of the upgrade to retrieve.
    * @returns The upgrade object if found, otherwise null.
    * @example
    * const upgrade = currency.getUpgrade("healthBoost");
    * console.log(upgrade); // upgrade object
    */
-  // public getUpgrade (id: string): UpgradeStatic | null {
   getUpgrade(id) {
     return this.upgrades[id] ?? null;
   }
@@ -6629,7 +6629,7 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "8.1.0";
+      version = "8.2.0";
     } catch (error) {
       version = "8.2.0";
     }

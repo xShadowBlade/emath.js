@@ -43,12 +43,12 @@ class GameCurrency<N extends string = string, U extends string[] = string[]> {
      * @param gamePointer A pointer to the game instance.
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
-    constructor (currencyPointer: Pointer<Currency>, staticPointer: Pointer<CurrencyStatic>, gamePointer: Game, name: N) {
+    constructor (currencyPointer: Pointer<Currency>, staticPointer: Pointer<CurrencyStatic<U>>, gamePointer: Game, name: N) {
         // this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
         // this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
 
         this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
-        this.staticPointer = typeof staticPointer === "function" ? staticPointer : (): CurrencyStatic => staticPointer;
+        this.staticPointer = typeof staticPointer === "function" ? staticPointer : (): CurrencyStatic<U> => staticPointer;
 
         this.game = gamePointer;
 
