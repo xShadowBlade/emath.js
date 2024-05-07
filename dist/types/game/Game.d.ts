@@ -85,14 +85,16 @@ declare class Game {
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @template N - The name
+     * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+     * @param upgrades - The upgrades for the currency.
      * @returns A new instance of the gameCurrency class.
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    addCurrency<N extends string>(name: N): GameCurrency<N>;
+    addCurrency<N extends string, U extends string[] = string[]>(name: N, upgrades?: U): GameCurrency<N, U>;
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
@@ -103,7 +105,7 @@ declare class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    addAttribute(name: string, useBoost?: boolean, initial?: ESource): GameAttribute;
+    addAttribute<B extends boolean = true>(name: string, useBoost?: B, initial?: ESource): GameAttribute<B>;
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.

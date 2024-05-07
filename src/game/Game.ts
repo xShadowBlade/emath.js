@@ -132,25 +132,27 @@ class Game {
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @template N - The name
+     * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+     * @param upgrades - The upgrades for the currency.
      * @returns A new instance of the gameCurrency class.
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    public addCurrency<N extends string> (name: N): GameCurrency<N> {
+    public addCurrency<N extends string, U extends string[] = string[]> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
         this.dataManager.setData(name, {
             currency: new Currency(),
         });
         this.dataManager.setStatic(name, {
             // @ts-expect-error - fix this
-            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency as Currency),
+            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency as Currency, upgrades),
             // attributes: {},
         });
 
         // @ts-expect-error - fix this
-        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency as Currency, () => this.dataManager.getStatic(name).currency as Currency, this, name);
+        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency as Currency, () => this.dataManager.getStatic(name).currency as CurrencyStatic<U>, this, name);
 
 
         // const dataRef = this.dataManager.setData(name, {
@@ -173,16 +175,12 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute (name: string, useBoost = true, initial: ESource = 0): GameAttribute {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: ESource = 0): GameAttribute<B> {
         const dataRef = this.dataManager.setData(name, new Attribute(initial));
-        // @ts-expect-error - fix this
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
+        const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name) as Attribute, useBoost, initial));
         // const staticRef = this.dataManager.setStatic(name, new attributeStatic(dataRef, useBoost, initial));
 
-        // @ts-expect-error - fix this
-        const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
+        const classInstance = new GameAttribute(this.dataManager.getData(name) as Attribute, this.dataManager.getStatic(name) as AttributeStatic<B>, this);
         // const classInstance = new gameAttribute(() => dataRef as attribute, () => staticRef as attributeStatic, this);
         return classInstance;
     }

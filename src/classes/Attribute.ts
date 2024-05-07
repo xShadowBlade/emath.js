@@ -28,6 +28,9 @@ class Attribute {
 
 /**
  * Represents a static attribute, which is number that can affected by boosts.
+ *
+ * Note: This class is essentially a wrapper around {@link Boost}, and if you choose not to use boosts, you can use {@link Decimal} directly.
+ * It may be marked as deprecated in the future.
  * @template B - Indicates whether the boost is enabled. Defaults to true.
  * @example
  * const health = new AttributeStatic(undefined, true, 100); // AttributeStatic<true>

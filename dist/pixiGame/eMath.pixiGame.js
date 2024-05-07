@@ -7029,20 +7029,22 @@ var Game = class _Game {
    * Adds a new currency section to the game. {@link GameCurrency} is the class.
    * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
    * @template N - The name
+   * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
    * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+   * @param upgrades - The upgrades for the currency.
    * @returns A new instance of the gameCurrency class.
    * @example
    * const currency = game.addCurrency("currency");
    * currency.static.gain();
    * console.log(currency.value); // E(1)
    */
-  addCurrency(name) {
+  addCurrency(name, upgrades = []) {
     this.dataManager.setData(name, {
       currency: new Currency()
     });
     this.dataManager.setStatic(name, {
       // @ts-expect-error - fix this
-      currency: new CurrencyStatic(() => this.dataManager.getData(name).currency)
+      currency: new CurrencyStatic(() => this.dataManager.getData(name).currency, upgrades)
       // attributes: {},
     });
     const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);

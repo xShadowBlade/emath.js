@@ -16,7 +16,7 @@ import { UpgradeData, UpgradeStatic, UpgradeInit } from "./Upgrade";
  * IsPrimitiveString<"asdf">; // false
  * IsPrimitiveString<number>; // false
  */
-type IsPrimitiveString<T> = "" & T extends "random string that no one should ever get randomly" ? false : true;
+type IsPrimitiveString<T> = "random string that no one should ever get randomly" & T extends "" ? false : true;
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.

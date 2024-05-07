@@ -19,8 +19,7 @@ import { UpgradeData, UpgradeStatic, UpgradeInit, calculateUpgrade } from "./Upg
  * IsPrimitiveString<"asdf">; // false
  * IsPrimitiveString<number>; // false
  */
-type IsPrimitiveString<T> = "" & T extends "random string that no one should ever get randomly" ? false : true;
-
+type IsPrimitiveString<T> = "random string that no one should ever get randomly" & T extends "" ? false : true;
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
