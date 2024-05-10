@@ -73,7 +73,7 @@
         "eslint-plugin-jsdoc": "^48.0.2",
         "lz-string": "^1.5.0",
         "md5": "^2.3.0",
-        "pixi.js": "^7.4.0",
+        "pixi.js": "^8.1.1",
         "prettier": "3.2.5",
         "prettier-eslint": "^16.1.1",
         "typedoc": "^0.25.11",
