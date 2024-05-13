@@ -4,7 +4,7 @@
  * that when pressed gives you coins that you can use
  * on an upgrade that gives you more coins on gain.
  */
-import { E } from "emath.js";
+import { E, UpgradeInit } from "emath.js";
 import { Game } from "emath.js/game";
 
 // Initialize game
@@ -21,23 +21,25 @@ const coinGame = new Game({
 
 // Initialize coins and static coins
 
-const coins = coinGame.addCurrency("coins");
+const coinsUpgrades = [
+    {
+        id: "upg1Coins", // Unique ID
+        name: "Basic Coin Boost",
+        cost: level => level.mul(10), // Cost of 10 times the level
+        effect: function (level, _, currency) {
+            currency.boost.setBoost(
+                "boostUpg1Coins",
+                "Basic Coin Boost",
+                "Basic Coin Boost",
+                n => n.plus(level.mul(11)).sub(1),
+                1,
+            );
+        },
+        maxLevel: E(1000), // Max level of 1000
+    }
+] as const satisfies UpgradeInit[];
 
-// Upgrades
-coins.static.addUpgrade({
-    id: "upg1Coins", // Unique ID
-    name: "Basic Coin Boost",
-    cost: level => level.mul(10), // Cost of 10 times the level
-    effect: function (level) {
-        coins.static.boost.setBoost(
-            "boostUpg1Coins",
-            "Basic Coin Boost",
-            "Basic Coin Boost",
-            n => n.plus(level.mul(11)).sub(1),
-            1,
-        );
-    },
-});
+const coins = coinGame.addCurrency("coins", coinsUpgrades);
 
 // Initialize / Load game
 coinGame.init();
@@ -48,7 +50,12 @@ const coinsDisplay = document.getElementById("coinsDisplay");
 
 /** Function to update the coins display */
 function updateDisplay () {
-    coinsDisplay!.innerHTML = `Coins: ${coins.value.format()} (${E.formats.formatMult(coins.static.boost.calculate())})`; // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
+    // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
+    coinsDisplay!.innerHTML = `
+        Coins: ${coins.value.format()} (${E.formats.formatMult(coins.static.boost.calculate())})
+        <br>
+        Upgrade 1 Level: ${coins.static.getUpgrade("upg1Coins").level.format()}
+    `;
 }
 updateDisplay();
 

@@ -8,6 +8,7 @@ import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
+import type { CurrencyStatic } from "./Currency";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -22,16 +23,16 @@ import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalys
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el = false): [amount: E, cost: E] {
+function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end: ESource = Infinity, mode?: MeanMode, iterations?: number, el = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
-    end = E(end ?? Infinity);
+    end = E(end);
 
     const target = end.sub(start);
 
     // console.log("calculateUpgrade", { value, start, end, target, mode, iterations, el });
     // Special case: If target is less than 1, just return 0
-    if (target.lte(0)) {
+    if (target.lt(0)) {
         console.warn("calculateUpgrade: Invalid target: ", target);
         return [E(0), E(0)];
     }
@@ -54,6 +55,7 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESour
     //         return [cachedSum.end.sub(cachedSum.start), cost];
     //     }
     // }
+
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
         // console.log("target === 1");
@@ -84,11 +86,13 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESour
         const out: [E, E] = [canAfford ? amount : E(0), canAfford && !el ? cost : E(0)];
 
         // Set the cache
-        if (el) {
-            // upgrade.setCached("el", start, cost);
-        } else {
-            // upgrade.setCached("sum", start, end, cost);
-        }
+
+        // TODO
+        // if (el) {
+        //     upgrade.setCached("el", start, cost);
+        // } else {
+        //     upgrade.setCached("sum", start, end, cost);
+        // }
 
         return out;
     }
@@ -129,12 +133,12 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESour
 /**
  * Interface for initializing an upgrade.
  */
-type UpgradeInit = Readonly<{
+interface UpgradeInit {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    id: string;
+    readonly id: string;
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
@@ -200,7 +204,7 @@ type UpgradeInit = Readonly<{
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: UpgradeStatic) => void;
+    effect?: (level: E, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
@@ -215,7 +219,7 @@ type UpgradeInit = Readonly<{
      * Automatically set to `1` if not provided.
      */
     level?: E;
-}>;
+};
 
 /**
  * Infers the id type of an upgrade array
@@ -234,7 +238,8 @@ type UpgradeInit = Readonly<{
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"];
+type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
+
 
 /**
  * Interface for an upgrade.
@@ -253,6 +258,12 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
      */
     descriptionFn: (...args: any[]) => string;
 }
+
+/**
+ * Converts an upgrade init to a static upgrade.
+ * @deprecated - This is no longer used
+ */
+type ConvertInitToStatic<T extends UpgradeInit> = Omit<T, "level"> & { defaultLevel: E; descriptionFn: (...args: any[]) => string };
 
 /**
  * Interface for upgrade data.
@@ -469,5 +480,5 @@ class UpgradeStatic implements IUpgradeStatic {
     }
 }
 
-export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, calculateUpgrade };
+export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, ConvertInitToStatic, calculateUpgrade };
 export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };

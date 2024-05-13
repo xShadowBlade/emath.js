@@ -5669,10 +5669,10 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
 }
 
 // src/classes/Upgrade.ts
-function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = false) {
+function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iterations, el = false) {
   value = E(value);
   start = E(start ?? upgrade.level);
-  end = E(end ?? Infinity);
+  end = E(end);
   const target = end.sub(start);
   if (target.lte(0)) {
     console.warn("calculateUpgrade: Invalid target: ", target);
@@ -5695,9 +5695,6 @@ function calculateUpgrade(value, upgrade, start, end, mode, iterations, el = fal
     const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
     const out = [canAfford ? amount : E(0), canAfford && !el ? cost2 : E(0)];
-    if (el) {
-    } else {
-    }
     return out;
   }
   if (el) {
@@ -5889,7 +5886,7 @@ var CurrencyStatic = class {
    */
   onLoadData() {
     for (const upgrade of Object.values(this.upgrades)) {
-      upgrade.effect?.(upgrade.level, upgrade);
+      upgrade.effect?.(upgrade.level, upgrade, this);
     }
   }
   /**
@@ -5908,7 +5905,7 @@ var CurrencyStatic = class {
       for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = E(upgrade.defaultLevel);
         if (runUpgradeEffect)
-          upgrade.effect?.(upgrade.level, upgrade);
+          upgrade.effect?.(upgrade.level, upgrade, this);
       }
     }
     ;
@@ -5990,7 +5987,7 @@ var CurrencyStatic = class {
       const addedUpgradeData = this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
       if (addedUpgradeStatic.effect && runEffectInstantly)
-        addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic);
+        addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
       addedUpgradeList[upgrade.id] = addedUpgradeStatic;
       this.upgrades[upgrade.id] = addedUpgradeStatic;
     }
@@ -6032,13 +6029,17 @@ var CurrencyStatic = class {
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
   // public calculateUpgrade (id: string, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
-  calculateUpgrade(id, target, mode, iterations) {
+  calculateUpgrade(id, target = Infinity, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
       return [E(0), E(0)];
     }
-    return calculateUpgrade(this.value, upgrade, upgrade.level, target ? upgrade.level.add(target) : void 0, mode, iterations);
+    target = upgrade.level.add(target);
+    if (upgrade.maxLevel !== void 0) {
+      target = E.min(target, upgrade.maxLevel);
+    }
+    return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -6108,7 +6109,7 @@ var CurrencyStatic = class {
     }
     this.pointer.value = this.pointer.value.sub(cost);
     upgrade.level = upgrade.level.add(amount);
-    upgrade.effect?.(upgrade.level, upgrade);
+    upgrade.effect?.(upgrade.level, upgrade, this);
     return true;
   }
 };

@@ -41,7 +41,7 @@ declare class Currency {
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
-declare class CurrencyStatic<U extends UpgradeInit[] = [], S extends string = UpgradeInitArrayType<U>> {
+declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
     readonly upgrades: Record<S, UpgradeStatic>;
     /** A function that returns the pointer of the data */
@@ -127,7 +127,7 @@ declare class CurrencyStatic<U extends UpgradeInit[] = [], S extends string = Up
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    getUpgrade<T extends S>(id: T): T extends S ? IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null : UpgradeStatic | null;
+    getUpgrade<T extends S>(id: T): IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null;
     /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.

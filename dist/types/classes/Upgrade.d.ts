@@ -7,6 +7,7 @@ import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
+import type { CurrencyStatic } from "./Currency";
 /**
  * Calculates the cost and how many upgrades you can buy
  * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
@@ -24,12 +25,12 @@ declare function calculateUpgrade(value: ESource, upgrade: UpgradeStatic, start?
 /**
  * Interface for initializing an upgrade.
  */
-type UpgradeInit = Readonly<{
+interface UpgradeInit {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    id: string;
+    readonly id: string;
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
     /**
@@ -87,7 +88,7 @@ type UpgradeInit = Readonly<{
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: UpgradeStatic) => void;
+    effect?: (level: E, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
@@ -99,7 +100,7 @@ type UpgradeInit = Readonly<{
      * Automatically set to `1` if not provided.
      */
     level?: E;
-}>;
+}
 /**
  * Infers the id type of an upgrade array
  * @template U - The upgrade array
@@ -117,7 +118,7 @@ type UpgradeInit = Readonly<{
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"];
+type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
 /**
  * Interface for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
@@ -134,6 +135,14 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
      */
     descriptionFn: (...args: any[]) => string;
 }
+/**
+ * Converts an upgrade init to a static upgrade.
+ * @deprecated - This is no longer used
+ */
+type ConvertInitToStatic<T extends UpgradeInit> = Omit<T, "level"> & {
+    defaultLevel: E;
+    descriptionFn: (...args: any[]) => string;
+};
 /**
  * Interface for upgrade data.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
@@ -214,7 +223,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     cost: (level: Decimal) => Decimal;
     costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal]) | undefined;
     maxLevel: Decimal | undefined;
-    effect: ((level: Decimal, context: UpgradeStatic) => void) | undefined;
+    effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
     defaultLevel: E;
@@ -259,5 +268,5 @@ declare class UpgradeStatic implements IUpgradeStatic {
     setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
     setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
 }
-export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, calculateUpgrade };
+export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, ConvertInitToStatic, calculateUpgrade };
 export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
