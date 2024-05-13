@@ -55,7 +55,7 @@ class Currency {
  * All the functions are here instead of the `currency` class.
  * @template U - An array that represents the names of the upgrades.
  * @example
- * const currency = new currencyStatic();
+ * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
@@ -98,9 +98,22 @@ class CurrencyStatic<U extends string[] = string[]> {
     }
 
     /**
+     * Constructs a new currnecy
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
      * @param defaults - The default value and boost of the currency.
+     * @example
+     * const currency = new CurrencyStatic(undefined, [
+     *     {
+     *         id: "upgId1",
+     *         cost: (level: E): E => level.mul(10),
+     *     },
+     *     {
+     *         id: "upgId2",
+     *         cost: (level: E): E => level.mul(20),
+     *     }
+     * ] as const satisfies UpgradeInit[]);
+     * // CurrencyStatic<["upgId1", "upgId2"]>
      */
     constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: UpgradeInit<U[number]>[], defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
         // this.defaultVal = E(defaultVal);
@@ -410,6 +423,18 @@ class CurrencyStatic<U extends string[] = string[]> {
 export { Currency, CurrencyStatic };
 
 // Test
+
+const currency = new CurrencyStatic(undefined, [
+{
+    id: "upgId1",
+    cost: (level: E): E => level.mul(10),
+},
+{
+    id: "upgId2",
+    cost: (level: E): E => level.mul(20),
+}
+] as const satisfies UpgradeInit[]);
+// CurrencyStatic<["upgId1", "upgId2"]>
 /*
 import { calculateSum } from "./numericalAnalysis";
 const costFn = (level: E) => level.pow(2);

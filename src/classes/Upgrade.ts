@@ -130,12 +130,12 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESour
  * Interface for initializing an upgrade.
  * @template N - The ID of the upgrade.
  */
-interface UpgradeInit<N extends string = string> {
+type UpgradeInit<N extends string = string> = Readonly<{
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: N;
+    id: N;
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
@@ -216,7 +216,9 @@ interface UpgradeInit<N extends string = string> {
      * Automatically set to `1` if not provided.
      */
     level?: E;
-}
+}>;
+
+type UpgradeInitArray<U extends string[]> = UpgradeInit<U[number]>[];
 
 /**
  * Interface for an upgrade.

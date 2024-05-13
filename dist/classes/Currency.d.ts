@@ -36,7 +36,7 @@ declare class Currency {
  * All the functions are here instead of the `currency` class.
  * @template U - An array that represents the names of the upgrades.
  * @example
- * const currency = new CurrencyStatic();
+ * const currency = new currencyStatic();
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
@@ -61,22 +61,9 @@ declare class CurrencyStatic<U extends string[] = string[]> {
     get value(): E;
     set value(value: E);
     /**
-     * Constructs a new currnecy
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
      * @param defaults - The default value and boost of the currency.
-     * @example
-     * const currency = new CurrencyStatic(undefined, [
-     *     {
-     *         id: "upgId1",
-     *         cost: (level: E): E => level.mul(10),
-     *     },
-     *     {
-     *         id: "upgId2",
-     *         cost: (level: E): E => level.mul(20),
-     *     }
-     * ] as const satisfies UpgradeInit[]);
-     * // CurrencyStatic<["upgId1", "upgId2"]>
      */
     constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInit<U[number]>[], defaults?: {
         defaultVal: Decimal;

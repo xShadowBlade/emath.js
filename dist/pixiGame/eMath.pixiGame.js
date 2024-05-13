@@ -5879,9 +5879,22 @@ var CurrencyStatic = class {
     this.pointer.value = value;
   }
   /**
+   * Constructs a new currnecy
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param upgrades - An array of upgrade objects.
    * @param defaults - The default value and boost of the currency.
+   * @example
+   * const currency = new CurrencyStatic(undefined, [
+   *     {
+   *         id: "upgId1",
+   *         cost: (level: E): E => level.mul(10),
+   *     },
+   *     {
+   *         id: "upgId2",
+   *         cost: (level: E): E => level.mul(20),
+   *     }
+   * ] as const satisfies UpgradeInit[]);
+   * // CurrencyStatic<["upgId1", "upgId2"]>
    */
   constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
     this.defaultVal = defaults.defaultVal;
@@ -6127,6 +6140,16 @@ var CurrencyStatic = class {
     return true;
   }
 };
+var currency = new CurrencyStatic(void 0, [
+  {
+    id: "upgId1",
+    cost: (level) => level.mul(10)
+  },
+  {
+    id: "upgId2",
+    cost: (level) => level.mul(20)
+  }
+]);
 
 // src/classes/Attribute.ts
 var import_reflect_metadata3 = require("reflect-metadata");
@@ -6959,8 +6982,8 @@ var GameReset = class {
    */
   reset() {
     this.onReset?.();
-    this.currenciesToReset.forEach((currency) => {
-      currency.static.reset();
+    this.currenciesToReset.forEach((currency2) => {
+      currency2.static.reset();
     });
     this.extender.forEach((extender) => {
       if (extender.id !== this.id) {
