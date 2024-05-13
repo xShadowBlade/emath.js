@@ -6112,16 +6112,6 @@ var CurrencyStatic = class {
     return true;
   }
 };
-var currency = new CurrencyStatic(void 0, [
-  {
-    id: "upgId1",
-    cost: (level) => level.mul(10)
-  },
-  {
-    id: "upgId2",
-    cost: (level) => level.mul(20)
-  }
-]);
 
 // src/classes/Attribute.ts
 import "reflect-metadata";
@@ -6954,8 +6944,8 @@ var GameReset = class {
    */
   reset() {
     this.onReset?.();
-    this.currenciesToReset.forEach((currency2) => {
-      currency2.static.reset();
+    this.currenciesToReset.forEach((currency) => {
+      currency.static.reset();
     });
     this.extender.forEach((extender) => {
       if (extender.id !== this.id) {

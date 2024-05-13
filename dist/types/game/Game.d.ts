@@ -9,6 +9,7 @@ import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
 import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import type { UpgradeInit } from "../classes/Upgrade";
 /**
  * A pointer to a value or a function that returns a value by reference.
  * @template T - The type of the value to point to.
@@ -94,7 +95,7 @@ declare class Game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    addCurrency<N extends string, U extends string[] = string[]>(name: N, upgrades?: U): GameCurrency<N, U>;
+    addCurrency<N extends string, U extends UpgradeInit[] = []>(name: N, upgrades?: U): GameCurrency<N, U>;
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.

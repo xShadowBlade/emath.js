@@ -13,6 +13,7 @@ import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
 
 import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import type { UpgradeInit } from "../classes/Upgrade";
 
 /**
  * A pointer to a value or a function that returns a value by reference.
@@ -141,7 +142,7 @@ class Game {
      * currency.static.gain();
      * console.log(currency.value); // E(1)
      */
-    public addCurrency<N extends string, U extends string[] = string[]> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
+    public addCurrency<N extends string, U extends UpgradeInit[] = []> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
         this.dataManager.setData(name, {
             currency: new Currency(),
         });
@@ -196,5 +197,19 @@ class Game {
         return reset;
     }
 }
+// test
+// const myGame = new Game();
+// const currency = myGame.addCurrency("curr", [
+//     {
+//         id: "upgId1",
+//         cost: (level) => level.mul(10),
+//     },
+//     {
+//         id: "upgId2",
+//         cost: (level) => level.mul(20),
+//     },
+// ] as const satisfies UpgradeInit[]);
+
+// const upgrade1 = currency.static.getUpgrade("upgId1");
 
 export { Game, GameConfigOptions, gameDefaultConfig, Pointer };

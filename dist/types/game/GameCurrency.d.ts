@@ -3,6 +3,7 @@
  */
 import { E } from "../E/eMain";
 import { Currency, CurrencyStatic } from "../classes/Currency";
+import type { UpgradeInit } from "../classes/Upgrade";
 import type { Game, Pointer } from "./Game";
 /**
  * Represents a game currency. {@link Currency} is the data class and {@link CurrencyStatic} is the static class where all the useful functions are.
@@ -10,7 +11,7 @@ import type { Game, Pointer } from "./Game";
  * @template N - The name of the currency. This is optional, and you can use it for display purposes.
  * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
  */
-declare class GameCurrency<N extends string = string, U extends string[] = string[]> {
+declare class GameCurrency<N extends string = string, U extends UpgradeInit[] = []> {
     /** A function that returns the data for the currency. */
     protected readonly dataPointer: () => Currency;
     /** A function that returns the static data for the currency. */

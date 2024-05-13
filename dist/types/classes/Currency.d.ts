@@ -7,7 +7,7 @@ import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
-import { UpgradeData, UpgradeStatic, UpgradeInit } from "./Upgrade";
+import { UpgradeData, UpgradeStatic, UpgradeInit, UpgradeInitArrayType } from "./Upgrade";
 /**
  * Determines if a type is a primitive string.
  * @template T - The type to check.
@@ -34,15 +34,16 @@ declare class Currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template U - An array that represents the names of the upgrades.
+ * @template U - The inital upgrades
+ * @template S - An string union that represents the names of the upgrades.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // E(1)
  */
-declare class CurrencyStatic<U extends string[] = string[]> {
+declare class CurrencyStatic<U extends UpgradeInit[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
-    readonly upgrades: Record<U[number] | string, UpgradeStatic<U[number]>>;
+    readonly upgrades: Record<S, UpgradeStatic>;
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
@@ -78,7 +79,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInit<U[number]>[], defaults?: {
+    constructor(pointer?: Pointer<Currency>, upgrades?: U, defaults?: {
         defaultVal: Decimal;
         defaultBoost: Decimal;
     });
@@ -126,7 +127,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    getUpgrade<T extends string | U[number]>(id: T): T extends U[number] ? IsPrimitiveString<U[number]> extends false ? UpgradeStatic<U[number]> : UpgradeStatic<U[number]> | null : UpgradeStatic<U[number]> | null;
+    getUpgrade<T extends S>(id: T): T extends S ? IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null : UpgradeStatic | null;
     /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
@@ -168,7 +169,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      *     }
      * });
      */
-    updateUpgrade(id: string, upgrade: Partial<UpgradeInit>): void;
+    updateUpgrade(id: S, upgrade: Partial<UpgradeInit>): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
@@ -181,7 +182,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
+    calculateUpgrade(id: S, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -194,7 +195,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
+    getNextCost(id: S, target?: ESource, mode?: MeanMode, iterations?: number): E;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param id - Index or ID of the upgrade
@@ -208,7 +209,7 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    getNextCostMax(id: string, target?: ESource, mode?: MeanMode, iterations?: number): E;
+    getNextCostMax(id: S, target?: ESource, mode?: MeanMode, iterations?: number): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
@@ -220,6 +221,6 @@ declare class CurrencyStatic<U extends string[] = string[]> {
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: string, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
+    buyUpgrade(id: S, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
 }
 export { Currency, CurrencyStatic };

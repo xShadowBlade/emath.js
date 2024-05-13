@@ -128,14 +128,13 @@ function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESour
 
 /**
  * Interface for initializing an upgrade.
- * @template N - The ID of the upgrade.
  */
-type UpgradeInit<N extends string = string> = Readonly<{
+type UpgradeInit = Readonly<{
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    id: N;
+    id: string;
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
@@ -201,7 +200,7 @@ type UpgradeInit<N extends string = string> = Readonly<{
      * @param level - The current level of the upgrade.
      * @param context - The upgrade object.
      */
-    effect?: (level: E, context: UpgradeStatic<N>) => void;
+    effect?: (level: E, context: UpgradeStatic) => void;
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
@@ -218,13 +217,30 @@ type UpgradeInit<N extends string = string> = Readonly<{
     level?: E;
 }>;
 
-type UpgradeInitArray<U extends string[]> = UpgradeInit<U[number]>[];
+/**
+ * Infers the id type of an upgrade array
+ * @template U - The upgrade array
+ * @example
+ * const testUpg = [
+ *     {
+ *         id: "upgId1",
+ *         cost: (level: E): E => level.mul(10),
+ *     },
+ *     {
+ *         id: "upgId2",
+ *         cost: (level: E): E => level.mul(20),
+ *     },
+ * ] as const satisfies UpgradeInit[]
+ *
+ * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
+ */
+type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"];
 
 /**
  * Interface for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>, "level"> {
+interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
     maxLevel?: E;
     name: string;
     description: string;
@@ -242,7 +258,7 @@ interface IUpgradeStatic<N extends string = string> extends Omit<UpgradeInit<N>,
  * Interface for upgrade data.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-type IUpgradeData<N extends string = string> = Pick<UpgradeInit<N>, "id" | "level">
+type IUpgradeData = Pick<UpgradeInit, "id" | "level">
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
@@ -329,15 +345,15 @@ interface UpgradeCachedSum extends UpgradeCached {
  * Represents the frontend for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-class UpgradeData<N extends string = string> implements IUpgradeData<N> {
-    @Expose() public id: N;
+class UpgradeData implements IUpgradeData {
+    @Expose() public id: string;
     @Type(() => Decimal) public level;
 
     /**
      * Constructs a new upgrade object with an initial level of 1 (or the provided level)
      * @param init - The upgrade object to initialize.
      */
-    constructor (init: Pick<UpgradeInit<N>, "id" | "level">) {
+    constructor (init: Pick<UpgradeInit, "id" | "level">) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
         this.id = init.id;
@@ -347,10 +363,9 @@ class UpgradeData<N extends string = string> implements IUpgradeData<N> {
 
 /**
  * Represents the backend for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
-class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
-    public id: N; name; cost; costBulk; maxLevel; effect; el?; descriptionFn; defaultLevel: E;
+class UpgradeStatic implements IUpgradeStatic {
+    public id; name; cost; costBulk; maxLevel; effect; el?; descriptionFn; defaultLevel: E;
 
     /** The default size of the cache. Should be one less than a power of 2. */
     public static cacheSize = 63;
@@ -359,10 +374,10 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
 
     /** @returns The data of the upgrade. */
-    protected dataPointerFn: () => UpgradeData<N>;
+    protected dataPointerFn: () => UpgradeData;
 
     /** @returns The data of the upgrade. */
-    public get data (): UpgradeData<N> {
+    public get data (): UpgradeData {
         return this.dataPointerFn();
     }
 
@@ -389,9 +404,9 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
      * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}
      */
-    constructor (init: UpgradeInit<N>, dataPointer: Pointer<UpgradeData<N>>, cacheSize?: number) {
+    constructor (init: UpgradeInit, dataPointer: Pointer<UpgradeData>, cacheSize?: number) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
-        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData<N> => data;
+        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
         this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
@@ -454,5 +469,5 @@ class UpgradeStatic<N extends string = string> implements IUpgradeStatic<N> {
     }
 }
 
-export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, calculateUpgrade };
+export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, calculateUpgrade };
 export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
