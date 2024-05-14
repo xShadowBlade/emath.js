@@ -195,7 +195,7 @@ class DataManager {
             // @ts-expect-error - Replaced by esbuild
             version = PKG_VERSION as string;
         } catch (error) {
-            version = "8.2.0";
+            version = "8.3.0";
         }
 
         const saveMetadata: SaveMetadata = {

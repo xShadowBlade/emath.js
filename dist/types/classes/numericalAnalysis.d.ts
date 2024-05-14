@@ -84,9 +84,9 @@ declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?:
  * @param max - The maximum power to round to.
  * @returns - The rounded number.
  * @example
- * console.log(roundingBase(123456789, 10, 0, 10)); // 120000000
- * console.log(roundingBase(123456789, 10, 1, 10)); // 123000000
- * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
+ * console.log(roundingBase(123456789, 10, 0, 10)); // 100000000
+ * console.log(roundingBase(123456789, 10, 1, 10)); // 120000000
+ * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
 declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): E;

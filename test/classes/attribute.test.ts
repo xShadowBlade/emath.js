@@ -60,7 +60,6 @@ describe("AttributeStatic", () => {
             });
 
             // Check updated value
-            console.log(attributeStatic.value);
             assert(attributeStatic.value.equals(E(200)));
         });
     });
@@ -77,7 +76,6 @@ describe("AttributeStatic", () => {
             const attributeStatic = new AttributeStatic(undefined, false);
             const newValue = E(100);
             attributeStatic.value = newValue;
-            console.log(attributeStatic.value);
             assert(attributeStatic.value.equals(newValue));
         });
     });

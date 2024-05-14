@@ -118,25 +118,25 @@ class EventManager {
             // const event = this.events[i];
 
             switch (event.type) {
-            case EventTypes.interval: {
+                case EventTypes.interval: {
                 // If interval
-                if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
-                    const dt = currentTime - (event as IntervalEvent).intervalLast;
-                    event.callbackFn(dt);
-                    (event as IntervalEvent).intervalLast = currentTime;
-                }
-            }; break;
-            case EventTypes.timeout: {
-                const dt = currentTime - event.timeCreated;
-                // If timeout
-                if (currentTime - event.timeCreated >= event.delay) {
-                    event.callbackFn(dt);
-                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                    delete this.events[event.name];
+                    if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
+                        const dt = currentTime - (event as IntervalEvent).intervalLast;
+                        event.callbackFn(dt);
+                        (event as IntervalEvent).intervalLast = currentTime;
+                    }
+                }; break;
+                case EventTypes.timeout: {
+                    const dt = currentTime - event.timeCreated;
+                    // If timeout
+                    if (currentTime - event.timeCreated >= event.delay) {
+                        event.callbackFn(dt);
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        delete this.events[event.name];
                     // this.events.splice(i, 1);
                     // i--;
-                }
-            }; break;
+                    }
+                }; break;
             }
         }
     }
@@ -164,14 +164,14 @@ class EventManager {
     public timeWarp (dt: number): void {
         for (const event of Object.values(this.events)) {
             switch (event.type) {
-            case EventTypes.interval: {
-                (event as IntervalEvent).intervalLast -= dt;
-            }; break;
-            case EventTypes.timeout: {
+                case EventTypes.interval: {
+                    (event as IntervalEvent).intervalLast -= dt;
+                }; break;
+                case EventTypes.timeout: {
                 // ! might cause issues
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                (event as TimeoutEvent).timeCreated -= dt;
-            }; break;
+                    (event as TimeoutEvent).timeCreated -= dt;
+                }; break;
             }
         }
     }
@@ -197,29 +197,29 @@ class EventManager {
     public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | E, callbackFn: (dt: number) => void): void {
         this.events[name] = ((): IntervalEvent | TimeoutEvent => {
             switch (type) {
-            case "interval": {
-                const event: IntervalEvent = {
-                    name,
-                    type: type as EventTypes.interval,
-                    delay: typeof delay === "number" ? delay : delay.toNumber(),
-                    callbackFn,
-                    timeCreated: Date.now(),
-                    intervalLast: Date.now(),
-                };
-                return event;
-            // eslint-disable-next-line no-unreachable
-            }; break;
-            case "timeout": default: {
-                const event: TimeoutEvent = {
-                    name,
-                    type: type as EventTypes.timeout,
-                    delay: typeof delay === "number" ? delay : delay.toNumber(),
-                    callbackFn,
-                    timeCreated: Date.now(),
-                };
+                case "interval": {
+                    const event: IntervalEvent = {
+                        name,
+                        type: type as EventTypes.interval,
+                        delay: typeof delay === "number" ? delay : delay.toNumber(),
+                        callbackFn,
+                        timeCreated: Date.now(),
+                        intervalLast: Date.now(),
+                    };
+                    return event;
+                    // eslint-disable-next-line no-unreachable
+                }; break;
+                case "timeout": default: {
+                    const event: TimeoutEvent = {
+                        name,
+                        type: type as EventTypes.timeout,
+                        delay: typeof delay === "number" ? delay : delay.toNumber(),
+                        callbackFn,
+                        timeCreated: Date.now(),
+                    };
 
-                return event;
-            }
+                    return event;
+                }
             }
         })();
     };

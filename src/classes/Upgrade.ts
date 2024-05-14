@@ -202,7 +202,8 @@ interface UpgradeInit {
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
-     * @param context - The upgrade object.
+     * @param upgradeContext - The upgrade object that the effect is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
      */
     effect?: (level: E, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
 
@@ -212,7 +213,7 @@ interface UpgradeInit {
      * (but you should use a getter function instead)
      */
     el?: boolean | (() => boolean);
-    // el?: Pointer<boolean>,
+
     // Below are types that are automatically added
     /**
      * The default level of the upgrade.

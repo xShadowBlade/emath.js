@@ -18,8 +18,11 @@ class GameReset {
     /** The extender for the game reset. */
     public readonly extender: GameReset[];
 
-    /** Custom code to run after {@link reset} is called but BEFORE the currencies are reset */
-    public onReset?: () => void;
+    /**
+     * Custom code to run after {@link reset} is called but BEFORE the currencies are reset
+     * @param resetContext - The reset context that the reset is called in.
+     */
+    public onReset?: (resetContext: GameReset) => void;
 
     /**
      * Creates a new instance of the game reset.
@@ -36,7 +39,7 @@ class GameReset {
      * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
      */
     public reset (): void {
-        this.onReset?.();
+        this.onReset?.(this);
 
         this.currenciesToReset.forEach((currency) => {
             currency.static.reset();

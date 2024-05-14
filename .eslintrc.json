@@ -25,7 +25,7 @@
         "curly": ["warn", "multi-line"],
         "dot-location": ["warn", "property"],
         "handle-callback-err": "off",
-        "indent": ["warn", 4],
+        "indent": ["warn", 4, { "SwitchCase": 1 }],
         "keyword-spacing": "warn",
         "max-nested-callbacks": ["warn", { "max": 4 }],
         "max-statements-per-line": ["warn", { "max": 2 }],

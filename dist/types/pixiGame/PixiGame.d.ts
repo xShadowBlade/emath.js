@@ -19,6 +19,7 @@ declare const pixiGameDefaultConfig: PixiGameConfig & typeof gameDefaultConfig;
 /**
  * Represents a game instance with PIXI-specific methods and properties.
  * Uses PIXI.js time-based game loop.
+ * @deprecated This class is outside the scope of eMath.js and will be moved to a separate package in the future.
  */
 declare class PixiGame extends Game {
     protected static configManager: ConfigManager<PixiGameConfig & import("../game/managers/ConfigManager").RequiredDeep<GameConfigOptions>>;

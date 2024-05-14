@@ -4929,7 +4929,7 @@ function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iteration
   start = E(start ?? upgrade.level);
   end = E(end);
   const target = end.sub(start);
-  if (target.lte(0)) {
+  if (target.lt(0)) {
     console.warn("calculateUpgrade: Invalid target: ", target);
     return [E(0), E(0)];
   }
@@ -5471,7 +5471,6 @@ var GridCell = class {
   }
 };
 var Grid = class {
-  // Add this index signature
   /**
    * Initializes a new instance of the grid.
    * @param xSize - The size of the grid along the x-axis.

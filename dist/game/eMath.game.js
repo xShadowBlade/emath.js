@@ -5699,7 +5699,7 @@ function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iteration
   start = E(start ?? upgrade.level);
   end = E(end);
   const target = end.sub(start);
-  if (target.lte(0)) {
+  if (target.lt(0)) {
     console.warn("calculateUpgrade: Invalid target: ", target);
     return [E(0), E(0)];
   }
@@ -6677,9 +6677,9 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "8.2.0";
+      version = "8.3.0";
     } catch (error) {
-      version = "8.2.0";
+      version = "8.3.0";
     }
     const saveMetadata = {
       hash: hasedData,
@@ -6918,13 +6918,6 @@ var GameCurrency = class {
   get value() {
     return this.data.value;
   }
-  // /**
-  //  * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-  //  * @param currencyPointer - A function or pointer that returns the current currency value.
-  //  */
-  // public updateDataPointer (currencyPointer: (() => currency) | currency): void {
-  //     this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-  // }
 };
 
 // src/game/GameAttribute.ts
@@ -6974,7 +6967,7 @@ var GameReset = class {
    * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
    */
   reset() {
-    this.onReset?.();
+    this.onReset?.(this);
     this.currenciesToReset.forEach((currency) => {
       currency.static.reset();
     });
@@ -7029,7 +7022,10 @@ var Game = class _Game {
     });
     this.tickers = [];
   }
-  /** Initializes the game. Also initializes the data manager. */
+  /**
+   * Initializes the game. Also initializes the data manager.
+   * See {@link DataManager.init} for more information.
+   */
   init() {
     this.dataManager.init();
   }
@@ -7059,11 +7055,14 @@ var Game = class _Game {
       currency: new Currency()
     });
     this.dataManager.setStatic(name, {
-      // @ts-expect-error - fix this
       currency: new CurrencyStatic(() => this.dataManager.getData(name).currency, upgrades)
-      // attributes: {},
     });
-    const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency, () => this.dataManager.getStatic(name).currency, this, name);
+    const classInstance = new GameCurrency(
+      () => this.dataManager.getData(name).currency,
+      () => this.dataManager.getStatic(name).currency,
+      this,
+      name
+    );
     return classInstance;
   }
   /**
@@ -7077,8 +7076,8 @@ var Game = class _Game {
    * const myAttribute = game.addAttribute("myAttribute");
    */
   addAttribute(name, useBoost = true, initial = 0) {
-    const dataRef = this.dataManager.setData(name, new Attribute(initial));
-    const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
+    this.dataManager.setData(name, new Attribute(initial));
+    this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
     const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
     return classInstance;
   }

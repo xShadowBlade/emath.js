@@ -75,7 +75,10 @@ declare class Game {
      * });
      */
     constructor(config?: GameConfigOptions);
-    /** Initializes the game. Also initializes the data manager. */
+    /**
+     * Initializes the game. Also initializes the data manager.
+     * See {@link DataManager.init} for more information.
+     */
     init(): void;
     /**
      * Changes the framerate of the game.

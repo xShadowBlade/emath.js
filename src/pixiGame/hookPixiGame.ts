@@ -9,7 +9,7 @@
 /**
  * Hooks the pixiGame package into the eMath.js game package.
  */
-export function hookPixiGame () {
+export function hookPixiGame (): void {
     if (!(typeof process !== "object" && typeof window !== "undefined")) {
         // Environment is not a browser.
         return;

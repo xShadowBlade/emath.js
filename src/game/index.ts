@@ -4,9 +4,6 @@
 // Saving
 import "reflect-metadata";
 
-// import { hookGame } from "./hookGame";
-// hookGame();
-
 // Module augmentation
 import "../E/eMain";
 

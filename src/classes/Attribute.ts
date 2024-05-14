@@ -66,9 +66,14 @@ class AttributeStatic<B extends boolean = true> {
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
     constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: ESource = 0) {
+        // Assign the initial value
         this.initial = E(initial);
+
+        // Set the pointer and pointer function
         pointer ??= new Attribute(this.initial);
         this.pointerFn = (typeof pointer === "function" ? pointer : (): Attribute => pointer);
+
+        // Create the boost if enabled
         this.boost = (useBoost ? new Boost(this.initial) : null) as typeof this.boost;
     }
 

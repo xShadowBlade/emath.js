@@ -12,8 +12,11 @@ declare class GameReset {
     readonly currenciesToReset: GameCurrency[];
     /** The extender for the game reset. */
     readonly extender: GameReset[];
-    /** Custom code to run after {@link reset} is called but BEFORE the currencies are reset */
-    onReset?: () => void;
+    /**
+     * Custom code to run after {@link reset} is called but BEFORE the currencies are reset
+     * @param resetContext - The reset context that the reset is called in.
+     */
+    onReset?: (resetContext: GameReset) => void;
     /**
      * Creates a new instance of the game reset.
      * @param currenciesToReset The currencies to reset.

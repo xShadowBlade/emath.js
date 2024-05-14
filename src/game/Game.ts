@@ -100,13 +100,18 @@ class Game {
      * });
      */
     constructor (config?: GameConfigOptions) {
+        // Parse the config
         this.config = Game.configManager.parse(config);
 
-        this.dataManager = new DataManager(this); // Init separately
+        // Init managers
+        // Init separately to allow for manual initialization
+        this.dataManager = new DataManager(this);
+
         this.keyManager = new KeyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
+
         this.eventManager = new EventManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
@@ -115,7 +120,10 @@ class Game {
         this.tickers = [];
     }
 
-    /** Initializes the game. Also initializes the data manager. */
+    /**
+     * Initializes the game. Also initializes the data manager.
+     * See {@link DataManager.init} for more information.
+     */
     public init (): void {
         this.dataManager.init();
     }
@@ -143,26 +151,22 @@ class Game {
      * console.log(currency.value); // E(1)
      */
     public addCurrency<N extends string, U extends UpgradeInit[] = []> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
+        // Set the data and static objects
         this.dataManager.setData(name, {
             currency: new Currency(),
         });
         this.dataManager.setStatic(name, {
-            // @ts-expect-error - fix this
-            currency: new CurrencyStatic(() => this.dataManager.getData(name).currency as Currency, upgrades),
-            // attributes: {},
+            currency: new CurrencyStatic(() => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades),
         });
 
-        // @ts-expect-error - fix this
-        const classInstance = new GameCurrency(() => this.dataManager.getData(name).currency as Currency, () => this.dataManager.getStatic(name).currency as CurrencyStatic<U>, this, name);
+        // Create the class instance
+        const classInstance = new GameCurrency(
+            () => (this.dataManager.getData(name) as { currency: Currency }).currency,
+            () => (this.dataManager.getStatic(name) as { currency: CurrencyStatic<U> }).currency,
+            this,
+            name,
+        );
 
-
-        // const dataRef = this.dataManager.setData(name, {
-        //     currency: new currency(),
-        // });
-        // const staticRef = this.dataManager.setStatic(name, {
-        //     currency: new currencyStatic(dataRef.value.currency),
-        // });
-        // const classInstance = new gameCurrency(() => dataRef.value.currency, () => staticRef.currency as currencyStatic, this, name);
         return classInstance;
     }
 
@@ -177,12 +181,10 @@ class Game {
      * const myAttribute = game.addAttribute("myAttribute");
      */
     public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: ESource = 0): GameAttribute<B> {
-        const dataRef = this.dataManager.setData(name, new Attribute(initial));
-        const staticRef = this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name) as Attribute, useBoost, initial));
-        // const staticRef = this.dataManager.setStatic(name, new attributeStatic(dataRef, useBoost, initial));
+        this.dataManager.setData(name, new Attribute(initial));
+        this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name) as Attribute, useBoost, initial));
 
         const classInstance = new GameAttribute(this.dataManager.getData(name) as Attribute, this.dataManager.getStatic(name) as AttributeStatic<B>, this);
-        // const classInstance = new gameAttribute(() => dataRef as attribute, () => staticRef as attributeStatic, this);
         return classInstance;
     }
 

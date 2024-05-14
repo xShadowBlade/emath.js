@@ -201,15 +201,15 @@ class KeyManager {
             if (bind.key !== keypress) continue;
 
             switch (eventType) {
-            case "down":
-                bind.onDown?.();
-                break;
-            case "press": default:
-                bind.onPress?.();
-                break;
-            case "up":
-                bind.onUp?.();
-                break;
+                case "down":
+                    bind.onDown?.();
+                    break;
+                case "press": default:
+                    bind.onPress?.();
+                    break;
+                case "up":
+                    bind.onUp?.();
+                    break;
             }
         }
     }

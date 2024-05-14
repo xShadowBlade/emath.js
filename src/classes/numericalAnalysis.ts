@@ -71,14 +71,14 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
     for (let i = 0; i < iterations; i++) {
         let mid: E;
         switch (mode) {
-        case "arithmetic":
-        case 1:
-            mid = lowerBound.add(upperBound).div(2);
-            break;
-        case "geometric":
-        case 2:
-            mid = lowerBound.mul(upperBound).sqrt();
-            break;
+            case "arithmetic":
+            case 1:
+                mid = lowerBound.add(upperBound).div(2);
+                break;
+            case "geometric":
+            case 2:
+                mid = lowerBound.mul(upperBound).sqrt();
+                break;
             // case "pow":
             //     mid = lowerBound.pow(upperBound).ssqrt();
         }
@@ -192,9 +192,9 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
  * @param max - The maximum power to round to.
  * @returns - The rounded number.
  * @example
- * console.log(roundingBase(123456789, 10, 0, 10)); // 120000000
- * console.log(roundingBase(123456789, 10, 1, 10)); // 123000000
- * console.log(roundingBase(123456789, 10, 2, 10)); // 123460000
+ * console.log(roundingBase(123456789, 10, 0, 10)); // 100000000
+ * console.log(roundingBase(123456789, 10, 1, 10)); // 120000000
+ * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
 function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000): E {

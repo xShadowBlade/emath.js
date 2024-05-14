@@ -43,14 +43,11 @@ class GameCurrency<N extends string = string, U extends UpgradeInit[] = []> {
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
     constructor (currencyPointer: Pointer<Currency>, staticPointer: Pointer<CurrencyStatic<U>>, gamePointer: Game, name: N) {
-        // this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-        // this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
-
+        // Set the data and static pointers
         this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
         this.staticPointer = typeof staticPointer === "function" ? staticPointer : (): CurrencyStatic<U> => staticPointer;
 
         this.game = gamePointer;
-
         this.name = name;
 
         // Add an event on load to update upgrade effects
@@ -67,18 +64,6 @@ class GameCurrency<N extends string = string, U extends UpgradeInit[] = []> {
     get value (): E {
         return this.data.value;
     }
-
-    // /**
-    //  * Changes the pointer to the currency data. Warning: Do not use this unless you know what you're doing.
-    //  * @param currencyPointer - A function or pointer that returns the current currency value.
-    //  */
-    // public updateDataPointer (currencyPointer: (() => currency) | currency): void {
-    //     this.data = typeof currencyPointer === "function" ? currencyPointer() : currencyPointer;
-    // }
 }
-
-// class gameCurrencyGroup {
-
-// }
 
 export { GameCurrency };

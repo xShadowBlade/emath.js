@@ -63,7 +63,7 @@ class Grid<P extends UnknownObject = UnknownObject> {
     public ySize: number;
 
     /** Represents the cells of the grid. */
-    public cells: GridCell<P>[][]; // Add this index signature
+    public cells: GridCell<P>[][];
 
     /**
      * Initializes a new instance of the grid.

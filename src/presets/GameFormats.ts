@@ -49,10 +49,10 @@ function gameFormat (value: ESource, settings: FormatSettings): string {
     // Format time
     if (time) {
         switch (formatTimeType) {
-        case "short":
-            return E.formats.formatTime(value, acc, formatType);
-        case "long":
-            return E.formats.formatTimeLong(value, true, 0, max, formatType);
+            case "short":
+                return E.formats.formatTime(value, acc, formatType);
+            case "long":
+                return E.formats.formatTimeLong(value, true, 0, max, formatType);
         }
     }
 
