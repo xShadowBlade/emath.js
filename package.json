@@ -13,11 +13,6 @@
             "import": "./dist/game/eMath.game.mjs",
             "default": "./dist/game/eMath.game.js"
         },
-        "./pixiGame": {
-            "types": "./dist/types/pixiGame/index.d.ts",
-            "import": "./dist/pixiGame/eMath.pixiGame.mjs",
-            "default": "./dist/pixiGame/eMath.pixiGame.js"
-        },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
             "default": "./dist/presets/eMath.presets.js",
@@ -28,9 +23,6 @@
         },
         "./ts/game": {
             "default": "./src/game/index.ts"
-        },
-        "./ts/pixiGame": {
-            "default": "./src/pixiGame/index.ts"
         },
         "./ts/presets": {
             "default": "./src/presets/index.ts"

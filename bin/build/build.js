@@ -106,30 +106,30 @@ const buildOptions = [
     },
 
     // PixiGame
-    {
-        // entryPoints: ["src/pixiGame/hookPixiGame.ts"],
-        entryPoints: ["src/pixiGame/index.ts"],
-        outfile: "dist/pixiGame/eMath.pixiGame.js",
-        // external: ["pixi.js", ...externalIntFiles],
-        // format: "umd",
-        // plugins: [umdWrapper()],
-        ...dev,
-        external: [...dev.external, "pixi.js"],
-    },
-    {
-        entryPoints: ["src/pixiGame/hookPixiGame.ts"],
-        outfile: "dist/pixiGame/eMath.pixiGame.min.js",
-        // external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
-        // format: "iife",
-        // minify: true,
-        ...min,
-    },
-    {
-        entryPoints: ["src/pixiGame/index.ts"],
-        outfile: "dist/pixiGame/eMath.pixiGame.mjs",
-        ...devEsm,
-        external: [...devEsm.external, "pixi.js"],
-    },
+    // {
+    //     // entryPoints: ["src/pixiGame/hookPixiGame.ts"],
+    //     entryPoints: ["src/pixiGame/index.ts"],
+    //     outfile: "dist/pixiGame/eMath.pixiGame.js",
+    //     // external: ["pixi.js", ...externalIntFiles],
+    //     // format: "umd",
+    //     // plugins: [umdWrapper()],
+    //     ...dev,
+    //     external: [...dev.external, "pixi.js"],
+    // },
+    // {
+    //     entryPoints: ["src/pixiGame/hookPixiGame.ts"],
+    //     outfile: "dist/pixiGame/eMath.pixiGame.min.js",
+    //     // external: ["pixi.js", "./src/index.ts", "./src/hookMain.ts", "./src/classes/*", "./src/E/*"],
+    //     // format: "iife",
+    //     // minify: true,
+    //     ...min,
+    // },
+    // {
+    //     entryPoints: ["src/pixiGame/index.ts"],
+    //     outfile: "dist/pixiGame/eMath.pixiGame.mjs",
+    //     ...devEsm,
+    //     external: [...devEsm.external, "pixi.js"],
+    // },
 
     // Presets
     {
