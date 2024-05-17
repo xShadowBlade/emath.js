@@ -1,7 +1,8 @@
 /**
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
-import { E, ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
+import { E } from "../E/eMain";
 
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
@@ -22,11 +23,76 @@ import { E, ESource } from "../E/eMain";
 const DEFAULT_ITERATIONS = 35;
 
 /**
+ * The default tolerance to compare the values with.
+ * @default 1e-3
+ */
+const DEFAULT_TOLERANCE = 1e-3;
+
+/**
  * Represents different methods to calculate the mean.
  * Mode 1 `"arithmetic"` `(a+b)/2` is a bit faster but way less accurate for large numbers.
  * Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
  */
 type MeanMode = "arithmetic" | "geometric" | 1 | 2;
+
+interface EqualsToleranceBounds {
+    lowerBound: ESource;
+    upperBound: ESource;
+}
+
+/**
+ * The configuration object for the {@link equalsTolerance} function.
+ */
+interface EqualsToleranceConfig {
+    /**
+     * Whether to log the values (a, b, tolerance, config, diff, result) to the console.
+     * - `true` - Log the values to the console.
+     * - `false` - Do not log the values to the console.
+     * - `"onlyOnFail"` - Only log the values to the console if the result is `false`.
+     */
+    verbose: boolean | "onlyOnFail";
+    /**
+     * The mode/mean method to use. See {@link MeanMode}
+     */
+    mode: MeanMode;
+}
+
+/**
+ * Compares two values with a tolerance.
+ * @param a - The lower bound.
+ * @param b - The upper bound.
+ * @param tolerance - The tolerance to compare the values with.
+ * @param config - The configuration object.
+ * @returns Whether the values are equal within the tolerance.
+ */
+function equalsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: Partial<EqualsToleranceConfig>): boolean {
+    // Set the default values
+    config = Object.assign({}, {
+        verbose: false,
+        mode: "geometric",
+    } as EqualsToleranceConfig, config);
+
+    // Convert the values to E instances
+    a = E(a);
+    b = E(b);
+    tolerance = E(tolerance);
+
+    let diff: E;
+    let result: boolean;
+
+    // Compare the values
+    if (config.mode === "geometric") {
+        diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
+        result = diff.lte(tolerance);
+    } else {
+        diff = a.sub(b).abs();
+        result = diff.lte(tolerance);
+    }
+
+    if (config.verbose === true || (config.verbose === "onlyOnFail" && !result)) console.log({ a, b, tolerance, config, diff, result });
+
+    return result;
+}
 
 /**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
@@ -34,13 +100,14 @@ type MeanMode = "arithmetic" | "geometric" | 1 | 2;
  * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS): { value: E; lowerBound: E; upperBound: E } {
+function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE): { value: E; lowerBound: E; upperBound: E } {
     // Set the initial bounds
     let lowerBound = E(1);
     // let upperBound = E(n);
@@ -84,12 +151,11 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
         }
 
         const midValue = f(mid);
-        if (midValue.eq(n)) {
-            return {
-                value: mid,
-                lowerBound: mid,
-                upperBound: mid,
-            };
+        // console.log({ lowerBound, upperBound, mid, midValue, n, i });
+        if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+            // Stop the loop if the bounds are close
+            // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
+            break;
         } else if (midValue.lt(n)) {
             lowerBound = mid;
         } else {
@@ -113,10 +179,10 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`.
+ * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: ESource = E("1e-3")): E {
+function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: ESource = DEFAULT_TOLERANCE): E {
     // epsilon = epsilon;
     let sum: E = E();
 
@@ -166,7 +232,7 @@ function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterati
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param epsilon - The maximum error tolerance, geometrically. Defaults to `1e-3`. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
+ * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}. Only used if `b - a` is greater than {@link DEFAULT_ITERATIONS}.
  * @returns - The calculated sum of `f(n)`.
  * @example
@@ -210,4 +276,5 @@ function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESo
     return out;
 }
 
-export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };
+export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS };
+export type { MeanMode, EqualsToleranceConfig };

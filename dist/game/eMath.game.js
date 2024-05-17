@@ -5512,7 +5512,28 @@ var import_class_transformer2 = require("class-transformer");
 
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 35;
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
+var DEFAULT_TOLERANCE = 1e-3;
+function equalsTolerance(a, b, tolerance, config) {
+  config = Object.assign({}, {
+    verbose: false,
+    mode: "geometric"
+  }, config);
+  a = E(a);
+  b = E(b);
+  tolerance = E(tolerance);
+  let diff;
+  let result;
+  if (config.mode === "geometric") {
+    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
+    result = diff.lte(tolerance);
+  } else {
+    diff = a.sub(b).abs();
+    result = diff.lte(tolerance);
+  }
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) console.log({ a, b, tolerance, config, diff, result });
+  return result;
+}
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
   let lowerBound = E(1);
   let upperBound = E(n);
   if (f(upperBound).eq(0)) {
@@ -5543,12 +5564,8 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
         break;
     }
     const midValue = f(mid);
-    if (midValue.eq(n)) {
-      return {
-        value: mid,
-        lowerBound: mid,
-        upperBound: mid
-      };
+    if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+      break;
     } else if (midValue.lt(n)) {
       lowerBound = mid;
     } else {
@@ -5562,7 +5579,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   };
   return out;
 }
-function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
+function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
   let sum = E();
   let n = E(b);
   for (; n.gte(a); n = n.sub(1)) {
@@ -6144,8 +6161,8 @@ var ConfigManager = class {
 // src/game/managers/KeyManager.ts
 var keyManagerDefaultConfig = {
   autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
+  fps: 30
+  // pixiApp: undefined,
 };
 var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 var KeyManager = class _KeyManager {
@@ -6161,20 +6178,12 @@ var KeyManager = class _KeyManager {
     this.tickers = [];
     this.config = _KeyManager.configManager.parse(config);
     if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add((dt) => {
-          for (const ticker of this.tickers) {
-            ticker(dt);
-          }
-        });
-      } else {
-        const fps = this.config.fps ? this.config.fps : 30;
-        this.tickerInterval = setInterval(() => {
-          for (const ticker of this.tickers) {
-            ticker(1e3 / fps);
-          }
-        }, 1e3 / fps);
-      }
+      const fps = this.config.fps ? this.config.fps : 30;
+      this.tickerInterval = setInterval(() => {
+        for (const ticker of this.tickers) {
+          ticker(1e3 / fps);
+        }
+      }, 1e3 / fps);
     }
     if (typeof document === "undefined") {
       return;
@@ -6216,8 +6225,6 @@ var KeyManager = class _KeyManager {
           ticker(1e3 / fps);
         }
       }, 1e3 / fps);
-    } else if (this.config.pixiApp) {
-      this.config.pixiApp.ticker.maxFPS = fps;
     }
   }
   /**
@@ -6299,8 +6306,8 @@ var EventTypes = /* @__PURE__ */ ((EventTypes2) => {
 })(EventTypes || {});
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
-  fps: 30,
-  pixiApp: void 0
+  fps: 30
+  // pixiApp: undefined,
 };
 var EventManager = class _EventManager {
   /**
@@ -6317,16 +6324,10 @@ var EventManager = class _EventManager {
     this.config = _EventManager.configManager.parse(config);
     this.events = {};
     if (this.config.autoAddInterval) {
-      if (this.config.pixiApp) {
-        this.config.pixiApp.ticker.add(() => {
-          this.tickerFunction();
-        });
-      } else {
-        const fps = this.config.fps ?? 30;
-        this.tickerInterval = setInterval(() => {
-          this.tickerFunction();
-        }, 1e3 / fps);
-      }
+      const fps = this.config.fps ?? 30;
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
     }
   }
   static {
@@ -6374,8 +6375,6 @@ var EventManager = class _EventManager {
       this.tickerInterval = setInterval(() => {
         this.tickerFunction();
       }, 1e3 / fps);
-    } else if (this.config.pixiApp) {
-      this.config.pixiApp.ticker.maxFPS = fps;
     }
   }
   /**

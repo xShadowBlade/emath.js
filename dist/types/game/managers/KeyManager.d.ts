@@ -1,7 +1,6 @@
 /**
  * @file Declares classes for managing key bindings.
  */
-import type { Application } from "pixi.js";
 /**
  * The key binding interface.
  */
@@ -54,8 +53,6 @@ interface KeyManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
-    /** The PIXI application to use for the interval, if you want to use it instead of an interval. */
-    pixiApp?: Application;
 }
 /**
  * An array of possible keys.
@@ -141,4 +138,5 @@ declare class KeyManager {
         (keysToAdd: KeyBinding | KeyBinding[]): void;
     };
 }
-export { KeyManager, KeyManagerConfig, KeyBinding, keys };
+export type { KeyManagerConfig, KeyBinding };
+export { KeyManager, keys };

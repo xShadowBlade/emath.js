@@ -481,5 +481,7 @@ class UpgradeStatic implements IUpgradeStatic {
     }
 }
 
-export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, ConvertInitToStatic, calculateUpgrade };
-export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType, ConvertInitToStatic };
+export { UpgradeData, UpgradeStatic, calculateUpgrade };
+export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export { decimalToJSONString, upgradeToCacheNameEL };

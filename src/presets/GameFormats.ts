@@ -1,7 +1,8 @@
 /**
  * @file Game formats class.
  */
-import { E, ESource, FormatType } from "../E/eMain";
+import type { ESource, FormatType } from "../E/eMain";
+import { E } from "../E/eMain";
 import type { Pointer } from "../game/Game";
 
 /**

@@ -2,7 +2,7 @@
  * @file Declares the main game class.
  */
 
-import { ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
 import { Currency, CurrencyStatic } from "../classes/Currency";
 import { Attribute, AttributeStatic } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
@@ -12,7 +12,8 @@ import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
 
-import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import type { RequiredDeep } from "./managers/ConfigManager";
+import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 
 /**
@@ -214,4 +215,5 @@ class Game {
 
 // const upgrade1 = currency.static.getUpgrade("upgId1");
 
-export { Game, GameConfigOptions, gameDefaultConfig, Pointer };
+export type { GameConfigOptions, Pointer };
+export { Game, gameDefaultConfig };

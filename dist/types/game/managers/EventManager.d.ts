@@ -1,8 +1,7 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import { E } from "../../E/eMain";
-import type { Application } from "pixi.js";
+import type { E } from "../../E/eMain";
 /**
  * The type of event
  */
@@ -49,10 +48,6 @@ interface EventManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
-    /**
-     * The PIXI application to use for the interval, if you want to use it instead of an interval.
-     */
-    pixiApp?: Application;
 }
 /**
  * The event manager class, used to manage events and execute them at the correct time.
@@ -118,4 +113,5 @@ declare class EventManager {
      */
     removeEvent(name: string): void;
 }
-export { EventManager, EventManagerConfig, IntervalEvent, TimeoutEvent, Event, EventTypes };
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, Event };
+export { EventManager, EventTypes };

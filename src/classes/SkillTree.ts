@@ -2,7 +2,8 @@
  * @file Skill tree class
  * Work in progress
  */
-import { E, ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
+import { E } from "../E/eMain";
 // import { calculateUpgrade } from "./currency";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
@@ -107,4 +108,5 @@ class SkillTree {
     }
 }
 
-export { SkillNode, SkillTree, ISkill };
+export type { ISkill };
+export { SkillNode, SkillTree };

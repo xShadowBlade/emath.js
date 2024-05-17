@@ -1,14 +1,15 @@
 /**
  * @file Declares the main game class.
  */
-import { ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
 import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./ResetLayer";
-import { ConfigManager, RequiredDeep } from "./managers/ConfigManager";
+import type { RequiredDeep } from "./managers/ConfigManager";
+import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 /**
  * A pointer to a value or a function that returns a value by reference.
@@ -118,4 +119,5 @@ declare class Game {
      */
     addReset(currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset;
 }
-export { Game, GameConfigOptions, gameDefaultConfig, Pointer };
+export type { GameConfigOptions, Pointer };
+export { Game, gameDefaultConfig };

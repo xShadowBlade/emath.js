@@ -2,7 +2,8 @@
  * @file Skill tree class
  * Work in progress
  */
-import { E, ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
+import { E } from "../E/eMain";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
@@ -57,4 +58,5 @@ declare class SkillTree {
      */
     addSkill(skillNodeMember: (ISkill | SkillNode)[]): void;
 }
-export { SkillNode, SkillTree, ISkill };
+export type { ISkill };
+export { SkillNode, SkillTree };

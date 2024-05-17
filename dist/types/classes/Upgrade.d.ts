@@ -269,5 +269,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
     setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
 }
-export { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeData, UpgradeStatic, UpgradeInitArrayType, ConvertInitToStatic, calculateUpgrade };
-export { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, decimalToJSONString, upgradeToCacheNameEL, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType, ConvertInitToStatic };
+export { UpgradeData, UpgradeStatic, calculateUpgrade };
+export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export { decimalToJSONString, upgradeToCacheNameEL };

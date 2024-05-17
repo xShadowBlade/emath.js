@@ -1,7 +1,8 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { E, ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
+import { E } from "../E/eMain";
 // import { Type, Expose } from "class-transformer";
 import type { Pointer } from "../game/Game";
 
@@ -253,4 +254,5 @@ class Boost {
     }
 }
 
-export { Boost, BoostObject, BoostsObjectInit };
+export type { BoostsObjectInit };
+export { Boost, BoostObject };

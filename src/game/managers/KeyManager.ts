@@ -3,7 +3,7 @@
  */
 
 import { ConfigManager } from "./ConfigManager";
-import type { Application } from "pixi.js";
+// import type { Application } from "pixi.js";
 
 /**
  * The key binding interface.
@@ -67,13 +67,13 @@ interface KeyManagerConfig {
     fps?: number;
 
     /** The PIXI application to use for the interval, if you want to use it instead of an interval. */
-    pixiApp?: Application;
+    // pixiApp?: Application;
 }
 
 const keyManagerDefaultConfig: KeyManagerConfig = {
     autoAddInterval: true,
     fps: 30,
-    pixiApp: undefined,
+    // pixiApp: undefined,
 };
 
 /**
@@ -116,20 +116,12 @@ class KeyManager {
         this.config = KeyManager.configManager.parse(config);
 
         if (this.config.autoAddInterval) {
-            if (this.config.pixiApp) {
-                this.config.pixiApp.ticker.add((dt) => {
-                    for (const ticker of this.tickers) {
-                        ticker(dt);
-                    }
-                });
-            } else {
-                const fps = this.config.fps ? this.config.fps : 30;
-                this.tickerInterval = setInterval(() => {
-                    for (const ticker of this.tickers) {
-                        ticker(1000 / fps);
-                    }
-                }, 1000 / fps);
-            }
+            const fps = this.config.fps ? this.config.fps : 30;
+            this.tickerInterval = setInterval(() => {
+                for (const ticker of this.tickers) {
+                    ticker(1000 / fps);
+                }
+            }, 1000 / fps);
         }
 
         // Key event listeners
@@ -172,8 +164,6 @@ class KeyManager {
                     ticker(1000 / fps);
                 }
             }, 1000 / fps);
-        } else if (this.config.pixiApp) {
-            this.config.pixiApp.ticker.maxFPS = fps;
         }
     }
 
@@ -283,4 +273,5 @@ class KeyManager {
     public addKeys = this.addKey.bind(this);
 };
 
-export { KeyManager, KeyManagerConfig, KeyBinding, keys };
+export type { KeyManagerConfig, KeyBinding };
+export { KeyManager, keys };

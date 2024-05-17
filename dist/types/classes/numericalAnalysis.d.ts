@@ -1,7 +1,8 @@
 /**
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
-import { E, ESource } from "../E/eMain";
+import type { ESource } from "../E/eMain";
+import { E } from "../E/eMain";
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
  * Can be overriden by passing a custom amount of iterations.
@@ -25,6 +26,19 @@ declare const DEFAULT_ITERATIONS = 35;
  * Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
  */
 type MeanMode = "arithmetic" | "geometric" | 1 | 2;
+interface EqualsToleranceConfig {
+    verbose: boolean | "onlyOnFail";
+    mode: MeanMode;
+}
+/**
+ * Compares two values with a tolerance.
+ * @param a - The lower bound.
+ * @param b - The upper bound.
+ * @param tolerance - The tolerance to compare the values with.
+ * @param config - The configuration object.
+ * @returns Whether the values are equal within the tolerance.
+ */
+declare function equalsTolerance(a: ESource, b: ESource, tolerance: ESource, config?: Partial<EqualsToleranceConfig>): boolean;
 /**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing.
@@ -90,4 +104,5 @@ declare function calculateSum(f: (n: E) => E, b: ESource, a?: ESource, epsilon?:
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
 declare function roundingBase(x: ESource, acc?: ESource, sig?: ESource, max?: ESource): E;
-export { inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, MeanMode, DEFAULT_ITERATIONS };
+export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS };
+export type { MeanMode, EqualsToleranceConfig };

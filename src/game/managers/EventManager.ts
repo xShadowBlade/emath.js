@@ -1,9 +1,9 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import { E } from "../../E/eMain";
+import type { E } from "../../E/eMain";
 import { ConfigManager } from "./ConfigManager";
-import type { Application } from "pixi.js";
+// import type { Application } from "pixi.js";
 
 /**
  * The type of event
@@ -63,13 +63,13 @@ interface EventManagerConfig {
     /**
      * The PIXI application to use for the interval, if you want to use it instead of an interval.
      */
-    pixiApp?: Application;
+    // pixiApp?: Application;
 }
 
 const eventManagerDefaultConfig: EventManagerConfig = {
     autoAddInterval: true,
     fps: 30,
-    pixiApp: undefined,
+    // pixiApp: undefined,
 };
 
 /**
@@ -95,17 +95,12 @@ class EventManager {
     constructor (config?: EventManagerConfig) {
         this.config = EventManager.configManager.parse(config);
         this.events = {};
+
         if (this.config.autoAddInterval) {
-            if (this.config.pixiApp) {
-                this.config.pixiApp.ticker.add(() => {
-                    this.tickerFunction();
-                });
-            } else {
-                const fps = this.config.fps ?? 30;
-                this.tickerInterval = setInterval(() => {
-                    this.tickerFunction();
-                }, 1000 / fps);
-            }
+            const fps = this.config.fps ?? 30;
+            this.tickerInterval = setInterval(() => {
+                this.tickerFunction();
+            }, 1000 / fps);
         }
     }
 
@@ -152,8 +147,6 @@ class EventManager {
             this.tickerInterval = setInterval(() => {
                 this.tickerFunction();
             }, 1000 / fps);
-        } else if (this.config.pixiApp) {
-            this.config.pixiApp.ticker.maxFPS = fps;
         }
     }
 
@@ -243,4 +236,5 @@ class EventManager {
     }
 };
 
-export { EventManager, EventManagerConfig, IntervalEvent, TimeoutEvent, Event, EventTypes };
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, Event };
+export { EventManager, EventTypes };

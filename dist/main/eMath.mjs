@@ -4745,7 +4745,28 @@ import { Type, Expose as Expose2 } from "class-transformer";
 
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 35;
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS) {
+var DEFAULT_TOLERANCE = 1e-3;
+function equalsTolerance(a, b, tolerance, config) {
+  config = Object.assign({}, {
+    verbose: false,
+    mode: "geometric"
+  }, config);
+  a = E(a);
+  b = E(b);
+  tolerance = E(tolerance);
+  let diff;
+  let result;
+  if (config.mode === "geometric") {
+    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
+    result = diff.lte(tolerance);
+  } else {
+    diff = a.sub(b).abs();
+    result = diff.lte(tolerance);
+  }
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) console.log({ a, b, tolerance, config, diff, result });
+  return result;
+}
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
   let lowerBound = E(1);
   let upperBound = E(n);
   if (f(upperBound).eq(0)) {
@@ -4776,12 +4797,8 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
         break;
     }
     const midValue = f(mid);
-    if (midValue.eq(n)) {
-      return {
-        value: mid,
-        lowerBound: mid,
-        upperBound: mid
-      };
+    if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+      break;
     } else if (midValue.lt(n)) {
       lowerBound = mid;
     } else {
@@ -4795,7 +4812,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   };
   return out;
 }
-function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
+function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
   let sum = E();
   let n = E(b);
   for (; n.gte(a); n = n.sub(1)) {
@@ -5547,6 +5564,7 @@ export {
   calculateSumLoop,
   calculateUpgrade,
   decimalToJSONString,
+  equalsTolerance,
   inverseFunctionApprox,
   roundingBase,
   upgradeToCacheNameEL

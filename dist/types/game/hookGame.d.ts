@@ -88,6 +88,7 @@ declare const eMathGameWeb: {
     AttributeStatic: typeof eMath.AttributeStatic;
     GridCell: typeof eMath.GridCell;
     Grid: typeof eMath.Grid;
+    equalsTolerance: typeof eMath.equalsTolerance;
     inverseFunctionApprox: typeof eMath.inverseFunctionApprox;
     calculateSumLoop: typeof eMath.calculateSumLoop;
     calculateSumApprox: typeof eMath.calculateSumApprox;

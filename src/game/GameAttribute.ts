@@ -2,8 +2,8 @@
  * @file Declares the game currency class.
  */
 
-import { E } from "../E/eMain";
-import { Attribute, AttributeStatic } from "../classes/Attribute";
+import type { E } from "../E/eMain";
+import type { Attribute, AttributeStatic } from "../classes/Attribute";
 import type { Game, Pointer } from "./Game";
 
 /**

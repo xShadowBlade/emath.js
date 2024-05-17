@@ -1,8 +1,8 @@
 /**
  * @file Declares the game currency class.
  */
-import { E } from "../E/eMain";
-import { Currency, CurrencyStatic } from "../classes/Currency";
+import type { E } from "../E/eMain";
+import type { Currency, CurrencyStatic } from "../classes/Currency";
 import type { UpgradeInit } from "../classes/Upgrade";
 import type { Game, Pointer } from "./Game";
 
