@@ -47,8 +47,7 @@ var __decorateClass = (decorators, target, key, kind) => {
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
     if (decorator = decorators[i])
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
 
@@ -71,8 +70,7 @@ var require_lz_string = __commonJS({
       }
       var LZString2 = {
         compressToBase64: function(input) {
-          if (input == null)
-            return "";
+          if (input == null) return "";
           var res = LZString2._compress(input, 6, function(a) {
             return keyStrBase64.charAt(a);
           });
@@ -89,26 +87,21 @@ var require_lz_string = __commonJS({
           }
         },
         decompressFromBase64: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
+          if (input == null) return "";
+          if (input == "") return null;
           return LZString2._decompress(input.length, 32, function(index) {
             return getBaseValue(keyStrBase64, input.charAt(index));
           });
         },
         compressToUTF16: function(input) {
-          if (input == null)
-            return "";
+          if (input == null) return "";
           return LZString2._compress(input, 15, function(a) {
             return f(a + 32);
           }) + " ";
         },
         decompressFromUTF16: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
+          if (compressed == null) return "";
+          if (compressed == "") return null;
           return LZString2._decompress(compressed.length, 16384, function(index) {
             return compressed.charCodeAt(index) - 32;
           });
@@ -142,18 +135,15 @@ var require_lz_string = __commonJS({
         },
         //compress into a string that is already URI encoded
         compressToEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
+          if (input == null) return "";
           return LZString2._compress(input, 6, function(a) {
             return keyStrUriSafe.charAt(a);
           });
         },
         //decompress from an output of compressToEncodedURIComponent
         decompressFromEncodedURIComponent: function(input) {
-          if (input == null)
-            return "";
-          if (input == "")
-            return null;
+          if (input == null) return "";
+          if (input == "") return null;
           input = input.replace(/ /g, "+");
           return LZString2._decompress(input.length, 32, function(index) {
             return getBaseValue(keyStrUriSafe, input.charAt(index));
@@ -165,8 +155,7 @@ var require_lz_string = __commonJS({
           });
         },
         _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
-          if (uncompressed == null)
-            return "";
+          if (uncompressed == null) return "";
           var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
           for (ii = 0; ii < uncompressed.length; ii += 1) {
             context_c = uncompressed.charAt(ii);
@@ -351,16 +340,13 @@ var require_lz_string = __commonJS({
             if (context_data_position == bitsPerChar - 1) {
               context_data.push(getCharFromInt(context_data_val));
               break;
-            } else
-              context_data_position++;
+            } else context_data_position++;
           }
           return context_data.join("");
         },
         decompress: function(compressed) {
-          if (compressed == null)
-            return "";
-          if (compressed == "")
-            return null;
+          if (compressed == null) return "";
+          if (compressed == "") return null;
           return LZString2._decompress(compressed.length, 32768, function(index) {
             return compressed.charCodeAt(index);
           });
@@ -589,8 +575,7 @@ var require_crypt = __commonJS({
         base64ToBytes: function(base64) {
           base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
           for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
-            if (imod4 == 0)
-              continue;
+            if (imod4 == 0) continue;
             bytes.push((base64map.indexOf(base64.charAt(i - 1)) & Math.pow(2, -2 * imod4 + 8) - 1) << imod4 * 2 | base64map.indexOf(base64.charAt(i)) >>> 6 - imod4 * 2);
           }
           return bytes;
@@ -1112,12 +1097,10 @@ function decimalFormatGenerator(Decimal2) {
         ]
       },
       getOffset(group) {
-        if (group == 1)
-          return 1;
+        if (group == 1) return 1;
         const n = Math.floor(group / 2);
         let r = 2 * n * (n + 1) * (2 * n + 1) / 3 - 2;
-        if (group % 2 == 1)
-          r += 2 * Math.pow(n + 1, 2);
+        if (group % 2 == 1) r += 2 * Math.pow(n + 1, 2);
         return r;
       },
       getAbbreviation(group, progress) {
@@ -1132,10 +1115,8 @@ function decimalFormatGenerator(Decimal2) {
         let r = "";
         for (let i = log; i >= 0; i--) {
           const n = Math.floor(x / Math.pow(10, i)) % 10;
-          if (r == "")
-            r = list[n].toUpperCase();
-          else
-            r += list[n];
+          if (r == "") r = list[n].toUpperCase();
+          else r += list[n];
         }
         return r;
       },
@@ -1159,8 +1140,7 @@ function decimalFormatGenerator(Decimal2) {
         return `${n} ${abbreviation}`;
       },
       format(value, acc = 2) {
-        if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4)))))
-          return "e" + FORMATS2.elemental.format(value.log10(), acc);
+        if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4))))) return "e" + FORMATS2.elemental.format(value.log10(), acc);
         let log = value.log(118);
         const slog = log.log(118);
         const sslog = slog.log(118).toNumber();
@@ -1254,10 +1234,8 @@ function decimalFormatGenerator(Decimal2) {
       format(ex, acc, max = 9) {
         ex = new Decimal2(ex);
         const e = ex.log10().floor();
-        if (e.lt(303) && e.gte(max))
-          return format(ex, acc, max, "st");
-        else
-          return format(ex, acc, max, "sc");
+        if (e.lt(303) && e.gte(max)) return format(ex, acc, max, "st");
+        else return format(ex, acc, max, "sc");
       }
     },
     /** Layer format */
@@ -1266,8 +1244,7 @@ function decimalFormatGenerator(Decimal2) {
       format(ex, acc = 2, max) {
         ex = new Decimal2(ex);
         const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
-        if (layer.lte(0))
-          return format(ex, acc, max, "sc");
+        if (layer.lte(0)) return format(ex, acc, max, "sc");
         ex = new Decimal2(10).pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
         const meta = layer.div(10).floor();
         const layer_id = layer.toNumber() % 10 - 1;
@@ -1294,12 +1271,9 @@ function decimalFormatGenerator(Decimal2) {
         const t = Math.floor(x / 10) % 10;
         const h = Math.floor(x / 100) % 10;
         let r = "";
-        if (x < 10)
-          return ST_NAMES[1][0][x];
-        if (t == 1 && o == 0)
-          r += "Vec";
-        else
-          r += ST_NAMES[1][1][o] + ST_NAMES[1][2][t];
+        if (x < 10) return ST_NAMES[1][0][x];
+        if (t == 1 && o == 0) r += "Vec";
+        else r += ST_NAMES[1][1][o] + ST_NAMES[1][2][t];
         r += ST_NAMES[1][3][h];
         return r;
       }
@@ -1316,12 +1290,9 @@ function decimalFormatGenerator(Decimal2) {
           ex = ex.log(inf);
           meta++;
         }
-        if (meta == 0)
-          return format(ex, acc, max, "sc");
-        if (ex.gte(3))
-          return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
-        if (ex.gte(2))
-          return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
+        if (meta == 0) return format(ex, acc, max, "sc");
+        if (ex.gte(3)) return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
+        if (ex.gte(2)) return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
         return symbols2[meta] + symbols[meta] + "-" + format(inf.pow(ex.sub(1)), acc, max, "sc");
       }
     },
@@ -1342,8 +1313,7 @@ function decimalFormatGenerator(Decimal2) {
       getAbbreviation(ex, start = new Decimal2(1e15), startDouble = false, abbStart = 9) {
         ex = new Decimal2(ex);
         start = new Decimal2(start).div(1e3);
-        if (ex.lt(start.mul(1e3)))
-          return "";
+        if (ex.lt(start.mul(1e3))) return "";
         const { alphabet } = FORMATS2.alphabet.config;
         const alphabetLength = alphabet.length;
         const exponent = ex.log(1e3).sub(start.log(1e3)).floor();
@@ -1388,8 +1358,7 @@ function decimalFormatGenerator(Decimal2) {
       format(ex, acc = 2, max = 9, type = "mixed_sc", start = new Decimal2(1e15), startDouble = false, abbStart) {
         ex = new Decimal2(ex);
         start = new Decimal2(start).div(1e3);
-        if (ex.lt(start.mul(1e3)))
-          return format(ex, acc, max, type);
+        if (ex.lt(start.mul(1e3))) return format(ex, acc, max, type);
         const letters = FORMATS2.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
         const mantissa = ex.div(Decimal2.pow(1e3, ex.log(1e3).floor()));
         const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
@@ -1412,14 +1381,10 @@ function decimalFormatGenerator(Decimal2) {
   function format(ex, acc = 2, max = 9, type = "mixed_sc") {
     ex = new Decimal2(ex);
     const neg = ex.lt(0) ? "-" : "";
-    if (ex.mag == Infinity)
-      return neg + "Infinity";
-    if (Number.isNaN(ex.mag))
-      return neg + "NaN";
-    if (ex.lt(0))
-      ex = ex.mul(-1);
-    if (ex.eq(0))
-      return ex.toFixed(acc);
+    if (ex.mag == Infinity) return neg + "Infinity";
+    if (Number.isNaN(ex.mag)) return neg + "NaN";
+    if (ex.lt(0)) ex = ex.mul(-1);
+    if (ex.eq(0)) return ex.toFixed(acc);
     const e = ex.log10().floor();
     switch (type) {
       case "sc":
@@ -1450,26 +1415,20 @@ function decimalFormatGenerator(Decimal2) {
         }
         const e3_mul = e3.mul(3);
         const ee = e3.log10().floor();
-        if (ee.gte(3e3))
-          return "e" + format(e, acc, max, "st");
+        if (ee.gte(3e3)) return "e" + format(e, acc, max, "st");
         let final = "";
-        if (e3.lt(4))
-          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+        if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
         else {
           let ee3 = Math.floor(e3.log(1e3).toNumber());
-          if (ee3 < 100)
-            ee3 = Math.max(ee3 - 1, 0);
+          if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
           e3 = e3.sub(1).div(new Decimal2(10).pow(ee3 * 3));
           while (e3.gt(0)) {
             const div1000 = e3.div(1e3).floor();
             const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
             if (mod1000 > 0) {
-              if (mod1000 == 1 && !ee3)
-                final = "U";
-              if (ee3)
-                final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1)
-                final = FORMATS2.standard.tier1(mod1000) + final;
+              if (mod1000 == 1 && !ee3) final = "U";
+              if (ee3) final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
+              if (mod1000 > 1) final = FORMATS2.standard.tier1(mod1000) + final;
             }
             e3 = div1000;
             ee3++;
@@ -1480,8 +1439,7 @@ function decimalFormatGenerator(Decimal2) {
         return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
       }
       default:
-        if (!FORMATS2[type])
-          console.error(`Invalid format type "`, type, `"`);
+        if (!FORMATS2[type]) console.error(`Invalid format type "`, type, `"`);
         return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
@@ -1494,18 +1452,14 @@ function decimalFormatGenerator(Decimal2) {
     if (ooms.gte(10) && amt.gte(1e100)) {
       ooms = ooms.log10().mul(20);
       rate = "(+" + format(ooms, acc, max, type) + " OoMs/sec)";
-    } else
-      rate = "(+" + format(gain, acc, max, type) + "/sec)";
+    } else rate = "(+" + format(gain, acc, max, type) + "/sec)";
     return rate;
   }
   function formatTime(ex, acc = 2, type = "s") {
     ex = new Decimal2(ex);
-    if (ex.gte(86400))
-      return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
-    if (ex.gte(3600) || type == "d")
-      return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
-    if (ex.gte(60) || type == "h")
-      return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
+    if (ex.gte(86400)) return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
+    if (ex.gte(3600) || type == "d") return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
+    if (ex.gte(60) || type == "h") return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
     return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
   }
   function formatTimeLong(ex, ms = false, acc = 0, max = 9, type = "mixed_sc") {
@@ -3569,13 +3523,10 @@ var Decimal = class {
    */
   floor() {
     if (this.mag < 0) {
-      if (this.sign === -1)
-        return Decimal.dNegOne;
-      else
-        return Decimal.dZero;
+      if (this.sign === -1) return Decimal.dNegOne;
+      else return Decimal.dZero;
     }
-    if (this.sign === -1)
-      return this.neg().ceil().neg();
+    if (this.sign === -1) return this.neg().ceil().neg();
     if (this.layer === 0) {
       return FC(this.sign, 0, Math.floor(this.mag));
     }
@@ -3586,13 +3537,10 @@ var Decimal = class {
    */
   ceil() {
     if (this.mag < 0) {
-      if (this.sign === 1)
-        return Decimal.dOne;
-      else
-        return Decimal.dZero;
+      if (this.sign === 1) return Decimal.dOne;
+      else return Decimal.dZero;
     }
-    if (this.sign === -1)
-      return this.neg().floor().neg();
+    if (this.sign === -1) return this.neg().floor().neg();
     if (this.layer === 0) {
       return FC(this.sign, 0, Math.ceil(this.mag));
     }
@@ -3821,8 +3769,7 @@ var Decimal = class {
   // Taken from OmegaNum.js, with a couple touch-ups
   mod(value) {
     const decimal = D(value).abs();
-    if (decimal.eq(Decimal.dZero))
-      return Decimal.dZero;
+    if (decimal.eq(Decimal.dZero)) return Decimal.dZero;
     const num_this = this.toNumber();
     const num_decimal = decimal.toNumber();
     if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
@@ -3834,8 +3781,7 @@ var Decimal = class {
     if (decimal.sub(this).eq(decimal)) {
       return this;
     }
-    if (this.sign == -1)
-      return this.abs().mod(decimal).neg();
+    if (this.sign == -1) return this.abs().mod(decimal).neg();
     return this.sub(this.div(decimal).floor().mul(decimal));
   }
   /**
@@ -4629,10 +4575,8 @@ var Decimal = class {
         copy = Decimal.pow(base, copy);
         result -= 1;
       } else if (copy.lte(Decimal.dOne)) {
-        if (linear)
-          return Decimal.fromNumber(result + copy.toNumber() - 1);
-        else
-          return Decimal.fromNumber(result + Decimal.slog_critical(base.toNumber(), copy.toNumber()));
+        if (linear) return Decimal.fromNumber(result + copy.toNumber() - 1);
+        else return Decimal.fromNumber(result + Decimal.slog_critical(base.toNumber(), copy.toNumber()));
       } else {
         result += 1;
         copy = Decimal.log(copy, base);
@@ -4841,10 +4785,8 @@ var Decimal = class {
       return Decimal.dNaN;
     }
     if (this.lte("1ee-16")) {
-      if (degree % 2 == 1)
-        return this;
-      else
-        return Decimal.dNaN;
+      if (degree % 2 == 1) return this;
+      else return Decimal.dNaN;
     }
     if (this.gt(1)) {
       let upperBound = Decimal.dTen;
@@ -4862,14 +4804,10 @@ var Decimal = class {
       let loopGoing = true;
       while (loopGoing) {
         guess = lower.add(upper).div(2);
-        if (Decimal.iteratedexp(10, layer, guess, true).tetrate(degree, 1, true).gt(this))
-          upper = guess;
-        else
-          lower = guess;
-        if (guess.eq(previous))
-          loopGoing = false;
-        else
-          previous = guess;
+        if (Decimal.iteratedexp(10, layer, guess, true).tetrate(degree, 1, true).gt(this)) upper = guess;
+        else lower = guess;
+        if (guess.eq(previous)) loopGoing = false;
+        else previous = guess;
       }
       return Decimal.iteratedexp(10, layer, guess, true);
     } else {
@@ -4892,8 +4830,7 @@ var Decimal = class {
       let decreasingFound = false;
       while (stage < 4) {
         if (stage == 2) {
-          if (evenDegree)
-            break;
+          if (evenDegree) break;
           else {
             lower = FC(1, 10, 1);
             upper = minimum;
@@ -4911,8 +4848,7 @@ var Decimal = class {
             nextPoint = upper.pow10().recip();
             distance = Decimal.dZero;
             range = -1;
-            if (stage == 3)
-              lastValid = upper;
+            if (stage == 3) lastValid = upper;
           } else if (upper.pow10().recip().tetrate(degree, 1, true).eq(upper.pow10().recip()) && !evenDegree && upper.pow10().recip().lt(0.4)) {
             upperBound = upper.pow10().recip();
             prevPoint = upper.pow10().recip();
@@ -4924,10 +4860,8 @@ var Decimal = class {
             prevPoint = Decimal.dZero;
             nextPoint = upperBound.mul(2);
             distance = upperBound;
-            if (evenDegree)
-              range = -1;
-            else
-              range = 0;
+            if (evenDegree) range = -1;
+            else range = 0;
           } else {
             prevspan = upper.mul(12e-17);
             upperBound = upper.pow10().recip();
@@ -4963,18 +4897,15 @@ var Decimal = class {
               }
             }
           }
-          if (range == -1)
-            decreasingFound = true;
+          if (range == -1) decreasingFound = true;
           if (stage == 1 && range == 1 || stage == 3 && range != 0) {
             if (lower.eq(FC(1, 10, 1))) {
               upper = upper.mul(2);
             } else {
               let cutOff = false;
-              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3))
-                cutOff = true;
+              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3)) cutOff = true;
               upper = upper.add(lower).div(2);
-              if (cutOff)
-                break;
+              if (cutOff) break;
             }
           } else {
             if (lower.eq(FC(1, 10, 1))) {
@@ -4982,33 +4913,24 @@ var Decimal = class {
               upper = upper.div(2);
             } else {
               let cutOff = false;
-              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3))
-                cutOff = true;
+              if (infLoopDetector && (range == 1 && stage == 1 || range == -1 && stage == 3)) cutOff = true;
               lower = lower.sub(difference);
               upper = upper.sub(difference);
-              if (cutOff)
-                break;
+              if (cutOff) break;
             }
           }
-          if (lower.sub(upper).div(2).abs().gt(difference.mul(1.5)))
-            infLoopDetector = true;
+          if (lower.sub(upper).div(2).abs().gt(difference.mul(1.5))) infLoopDetector = true;
           difference = lower.sub(upper).div(2).abs();
-          if (upper.gt("1e18"))
-            break;
-          if (upper.eq(previousUpper))
-            break;
+          if (upper.gt("1e18")) break;
+          if (upper.eq(previousUpper)) break;
         }
-        if (upper.gt("1e18"))
-          break;
-        if (!decreasingFound)
-          break;
+        if (upper.gt("1e18")) break;
+        if (!decreasingFound) break;
         if (lastValid == FC(1, 10, 1)) {
           break;
         }
-        if (stage == 1)
-          minimum = lastValid;
-        else if (stage == 3)
-          maximum = lastValid;
+        if (stage == 1) minimum = lastValid;
+        else if (stage == 3) maximum = lastValid;
         stage++;
       }
       lower = minimum;
@@ -5017,20 +4939,13 @@ var Decimal = class {
       let guess = Decimal.dZero;
       let loopGoing = true;
       while (loopGoing) {
-        if (lower.eq(FC(1, 10, 1)))
-          guess = upper.mul(2);
-        else
-          guess = lower.add(upper).div(2);
-        if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
-          upper = guess;
-        else
-          lower = guess;
-        if (guess.eq(previous))
-          loopGoing = false;
-        else
-          previous = guess;
-        if (upper.gt("1e18"))
-          return Decimal.dNaN;
+        if (lower.eq(FC(1, 10, 1))) guess = upper.mul(2);
+        else guess = lower.add(upper).div(2);
+        if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this)) upper = guess;
+        else lower = guess;
+        if (guess.eq(previous)) loopGoing = false;
+        else previous = guess;
+        if (upper.gt("1e18")) return Decimal.dNaN;
       }
       if (!guess.eq_tolerance(minimum, 1e-15)) {
         return guess.pow10().recip();
@@ -5044,20 +4959,13 @@ var Decimal = class {
         guess = Decimal.dZero;
         loopGoing = true;
         while (loopGoing) {
-          if (lower.eq(FC(1, 10, 1)))
-            guess = upper.mul(2);
-          else
-            guess = lower.add(upper).div(2);
-          if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this))
-            upper = guess;
-          else
-            lower = guess;
-          if (guess.eq(previous))
-            loopGoing = false;
-          else
-            previous = guess;
-          if (upper.gt("1e18"))
-            return Decimal.dNaN;
+          if (lower.eq(FC(1, 10, 1))) guess = upper.mul(2);
+          else guess = lower.add(upper).div(2);
+          if (Decimal.pow(10, guess).recip().tetrate(degree, 1, true).gt(this)) upper = guess;
+          else lower = guess;
+          if (guess.eq(previous)) loopGoing = false;
+          else previous = guess;
+          if (upper.gt("1e18")) return Decimal.dNaN;
         }
         return guess.pow10().recip();
       }
@@ -5282,10 +5190,8 @@ var Decimal = class {
   softcap(start, power, mode) {
     let x = this.clone();
     if (x.gte(start)) {
-      if ([0, "pow"].includes(mode))
-        x = x.div(start).pow(power).mul(start);
-      if ([1, "mul"].includes(mode))
-        x = x.sub(start).div(power).add(start);
+      if ([0, "pow"].includes(mode)) x = x.div(start).pow(power).mul(start);
+      if ([1, "mul"].includes(mode)) x = x.sub(start).div(power).add(start);
     }
     return x;
   }
@@ -5385,8 +5291,7 @@ var Decimal = class {
   toRoman(max = 5e3) {
     max = new Decimal(max);
     const num = this.clone();
-    if (num.gte(max) || num.lt(1))
-      return num;
+    if (num.gte(max) || num.lt(1)) return num;
     let newNum = num.toNumber();
     const roman = {
       M: 1e3,
@@ -5557,8 +5462,7 @@ var Boost = class {
     }
   }
   setBoost(arg1, arg2, arg3, arg4, arg5) {
-    if (!arg1)
-      return;
+    if (!arg1) return;
     if (typeof arg1 === "string") {
       const id = arg1;
       const name = arg2 ?? "";
@@ -5666,8 +5570,7 @@ function calculateSumLoop(f, b, a = 0, epsilon = E("1e-3")) {
     const value = f(n);
     sum = sum.add(value);
     const diff = initSum.div(sum);
-    if (diff.lte(1) && diff.gt(E(1).sub(epsilon)))
-      break;
+    if (diff.lte(1) && diff.gt(E(1).sub(epsilon))) break;
   }
   return sum;
 }
@@ -5903,8 +5806,7 @@ var CurrencyStatic = class {
       //     }
       // },
     };
-    if (upgrades)
-      this.addUpgrade(upgrades);
+    if (upgrades) this.addUpgrade(upgrades);
   }
   /**
    * Updates / applies effects to the currency on load.
@@ -5924,13 +5826,11 @@ var CurrencyStatic = class {
    * console.log(currency.value); // E(0), or the default value
    */
   reset(resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true) {
-    if (resetCurrency)
-      this.value = this.defaultVal;
+    if (resetCurrency) this.value = this.defaultVal;
     if (resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = E(upgrade.defaultLevel);
-        if (runUpgradeEffect)
-          upgrade.effect?.(upgrade.level, upgrade, this);
+        if (runUpgradeEffect) upgrade.effect?.(upgrade.level, upgrade, this);
       }
     }
     ;
@@ -6005,14 +5905,12 @@ var CurrencyStatic = class {
    * });
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades))
-      upgrades = [upgrades];
+    if (!Array.isArray(upgrades)) upgrades = [upgrades];
     const addedUpgradeList = {};
     for (const upgrade of upgrades) {
       const addedUpgradeData = this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
-      if (addedUpgradeStatic.effect && runEffectInstantly)
-        addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
+      if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
       addedUpgradeList[upgrade.id] = addedUpgradeStatic;
       this.upgrades[upgrade.id] = addedUpgradeStatic;
     }
@@ -6034,8 +5932,7 @@ var CurrencyStatic = class {
    */
   updateUpgrade(id, upgrade) {
     const upgrade1 = this.getUpgrade(id);
-    if (upgrade1 === null)
-      return;
+    if (upgrade1 === null) return;
     upgrade1.name = upgrade.name ?? upgrade1.name;
     upgrade1.cost = upgrade.cost ?? upgrade1.cost;
     upgrade1.maxLevel = upgrade.maxLevel ?? upgrade1.maxLevel;
@@ -6343,8 +6240,7 @@ var KeyManager = class _KeyManager {
    */
   onAll(eventType, keypress) {
     for (const bind of this.binds) {
-      if (bind.key !== keypress)
-        continue;
+      if (bind.key !== keypress) continue;
       switch (eventType) {
         case "down":
           bind.onDown?.();
@@ -6709,8 +6605,7 @@ var DataManager = class {
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
   decompileData(data = window.localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
-    if (!data)
-      return null;
+    if (!data) return null;
     let parsedData;
     try {
       parsedData = JSON.parse((0, import_lz_string.decompressFromBase64)(data));
@@ -6743,12 +6638,10 @@ var DataManager = class {
    * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
    */
   resetData(reload = false) {
-    if (!this.normalData)
-      throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+    if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
     this.data = this.normalData;
     this.saveData();
-    if (reload)
-      window.location.reload();
+    if (reload) window.location.reload();
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
@@ -6756,10 +6649,8 @@ var DataManager = class {
    * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
    */
   saveData(dataToSave = this.compileData()) {
-    if (!dataToSave)
-      throw new Error("dataManager.saveData(): Data to save is empty.");
-    if (!window.localStorage)
-      throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+    if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
+    if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
     window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
   }
   /**
@@ -6787,18 +6678,15 @@ var DataManager = class {
    * @returns The loaded data.
    */
   parseData(dataToParse = this.decompileData(), mergeData = true) {
-    if ((!this.normalData || !this.normalDataPlain) && mergeData)
-      throw new Error("dataManager.parseData(): You must call init() before writing to data.");
-    if (!dataToParse)
-      return null;
+    if ((!this.normalData || !this.normalDataPlain) && mergeData) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
+    if (!dataToParse) return null;
     const [, loadedData] = dataToParse;
     function isPlainObject(obj) {
       return typeof obj === "object" && obj?.constructor === Object;
     }
     const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
     function deepMerge(sourcePlain, source, target) {
-      if (!sourcePlain || !source || !target)
-        throw new Error("dataManager.deepMerge(): Missing arguments.");
+      if (!sourcePlain || !source || !target) throw new Error("dataManager.deepMerge(): Missing arguments.");
       const out = target;
       for (const key in sourcePlain) {
         if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
@@ -6836,21 +6724,18 @@ var DataManager = class {
           out.upgrades[upgradeName] = (0, import_class_transformer5.plainToInstance)(UpgradeData, upgrade);
         }
       }
-      if (!out)
-        throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
+      if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
       return out;
     }
     function plainToInstanceRecursive(normal, plain) {
-      if (!normal || !plain)
-        throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
+      if (!normal || !plain) throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
       const out = plain;
       for (const key in normal) {
         if (plain[key] === void 0) {
           console.warn(`Missing property "${key}" in loaded data.`);
           continue;
         }
-        if (!isPlainObject(plain[key]))
-          continue;
+        if (!isPlainObject(plain[key])) continue;
         const normalDataClass = normal[key].constructor;
         if (normalDataClass === Object) {
           out[key] = plainToInstanceRecursive(normal[key], plain[key]);
@@ -6870,12 +6755,10 @@ var DataManager = class {
    */
   loadData(dataToLoad = this.decompileData()) {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
-    if (!dataToLoad)
-      return null;
+    if (!dataToLoad) return null;
     const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer5.instanceToPlain)(dataToLoad[1])]);
     const parsedData = this.parseData(dataToLoad);
-    if (!parsedData)
-      return null;
+    if (!parsedData) return null;
     this.data = parsedData;
     for (const obj of this.eventsOnLoad) {
       obj();
