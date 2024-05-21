@@ -13,7 +13,9 @@ import type { CurrencyStatic } from "./Currency";
 /**
  * Calculates the cost and how many upgrades you can buy
  * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
- * The priority is: `target === 1` > `costBulk` > `el`
+ * The priority is: `target === 1` > `costBulk` > `el`.
+ * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
+ * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
  * @param value - The current value of the currency.
  * @param upgrade - The upgrade object to calculate.
  * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.

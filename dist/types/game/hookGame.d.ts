@@ -94,6 +94,6 @@ declare const eMathGameWeb: {
     calculateSumApprox: typeof eMath.calculateSumApprox;
     calculateSum: typeof eMath.calculateSum;
     roundingBase: typeof eMath.roundingBase;
-    DEFAULT_ITERATIONS: 35;
+    DEFAULT_ITERATIONS: 30;
 };
 export { eMathGameWeb as eMath };
