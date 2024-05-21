@@ -235,42 +235,11 @@ interface UpgradeInit {
  *         id: "upgId2",
  *         cost: (level: E): E => level.mul(20),
  *     },
- * ] as const satisfies UpgradeInit[]
+ * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
 type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
-
-
-/**
- * Interface for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
-    maxLevel?: E;
-    name: string;
-    description: string;
-    defaultLevel: E;
-
-    /**
-     * A function that returns a description of the upgrade.
-     * @param args - Arguments to pass to the description function.
-     * @returns The description of the upgrade.
-     */
-    descriptionFn: (...args: any[]) => string;
-}
-
-/**
- * Converts an upgrade init to a static upgrade.
- * @deprecated - This is no longer used
- */
-type ConvertInitToStatic<T extends UpgradeInit> = Omit<T, "level"> & { defaultLevel: E; descriptionFn: (...args: any[]) => string };
-
-/**
- * Interface for upgrade data.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-type IUpgradeData = Pick<UpgradeInit, "id" | "level">
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
@@ -328,30 +297,30 @@ function upgradeToCacheNameEL (level: ESource): UpgradeCachedELName {
 
 /**
  * Interface for an upgrade that is cached.
- * @template EL - Whether the upgrade is EL or not.
+ * We need a cache to reduce redundant calculations.
+ *
+ * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
+ * and the cost of the upgrade at those levels.
+ *
+ * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
  */
-interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "id" | "el"> {
-    el: EL;
+interface UpgradeCached extends Pick<UpgradeInit, "id" | "el"> {
+    el: boolean;
+
+    endLower: UpgradeCachedLevel;
+    end: UpgradeCachedLevel;
+    endUpper: UpgradeCachedLevel;
 }
 
-/** Interface for an upgrade that is cached. (EL) */
-interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
+interface UpgradeCachedLevel {
     level: E;
-
-    /** The cost of the upgrade at level (el) */
     cost: E;
 }
 
-/** Interface for an upgrade that is cached. (Not EL) */
-interface UpgradeCachedSum extends UpgradeCached {
-    start: E;
-    end: E;
-
-    /**
-     * The cost of the upgrade from start to end. (summation)
-     */
-    cost: E;
-}
+/**
+ * Interface for upgrade data.
+ */
+type IUpgradeData = Pick<UpgradeInit, "id" | "level">;
 
 /**
  * Represents the frontend for an upgrade.
@@ -374,16 +343,34 @@ class UpgradeData implements IUpgradeData {
 }
 
 /**
+ * Interface for an upgrade.
+ */
+interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
+    maxLevel?: E;
+    name: string;
+    description: string;
+    defaultLevel: E;
+
+    /**
+     * A function that returns a description of the upgrade.
+     * @deprecated Use a getter function instead.
+     * @param args - Arguments to pass to the description function.
+     * @returns The description of the upgrade.
+     */
+    descriptionFn: (...args: any[]) => string;
+}
+
+/**
  * Represents the backend for an upgrade.
  */
 class UpgradeStatic implements IUpgradeStatic {
     public id; name; cost; costBulk; maxLevel; effect; el?; descriptionFn; defaultLevel: E;
 
     /** The default size of the cache. Should be one less than a power of 2. */
-    public static cacheSize = 63;
+    public static cacheSize = 15;
 
     /** The cache to store the values of certain upgrade levels */
-    public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
+    public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
 
     /** @returns The data of the upgrade. */
     protected dataPointerFn: () => UpgradeData;
@@ -414,11 +401,12 @@ class UpgradeStatic implements IUpgradeStatic {
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}
+     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
      */
     constructor (init: UpgradeInit, dataPointer: Pointer<UpgradeData>, cacheSize?: number) {
         const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
+
         this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
@@ -431,57 +419,57 @@ class UpgradeStatic implements IUpgradeStatic {
         this.defaultLevel = init.level ?? E(1);
     }
 
-    /**
-     * Gets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @returns The data of the upgrade.
-     */
-    public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
-    public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
-    public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
-        if (type === "sum") {
-            return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
-        } else {
-            return this.cache.get(upgradeToCacheNameEL(start));
-        }
-    }
+    // /**
+    //  * Gets the cached data of the upgrade.
+    //  * @param type - The type of the cache. "sum" or "el"
+    //  * @param start - The starting level of the upgrade.
+    //  * @param end - The ending level or quantity to reach for the upgrade.
+    //  * @returns The data of the upgrade.
+    //  */
+    // public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
+    // public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
+    // public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
+    //     if (type === "sum") {
+    //         return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
+    //     } else {
+    //         return this.cache.get(upgradeToCacheNameEL(start));
+    //     }
+    // }
 
-    /**
-     * Sets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @param cost - The cost of the upgrade.
-     */
-    public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
-    public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
-    public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
-        const data = type === "sum" ? {
-            id: this.id,
-            el: false,
-            start: E(start),
-            end: E(endOrStart),
-            cost: E(costSum),
-        } : {
-            id: this.id,
-            el: true,
-            level: E(start),
-            cost: E(endOrStart),
-        };
+    // /**
+    //  * Sets the cached data of the upgrade.
+    //  * @param type - The type of the cache. "sum" or "el"
+    //  * @param start - The starting level of the upgrade.
+    //  * @param end - The ending level or quantity to reach for the upgrade.
+    //  * @param cost - The cost of the upgrade.
+    //  */
+    // public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
+    // public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
+    // public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
+    //     const data = type === "sum" ? {
+    //         id: this.id,
+    //         el: false,
+    //         start: E(start),
+    //         end: E(endOrStart),
+    //         cost: E(costSum),
+    //     } : {
+    //         id: this.id,
+    //         el: true,
+    //         level: E(start),
+    //         cost: E(endOrStart),
+    //     };
 
-        if (type === "sum") {
-            this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
-        } else {
-            this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
-        }
+    //     if (type === "sum") {
+    //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
+    //     } else {
+    //         this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
+    //     }
 
-        return data as UpgradeCachedEL | UpgradeCachedSum;
-    }
+    //     return data as UpgradeCachedEL | UpgradeCachedSum;
+    // }
 }
 
-export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType, ConvertInitToStatic };
+export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
 export { UpgradeData, UpgradeStatic, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
 export { decimalToJSONString, upgradeToCacheNameEL };
