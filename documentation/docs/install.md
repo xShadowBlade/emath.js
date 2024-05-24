@@ -26,7 +26,7 @@ import { Boost, Currency } from "emath.js";
 import { Game } from "emath.js";
 ```
 
-> Warning (experimental): If you are using typescript with webpack, import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` instead. This fixes a bug that causes unexpected behavior when working with the E instance.
+> Warning (experimental): If you are using typescript with webpack, you could import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` and compile from source instead. This fixes a bug that causes unexpected behavior when working with the E instance.
 
 ### Include using CDN
 
@@ -35,17 +35,13 @@ import { Game } from "emath.js";
 #### emath.js
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/main/eMath.min.js"></script>
 ```
 
 #### emath.js/game
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
 ```
-
-#### emath.js/pixiGame
-
-> CDN usage for this module is not yet available.
 
 After you install, check out the [usage docs](./usage)

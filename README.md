@@ -37,6 +37,10 @@ This feature was originally provided to make the package more concise and easier
 
 ## Example Usage
 
+This is a simple example of how to use the package. It creates a game with a currency called "coins" and an upgrade for that currency. It also includes hotkeys for gaining coins and buying upgrades, as well as saving and loading the game.
+
+> Note: This example uses javascript. It is recommended to use typescript for better type checking.
+
 ```js
 import { E } from "emath.js";
 import { Game } from "emath.js/game";
@@ -60,7 +64,7 @@ const coins = coinGame.addCurrency("coins", [
             currencyContext.boost.setBoost({
                 id: "boostUpg1Coins", // Unique ID of the boost
                 // Effect of the boost, which is additive, 11 times the level of the upgrade
-                effect: n => n.plus(level.mul(11)).sub(1),
+                value: n => n.plus(level.mul(11)).sub(1),
             });
         },
     },
@@ -113,7 +117,7 @@ npm install emath.js
 
 ### Include using CDN
 
-> Note: There is no development build for CDN, as it is used for nodejs.\
+> Note: There is no development build for CDN, as it is used for nodejs.
 > Replace `@latest` with the version you want to use. (e.g. `@8.3.0`), or use `@latest` for the latest version.
 
 #### emath.js

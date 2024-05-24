@@ -11,8 +11,8 @@ After you have installed it via [npm](./install#install-via-npm) or [HTML CDN](.
 
 ### Node.js Usage
 
-The ESM package currently exports 4 packages: `emath.js`, `emath.js/game`, `emath.js/presets`, and `emath.js/pixiGame` (deprecated).
-There are also corresponding typescript versions of those packages (`emath.js/ts`, `emath.js/game/ts`, `emath.js/presets/ts`, and `emath.js/pixiGame/ts`) if you want to use your own build tool.
+The ESM package currently exports 4 packages: `emath.js`, `emath.js/game`, and `emath.js/presets`.
+There are also corresponding typescript versions of those packages (`emath.js/ts`, `emath.js/game/ts`, and `emath.js/presets/ts`) if you want to use your own build tool to compile from source.
 
 Here is an example usage:
 
@@ -20,32 +20,35 @@ Here is an example usage:
 import { E } from "emath.js";
 import { Game } from "emath.js/game";
 
-// Alternatively, do this for commonjs
-// const { E } = require("emath.js");
-// const { Game } = require("emath.js/Game");
+// For CDN usage:
+// const { E, Game } = eMath; 
 
 // Initialize game
-const game = new Game();
+const coinGame = new Game();
 
-// Create a new currency
-const coins = game.addCurrency("coins");
+// Create a new currency with upgrades
+const coins = coinGame.addCurrency("coins", [
+    {
+        id: "upg1Coins", // Unique ID
+        cost: level => level.mul(10), // Cost of 10 times the level
+        maxLevel: E(1000),
+        effect: (level, upgradeContext, currencyContext) => {
+            // `currencyContext` is the context of the currency (coins in this case)
 
-// Create upgrades
-coins.static.addUpgrade({
-    id: "upg1Coins", // Unique ID
-    cost: level => level.mul(10), // Cost of 10 times the level
-    maxLevel: E(1000),
-    effect: (level) => {
-        coins.static.boost.setBoost({
-            id: "boostUpg1Coins",
-            effect: n => n.plus(level.mul(11)).sub(1),
-        });
+            // Access the `boost` object to add a boost
+            currencyContext.boost.setBoost({
+                id: "boostUpg1Coins", // Unique ID of the boost
+                // Effect of the boost, which is additive, 11 times the level of the upgrade
+                value: n => n.plus(level.mul(11)).sub(1),
+            });
+        },
     },
-});
+    // Add more upgrades here ...
+]);
 
 // Initialize / Load game
-game.init();
-game.dataManager.loadData();
+coinGame.init();
+coinGame.dataManager.loadData();
 
 // Gain coins
 coins.static.gain();
@@ -54,13 +57,15 @@ coins.static.gain();
 coins.static.buyUpgrade("upg1Coins");
 
 // Hotkeys
-game.keyManager.addKey([
+coinGame.keyManager.addKey([
     {
+        id: "gainCoins",
         name: "Gain Coins",
         key: "g",
         onDownContinuous: () => coins.static.gain(),
     },
     {
+        id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
         onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
@@ -69,24 +74,23 @@ game.keyManager.addKey([
 
 // Saving and Loading
 window.addEventListener("beforeunload", () => {
-    game.dataManager.saveData();
+    coinGame.dataManager.saveData();
 });
-game.eventManager.setEvent("autoSave", "interval", 30000, () => {
-    game.dataManager.saveData();
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
     console.log("Auto Saved!");
 });
 ```
 
 ### HTML Usage
 
-The package exports a variable ``eMath`` and sets it to the window, so you don't need to import it. If you want to use `emath.js/game`, include `emath.js` first.
+The package exports a variable ``eMath`` and sets it to the window, so you don't need to import it. If you want to use `emath.js/game`, you do not need to import `emath.js` as it is already included in the game package.
 
 ```html title="index.html"
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
 ```
 
-This will set the `eMath` variable to the `window`, and augments it with the game variables.
+This will set the `eMath` variable to the `window` object. You can then use it as follows:
 
 ```js title="index.js"
 const { E, Currency, Game } = eMath;
