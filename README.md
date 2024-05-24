@@ -18,6 +18,23 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 
 This project started when I was trying to create my first incremental game. I found it difficult to implement certain systems like upgrades and saving. When I eventually made those systems, I wanted to make a package so I could streamline those tools. After a few months of development, I have finally developed it into a presentable state (I should have started it with v0.1.0 instead of v1.0.0 . . .).
 
+Note: This package uses break_eternity.js by exporting a function `E` which is used both to construct and use methods on numbers. For example,
+
+```js
+import { E } from "emath.js";
+
+const num1 = E(10); // Equivalent to new Decimal(10)
+const num2 = num1.add(5); // Equivalent to num.add(5)
+
+const num3 = E(20);
+const num4 = E.pow(num1, num3); // Equivalent to num1.pow(num3), or Decimal.pow(num1, num3)
+
+// Also has built-in formatting
+console.log(num4.format()); // 100 Qt
+```
+
+This feature was originally provided to make the package more concise and easier to use. However, it ended up being a bit confusing. It will be removed in the future.
+
 ## Example Usage
 
 ```js
@@ -30,21 +47,25 @@ import { Game } from "emath.js/game";
 // Initialize game
 const coinGame = new Game();
 
-// Create a new currency
-const coins = coinGame.addCurrency("coins");
+// Create a new currency with upgrades
+const coins = coinGame.addCurrency("coins", [
+    {
+        id: "upg1Coins", // Unique ID
+        cost: level => level.mul(10), // Cost of 10 times the level
+        maxLevel: E(1000),
+        effect: (level, upgradeContext, currencyContext) => {
+            // `currencyContext` is the context of the currency (coins in this case)
 
-// Create upgrades
-coins.static.addUpgrade({
-    id: "upg1Coins", // Unique ID
-    cost: level => level.mul(10), // Cost of 10 times the level
-    maxLevel: E(1000),
-    effect: (level) => {
-        coins.static.boost.setBoost({
-            id: "boostUpg1Coins",
-            effect: n => n.plus(level.mul(11)).sub(1),
-        });
+            // Access the `boost` object to add a boost
+            currencyContext.boost.setBoost({
+                id: "boostUpg1Coins", // Unique ID of the boost
+                // Effect of the boost, which is additive, 11 times the level of the upgrade
+                effect: n => n.plus(level.mul(11)).sub(1),
+            });
+        },
     },
-});
+    // Add more upgrades here ...
+]);
 
 // Initialize / Load game
 coinGame.init();
@@ -92,23 +113,20 @@ npm install emath.js
 
 ### Include using CDN
 
-> Note: There is no development build for CDN, as it is used for nodejs.
+> Note: There is no development build for CDN, as it is used for nodejs.\
+> Replace `@latest` with the version you want to use. (e.g. `@8.3.0`), or use `@latest` for the latest version.
 
 #### emath.js
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/main/eMath.min.js"></script>
 ```
 
 #### emath.js/game
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
 ```
-
-#### emath.js/pixiGame
-
-> CDN usage for this module is not yet available.
 
 ---
 
