@@ -2,9 +2,9 @@
  * @file Declares a function that hooks the game to the window object.
  */
 import "reflect-metadata";
-import { eMath } from "../hookMain";
+import eMathMain from "../hookMain";
 import * as eMathGame from "./index";
-declare const eMathGameWeb: {
+declare const eMath: {
     Game: typeof eMathGame.Game;
     gameDefaultConfig: eMathGame.RequiredDeep<eMathGame.GameConfigOptions>;
     GameCurrency: typeof eMathGame.GameCurrency;
@@ -16,23 +16,23 @@ declare const eMathGameWeb: {
     EventTypes: typeof eMathGame.EventTypes;
     DataManager: typeof eMathGame.DataManager;
     ConfigManager: typeof eMathGame.ConfigManager;
-    LRUCache: typeof eMath.LRUCache;
-    ListNode: typeof eMath.ListNode;
-    E: ((x?: eMath.ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
+    LRUCache: typeof eMathMain.LRUCache;
+    ListNode: typeof eMathMain.ListNode;
+    E: ((x?: eMathMain.ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
     FORMATS: {
         omega: {
             config: {
                 greek: string;
                 infinity: string;
             };
-            format(value: eMath.ESource): string;
+            format(value: eMathMain.ESource): string;
         };
         omega_short: {
             config: {
                 greek: string;
                 infinity: string;
             };
-            format(value: eMath.ESource): string;
+            format(value: eMathMain.ESource): string;
         };
         elemental: {
             config: {
@@ -47,53 +47,53 @@ declare const eMathGameWeb: {
             format(value: import("../E/e").Decimal, acc?: number): string;
         };
         old_sc: {
-            format(ex: eMath.ESource, acc: number): string;
+            format(ex: eMathMain.ESource, acc: number): string;
         };
         eng: {
-            format(ex: eMath.ESource, acc?: number): string;
+            format(ex: eMathMain.ESource, acc?: number): string;
         };
         mixed_sc: {
-            format(ex: eMath.ESource, acc?: number | undefined, max?: number): string;
+            format(ex: eMathMain.ESource, acc?: number | undefined, max?: number): string;
         };
         layer: {
             layers: string[];
-            format(ex: eMath.ESource, acc?: number, max?: number | undefined): string;
+            format(ex: eMathMain.ESource, acc?: number, max?: number | undefined): string;
         };
         standard: {
             tier1(x: number): string;
             tier2(x: number): string;
         };
         inf: {
-            format(ex: eMath.ESource, acc?: number | undefined, max?: number | undefined): string;
+            format(ex: eMathMain.ESource, acc?: number | undefined, max?: number | undefined): string;
         };
         alphabet: {
             config: {
                 alphabet: string;
             };
-            getAbbreviation(ex: eMath.ESource, start?: eMath.ESource, startDouble?: boolean, abbStart?: number): string;
-            format(ex: eMath.ESource, acc?: number, max?: number, type?: eMath.FormatType, start?: eMath.ESource, startDouble?: boolean, abbStart?: number | undefined): string;
+            getAbbreviation(ex: eMathMain.ESource, start?: eMathMain.ESource, startDouble?: boolean, abbStart?: number): string;
+            format(ex: eMathMain.ESource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.ESource, startDouble?: boolean, abbStart?: number | undefined): string;
         };
     };
-    FormatTypeList: eMath.FormatType[];
-    Boost: typeof eMath.Boost;
-    BoostObject: typeof eMath.BoostObject;
-    UpgradeData: typeof eMath.UpgradeData;
-    UpgradeStatic: typeof eMath.UpgradeStatic;
-    calculateUpgrade: typeof eMath.calculateUpgrade;
-    decimalToJSONString: typeof eMath.decimalToJSONString;
-    upgradeToCacheNameEL: typeof eMath.upgradeToCacheNameEL;
-    Currency: typeof eMath.Currency;
-    CurrencyStatic: typeof eMath.CurrencyStatic;
-    Attribute: typeof eMath.Attribute;
-    AttributeStatic: typeof eMath.AttributeStatic;
-    GridCell: typeof eMath.GridCell;
-    Grid: typeof eMath.Grid;
-    equalsTolerance: typeof eMath.equalsTolerance;
-    inverseFunctionApprox: typeof eMath.inverseFunctionApprox;
-    calculateSumLoop: typeof eMath.calculateSumLoop;
-    calculateSumApprox: typeof eMath.calculateSumApprox;
-    calculateSum: typeof eMath.calculateSum;
-    roundingBase: typeof eMath.roundingBase;
+    FormatTypeList: eMathMain.FormatType[];
+    Boost: typeof eMathMain.Boost;
+    BoostObject: typeof eMathMain.BoostObject;
+    UpgradeData: typeof eMathMain.UpgradeData;
+    UpgradeStatic: typeof eMathMain.UpgradeStatic;
+    calculateUpgrade: typeof eMathMain.calculateUpgrade;
+    decimalToJSONString: typeof eMathMain.decimalToJSONString;
+    upgradeToCacheNameEL: typeof eMathMain.upgradeToCacheNameEL;
+    Currency: typeof eMathMain.Currency;
+    CurrencyStatic: typeof eMathMain.CurrencyStatic;
+    Attribute: typeof eMathMain.Attribute;
+    AttributeStatic: typeof eMathMain.AttributeStatic;
+    GridCell: typeof eMathMain.GridCell;
+    Grid: typeof eMathMain.Grid;
+    equalsTolerance: typeof eMathMain.equalsTolerance;
+    inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;
+    calculateSumLoop: typeof eMathMain.calculateSumLoop;
+    calculateSumApprox: typeof eMathMain.calculateSumApprox;
+    calculateSum: typeof eMathMain.calculateSum;
+    roundingBase: typeof eMathMain.roundingBase;
     DEFAULT_ITERATIONS: 30;
 };
-export { eMathGameWeb as eMath };
+export default eMath;

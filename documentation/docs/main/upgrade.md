@@ -1,7 +1,7 @@
 ---
 id: upgrade
 title: Upgrade
-sidebar_label: Currency
+sidebar_label: Upgrade
 ---
 
 <!-- .d.ts for reference

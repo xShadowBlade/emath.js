@@ -13,30 +13,28 @@ Create a folder in which your game will be located. For this tutorial, we will t
 
 Next, create a HTML file named ``index.html`` and put the following code in it:
 
-```html
+```html title="index.html"
 <!DOCTYPE html>
 <html>
-	<head>
-		<script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/main/eMath.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/xShadowBlade/emath.js/dist/game/eMath.game.js"></script>
-		<script src="./script.js"></script>
-	</head>
-	<body>
-	</body>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+  </body>
 </html>
+
 ```
 
-This code sets up the project and imports ``emath.js`` and ``emath.js/game`` using jsDelivr. Alternatively, you can download ``emath.js`` on a local copy, though this is not recommended as you will have to manually check for updates.
+This code sets up the project and imports ``emath.js/game`` using jsDelivr. Alternatively, you can download ``emath.js`` on a local copy, though this is not recommended as you will have to manually check for updates.
 
 Now, create a js file named ``script.js`` and put the following code in it:
 
-```js
-window.addEventListener("load", () => {
-    const { E } = eMath;
-});
+```js title="script.js"
+const { E, Game } = window.eMath;
 ```
 
-This code attaches an event listener to the "load" event of the window and, upon loading, extracts the E object from the eMath library, so you don't have to do ``eMath.E`` every time. For the rest of the tutorial, we will be putting the code inside this event listener.
+This code extracts and imports the ``E`` and ``Game`` classes from the ``eMath`` object. These classes are used to create the game.
 
 ### NodeJS setup
 

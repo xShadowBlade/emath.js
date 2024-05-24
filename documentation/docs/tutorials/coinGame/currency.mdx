@@ -1,0 +1,94 @@
+---
+id: currency
+title: Setting up Currency and Upgrades
+sidebar_label: Currency and Upgrades
+sidebar_position: 4
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+After you have set up [the game](./game), now it's time to set up the currency and upgrades.
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="script.js"
+// ... Previous code
+
+// Upgrades for the currency
+const coinUpgrades = [
+    {
+        id: "upg1Coins", // Unique ID
+        cost: level => level.mul(10), // Cost of 10 times the level
+        maxLevel: E(1000),
+        effect: (level, upgradeContext, currencyContext) => {
+            // `currencyContext` is the context of the currency (coins in this case)
+
+            // Access the `boost` object to add a boost
+            currencyContext.boost.setBoost({
+                id: "boostUpg1Coins", // Unique ID of the boost
+                // Effect of the boost, which is additive, 11 times the level of the upgrade
+                value: n => n.plus(level.mul(11)).sub(1),
+            });
+        },
+    },
+    // Add more upgrades here ...
+];
+
+// Create a new currency with upgrades
+const coins = coinGame.addCurrency("coins", coinUpgrades);
+
+// Initialize / Load game
+// Only do this after all currencies and upgrades are added
+coinGame.init();
+coinGame.dataManager.loadData();
+```
+    </TabItem>
+    <TabItem value="ts">
+```ts title="script.ts"
+// ... Previous code
+
+// Upgrades for the currency
+const coinUpgrades = [
+    {
+        id: "upg1Coins", // Unique ID
+        cost: (level): E => level.mul(10), // Cost of 10 times the level
+        maxLevel: E(1000), // Maximum level of 1000
+        effect: (level, upgradeContext, currencyContext): void => {
+            // `currencyContext` is the context of the currency (coins in this case)
+
+            // Access the `boost` object to add a boost
+            currencyContext.boost.setBoost({
+                id: "boostUpg1Coins", // Unique ID of the boost
+                // Effect of the boost, which is additive, 11 times the level of the upgrade
+                value: n => n.plus(level.mul(11)).sub(1),
+            });
+        },
+    },
+    // Add more upgrades here ...
+] as const satisfies UpgradeInit[]; // Type assertion to provide upgrade type checking
+
+// Create a new currency with upgrades
+const coins = coinGame.addCurrency("coins", coinUpgrades);
+
+// Initialize / Load game
+// Only do this after all currencies and upgrades are added
+coinGame.init();
+coinGame.dataManager.loadData();
+```
+    </TabItem>
+</Tabs>
+
+Explanation:
+- The `coinUpgrades` array contains the upgrades for the currency. Each upgrade object has the following properties:
+  - `id`: A unique ID for the upgrade.
+  - `cost`: A function that calculates the cost of the upgrade based on the current level.
+  - `maxLevel`: The maximum level the upgrade can reach.
+  - `effect`: A function that defines the effect of the upgrade. In this case, it adds a boost to the currency context.
+  - Other properties can be added as needed. See the [Upgrade](../../main/upgrade) documentation for more details.
+- The `coins` object is created using the `addCurrency` method of the `coinGame` object. This method creates a new currency with the specified upgrades.
+- Finally, the game is initialized and loaded using the `init` and `loadData` methods of the `coinGame` object. This should be done after all currencies and upgrades are added.
+
+After this step, you can continue to the [display tutorial](./display).

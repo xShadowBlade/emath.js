@@ -108,12 +108,12 @@ const config: Config = {
                     ],
                 },
                 {
-                    title: "Community",
+                    title: "Community (WIP)",
                     items: [
-                        {
-                            label: "Discord (WIP)",
-                            href: "https://discord.com/channels/@me",
-                        },
+                        // {
+                        //     label: "Discord (WIP)",
+                        //     href: "https://discord.com/channels/@me",
+                        // },
                     ],
                 },
                 {

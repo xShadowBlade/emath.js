@@ -10,4 +10,6 @@ Welcome to the tutorials section, where you can find a collection of guides and 
 
 ---
 
-This section is currently undergoing a redesign and will be available soon.
+Here are the tutorials available:
+
+- [Coin Game](./coinGame/intro)

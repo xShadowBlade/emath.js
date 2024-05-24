@@ -2,35 +2,39 @@
  * @file Declares the HomepageFeatures component.
  */
 import React from "react";
-import Heading from "@theme/Heading";
+// import Heading from "@theme/Heading";
 import clsx from "clsx";
 import styles from "./styles.module.css";
 
-type FeatureItem = {
+/**
+ * An interface representing a feature item.
+ */
+interface FeatureItem {
     title: string;
     Svg?: React.ComponentType<React.ComponentProps<"svg">>;
     description: JSX.Element;
-};
+}
 
+/**
+ * A list of feature items.
+ */
 const FeatureList: FeatureItem[] = [
     {
         title: "Integration With break_eternity.js",
         // Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
         description: (
             <>
-                eMath.js seamlessly integrates with the break_eternity.js library,
-                providing essential tools for incremental game development.
+                eMath.js is built on top of break_eternity.js, a library for handling large numbers.
             </>
         ),
     },
     {
-        title: "Advanced Formatting Capabilities",
+        title: "TypeScript Support",
         // Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
         description: (
             <>
-                eMath.js offers advanced formatting capabilities,
-                allowing developers to manipulate and present numerical data in a variety of formats.
-                It vastly simplifies the process of displaying and managing numerical data.
+                eMath.js is written in TypeScript, providing type safety and intellisense in editors that support it.
+                It also exports type definitions for use in your own projects.
             </>
         ),
     },
@@ -39,19 +43,19 @@ const FeatureList: FeatureItem[] = [
         // Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
         description: (
             <>
-                eMath.js provides dedicated classes for managing boosts, currency, and attributes.
-                These classes offer a structured and organized way to handle these crucial elements in incremental games.
+                eMath.js provides various classes for managing currencies, upgrades purchasing, data saving, and more.
             </>
         ),
     },
 ];
 
-interface FeatureProps extends FeatureItem {}
+type FeatureProps = FeatureItem
+
 /**
  * @param props FeatureProps
  * @returns Feature
  */
-function Feature (props: FeatureProps) {
+const Feature: React.FC<FeatureProps> = (props) => {
     const { Svg, title, description } = props;
     return (
         <div className={clsx("col col--4")}>
@@ -64,12 +68,12 @@ function Feature (props: FeatureProps) {
             </div>
         </div>
     );
-}
+};
 
 /**
  * @returns HomepageFeatures
  */
-function HomepageFeatures () {
+const HomepageFeatures: React.FC = () => {
     return (
         <section className={styles.features}>
             <div className="container">
@@ -81,6 +85,6 @@ function HomepageFeatures () {
             </div>
         </section>
     );
-}
+};
 
 export default HomepageFeatures;

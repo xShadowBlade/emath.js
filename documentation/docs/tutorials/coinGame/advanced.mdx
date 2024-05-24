@@ -1,0 +1,88 @@
+---
+id: advanced
+title: Advanced Features
+sidebar_label: Advanced
+sidebar_position: 6
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+After you have set up [display](./display), you can optionally add advanced features to your game.
+
+This tutorial will cover the following advanced features:
+- Hotkeys
+- Save and Load
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="script.js"
+// ... Previous code
+
+// Hotkeys
+coinGame.keyManager.addKey([
+    {
+        id: "gainCoins",
+        name: "Gain Coins",
+        key: "g",
+        onDownContinuous: () => coins.static.gain(),
+    },
+    {
+        id: "buyUpgrades",
+        name: "Buy Upgrades",
+        key: "b",
+        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+    },
+]);
+
+// Saving and Loading
+window.addEventListener("beforeunload", () => {
+    coinGame.dataManager.saveData();
+});
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
+    console.log("Auto Saved!");
+});
+```
+    </TabItem>
+    <TabItem value="ts">
+```ts title="script.ts"
+// ... Previous code
+
+// Hotkeys
+coinGame.keyManager.addKey([
+    {
+        id: "gainCoins",
+        name: "Gain Coins",
+        key: "g",
+        onDownContinuous: (): void => void coins.static.gain(),
+    },
+    {
+        id: "buyUpgrades",
+        name: "Buy Upgrades",
+        key: "b",
+        onDownContinuous: (): void => void coins.static.buyUpgrade("upg1Coins"),
+    },
+]);
+
+// Saving and Loading
+window.addEventListener("beforeunload", () => {
+    coinGame.dataManager.saveData();
+});
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
+    console.log("Auto Saved!");
+});
+```
+    </TabItem>
+</Tabs>
+
+Explanation:
+- The `keyManager` object is used to add hotkeys to the game. The `addKey` method is used to add a key with an ID, name, key, and function to execute when the key is pressed. For more information, see the [KeyManager](../../game/keyManager) documentation.
+- The `dataManager` object is used to save and load data. The `saveData` method is used to save the game data, and the `loadData` method is used to load the game data. For more information, see the [DataManager](../../game/dataManager) documentation.
+- The `autoSave` event is set to save the game data every 30 seconds. This is useful for automatically saving the game data at regular intervals. For more information, see the [EventManager](../../game/eventManager) documentation.
+
+You are now done with the coinGame tutorial!
+Final code: [coinGame Repo](https://github.com/xShadowBlade/emath.js/tree/main/documentation/docs/tutorials/coinGame/code)

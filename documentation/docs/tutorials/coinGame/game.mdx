@@ -1,0 +1,60 @@
+---
+id: game
+title: Setting up the Game
+sidebar_label: Game
+sidebar_position: 3
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+After you have set up the basics, now it's time to set up the game.
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'},{label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="script.js"
+const { E, Game } = window.eMath;
+
+// Initialize game with options
+const gameOptions = {
+    // Name of the game (optional)
+    name: {
+        id: "coinGame", // ID of the game, used for saving and loading
+        name: "Coin Game", // Name of the game, cosmetic
+        version: "0.1.0", // Version of the game
+    },
+};
+
+const coinGame = new Game(gameOptions);
+```
+    </TabItem>
+    <TabItem value="ts">
+```ts title="script.ts"
+import { E } from "emath.js";
+import { Game } from "emath.js/game";
+
+// Initialize game with options
+const gameOptions: GameConfigOptions = {
+    // Name of the game (optional)
+    name: {
+        id: "coinGame", // ID of the game, used for saving and loading
+        title: "Coin Game", // Name of the game, cosmetic
+        version: "0.1.0", // Version of the game
+    },
+};
+
+const coinGame = new Game(gameOptions);
+```
+    </TabItem>
+</Tabs>
+
+Explanation:
+
+- The `Game` class is imported from the `eMath` object. This class is used to create the game.
+- The `gameOptions` object is defined to store the game's name, ID, and version. For all options, see the [Game](../../game/game) documentation.
+
+{/* Next, we'll create a currency system to manage the player's coins. */}
+
+After this step, you can continue to the [currency tutorial](./currency).

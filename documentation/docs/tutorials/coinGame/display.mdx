@@ -1,0 +1,102 @@
+---
+id: display
+title: Setting up the Display
+sidebar_label: Display
+sidebar_position: 5
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+After you have set up [currency & upgrades](./currency), now it's time to set up the display.
+
+First, modify ``index.html`` to include the following code:
+
+```html title="index.html"
+<!DOCTYPE html>
+<html>
+  <head>
+	<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div id="game">
+      <p id="coinsDisplay">Coins: 0</p>
+      <button id="gainCoins">Click me to get coins!</button>
+      <button id="buyUpgrades">Buy an upgrade</button>
+    </div>
+  </body>
+</html>
+```
+
+This code sets up the body of the HTML file with a paragraph element to display the number of coins, a button to gain coins, and a button to buy upgrades.
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+
+    Next, modify ``script.js`` to include the following code:
+
+```js title="script.js"
+// ... Previous code
+
+// Gain coins button
+const gainCoins = () => {
+    coins.static.gain();
+};
+document.getElementById("gainCoins").addEventListener("click", gainCoins);
+
+// Buy (max) upgrades button
+const buyUpgrades = () => {
+    coins.static.buyUpgrade("upg1Coins");
+};
+document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
+
+// Add display
+const coinsDisplay = document.getElementById("coinsDisplay");
+
+// Add a render event that executes every frame
+coinGame.eventManager.setEvent("render", "interval", 0, () => {
+    coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
+});
+```
+    </TabItem>
+    <TabItem value="ts">
+
+    Next, modify ``script.ts`` to include the following code:
+
+```ts title="script.ts"
+// ... Previous code
+
+// Gain coins button
+const gainCoins = (): void => {
+    coins.static.gain();
+};
+document.getElementById("gainCoins").addEventListener("click", gainCoins);
+
+// Buy (max) upgrades button
+const buyUpgrades = (): void => {
+    coins.static.buyUpgrade("upg1Coins");
+};
+document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
+
+// Add display
+const coinsDisplay = document.getElementById("coinsDisplay");
+
+// Add a render event that executes every frame
+coinGame.eventManager.setEvent("render", "interval", 0, () => {
+    coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
+});
+
+```
+    </TabItem>
+</Tabs>
+
+Explanation:
+- The `gainCoins` function is called when the "Click me to get coins!" button is clicked. It adds coins to the player's currency.
+- The `buyUpgrades` function is called when the "Buy an upgrade" button is clicked. It buys the maximum number of upgrades for the currency.
+- The `coinsDisplay` element is used to display the number of coins.
+- The `render` event is set to update the coins display every frame. It uses the `format` method to format the coin value.
+
+After this step, you are done with the basic setup of the game! You can now continue to the [advanced tutorials](./advanced).

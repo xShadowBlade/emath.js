@@ -14,7 +14,7 @@ import styles from "./index.module.css";
 /**
  * @returns HomepageHeader
  */
-function HomepageHeader () {
+const HomepageHeader: React.FC = () => {
     const { siteConfig } = useDocusaurusContext();
     return (
         <header className={clsx("hero hero--primary", styles.heroBanner)}>
@@ -33,12 +33,12 @@ function HomepageHeader () {
             </div>
         </header>
     );
-}
+};
 
 /**
  * @returns Home
  */
-export default function Home (): JSX.Element {
+const Home: React.FC = () => {
     const {siteConfig} = useDocusaurusContext();
     return (
         <Layout
@@ -50,4 +50,7 @@ export default function Home (): JSX.Element {
             </main>
         </Layout>
     );
-}
+};
+
+export default Home;
+export { HomepageHeader };

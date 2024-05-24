@@ -1,9 +1,22 @@
-// Note: This is a simple example, and you should npm with typescript for a better development experience
+/**
+ * @file Coin Game tutorial code (typescript)
+ */
 // Import from CDN
-const { E, Game } = window.eMath;
+// const { E, Game } = window.eMath;
+
+// Import from NPM
+// import { E } from "emath.js";
+// import { Game } from "emath.js/game";
+
+// Import from local build
+// [projectRoot]/src/index is `emath.js`, [projectRoot]/src/game/index is `emath.js/game`
+import { E } from "../../../../../src/index";
+import { Game } from "../../../../../src/game/index";
+import type { UpgradeInit } from "../../../../../src/index";
+import type { GameConfigOptions } from "../../../../../src/game/index";
 
 // Initialize game with options
-const gameOptions = {
+const gameOptions: GameConfigOptions = {
     // Name of the game (optional)
     name: {
         id: "coinGame", // ID of the game, used for saving and loading
@@ -20,9 +33,9 @@ const coinGame = new Game(gameOptions);
 const coinUpgrades = [
     {
         id: "upg1Coins", // Unique ID
-        cost: level => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000),
-        effect: (level, upgradeContext, currencyContext) => {
+        cost: (level): E => level.mul(10), // Cost of 10 times the level
+        maxLevel: E(1000), // Maximum level of 1000
+        effect: (level, upgradeContext, currencyContext): void => {
             // `currencyContext` is the context of the currency (coins in this case)
 
             // Access the `boost` object to add a boost
@@ -34,7 +47,7 @@ const coinUpgrades = [
         },
     },
     // Add more upgrades here ...
-];
+] as const satisfies UpgradeInit[]; // Type assertion to provide upgrade type checking
 
 // Create a new currency with upgrades
 const coins = coinGame.addCurrency("coins", coinUpgrades);
@@ -47,13 +60,13 @@ coinGame.dataManager.loadData();
 // Display
 
 // Gain coins button
-const gainCoins = () => {
+const gainCoins = (): void => {
     coins.static.gain();
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
 // Buy (max) upgrades button
-const buyUpgrades = () => {
+const buyUpgrades = (): void => {
     coins.static.buyUpgrade("upg1Coins");
 };
 document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
@@ -74,13 +87,13 @@ coinGame.keyManager.addKey([
         id: "gainCoins",
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: () => coins.static.gain(),
+        onDownContinuous: (): void => void coins.static.gain(),
     },
     {
         id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
-        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+        onDownContinuous: (): void => void coins.static.buyUpgrade("upg1Coins"),
     },
 ]);
 
