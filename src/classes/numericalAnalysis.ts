@@ -18,9 +18,9 @@ import { E } from "../E/eMain";
  * - At 100 iterations, the time it takes to calculate is ~2 ms but with marginal accuracy improvements.
  * - At 1000 iterations, the time it takes to calculate is ~7 ms but with very marginal accuracy improvements.
  * - At 10000 iterations, the time it takes to calculate is ~30 ms.
- * @default 35
+ * @default 30
  */
-const DEFAULT_ITERATIONS = 35;
+const DEFAULT_ITERATIONS = 30;
 
 /**
  * The default tolerance to compare the values with.
@@ -96,7 +96,7 @@ function equalsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: P
 
 /**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
- * @param f - The function to approximate the inverse of. It must be monotonically increasing.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
  * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
@@ -134,9 +134,12 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
     }
 
     // console.log({ lowerBound, upperBound, iterations });
+
     // Perform the bisection / binary search
     for (let i = 0; i < iterations; i++) {
         let mid: E;
+
+        // Determine the mean value
         switch (mode) {
             case "arithmetic":
             case 1:
@@ -146,19 +149,22 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
             case 2:
                 mid = lowerBound.mul(upperBound).sqrt();
                 break;
-            // case "pow":
-            //     mid = lowerBound.pow(upperBound).ssqrt();
         }
 
         const midValue = f(mid);
         // console.log({ lowerBound, upperBound, mid, midValue, n, i });
+
+        // Stop the loop if the bounds are close enough
         if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
-            // Stop the loop if the bounds are close
             // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
             break;
-        } else if (midValue.lt(n)) {
+        }
+
+        if (midValue.lt(n)) {
+            // If the value is less than the target, set the lower bound to the mid value
             lowerBound = mid;
         } else {
+            // If the value is greater than the target, set the upper bound to the mid value
             upperBound = mid;
         }
     }
@@ -214,14 +220,17 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
  * @returns The calculated sum of `f(n)`.
  */
 function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterations: number = DEFAULT_ITERATIONS): E {
+    // Initialize the values
     a = E(a);
     b = E(b);
 
     let sum = E(0);
     const intervalWidth = b.sub(a).div(iterations);
+
     for (let i = 0; i < iterations; i++) {
         const x0 = a.add(intervalWidth.mul(i));
         const x1 = a.add(intervalWidth.mul(i + 1));
+
         sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
     }
     return sum;
@@ -251,10 +260,10 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
 }
 
 /**
- * Function to round a number to the nearest power of a specified base. Warning: Experimental.
+ * Function to round a number to the nearest power of a specified base. Warning: Experimental, not tested on negative numbers / parameters.
  * @param x - The number to round.
- * @param acc - The accuracy to round to (power)
- * @param sig - The significant figures to round to.
+ * @param base - The power base to round to.
+ * @param acc - The accuracy / significant figures to round to.
  * @param max - The maximum power to round to.
  * @returns - The rounded number.
  * @example
@@ -263,16 +272,18 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-function roundingBase (x: ESource, acc: ESource = 10, sig: ESource = 0, max: ESource = 1000): E {
+function roundingBase (x: ESource, base: ESource = 10, acc: ESource = 0, max: ESource = 1000): E {
     x = E(x);
     // If the number is too large, don't round it
-    if (x.gte(E.pow(acc, max))) return x;
+    if (x.gte(E.pow(base, max))) return x;
+
     /** The power of the number, rounded. acc^power = x */
-    const powerN = E.floor(E.log(x, acc));
-    let out = x.div(E.pow(acc, powerN));
-    out = out.mul(E.pow(acc, sig)).round();
-    out = out.div(E.pow(acc, sig));
-    out = out.mul(E.pow(acc, powerN));
+    const powerN = E.floor(E.log(x, base));
+
+    let out = x.div(E.pow(base, powerN));
+    out = out.mul(E.pow(base, acc)).round();
+    out = out.div(E.pow(base, acc));
+    out = out.mul(E.pow(base, powerN));
     return out;
 }
 

@@ -11,7 +11,9 @@ import type { CurrencyStatic } from "./Currency";
 /**
  * Calculates the cost and how many upgrades you can buy
  * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
- * The priority is: `target === 1` > `costBulk` > `el`
+ * The priority is: `target === 1` > `costBulk` > `el`.
+ * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
+ * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
  * @param value - The current value of the currency.
  * @param upgrade - The upgrade object to calculate.
  * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
@@ -115,40 +117,11 @@ interface UpgradeInit {
  *         id: "upgId2",
  *         cost: (level: E): E => level.mul(20),
  *     },
- * ] as const satisfies UpgradeInit[]
+ * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
 type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
-/**
- * Interface for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
-    maxLevel?: E;
-    name: string;
-    description: string;
-    defaultLevel: E;
-    /**
-     * A function that returns a description of the upgrade.
-     * @param args - Arguments to pass to the description function.
-     * @returns The description of the upgrade.
-     */
-    descriptionFn: (...args: any[]) => string;
-}
-/**
- * Converts an upgrade init to a static upgrade.
- * @deprecated - This is no longer used
- */
-type ConvertInitToStatic<T extends UpgradeInit> = Omit<T, "level"> & {
-    defaultLevel: E;
-    descriptionFn: (...args: any[]) => string;
-};
-/**
- * Interface for upgrade data.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-type IUpgradeData = Pick<UpgradeInit, "id" | "level">;
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
  * @deprecated Use an object index instead.
@@ -182,26 +155,27 @@ declare function decimalToJSONString(n: ESource): DecimalJSONString;
 declare function upgradeToCacheNameEL(level: ESource): UpgradeCachedELName;
 /**
  * Interface for an upgrade that is cached.
- * @template EL - Whether the upgrade is EL or not.
+ * We need a cache to reduce redundant calculations.
+ *
+ * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
+ * and the cost of the upgrade at those levels.
+ *
+ * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
  */
-interface UpgradeCached<EL extends boolean = false> extends Pick<UpgradeInit, "id" | "el"> {
-    el: EL;
+interface UpgradeCached extends Pick<UpgradeInit, "id" | "el"> {
+    el: boolean;
+    endLower: UpgradeCachedLevel;
+    end: UpgradeCachedLevel;
+    endUpper: UpgradeCachedLevel;
 }
-/** Interface for an upgrade that is cached. (EL) */
-interface UpgradeCachedEL extends UpgradeCached<true>, Pick<UpgradeInit, "level"> {
+interface UpgradeCachedLevel {
     level: E;
-    /** The cost of the upgrade at level (el) */
     cost: E;
 }
-/** Interface for an upgrade that is cached. (Not EL) */
-interface UpgradeCachedSum extends UpgradeCached {
-    start: E;
-    end: E;
-    /**
-     * The cost of the upgrade from start to end. (summation)
-     */
-    cost: E;
-}
+/**
+ * Interface for upgrade data.
+ */
+type IUpgradeData = Pick<UpgradeInit, "id" | "level">;
 /**
  * Represents the frontend for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
@@ -214,6 +188,22 @@ declare class UpgradeData implements IUpgradeData {
      * @param init - The upgrade object to initialize.
      */
     constructor(init: Pick<UpgradeInit, "id" | "level">);
+}
+/**
+ * Interface for an upgrade.
+ */
+interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
+    maxLevel?: E;
+    name: string;
+    description: string;
+    defaultLevel: E;
+    /**
+     * A function that returns a description of the upgrade.
+     * @deprecated Use a getter function instead.
+     * @param args - Arguments to pass to the description function.
+     * @returns The description of the upgrade.
+     */
+    descriptionFn: (...args: any[]) => string;
 }
 /**
  * Represents the backend for an upgrade.
@@ -231,7 +221,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     /** The default size of the cache. Should be one less than a power of 2. */
     static cacheSize: number;
     /** The cache to store the values of certain upgrade levels */
-    cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCachedEL | UpgradeCachedSum>;
+    cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
     /** @returns The data of the upgrade. */
     protected dataPointerFn: () => UpgradeData;
     /** @returns The data of the upgrade. */
@@ -247,29 +237,11 @@ declare class UpgradeStatic implements IUpgradeStatic {
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}
+     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
      */
     constructor(init: UpgradeInit, dataPointer: Pointer<UpgradeData>, cacheSize?: number);
-    /**
-     * Gets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @returns The data of the upgrade.
-     */
-    getCached(type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
-    getCached(type: "el", start: ESource): UpgradeCachedEL | undefined;
-    /**
-     * Sets the cached data of the upgrade.
-     * @param type - The type of the cache. "sum" or "el"
-     * @param start - The starting level of the upgrade.
-     * @param end - The ending level or quantity to reach for the upgrade.
-     * @param cost - The cost of the upgrade.
-     */
-    setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
-    setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
 }
-export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType, ConvertInitToStatic };
+export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
 export { UpgradeData, UpgradeStatic, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached, UpgradeCachedEL, UpgradeCachedSum };
+export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
 export { decimalToJSONString, upgradeToCacheNameEL };

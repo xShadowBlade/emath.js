@@ -4802,7 +4802,7 @@ var import_reflect_metadata = require("reflect-metadata");
 var import_class_transformer2 = require("class-transformer");
 
 // src/classes/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 35;
+var DEFAULT_ITERATIONS = 30;
 var DEFAULT_TOLERANCE = 1e-3;
 function equalsTolerance(a, b, tolerance, config) {
   config = Object.assign({}, {
@@ -4857,7 +4857,8 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     const midValue = f(mid);
     if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
       break;
-    } else if (midValue.lt(n)) {
+    }
+    if (midValue.lt(n)) {
       lowerBound = mid;
     } else {
       upperBound = mid;
@@ -4903,14 +4904,14 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
     return calculateSumApprox(f, b, a, iterations);
   }
 }
-function roundingBase(x, acc = 10, sig = 0, max = 1e3) {
+function roundingBase(x, base = 10, acc = 0, max = 1e3) {
   x = E(x);
-  if (x.gte(E.pow(acc, max))) return x;
-  const powerN = E.floor(E.log(x, acc));
-  let out = x.div(E.pow(acc, powerN));
-  out = out.mul(E.pow(acc, sig)).round();
-  out = out.div(E.pow(acc, sig));
-  out = out.mul(E.pow(acc, powerN));
+  if (x.gte(E.pow(base, max))) return x;
+  const powerN = E.floor(E.log(x, base));
+  let out = x.div(E.pow(base, powerN));
+  out = out.mul(E.pow(base, acc)).round();
+  out = out.div(E.pow(base, acc));
+  out = out.mul(E.pow(base, powerN));
   return out;
 }
 
@@ -4963,9 +4964,6 @@ function decimalToJSONString(n) {
   n = E(n);
   return `${n.sign}/${n.mag}/${n.layer}`;
 }
-function upgradeToCacheNameSum(start, end) {
-  return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}`;
-}
 function upgradeToCacheNameEL(level) {
   return `el/${decimalToJSONString(level)}`;
 }
@@ -4989,7 +4987,7 @@ __decorateClass([
 var UpgradeStatic = class _UpgradeStatic {
   static {
     /** The default size of the cache. Should be one less than a power of 2. */
-    this.cacheSize = 63;
+    this.cacheSize = 15;
   }
   /** @returns The data of the upgrade. */
   get data() {
@@ -5012,7 +5010,7 @@ var UpgradeStatic = class _UpgradeStatic {
    * Constructs a new static upgrade object.
    * @param init - The upgrade object to initialize.
    * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}
+   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
    */
   constructor(init, dataPointer, cacheSize) {
     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
@@ -5028,33 +5026,51 @@ var UpgradeStatic = class _UpgradeStatic {
     this.el = init.el;
     this.defaultLevel = init.level ?? E(1);
   }
-  getCached(type, start, end) {
-    if (type === "sum") {
-      return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
-    } else {
-      return this.cache.get(upgradeToCacheNameEL(start));
-    }
-  }
-  setCached(type, start, endOrStart, costSum) {
-    const data = type === "sum" ? {
-      id: this.id,
-      el: false,
-      start: E(start),
-      end: E(endOrStart),
-      cost: E(costSum)
-    } : {
-      id: this.id,
-      el: true,
-      level: E(start),
-      cost: E(endOrStart)
-    };
-    if (type === "sum") {
-      this.cache.set(upgradeToCacheNameSum(start, endOrStart), data);
-    } else {
-      this.cache.set(upgradeToCacheNameEL(start), data);
-    }
-    return data;
-  }
+  // /**
+  //  * Gets the cached data of the upgrade.
+  //  * @param type - The type of the cache. "sum" or "el"
+  //  * @param start - The starting level of the upgrade.
+  //  * @param end - The ending level or quantity to reach for the upgrade.
+  //  * @returns The data of the upgrade.
+  //  */
+  // public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
+  // public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
+  // public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
+  //     if (type === "sum") {
+  //         return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
+  //     } else {
+  //         return this.cache.get(upgradeToCacheNameEL(start));
+  //     }
+  // }
+  // /**
+  //  * Sets the cached data of the upgrade.
+  //  * @param type - The type of the cache. "sum" or "el"
+  //  * @param start - The starting level of the upgrade.
+  //  * @param end - The ending level or quantity to reach for the upgrade.
+  //  * @param cost - The cost of the upgrade.
+  //  */
+  // public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
+  // public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
+  // public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
+  //     const data = type === "sum" ? {
+  //         id: this.id,
+  //         el: false,
+  //         start: E(start),
+  //         end: E(endOrStart),
+  //         cost: E(costSum),
+  //     } : {
+  //         id: this.id,
+  //         el: true,
+  //         level: E(start),
+  //         cost: E(endOrStart),
+  //     };
+  //     if (type === "sum") {
+  //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
+  //     } else {
+  //         this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
+  //     }
+  //     return data as UpgradeCachedEL | UpgradeCachedSum;
+  // }
 };
 
 // src/classes/Currency.ts
