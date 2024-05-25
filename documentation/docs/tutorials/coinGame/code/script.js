@@ -39,10 +39,30 @@ const coinUpgrades = [
 // Create a new currency with upgrades
 const coins = coinGame.addCurrency("coins", coinUpgrades);
 
-// Initialize / Load game
-// Only do this after all currencies and upgrades are added
-coinGame.init();
-coinGame.dataManager.loadData();
+// Reset Layer
+
+// New currency
+const gems = coinGame.addCurrency("gems");
+
+// Add a boost to the currency
+gems.static.boost.setBoost({
+    id: "boostFromCoins",
+    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+});
+
+// Add a reset layer to the currency
+const prestige = coinGame.addReset(coins);
+
+prestige.onReset = () => {
+    // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
+    if (coins.static.value.lt(1000)) return;
+
+    // Gain gems based on the amount of coins before reset (set by the boost)
+    gems.static.gain();
+};
+
+// Call the reset layer
+// prestige.reset();
 
 // Display
 
@@ -52,6 +72,12 @@ const gainCoins = () => {
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
+// Gain gems button
+const gainGems = () => {
+    prestige.reset();
+};
+document.getElementById("gainGems").addEventListener("click", gainGems);
+
 // Buy (max) upgrades button
 const buyUpgrades = () => {
     coins.static.buyUpgrade("upg1Coins");
@@ -60,13 +86,22 @@ document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
 // Add display
 const coinsDisplay = document.getElementById("coinsDisplay");
+const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
     coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
 });
 
 // Advanced
+
+// Data loading
+
+// Initialize / Load game
+// Only do this after all currencies and upgrades are added
+coinGame.init();
+coinGame.dataManager.loadData();
 
 // Hotkeys
 coinGame.keyManager.addKey([

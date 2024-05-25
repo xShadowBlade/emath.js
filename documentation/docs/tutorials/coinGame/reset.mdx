@@ -1,0 +1,81 @@
+---
+id: reset
+title: Setting up Reset Layers
+sidebar_label: Reset Layers
+sidebar_position: 5
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+After you have set up [currency and upgrades](./currency), you can set up reset layers for your game. The library provides a way to reset parts of the game while keeping other parts intact. This can be useful for creating prestige systems or other progression mechanics.
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="script.js"
+// ... Previous code
+
+// New currency
+const gems = coinGame.addCurrency("gems");
+
+// Add a boost to the currency
+gems.static.boost.setBoost({
+    id: "boostFromCoins",
+    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+});
+
+// Add a reset layer to the currency
+const prestige = coinGame.addReset(coins);
+
+prestige.onReset = () => {
+    // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
+    if (coins.static.value.lt(1000)) return;
+
+    // Gain gems based on the amount of coins before reset (set by the boost)
+    gems.static.gain();
+};
+
+// Call the reset layer
+prestige.reset();
+```
+    </TabItem>
+    <TabItem value="ts">
+```ts title="script.ts"
+// ... Previous code
+
+// New currency
+const gems = coinGame.addCurrency("gems");
+
+// Add a boost to the currency
+gems.static.boost.setBoost({
+    id: "boostFromCoins",
+    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+});
+
+// Add a reset layer to the currency
+const prestige = coinGame.addReset(coins);
+
+prestige.onReset = (): void => {
+    // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
+    if (coins.static.value.lt(1000)) return;
+
+    // Gain gems based on the amount of coins before reset (set by the boost)
+    gems.static.gain();
+};
+
+// Call the reset layer
+prestige.reset();
+```
+    </TabItem>
+</Tabs>
+
+Explanation:
+- A new currency, `gems`, is created.
+- A boost is added to the `gems` currency that gives the player 10% of the `coins` currency value.
+- A reset layer, `prestige`, is added to the `coins` currency.
+- The `onReset` function is set to gain the amount of coins the player had before the reset.
+- The `reset` function is called to reset the `coins` currency.
+
+After this step, you can continue to the [display tutorial](./display).

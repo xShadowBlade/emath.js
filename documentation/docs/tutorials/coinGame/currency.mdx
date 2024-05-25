@@ -39,11 +39,6 @@ const coinUpgrades = [
 
 // Create a new currency with upgrades
 const coins = coinGame.addCurrency("coins", coinUpgrades);
-
-// Initialize / Load game
-// Only do this after all currencies and upgrades are added
-coinGame.init();
-coinGame.dataManager.loadData();
 ```
     </TabItem>
     <TabItem value="ts">
@@ -72,11 +67,6 @@ const coinUpgrades = [
 
 // Create a new currency with upgrades
 const coins = coinGame.addCurrency("coins", coinUpgrades);
-
-// Initialize / Load game
-// Only do this after all currencies and upgrades are added
-coinGame.init();
-coinGame.dataManager.loadData();
 ```
     </TabItem>
 </Tabs>
@@ -89,6 +79,5 @@ Explanation:
   - `effect`: A function that defines the effect of the upgrade. In this case, it adds a boost to the currency context.
   - Other properties can be added as needed. See the [Upgrade](../../main/upgrade) documentation for more details.
 - The `coins` object is created using the `addCurrency` method of the `coinGame` object. This method creates a new currency with the specified upgrades.
-- Finally, the game is initialized and loaded using the `init` and `loadData` methods of the `coinGame` object. This should be done after all currencies and upgrades are added.
 
-After this step, you can continue to the [display tutorial](./display).
+After this step, you can continue to the [reset layer tutorial](./reset).

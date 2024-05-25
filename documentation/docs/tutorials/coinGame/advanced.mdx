@@ -2,7 +2,7 @@
 id: advanced
 title: Advanced Features
 sidebar_label: Advanced
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 import Tabs from "@theme/Tabs";
@@ -20,6 +20,13 @@ This tutorial will cover the following advanced features:
     <TabItem value="js">
 ```js title="script.js"
 // ... Previous code
+
+// Data loading
+
+// Initialize / Load game
+// Only do this after all currencies and upgrades are added
+coinGame.init();
+coinGame.dataManager.loadData();
 
 // Hotkeys
 coinGame.keyManager.addKey([
@@ -51,6 +58,13 @@ coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
 ```ts title="script.ts"
 // ... Previous code
 
+// Data loading
+
+// Initialize / Load game
+// Only do this after all currencies and upgrades are added
+coinGame.init();
+coinGame.dataManager.loadData();
+
 // Hotkeys
 coinGame.keyManager.addKey([
     {
@@ -80,6 +94,7 @@ coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
 </Tabs>
 
 Explanation:
+- The `init` method is called to initialize the game. This method should be called after all currencies and upgrades are added. The `loadData` method is called to load the game data. For more information, see the [DataManager](../../game/dataManager) documentation.
 - The `keyManager` object is used to add hotkeys to the game. The `addKey` method is used to add a key with an ID, name, key, and function to execute when the key is pressed. For more information, see the [KeyManager](../../game/keyManager) documentation.
 - The `dataManager` object is used to save and load data. The `saveData` method is used to save the game data, and the `loadData` method is used to load the game data. For more information, see the [DataManager](../../game/dataManager) documentation.
 - The `autoSave` event is set to save the game data every 30 seconds. This is useful for automatically saving the game data at regular intervals. For more information, see the [EventManager](../../game/eventManager) documentation.

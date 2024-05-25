@@ -2,7 +2,7 @@
 id: display
 title: Setting up the Display
 sidebar_label: Display
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 import Tabs from "@theme/Tabs";
@@ -10,7 +10,7 @@ import TabItem from "@theme/TabItem";
 
 ---
 
-After you have set up [currency & upgrades](./currency), now it's time to set up the display.
+After you have set up [reset layers](./reset), now it's time to set up the display.
 
 First, modify ``index.html`` to include the following code:
 
@@ -26,6 +26,9 @@ First, modify ``index.html`` to include the following code:
       <p id="coinsDisplay">Coins: 0</p>
       <button id="gainCoins">Click me to get coins!</button>
       <button id="buyUpgrades">Buy an upgrade</button>
+      <br>
+      <p id="gemsDisplay">Gems: 0</p>
+      <button id="gainGems">Gain gems</button>
     </div>
   </body>
 </html>
@@ -47,6 +50,12 @@ const gainCoins = () => {
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
+// Gain gems button
+const gainGems = () => {
+    prestige.reset();
+};
+document.getElementById("gainGems").addEventListener("click", gainGems);
+
 // Buy (max) upgrades button
 const buyUpgrades = () => {
     coins.static.buyUpgrade("upg1Coins");
@@ -55,10 +64,12 @@ document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
 // Add display
 const coinsDisplay = document.getElementById("coinsDisplay");
+const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
     coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
 });
 ```
     </TabItem>
@@ -75,6 +86,12 @@ const gainCoins = (): void => {
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
+// Gain gems button
+const gainGems = (): void => {
+    prestige.reset();
+};
+document.getElementById("gainGems").addEventListener("click", gainGems);
+
 // Buy (max) upgrades button
 const buyUpgrades = (): void => {
     coins.static.buyUpgrade("upg1Coins");
@@ -83,10 +100,12 @@ document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
 // Add display
 const coinsDisplay = document.getElementById("coinsDisplay");
+const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
     coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
 });
 
 ```
@@ -95,8 +114,10 @@ coinGame.eventManager.setEvent("render", "interval", 0, () => {
 
 Explanation:
 - The `gainCoins` function is called when the "Click me to get coins!" button is clicked. It adds coins to the player's currency.
+- The `gainGems` function is called when the "Gain gems" button is clicked. It resets the currency, which in this case is the `coins` currency.
 - The `buyUpgrades` function is called when the "Buy an upgrade" button is clicked. It buys the maximum number of upgrades for the currency.
 - The `coinsDisplay` element is used to display the number of coins.
+- The `gemsDisplay` element is used to display the number of gems.
 - The `render` event is set to update the coins display every frame. It uses the `format` method to format the coin value.
 
 After this step, you are done with the basic setup of the game! You can now continue to the [advanced tutorials](./advanced).
