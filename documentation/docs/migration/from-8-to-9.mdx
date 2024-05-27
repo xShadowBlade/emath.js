@@ -29,11 +29,35 @@ In version 9, the `ESource` type has been renamed to `DecimalSource`. You should
 import { DecimalSource } from "break_eternity.js";
 ```
 
-### wip
+### Change from `E` to `Decimal`
+
+In version 9, the `E` class has been removed and replaced with the `Decimal` class from `break_eternity.js`. You should still import the `Decimal` class from `emath.js` and use it instead of the `E` class.
+
+```ts title="script.ts"
+// Before (v8)
+import { E } from "emath.js";
+
+const number = E(10);
+const result = E.add(number, E(5));
+
+// After (v9)
+import { Decimal } from "emath.js";
+
+const number = new Decimal(10);
+const result = Decimal.add(number, new Decimal(5));
+```
+
+### Regexes
+
+Here are some regexes that you can use to replace the `E` class with the `Decimal` class in your code:
+
+Search:
 
 ```regex
 ESource
 ```
+
+Replace:
 
 ```regex
 DecimalSource
@@ -41,9 +65,13 @@ DecimalSource
 
 ---
 
+Search:
+
 ```regex
 E\((.*?)\)
 ```
+
+Replace:
 
 ```regex
 new Decimal($1)
@@ -51,9 +79,13 @@ new Decimal($1)
 
 ---
 
+Search:
+
 ```regex
 E
 ```
+
+Replace:
 
 ```regex
 Decimal
