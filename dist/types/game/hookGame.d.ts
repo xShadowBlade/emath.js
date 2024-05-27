@@ -164,5 +164,6 @@ declare const eMath: {
     calculateSum: typeof eMathMain.calculateSum;
     roundingBase: typeof eMathMain.roundingBase;
     DEFAULT_ITERATIONS: 30;
+    E: ((x?: eMathMain.DecimalSource | undefined) => eMathMain.Decimal) & typeof eMathMain.Decimal;
 };
 export default eMath;

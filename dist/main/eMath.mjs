@@ -5548,6 +5548,17 @@ var Grid = class {
     return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
   }
 };
+
+// src/E/eMain.ts
+var E = (() => {
+  console.warn("The E function is deprecated. Use the Decimal class directly.");
+  const out = (x) => new Decimal(x);
+  Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
+  }).includes(b)).forEach((prop) => {
+    out[prop] = Decimal[prop];
+  });
+  return out;
+})();
 export {
   Attribute,
   AttributeStatic,
@@ -5557,6 +5568,7 @@ export {
   CurrencyStatic,
   DEFAULT_ITERATIONS,
   Decimal,
+  E,
   FORMATS,
   FormatTypeList,
   Grid,
