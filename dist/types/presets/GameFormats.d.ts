@@ -1,7 +1,7 @@
 /**
  * @file Game formats class.
  */
-import type { ESource, FormatType } from "../E/eMain";
+import type { DecimalSource, FormatType } from "../E/eMain";
 import type { Pointer } from "../game/Game";
 /**
  * Interface for format gain settings.
@@ -31,7 +31,7 @@ interface FormatSettings extends FormatGainSettings {
  * @param settings - The settings to use for formatting.
  * @returns The formatted value.
  */
-declare function gameFormat(value: ESource, settings: FormatSettings): string;
+declare function gameFormat(value: DecimalSource, settings: FormatSettings): string;
 /**
  * Formats the gain of a game format based on the provided settings.
  * @param value - The value to format.
@@ -39,7 +39,7 @@ declare function gameFormat(value: ESource, settings: FormatSettings): string;
  * @param settings - The settings for formatting the gain.
  * @returns The formatted gain as a string.
  */
-declare function gameFormatGain(value: ESource, gain: ESource, settings: FormatGainSettings): string;
+declare function gameFormatGain(value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string;
 /**
  * Class to represent a game format.
  */
@@ -58,26 +58,26 @@ declare class GameFormatClass {
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    format: (x: ESource) => string;
+    format: (x: DecimalSource) => string;
     /**
      * Formats the gain of a game format based on the provided settings.
      * @param x - The value to format.
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    gain: (x: ESource, gain: ESource) => string;
+    gain: (x: DecimalSource, gain: DecimalSource) => string;
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    time: (x: ESource) => string;
+    time: (x: DecimalSource) => string;
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    multi: (x: ESource) => string;
+    multi: (x: DecimalSource) => string;
 }
 /**
  * Interface for format options.

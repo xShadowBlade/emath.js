@@ -2,7 +2,7 @@
  * @file Declares the main game class.
  */
 
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { Currency, CurrencyStatic } from "../classes/Currency";
 import { Attribute, AttributeStatic } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
@@ -181,7 +181,7 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: ESource = 0): GameAttribute<B> {
+    public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: DecimalSource = 0): GameAttribute<B> {
         this.dataManager.setData(name, new Attribute(initial));
         this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name) as Attribute, useBoost, initial));
 

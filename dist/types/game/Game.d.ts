@@ -1,7 +1,7 @@
 /**
  * @file Declares the main game class.
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
@@ -110,7 +110,7 @@ declare class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    addAttribute<B extends boolean = true>(name: string, useBoost?: B, initial?: ESource): GameAttribute<B>;
+    addAttribute<B extends boolean = true>(name: string, useBoost?: B, initial?: DecimalSource): GameAttribute<B>;
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @param currenciesToReset - The currencies to reset.

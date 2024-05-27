@@ -4975,9 +4975,9 @@ var UpgradeStatic = class _UpgradeStatic {
   //  * @param end - The ending level or quantity to reach for the upgrade.
   //  * @returns The data of the upgrade.
   //  */
-  // public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
-  // public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
-  // public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
+  // public getCached (type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
+  // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
+  // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
   //     if (type === "sum") {
   //         return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
   //     } else {
@@ -4991,9 +4991,9 @@ var UpgradeStatic = class _UpgradeStatic {
   //  * @param end - The ending level or quantity to reach for the upgrade.
   //  * @param cost - The cost of the upgrade.
   //  */
-  // public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
-  // public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
-  // public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
+  // public setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
+  // public setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
+  // public setCached (type: "sum" | "el", start: DecimalSource, endOrStart: DecimalSource, costSum?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum {
   //     const data = type === "sum" ? {
   //         id: this.id,
   //         el: false,
@@ -5228,7 +5228,7 @@ var CurrencyStatic = class {
    * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
-  // public calculateUpgrade (id: string, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
+  // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: E, cost: E] {
   calculateUpgrade(id, target = Infinity, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {

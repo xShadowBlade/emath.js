@@ -2,7 +2,7 @@
  * @file Skill tree class
  * Work in progress
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { E } from "../E/eMain";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
@@ -34,7 +34,7 @@ declare class SkillNode implements ISkill {
      * @param maxLevel - The maximum level of the skill tree node. Defaults to 1.
      * @param required - The IDs of the required skill tree nodes.
      */
-    constructor(id: string, name: string, cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E], description?: string, effect?: (level: E, context: ISkill) => void, maxLevel?: ESource, required?: ISkill[]);
+    constructor(id: string, name: string, cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E], description?: string, effect?: (level: E, context: ISkill) => void, maxLevel?: DecimalSource, required?: ISkill[]);
     /**
      * Converts a skill to a skill tree node.
      * @param skillObj - The skill to convert to a skill tree node.

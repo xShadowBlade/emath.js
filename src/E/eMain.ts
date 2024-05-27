@@ -33,7 +33,7 @@ type E = Decimal;
 // console.log(E, Object.getOwnPropertyNames(E));
 // console.log(E.pow(2, 3).format());
 
-export { E, DecimalSource as ESource };
+export { E, DecimalSource };
 // export * from "./formats";
 export { FORMATS, FormatTypeList } from "./e";
 export type { FormatType } from "./e";

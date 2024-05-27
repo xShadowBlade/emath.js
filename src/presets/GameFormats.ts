@@ -1,7 +1,7 @@
 /**
  * @file Game formats class.
  */
-import type { ESource, FormatType } from "../E/eMain";
+import type { DecimalSource, FormatType } from "../E/eMain";
 import { E } from "../E/eMain";
 import type { Pointer } from "../game/Game";
 
@@ -35,7 +35,7 @@ interface FormatSettings extends FormatGainSettings {
  * @param settings - The settings to use for formatting.
  * @returns The formatted value.
  */
-function gameFormat (value: ESource, settings: FormatSettings): string {
+function gameFormat (value: DecimalSource, settings: FormatSettings): string {
     // Assign default settings (deprecated as default parameters are used instead)
     settings = Object.assign({
         formatType: "mixed_sc",
@@ -72,7 +72,7 @@ function gameFormat (value: ESource, settings: FormatSettings): string {
  * @param settings - The settings for formatting the gain.
  * @returns The formatted gain as a string.
  */
-function gameFormatGain (value: ESource, gain: ESource, settings: FormatGainSettings): string {
+function gameFormatGain (value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string {
     // return gameFormat(value, props.settings);
     const { formatType, acc, max } = settings;
     return E.formatGain(value, gain, formatType, acc, max);
@@ -102,7 +102,7 @@ class GameFormatClass {
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public format = (x: ESource): string => gameFormat(x, this.settings);
+    public format = (x: DecimalSource): string => gameFormat(x, this.settings);
 
     /**
      * Formats the gain of a game format based on the provided settings.
@@ -110,21 +110,21 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain = (x: ESource, gain: ESource): string => gameFormatGain(x, gain, this.settings);
+    public gain = (x: DecimalSource, gain: DecimalSource): string => gameFormatGain(x, gain, this.settings);
 
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public time = (x: ESource): string => gameFormat(x, { ...this.settings, time: true });
+    public time = (x: DecimalSource): string => gameFormat(x, { ...this.settings, time: true });
 
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public multi = (x: ESource): string => gameFormat(x, { ...this.settings, multi: true });
+    public multi = (x: DecimalSource): string => gameFormat(x, { ...this.settings, multi: true });
 }
 
 /**

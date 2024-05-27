@@ -3,7 +3,7 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
-import { E, ESource } from "../E/eMain";
+import { E, DecimalSource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 
@@ -190,7 +190,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    public gain (dt: ESource = 1000): E {
+    public gain (dt: DecimalSource = 1000): E {
         const toAdd = this.boost.calculate().mul(E(dt).div(1000));
         this.pointer.value = this.pointer.value.add(toAdd);
         return toAdd;
@@ -328,8 +328,8 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    // public calculateUpgrade (id: string, target: ESource = 1, el: boolean = false): [amount: E, cost: E] {
-    public calculateUpgrade (id: S, target: ESource = Infinity, mode?: MeanMode, iterations?: number): [amount: E, cost: E] {
+    // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: E, cost: E] {
+    public calculateUpgrade (id: S, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: E, cost: E] {
         // const [id] = args;
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
@@ -362,7 +362,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    public getNextCost (id: S, target: ESource = 1, mode?: MeanMode, iterations?: number): E {
+    public getNextCost (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): E {
         // throw new Error("This function is broken and may throw a RangeError. Use calculateUpgrade instead.");
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
@@ -388,7 +388,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    public getNextCostMax (id: S, target: ESource = 1, mode?: MeanMode, iterations?: number): E {
+    public getNextCostMax (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): E {
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
@@ -411,7 +411,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    public buyUpgrade (id: S, target?: ESource, mode?: MeanMode, iterations?: number): boolean {
+    public buyUpgrade (id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);

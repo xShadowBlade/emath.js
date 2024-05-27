@@ -430,7 +430,7 @@ export type { FormatType } from "../format";
 E.formats = formats;
 
 export { E };
-export type { CompareResult, DecimalSource as ESource };
+export type { CompareResult, DecimalSource as DecimalSource };
 /**
  * @deprecated Use {@link E} instead
  */

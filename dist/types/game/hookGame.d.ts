@@ -18,21 +18,21 @@ declare const eMath: {
     ConfigManager: typeof eMathGame.ConfigManager;
     LRUCache: typeof eMathMain.LRUCache;
     ListNode: typeof eMathMain.ListNode;
-    E: ((x?: eMathMain.ESource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
+    E: ((x?: eMathMain.DecimalSource | undefined) => import("../E/e").Decimal) & typeof import("../E/e").Decimal;
     FORMATS: {
         omega: {
             config: {
                 greek: string;
                 infinity: string;
             };
-            format(value: eMathMain.ESource): string;
+            format(value: eMathMain.DecimalSource): string;
         };
         omega_short: {
             config: {
                 greek: string;
                 infinity: string;
             };
-            format(value: eMathMain.ESource): string;
+            format(value: eMathMain.DecimalSource): string;
         };
         elemental: {
             config: {
@@ -47,31 +47,31 @@ declare const eMath: {
             format(value: import("../E/e").Decimal, acc?: number): string;
         };
         old_sc: {
-            format(ex: eMathMain.ESource, acc: number): string;
+            format(ex: eMathMain.DecimalSource, acc: number): string;
         };
         eng: {
-            format(ex: eMathMain.ESource, acc?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number): string;
         };
         mixed_sc: {
-            format(ex: eMathMain.ESource, acc?: number | undefined, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number): string;
         };
         layer: {
             layers: string[];
-            format(ex: eMathMain.ESource, acc?: number, max?: number | undefined): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number | undefined): string;
         };
         standard: {
             tier1(x: number): string;
             tier2(x: number): string;
         };
         inf: {
-            format(ex: eMathMain.ESource, acc?: number | undefined, max?: number | undefined): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number | undefined): string;
         };
         alphabet: {
             config: {
                 alphabet: string;
             };
-            getAbbreviation(ex: eMathMain.ESource, start?: eMathMain.ESource, startDouble?: boolean, abbStart?: number): string;
-            format(ex: eMathMain.ESource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.ESource, startDouble?: boolean, abbStart?: number | undefined): string;
+            getAbbreviation(ex: eMathMain.DecimalSource, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
         };
     };
     FormatTypeList: eMathMain.FormatType[];

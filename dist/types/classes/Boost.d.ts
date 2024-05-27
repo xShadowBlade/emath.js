@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { E } from "../E/eMain";
 import type { Pointer } from "../game/Game";
 /** An object representing a boost. */
@@ -70,7 +70,7 @@ declare class Boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: ESource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
+    constructor(baseEffect?: DecimalSource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
@@ -144,7 +144,7 @@ declare class Boost {
      * // Calculate the effect of all boosts
      * const finalEffect = boost.calculate();
      */
-    calculate(base?: ESource): E;
+    calculate(base?: DecimalSource): E;
 }
 export type { BoostsObjectInit };
 export { Boost, BoostObject };

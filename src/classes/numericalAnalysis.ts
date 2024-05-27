@@ -1,7 +1,7 @@
 /**
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { E } from "../E/eMain";
 
 /**
@@ -36,8 +36,8 @@ const DEFAULT_TOLERANCE = 1e-3;
 type MeanMode = "arithmetic" | "geometric" | 1 | 2;
 
 interface EqualsToleranceBounds {
-    lowerBound: ESource;
-    upperBound: ESource;
+    lowerBound: DecimalSource;
+    upperBound: DecimalSource;
 }
 
 /**
@@ -65,7 +65,7 @@ interface EqualsToleranceConfig {
  * @param config - The configuration object.
  * @returns Whether the values are equal within the tolerance.
  */
-function equalsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: Partial<EqualsToleranceConfig>): boolean {
+function equalsTolerance (a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EqualsToleranceConfig>): boolean {
     // Set the default values
     config = Object.assign({}, {
         verbose: false,
@@ -107,7 +107,7 @@ function equalsTolerance (a: ESource, b: ESource, tolerance: ESource, config?: P
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE): { value: E; lowerBound: E; upperBound: E } {
+function inverseFunctionApprox (f: (x: E) => E, n: DecimalSource, mode: MeanMode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE): { value: E; lowerBound: E; upperBound: E } {
     // Set the initial bounds
     let lowerBound = E(1);
     // let upperBound = E(n);
@@ -188,7 +188,7 @@ function inverseFunctionApprox (f: (x: E) => E, n: ESource, mode: MeanMode = "ge
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: ESource = DEFAULT_TOLERANCE): E {
+function calculateSumLoop (f: (n: E) => E, b: DecimalSource, a: DecimalSource = 0, epsilon: DecimalSource = DEFAULT_TOLERANCE): E {
     // epsilon = epsilon;
     let sum: E = E();
 
@@ -219,7 +219,7 @@ function calculateSumLoop (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon: 
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterations: number = DEFAULT_ITERATIONS): E {
+function calculateSumApprox (f: (n: E) => E, b: DecimalSource, a: DecimalSource = 0, iterations: number = DEFAULT_ITERATIONS): E {
     // Initialize the values
     a = E(a);
     b = E(b);
@@ -249,7 +249,7 @@ function calculateSumApprox (f: (n: E) => E, b: ESource, a: ESource = 0, iterati
  * const sum = calculateSum(f, 10);
  * console.log(sum); // ~385
  */
-function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESource, iterations?: number): E {
+function calculateSum (f: (n: E) => E, b: DecimalSource, a: DecimalSource = 0, epsilon?: DecimalSource, iterations?: number): E {
     a = E(a);
     b = E(b);
     if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
@@ -272,7 +272,7 @@ function calculateSum (f: (n: E) => E, b: ESource, a: ESource = 0, epsilon?: ESo
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-function roundingBase (x: ESource, base: ESource = 10, acc: ESource = 0, max: ESource = 1000): E {
+function roundingBase (x: DecimalSource, base: DecimalSource = 10, acc: DecimalSource = 0, max: DecimalSource = 1000): E {
     x = E(x);
     // If the number is too large, don't round it
     if (x.gte(E.pow(base, max))) return x;

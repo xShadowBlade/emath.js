@@ -258,7 +258,7 @@ declare const formats: {
 export { ST_NAMES, FormatTypeList } from "../format";
 export type { FormatType } from "../format";
 export { E };
-export type { CompareResult, DecimalSource as ESource };
+export type { CompareResult, DecimalSource as DecimalSource };
 /**
  * @deprecated Use {@link E} instead
  */

@@ -2,7 +2,7 @@
  * @file Declares the currency class and its related classes (upgrade)
  */
 import "reflect-metadata";
-import { E, ESource } from "../E/eMain";
+import { E, DecimalSource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { Boost } from "./Boost";
@@ -105,7 +105,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    gain(dt?: ESource): E;
+    gain(dt?: DecimalSource): E;
     /**
      * Adds an upgrade to the data class.
      * @param upgrades - Upgrade to add
@@ -182,7 +182,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: S, target?: ESource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
+    calculateUpgrade(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -195,7 +195,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: S, target?: ESource, mode?: MeanMode, iterations?: number): E;
+    getNextCost(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): E;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param id - Index or ID of the upgrade
@@ -209,7 +209,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    getNextCostMax(id: S, target?: ESource, mode?: MeanMode, iterations?: number): E;
+    getNextCostMax(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): E;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.
@@ -221,6 +221,6 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: S, target?: ESource, mode?: MeanMode, iterations?: number): boolean;
+    buyUpgrade(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
 }
 export { Currency, CurrencyStatic };

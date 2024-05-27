@@ -3,7 +3,7 @@
  */
 import "reflect-metadata";
 import { Type, Expose } from "class-transformer";
-import { E, ESource } from "../E/eMain";
+import { E, DecimalSource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
@@ -25,7 +25,7 @@ import type { CurrencyStatic } from "./Currency";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-function calculateUpgrade (value: ESource, upgrade: UpgradeStatic, start?: ESource, end: ESource = Infinity, mode?: MeanMode, iterations?: number, el = false): [amount: E, cost: E] {
+function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end: DecimalSource = Infinity, mode?: MeanMode, iterations?: number, el = false): [amount: E, cost: E] {
     value = E(value);
     start = E(start ?? upgrade.level);
     end = E(end);
@@ -269,7 +269,7 @@ type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
  * @param n - The decimal number to convert.
  * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
  */
-function decimalToJSONString (n: ESource): DecimalJSONString {
+function decimalToJSONString (n: DecimalSource): DecimalJSONString {
     n = E(n);
     return `${n.sign}/${n.mag}/${n.layer}`;
 }
@@ -281,7 +281,7 @@ function decimalToJSONString (n: ESource): DecimalJSONString {
  * @param end - The ending level or quantity to reach for the upgrade.
  * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
  */
-function upgradeToCacheNameSum (start: ESource, end: ESource): UpgradeCachedSumName {
+function upgradeToCacheNameSum (start: DecimalSource, end: DecimalSource): UpgradeCachedSumName {
     // return `${upgrade.id}/sum/${start.toString()}/${end.toString()}/${cost.toString()}` as UpgradeCachedSumName;
     return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
 }
@@ -292,7 +292,7 @@ function upgradeToCacheNameSum (start: ESource, end: ESource): UpgradeCachedSumN
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
-function upgradeToCacheNameEL (level: ESource): UpgradeCachedELName {
+function upgradeToCacheNameEL (level: DecimalSource): UpgradeCachedELName {
     // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
     return `el/${decimalToJSONString(level)}`;
 }
@@ -395,7 +395,7 @@ class UpgradeStatic implements IUpgradeStatic {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
     }
-    set level (n: ESource) {
+    set level (n: DecimalSource) {
         this.data.level = E(n);
     }
 
@@ -428,9 +428,9 @@ class UpgradeStatic implements IUpgradeStatic {
     //  * @param end - The ending level or quantity to reach for the upgrade.
     //  * @returns The data of the upgrade.
     //  */
-    // public getCached (type: "sum", start: ESource, end: ESource): UpgradeCachedSum | undefined;
-    // public getCached (type: "el", start: ESource): UpgradeCachedEL | undefined;
-    // public getCached (type: "sum" | "el", start: ESource, end?: ESource): UpgradeCachedEL | UpgradeCachedSum | undefined {
+    // public getCached (type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
+    // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
+    // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
     //     if (type === "sum") {
     //         return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
     //     } else {
@@ -445,9 +445,9 @@ class UpgradeStatic implements IUpgradeStatic {
     //  * @param end - The ending level or quantity to reach for the upgrade.
     //  * @param cost - The cost of the upgrade.
     //  */
-    // public setCached(type: "sum", start: ESource, end: ESource, cost: ESource): UpgradeCachedSum;
-    // public setCached(type: "el", level: ESource, cost: ESource): UpgradeCachedEL;
-    // public setCached (type: "sum" | "el", start: ESource, endOrStart: ESource, costSum?: ESource): UpgradeCachedEL | UpgradeCachedSum {
+    // public setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
+    // public setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
+    // public setCached (type: "sum" | "el", start: DecimalSource, endOrStart: DecimalSource, costSum?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum {
     //     const data = type === "sum" ? {
     //         id: this.id,
     //         el: false,

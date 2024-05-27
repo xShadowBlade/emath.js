@@ -2,7 +2,7 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import { E, ESource } from "../E/eMain";
+import { E, DecimalSource } from "../E/eMain";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
@@ -23,7 +23,7 @@ import type { CurrencyStatic } from "./Currency";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
  */
-declare function calculateUpgrade(value: ESource, upgrade: UpgradeStatic, start?: ESource, end?: ESource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
+declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
 /**
  * Interface for initializing an upgrade.
  */
@@ -145,14 +145,14 @@ type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
  * @param n - The decimal number to convert.
  * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
  */
-declare function decimalToJSONString(n: ESource): DecimalJSONString;
+declare function decimalToJSONString(n: DecimalSource): DecimalJSONString;
 /**
  * Converts an upgrade to a cache name (EL)
  * @deprecated Use an object index instead.
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
-declare function upgradeToCacheNameEL(level: ESource): UpgradeCachedELName;
+declare function upgradeToCacheNameEL(level: DecimalSource): UpgradeCachedELName;
 /**
  * Interface for an upgrade that is cached.
  * We need a cache to reduce redundant calculations.
@@ -232,7 +232,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
      * @returns The current level of the upgrade.
      */
     get level(): E;
-    set level(n: ESource);
+    set level(n: DecimalSource);
     /**
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.

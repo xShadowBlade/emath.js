@@ -3,7 +3,7 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
-import { E, ESource } from "../E/eMain";
+import { E, DecimalSource } from "../E/eMain";
 import { Boost } from "./Boost";
 import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
@@ -21,7 +21,7 @@ class Attribute {
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
      */
-    constructor (initial: ESource = 0) {
+    constructor (initial: DecimalSource = 0) {
         this.value = E(initial);
     }
 }
@@ -65,7 +65,7 @@ class AttributeStatic<B extends boolean = true> {
      * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: ESource = 0) {
+    constructor (pointer?: Pointer<Attribute>, useBoost: B = true as B, initial: DecimalSource = 0) {
         // Assign the initial value
         this.initial = E(initial);
 

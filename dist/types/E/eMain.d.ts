@@ -10,6 +10,6 @@ import type { DecimalSource } from "./e";
  */
 declare const E: ((x?: DecimalSource) => Decimal) & typeof Decimal;
 type E = Decimal;
-export { E, DecimalSource as ESource };
+export { E, DecimalSource };
 export { FORMATS, FormatTypeList } from "./e";
 export type { FormatType } from "./e";

@@ -2,7 +2,7 @@
  * @file Skill tree class
  * Work in progress
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { E } from "../E/eMain";
 // import { calculateUpgrade } from "./currency";
 import type { CurrencyStatic } from "./Currency";
@@ -38,11 +38,11 @@ class SkillNode implements ISkill {
         cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E],
         description?: string,
         effect?: (level: E, context: ISkill) => void,
-        maxLevel?: ESource,
+        maxLevel?: DecimalSource,
         required?: ISkill[],
     )
     // constructor (skillNode: ISkill);
-    // constructor (idOrSkillNode: string | ISkill, name: string, description: string, cost: ESource, effect: (level: E, context: ISkill) => void, maxLevel: ESource, required: ISkill[])
+    // constructor (idOrSkillNode: string | ISkill, name: string, description: string, cost: DecimalSource, effect: (level: E, context: ISkill) => void, maxLevel: DecimalSource, required: ISkill[])
     {
         // if (typeof idOrSkillNode === "object") {
         //     const skillNode = idOrSkillNode;

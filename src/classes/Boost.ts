@@ -1,7 +1,7 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import type { ESource } from "../E/eMain";
+import type { DecimalSource } from "../E/eMain";
 import { E } from "../E/eMain";
 // import { Type, Expose } from "class-transformer";
 import type { Pointer } from "../game/Game";
@@ -104,7 +104,7 @@ class Boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect: ESource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
+    constructor (baseEffect: DecimalSource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
         boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
         this.baseEffect = E(baseEffect);
         this.boostArray = [];
@@ -242,7 +242,7 @@ class Boost {
      * // Calculate the effect of all boosts
      * const finalEffect = boost.calculate();
      */
-    public calculate (base: ESource = this.baseEffect): E {
+    public calculate (base: DecimalSource = this.baseEffect): E {
         let output: E = E(base);
         let boosts = this.boostArray;
         // Sort boosts by order from lowest to highest
