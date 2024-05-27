@@ -2,8 +2,7 @@
  * @file Declares the currency class and its related classes (upgrade)
  */
 import "reflect-metadata";
-import { E, DecimalSource } from "../E/eMain";
-import { Decimal } from "../E/e";
+import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
@@ -23,7 +22,7 @@ type IsPrimitiveString<T> = "random string that no one should ever get randomly"
  */
 declare class Currency {
     /** The current value of the currency. */
-    value: E;
+    value: Decimal;
     /** An array that represents upgrades and their levels. */
     upgrades: Record<string, UpgradeData>;
     /**
@@ -39,7 +38,7 @@ declare class Currency {
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
- * console.log(currency.value); // E(1)
+ * console.log(currency.value); // new Decimal(1)
  */
 declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
@@ -51,16 +50,16 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
     /** A boost object that affects the currency gain. */
     readonly boost: Boost;
     /** The default value of the currency. */
-    readonly defaultVal: E;
+    readonly defaultVal: Decimal;
     /** The default boost of the currency. */
-    readonly defaultBoost: E;
+    readonly defaultBoost: Decimal;
     /**
      * The current value of the currency.
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
      */
-    get value(): E;
-    set value(value: E);
+    get value(): Decimal;
+    set value(value: Decimal);
     /**
      * Constructs a new currnecy
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
@@ -70,11 +69,11 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * const currency = new CurrencyStatic(undefined, [
      *     {
      *         id: "upgId1",
-     *         cost: (level: E): E => level.mul(10),
+     *         cost: (level: Decimal): Decimal => level.mul(10),
      *     },
      *     {
      *         id: "upgId2",
-     *         cost: (level: E): E => level.mul(20),
+     *         cost: (level: Decimal): Decimal => level.mul(20),
      *     }
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
@@ -94,7 +93,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
-     * console.log(currency.value); // E(0), or the default value
+     * console.log(currency.value); // new Decimal(0), or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
     /**
@@ -105,7 +104,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    gain(dt?: DecimalSource): E;
+    gain(dt?: DecimalSource): Decimal;
     /**
      * Adds an upgrade to the data class.
      * @param upgrades - Upgrade to add
@@ -148,7 +147,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      *             "healthBoost",
      *             "Health Boost",
      *             "Boosts health by 2x per level.",
-     *             n => n.mul(E.pow(2, level.sub(1))),
+     *             n => n.mul(Decimal.pow(2, level.sub(1))),
      *             2,
      *         );
      *     }
@@ -177,12 +176,12 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: E, cost: E];
+    calculateUpgrade(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -195,7 +194,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): E;
+    getNextCost(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param id - Index or ID of the upgrade
@@ -206,10 +205,10 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * @example
      * // Calculate the cost of the next healthBoost upgrade
      * currency.gain(1e6); // Gain 1 thousand currency
-     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
+     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    getNextCostMax(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): E;
+    getNextCostMax(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the upgrade to buy or upgrade.

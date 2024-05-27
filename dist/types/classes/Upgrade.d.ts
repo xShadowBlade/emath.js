@@ -2,8 +2,7 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import { E, DecimalSource } from "../E/eMain";
-import { Decimal } from "../E/e";
+import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../game/Game";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
@@ -21,9 +20,9 @@ import type { CurrencyStatic } from "./Currency";
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+ * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
  */
-declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: E, cost: E];
+declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
 /**
  * Interface for initializing an upgrade.
  */
@@ -65,33 +64,33 @@ interface UpgradeInit {
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
      */
-    cost: (level: E) => E;
+    cost: (level: Decimal) => Decimal;
     /**
      * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
      * EL is automatically applied to the cost.
      * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade. If you want to buy the maximum amount of upgrades possible, this will be `Infinity`.
-     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [E(0), E(0)].
+     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
      * @example
      * // A cost function that returns the sum of the levels and the target.
      * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: E, level: E, target: E) => [amount: E, cost: E];
+    costBulk?: (currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal];
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
      */
-    maxLevel?: E;
+    maxLevel?: Decimal;
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    effect?: (level: E, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
+    effect?: (level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
@@ -102,7 +101,7 @@ interface UpgradeInit {
      * The default level of the upgrade.
      * Automatically set to `1` if not provided.
      */
-    level?: E;
+    level?: Decimal;
 }
 /**
  * Infers the id type of an upgrade array
@@ -111,11 +110,11 @@ interface UpgradeInit {
  * const testUpg = [
  *     {
  *         id: "upgId1",
- *         cost: (level: E): E => level.mul(10),
+ *         cost: (level: Decimal): Decimal => level.mul(10),
  *     },
  *     {
  *         id: "upgId2",
- *         cost: (level: E): E => level.mul(20),
+ *         cost: (level: Decimal): Decimal => level.mul(20),
  *     },
  * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
  *
@@ -169,8 +168,8 @@ interface UpgradeCached extends Pick<UpgradeInit, "id" | "el"> {
     endUpper: UpgradeCachedLevel;
 }
 interface UpgradeCachedLevel {
-    level: E;
-    cost: E;
+    level: Decimal;
+    cost: Decimal;
 }
 /**
  * Interface for upgrade data.
@@ -193,10 +192,10 @@ declare class UpgradeData implements IUpgradeData {
  * Interface for an upgrade.
  */
 interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
-    maxLevel?: E;
+    maxLevel?: Decimal;
     name: string;
     description: string;
-    defaultLevel: E;
+    defaultLevel: Decimal;
     /**
      * A function that returns a description of the upgrade.
      * @deprecated Use a getter function instead.
@@ -217,7 +216,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     descriptionFn: (...args: any[]) => string;
-    defaultLevel: E;
+    defaultLevel: Decimal;
     /** The default size of the cache. Should be one less than a power of 2. */
     static cacheSize: number;
     /** The cache to store the values of certain upgrade levels */
@@ -231,7 +230,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
      */
-    get level(): E;
+    get level(): Decimal;
     set level(n: DecimalSource);
     /**
      * Constructs a new static upgrade object.

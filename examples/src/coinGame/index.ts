@@ -4,7 +4,7 @@
  * that when pressed gives you coins that you can use
  * on an upgrade that gives you more coins on gain.
  */
-import { E, UpgradeInit } from "emath.js";
+import { Decimal, UpgradeInit } from "emath.js";
 import { Game } from "emath.js/game";
 
 // Initialize game
@@ -35,7 +35,7 @@ const coinsUpgrades = [
                 1,
             );
         },
-        maxLevel: E(1000), // Max level of 1000
+        maxLevel: new Decimal(1000), // Max level of 1000
     }
 ] as const satisfies UpgradeInit[];
 
@@ -52,7 +52,7 @@ const coinsDisplay = document.getElementById("coinsDisplay");
 function updateDisplay () {
     // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     coinsDisplay!.innerHTML = `
-        Coins: ${coins.value.format()} (${E.formats.formatMult(coins.static.boost.calculate())})
+        Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.static.boost.calculate())})
         <br>
         Upgrade 1 Level: ${coins.static.getUpgrade("upg1Coins").level.format()}
     `;

@@ -2,15 +2,15 @@
  * @file Skill tree class
  * Work in progress
  */
-import type { DecimalSource } from "../E/eMain";
-import { E } from "../E/eMain";
+import type { DecimalSource } from "../E/e";
+import { Decimal } from "../E/e";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
-    cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
-    costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
+    cost: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => Decimal];
+    costBulk?: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => [cost: Decimal, amount: Decimal]];
     required: ISkill[];
-    effect?: (level: E, context: ISkill) => void;
+    effect?: (level: Decimal, context: ISkill) => void;
 }
 /**
  * Represents a skill tree node.
@@ -20,10 +20,10 @@ declare class SkillNode implements ISkill {
     id: string;
     name: string;
     description: string;
-    cost: [currency: CurrencyStatic<[], string>, cost: (level: E, context: ISkill) => E];
+    cost: [currency: CurrencyStatic<[], string>, cost: (level: Decimal, context: ISkill) => Decimal];
     required: ISkill[];
-    maxLevel: import("../E/e").Decimal;
-    effect: ((level: E, context: ISkill) => void) | undefined;
+    maxLevel: Decimal;
+    effect: ((level: Decimal, context: ISkill) => void) | undefined;
     /**
      * Represents a skill tree node.
      * @param id - The ID of the skill tree node.
@@ -34,7 +34,7 @@ declare class SkillNode implements ISkill {
      * @param maxLevel - The maximum level of the skill tree node. Defaults to 1.
      * @param required - The IDs of the required skill tree nodes.
      */
-    constructor(id: string, name: string, cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E], description?: string, effect?: (level: E, context: ISkill) => void, maxLevel?: DecimalSource, required?: ISkill[]);
+    constructor(id: string, name: string, cost: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => Decimal], description?: string, effect?: (level: Decimal, context: ISkill) => void, maxLevel?: DecimalSource, required?: ISkill[]);
     /**
      * Converts a skill to a skill tree node.
      * @param skillObj - The skill to convert to a skill tree node.

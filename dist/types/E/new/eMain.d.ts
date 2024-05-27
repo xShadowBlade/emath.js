@@ -33,23 +33,23 @@ interface DecimalAddedMethodsInterface {
      */
     scale(this: Decimal, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
     /**
-     * Formats the E instance with a specified accuracy and maximum Decimal places.
+     * Formats the Decimal instance with a specified accuracy and maximum Decimal places.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     format(this: Decimal, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum Decimal places.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of Decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     formatST(this: Decimal, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the gain rate using the E instance.
+     * Formats the gain rate using the Decimal instance.
      * @param gain - The gain value to compare
      * @param [type] - The type of format (default mixed scientific)
      * @param [acc] - The desired accuracy (number of significant figures).
@@ -63,16 +63,16 @@ interface DecimalAddedMethodsInterface {
      */
     formatGain(gain: DecimalSource, type: FormatType, acc?: number, max?: number): string;
     /**
-     * Converts the E instance to a Roman numeral representation.
+     * Converts the Decimal instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the Decimal value,
+     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman(this: Decimal, max?: DecimalSource): string | Decimal;
 }
 declare module "./declare" {
     /**
-     * @deprecated If you are using `emath.js`, use {@link E} instead
+     * @deprecated If you are using `emath.js`, use {@link Decimal} instead
      */
     interface Decimal extends DecimalAddedMethodsInterface {
     }
@@ -88,14 +88,14 @@ declare const DecimalAddedStaticMethods: {
      * @param deltaTime - The time elapsed since the last frame in seconds.
      * @returns - The interpolated value between `current` and `target`.
      */
-    smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
+    smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): any;
     /**
-     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
      * @alias Decimal.normalizeFromComponents
      * @param x - The number to clone
      * @returns - The cloned number
      */
-    clone(x: Decimal): Decimal;
+    clone(x: any): any;
     /**
      * Applies a soft cap to a Decimal value using a specified soft cap function.
      * See {@link DecimalAddedMethods.softcap} for more details.
@@ -106,7 +106,7 @@ declare const DecimalAddedStaticMethods: {
      * or "exp" for exponential soft cap.
      * @returns The Decimal value after applying the soft cap.
      */
-    softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): Decimal;
+    softcap(value: DecimalSource, start: DecimalSource, power: number, mode: string): any;
     /**
      * Scales a currency value using a specified scaling function.
      * See {@link DecimalAddedMethods.scale} for more details.
@@ -117,29 +117,29 @@ declare const DecimalAddedStaticMethods: {
      * @param rev - Whether to reverse the scaling operation
      * @returns The scaled currency value.
      */
-    scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
+    scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): any;
     /**
-     * Formats the E instance with a specified accuracy and maximum Decimal places.
+     * Formats the Decimal instance with a specified accuracy and maximum Decimal places.
      * See {@link DecimalAddedMethods.format} for more details.
-     * @param e - The E instance to format.
+     * @param e - The Decimal instance to format.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of Decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     format(e: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the E instance in standard leter notation with a specified accuracy and maximum Decimal places.
+     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum Decimal places.
      * See {@link DecimalAddedMethods.formatST} for more details.
      * @param value - The value to format.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of Decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     formatST(value: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the gain rate using the E instance.
+     * Formats the gain rate using the Decimal instance.
      * See {@link DecimalAddedMethods.formatGain} for more details.
      * @param value - The value to compare
      * @param gain - The gain value to compare
@@ -150,12 +150,12 @@ declare const DecimalAddedStaticMethods: {
      */
     formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     /**
-     * Converts the E instance to a Roman numeral representation.
+     * Converts the Decimal instance to a Roman numeral representation.
      * See {@link DecimalAddedMethods.toRoman} for more details.
      * @param value - The value to convert to a Roman numeral.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the Decimal value,
+     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;
     /**
@@ -165,7 +165,7 @@ declare const DecimalAddedStaticMethods: {
      * @param [max] - The maximum value, defaults to `1`.
      * @returns A random Decimal value between the minimum and maximum values.
      */
-    random(min?: DecimalSource, max?: DecimalSource): Decimal;
+    random(min?: DecimalSource, max?: DecimalSource): any;
     /**
      * Returns a random boolean value based on the specified probability.
      * @param rng - The probability of returning `true`. Must be between `0` and `1`.
@@ -183,10 +183,10 @@ declare const DecimalAddedStaticMethods: {
  * @param x - The value to convert to a Decimal instance.
  * @returns - The Decimal instance.
  */
-declare const E: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & {
+declare const Decimal: ((x?: DecimalSource) => Decimal) & typeof Decimal & typeof DecimalAddedStaticMethods & {
     formats: typeof formats;
 };
-type E = Decimal;
+type Decimal = Decimal;
 declare const formats: {
     toSubscript: (value: number) => string;
     toSuperscript: (value: number) => string;
@@ -257,9 +257,9 @@ declare const formats: {
 };
 export { ST_NAMES, FormatTypeList } from "../format";
 export type { FormatType } from "../format";
-export { E };
+export { Decimal };
 export type { CompareResult, DecimalSource as DecimalSource };
 /**
- * @deprecated Use {@link E} instead
+ * @deprecated Use {@link Decimal} instead
  */
 export { Decimal };

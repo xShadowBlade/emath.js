@@ -1,7 +1,7 @@
 /**
  * @file Declares the game currency class.
  */
-import type { E } from "../E/eMain";
+import type { Decimal } from "../E/e";
 import type { Currency, CurrencyStatic } from "../classes/Currency";
 import type { UpgradeInit } from "../classes/Upgrade";
 import type { Game, Pointer } from "./Game";
@@ -37,6 +37,6 @@ declare class GameCurrency<N extends string = string, U extends UpgradeInit[] = 
      * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
      * @returns The value of the game currency.
      */
-    get value(): E;
+    get value(): Decimal;
 }
 export { GameCurrency };

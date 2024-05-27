@@ -1,5 +1,5 @@
 /**
- * @file Declares a generator function for formats for the E library.
+ * @file Declares a generator function for formats for the Decimal library.
  */
 import type { Decimal as DecimalType, DecimalSource } from "./e";
 
@@ -27,7 +27,7 @@ const ST_NAMES = [
 const FormatTypeList: FormatType[] = ["st", "sc", "scientific", "omega", "omega_short", "elemental", "old_sc", "eng", "mixed_sc", "layer", "standard", "inf", "alphabet"];
 
 /**
- * Generates a format function for the E library.
+ * Generates a format function for the Decimal library.
  * @param Decimal - The Decimal constructor to use.
  * @returns - The format function.
  */
@@ -734,7 +734,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 altName: "Peta",
             },
             {
-                name: "E",
+                name: "Decimal",
                 altName: "Exa",
             },
             {

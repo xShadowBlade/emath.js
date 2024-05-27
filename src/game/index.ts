@@ -5,7 +5,7 @@
 import "reflect-metadata";
 
 // Module augmentation
-import "../E/eMain";
+import "../E/e";
 
 export * from "./Game";
 export * from "./GameCurrency";

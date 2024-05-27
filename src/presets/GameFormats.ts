@@ -1,8 +1,8 @@
 /**
  * @file Game formats class.
  */
-import type { DecimalSource, FormatType } from "../E/eMain";
-import { E } from "../E/eMain";
+import type { DecimalSource, FormatType } from "../E/e";
+import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 
 /**
@@ -51,18 +51,18 @@ function gameFormat (value: DecimalSource, settings: FormatSettings): string {
     if (time) {
         switch (formatTimeType) {
             case "short":
-                return E.formats.formatTime(value, acc, formatType);
+                return Decimal.formats.formatTime(value, acc, formatType);
             case "long":
-                return E.formats.formatTimeLong(value, true, 0, max, formatType);
+                return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
         }
     }
 
     // Format multi
     if (multi) {
         // TODO: Fix params
-        return E.formats.formatMult(value, acc);
+        return Decimal.formats.formatMult(value, acc);
     }
-    return E.format(value, acc, max, formatType);
+    return Decimal.format(value, acc, max, formatType);
 };
 
 /**
@@ -75,7 +75,7 @@ function gameFormat (value: DecimalSource, settings: FormatSettings): string {
 function gameFormatGain (value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string {
     // return gameFormat(value, props.settings);
     const { formatType, acc, max } = settings;
-    return E.formatGain(value, gain, formatType, acc, max);
+    return Decimal.formatGain(value, gain, formatType, acc, max);
 }
 
 /**

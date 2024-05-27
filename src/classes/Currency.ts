@@ -3,8 +3,8 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
-import { E, DecimalSource } from "../E/eMain";
-import { Decimal } from "../E/e";
+import { Decimal, DecimalSource } from "../E/e";
+// import { Decimal } from "../E/e";
 import type { Pointer } from "../game/Game";
 
 import { Boost } from "./Boost";
@@ -36,7 +36,7 @@ type Mutable<T> = {
 class Currency {
     /** The current value of the currency. */
     @Type(() => Decimal)
-    public value: E;
+    public value: Decimal;
 
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
@@ -51,7 +51,7 @@ class Currency {
      * Constructs a new currency object with an initial value of 0.
      */
     constructor () {
-        this.value = E(0);
+        this.value = new Decimal(0);
         // this.upgrades = [];
         this.upgrades = {};
         // this.boost = new boost();
@@ -66,7 +66,7 @@ class Currency {
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
- * console.log(currency.value); // E(1)
+ * console.log(currency.value); // new Decimal(1)
  */
 class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
@@ -89,20 +89,20 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
     public readonly boost: Boost;
 
     /** The default value of the currency. */
-    public readonly defaultVal: E;
+    public readonly defaultVal: Decimal;
 
     /** The default boost of the currency. */
-    public readonly defaultBoost: E;
+    public readonly defaultBoost: Decimal;
 
     /**
      * The current value of the currency.
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
      */
-    get value (): E {
+    get value (): Decimal {
         return this.pointer.value;
     }
-    set value (value: E) {
+    set value (value: Decimal) {
         this.pointer.value = value;
     }
 
@@ -115,18 +115,18 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * const currency = new CurrencyStatic(undefined, [
      *     {
      *         id: "upgId1",
-     *         cost: (level: E): E => level.mul(10),
+     *         cost: (level: Decimal): Decimal => level.mul(10),
      *     },
      *     {
      *         id: "upgId2",
-     *         cost: (level: E): E => level.mul(20),
+     *         cost: (level: Decimal): Decimal => level.mul(20),
      *     }
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
-        // this.defaultVal = E(defaultVal);
-        // this.defaultBoost = E(defaultBoost);
+    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: new Decimal(0), defaultBoost: new Decimal(1) }) {
+        // this.defaultVal = new Decimal(defaultVal);
+        // this.defaultBoost = new Decimal(defaultBoost);
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
 
@@ -167,16 +167,16 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
-     * console.log(currency.value); // E(0), or the default value
+     * console.log(currency.value); // new Decimal(0), or the default value
      */
     public reset (resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true): void {
         if (resetCurrency) this.value = this.defaultVal;
         if (resetUpgradeLevels) {
             // this.upgrades.forEach((upgrade) => {
-            //     upgrade.level = E(0);
+            //     upgrade.level = new Decimal(0);
             // });
             for (const upgrade of Object.values(this.upgrades)) {
-                (upgrade as UpgradeStatic).level = E((upgrade as UpgradeStatic).defaultLevel);
+                (upgrade as UpgradeStatic).level = new Decimal((upgrade as UpgradeStatic).defaultLevel);
                 if (runUpgradeEffect) (upgrade as UpgradeStatic).effect?.((upgrade as UpgradeStatic).level, (upgrade as UpgradeStatic), this as CurrencyStatic);
             }
         };
@@ -190,8 +190,8 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    public gain (dt: DecimalSource = 1000): E {
-        const toAdd = this.boost.calculate().mul(E(dt).div(1000));
+    public gain (dt: DecimalSource = 1000): Decimal {
+        const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1000));
         this.pointer.value = this.pointer.value.add(toAdd);
         return toAdd;
     }
@@ -259,7 +259,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      *             "healthBoost",
      *             "Health Boost",
      *             "Boosts health by 2x per level.",
-     *             n => n.mul(E.pow(2, level.sub(1))),
+     *             n => n.mul(Decimal.pow(2, level.sub(1))),
      *             2,
      *         );
      *     }
@@ -323,28 +323,28 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: E, cost: E] {
-    public calculateUpgrade (id: S, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: E, cost: E] {
+    // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: Decimal, cost: Decimal] {
+    public calculateUpgrade (id: S, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal] {
         // const [id] = args;
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return [E(0), E(0)];
+            return [new Decimal(0), new Decimal(0)];
         }
 
         // Calculate the target based on the maxLevel
         target = upgrade.level.add(target);
 
         if (upgrade.maxLevel !== undefined) {
-            // target = E.min(target, upgrade.maxLevel.sub(upgrade.level));
+            // target = Decimal.min(target, upgrade.maxLevel.sub(upgrade.level));
             // console.log({ target, maxLevel: upgrade.maxLevel, level: upgrade.level });
 
-            target = E.min(target, upgrade.maxLevel);
+            target = Decimal.min(target, upgrade.maxLevel);
         }
 
         return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
@@ -362,12 +362,12 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    public getNextCost (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): E {
+    public getNextCost (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
         // throw new Error("This function is broken and may throw a RangeError. Use calculateUpgrade instead.");
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return E(0);
+            return new Decimal(0);
         }
         const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
 
@@ -385,14 +385,14 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @example
      * // Calculate the cost of the next healthBoost upgrade
      * currency.gain(1e6); // Gain 1 thousand currency
-     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
+     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    public getNextCostMax (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): E {
+    public getNextCostMax (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return E(0);
+            return new Decimal(0);
         }
         const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
         const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0]))
@@ -448,11 +448,11 @@ export { Currency, CurrencyStatic };
 // const upgsTest = [
 //     {
 //         id: "upgId1",
-//         cost: (level: E): E => level.mul(10),
+//         cost: (level: Decimal): Decimal => level.mul(10),
 //     },
 //     {
 //         id: "upgId2",
-//         cost: (level: E): E => level.mul(20),
+//         cost: (level: Decimal): Decimal => level.mul(20),
 //     },
 // ] as const satisfies UpgradeInit[];
 
@@ -462,7 +462,7 @@ export { Currency, CurrencyStatic };
 
 /*
 import { calculateSum } from "./numericalAnalysis";
-const costFn = (level: E) => level.pow(2);
+const costFn = (level: Decimal) => level.pow(2);
 
 const testUpgrade: UpgradeInit = {
     id: "healthBoost",
@@ -495,12 +495,12 @@ const myCurrency = new CurrencyStatic(new Currency(), [
 
 // Gain currency
 
-// console.log("calc sum", calculateSum(costFn, E(100)));
-calculateSum(costFn, E(1000), 0, "1e-4");
+// console.log("calc sum", calculateSum(costFn, new Decimal(100)));
+calculateSum(costFn, new Decimal(1000), 0, "1e-4");
 
-const x = E("123.34344e3");
+const x = new Decimal("123.34344e3");
 
-const formatFn = (n: E) => n.format(5, 9, "sc");
+const formatFn = (n: Decimal) => n.format(5, 9, "sc");
 for (let i = 0; i < 3; i++) {
     myCurrency.gain(x.mul(1000));
 
@@ -515,7 +515,7 @@ for (let i = 0; i < 3; i++) {
 
     console.log({
         calc: calc.map(formatFn),
-        acc: formatFn(costFn(upgrade?.level ?? E(1)).div(newCurrency)),
+        acc: formatFn(costFn(upgrade?.level ?? new Decimal(1)).div(newCurrency)),
     });
 
     console.log({

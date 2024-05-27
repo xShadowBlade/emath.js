@@ -763,7 +763,7 @@ function decimalFormatGenerator(Decimal2) {
         altName: "Peta"
       },
       {
-        name: "E",
+        name: "Decimal",
         altName: "Exa"
       },
       {
@@ -877,7 +877,7 @@ var critical_tetr_values = [
     2
   ],
   [
-    // Base E (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
+    // Base Decimal (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
     1,
     // 0.0
     1.1121114330934079,
@@ -1030,7 +1030,7 @@ var critical_slog_values = [
     0
   ],
   [
-    // Base E
+    // Base Decimal
     -1,
     // 0.0
     -0.90603157029014,
@@ -4400,7 +4400,7 @@ var Decimal = class {
     return new Decimal(current).add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)));
   }
   /**
-   * Creates a clone of the E instance.
+   * Creates a clone of the Decimal instance.
    * @deprecated
    * @returns A EClone instance that is a clone of the original.
    */
@@ -4408,7 +4408,7 @@ var Decimal = class {
     return this;
   }
   /**
-   * Creates a clone of the E instance. Helps with a webpack(?) bug
+   * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
    * @alias Decimal.normalizeFromComponents
    * @param x - The number to clone
    * @returns - The cloned number
@@ -4467,32 +4467,32 @@ var Decimal = class {
     return new Decimal(value).scale(s, p, mode, rev);
   }
   /**
-   * Formats the E instance with a specified accuracy and maximum decimal places.
+   * Formats the Decimal instance with a specified accuracy and maximum decimal places.
    * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
    * @param [max] - The maximum number of decimal places to display, defaults to `9`.
    * @param [type] - The type of format, defaults to `"mixed_sc"`.
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   format(acc = 2, max = 9, type = "mixed_sc") {
     return formats.format(this.clone(), acc, max, type);
   }
   /**
-   * Formats the E instance with a specified accuracy and maximum decimal places.
-   * @param e - The E instance to format.
+   * Formats the Decimal instance with a specified accuracy and maximum decimal places.
+   * @param e - The Decimal instance to format.
    * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
    * @param [max] - The maximum number of decimal places to display, defaults to `9`.
    * @param [type] - The type of format, defaults to `"mixed_sc"`.
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   static format(e, acc = 2, max = 9, type = "mixed_sc") {
     return formats.format(new Decimal(e), acc, max, type);
   }
   /**
-   * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
+   * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum decimal places.
    * @param [acc] - The desired accuracy (number of significant figures).
    * @param [max] - The maximum number of decimal places to display.
    * @param [type] - The type of format (default standard)
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   formatST(acc = 2, max = 9, type = "st") {
     return formats.format(this.clone(), acc, max, type);
@@ -4501,7 +4501,7 @@ var Decimal = class {
     return formats.format(new Decimal(value), acc, max, type);
   }
   /**
-   * Formats the gain rate using the E instance.
+   * Formats the gain rate using the Decimal instance.
    * @param gain - The gain value to compare
    * @param [type] - The type of format (default mixed scientific)
    * @param [acc] - The desired accuracy (number of significant figures).
@@ -4520,10 +4520,10 @@ var Decimal = class {
     return formats.formatGain(new Decimal(value), gain, type, acc, max);
   }
   /**
-   * Converts the E instance to a Roman numeral representation.
+   * Converts the Decimal instance to a Roman numeral representation.
    * @param [max] - Max before it returns the original
-   * @returns A string representing the Roman numeral equivalent of the E value,
-   * or the original E instance if it is greater than or equal to 5000 or less than 1.
+   * @returns A string representing the Roman numeral equivalent of the Decimal value,
+   * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
    */
   toRoman(max = 5e3) {
     max = new Decimal(max);
@@ -4610,16 +4610,6 @@ Decimal = __decorateClass([
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
-// src/E/eMain.ts
-var E = (() => {
-  const out = (x) => new Decimal(x);
-  Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
-  }).includes(b)).forEach((prop) => {
-    out[prop] = Decimal[prop];
-  });
-  return out;
-})();
-
 // src/classes/Boost.ts
 var BoostObject = class {
   // eslint-disable-next-line jsdoc/require-returns
@@ -4651,7 +4641,7 @@ var Boost = class {
      */
     this.addBoost = this.setBoost.bind(this);
     boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    this.baseEffect = E(baseEffect);
+    this.baseEffect = new Decimal(baseEffect);
     this.boostArray = [];
     if (boosts) {
       boosts.forEach((boostObj) => {
@@ -4729,7 +4719,7 @@ var Boost = class {
    * const finalEffect = boost.calculate();
    */
   calculate(base = this.baseEffect) {
-    let output = E(base);
+    let output = new Decimal(base);
     let boosts = this.boostArray;
     boosts = boosts.sort((a, b) => a.order - b.order);
     for (const boost of boosts) {
@@ -4751,9 +4741,9 @@ function equalsTolerance(a, b, tolerance, config) {
     verbose: false,
     mode: "geometric"
   }, config);
-  a = E(a);
-  b = E(b);
-  tolerance = E(tolerance);
+  a = new Decimal(a);
+  b = new Decimal(b);
+  tolerance = new Decimal(tolerance);
   let diff;
   let result;
   if (config.mode === "geometric") {
@@ -4767,13 +4757,13 @@ function equalsTolerance(a, b, tolerance, config) {
   return result;
 }
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
-  let lowerBound = E(1);
-  let upperBound = E(n);
+  let lowerBound = new Decimal(1);
+  let upperBound = new Decimal(n);
   if (f(upperBound).eq(0)) {
     return {
-      value: E(0),
-      lowerBound: E(0),
-      upperBound: E(0)
+      value: new Decimal(0),
+      lowerBound: new Decimal(0),
+      upperBound: new Decimal(0)
     };
   }
   if (f(upperBound).lt(n)) {
@@ -4814,21 +4804,21 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   return out;
 }
 function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
-  let sum = E();
-  let n = E(b);
+  let sum = new Decimal();
+  let n = new Decimal(b);
   for (; n.gte(a); n = n.sub(1)) {
     const initSum = sum;
     const value = f(n);
     sum = sum.add(value);
     const diff = initSum.div(sum);
-    if (diff.lte(1) && diff.gt(E(1).sub(epsilon))) break;
+    if (diff.lte(1) && diff.gt(new Decimal(1).sub(epsilon))) break;
   }
   return sum;
 }
 function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
-  a = E(a);
-  b = E(b);
-  let sum = E(0);
+  a = new Decimal(a);
+  b = new Decimal(b);
+  let sum = new Decimal(0);
   const intervalWidth = b.sub(a).div(iterations);
   for (let i = 0; i < iterations; i++) {
     const x0 = a.add(intervalWidth.mul(i));
@@ -4838,8 +4828,8 @@ function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
   return sum;
 }
 function calculateSum(f, b, a = 0, epsilon, iterations) {
-  a = E(a);
-  b = E(b);
+  a = new Decimal(a);
+  b = new Decimal(b);
   if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
     return calculateSumLoop(f, b, a, epsilon);
   } else {
@@ -4847,49 +4837,49 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
   }
 }
 function roundingBase(x, base = 10, acc = 0, max = 1e3) {
-  x = E(x);
-  if (x.gte(E.pow(base, max))) return x;
-  const powerN = E.floor(E.log(x, base));
-  let out = x.div(E.pow(base, powerN));
-  out = out.mul(E.pow(base, acc)).round();
-  out = out.div(E.pow(base, acc));
-  out = out.mul(E.pow(base, powerN));
+  x = new Decimal(x);
+  if (x.gte(Decimal.pow(base, max))) return x;
+  const powerN = Decimal.floor(Decimal.log(x, base));
+  let out = x.div(Decimal.pow(base, powerN));
+  out = out.mul(Decimal.pow(base, acc)).round();
+  out = out.div(Decimal.pow(base, acc));
+  out = out.mul(Decimal.pow(base, powerN));
   return out;
 }
 
 // src/classes/Upgrade.ts
 function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iterations, el = false) {
-  value = E(value);
-  start = E(start ?? upgrade.level);
-  end = E(end);
+  value = new Decimal(value);
+  start = new Decimal(start ?? upgrade.level);
+  end = new Decimal(end);
   const target = end.sub(start);
   if (target.lt(0)) {
     console.warn("calculateUpgrade: Invalid target: ", target);
-    return [E(0), E(0)];
+    return [new Decimal(0), new Decimal(0)];
   }
   el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
   if (target.eq(1)) {
     const cost2 = upgrade.cost(upgrade.level);
     const canAfford = value.gte(cost2);
-    let out = [E(0), E(0)];
+    let out = [new Decimal(0), new Decimal(0)];
     if (el) {
-      out[0] = canAfford ? E(1) : E(0);
+      out[0] = canAfford ? new Decimal(1) : new Decimal(0);
       return out;
     } else {
-      out = [canAfford ? E(1) : E(0), canAfford ? cost2 : E(0)];
+      out = [canAfford ? new Decimal(1) : new Decimal(0), canAfford ? cost2 : new Decimal(0)];
       return out;
     }
   }
   if (upgrade.costBulk) {
     const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
-    const out = [canAfford ? amount : E(0), canAfford && !el ? cost2 : E(0)];
+    const out = [canAfford ? amount : new Decimal(0), canAfford && !el ? cost2 : new Decimal(0)];
     return out;
   }
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = E.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
-    const cost2 = E(0);
+    const maxLevelAffordable2 = Decimal.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
+    const cost2 = new Decimal(0);
     return [maxLevelAffordable2, cost2];
   }
   const maxLevelAffordable = inverseFunctionApprox(
@@ -4903,7 +4893,7 @@ function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iteration
   return [maxLevelAffordableActual, cost];
 }
 function decimalToJSONString(n) {
-  n = E(n);
+  n = new Decimal(n);
   return `${n.sign}/${n.mag}/${n.layer}`;
 }
 function upgradeToCacheNameEL(level) {
@@ -4917,7 +4907,7 @@ var UpgradeData = class {
   constructor(init) {
     init = init ?? {};
     this.id = init.id;
-    this.level = init.level ? E(init.level) : E(1);
+    this.level = init.level ? new Decimal(init.level) : new Decimal(1);
   }
 };
 __decorateClass([
@@ -4943,10 +4933,10 @@ var UpgradeStatic = class _UpgradeStatic {
    * @returns The current level of the upgrade.
    */
   get level() {
-    return ((this ?? { data: { level: E(1) } }).data ?? { level: E(1) }).level;
+    return ((this ?? { data: { level: new Decimal(1) } }).data ?? { level: new Decimal(1) }).level;
   }
   set level(n) {
-    this.data.level = E(n);
+    this.data.level = new Decimal(n);
   }
   /**
    * Constructs a new static upgrade object.
@@ -4966,7 +4956,7 @@ var UpgradeStatic = class _UpgradeStatic {
     this.maxLevel = init.maxLevel;
     this.effect = init.effect;
     this.el = init.el;
-    this.defaultLevel = init.level ?? E(1);
+    this.defaultLevel = init.level ?? new Decimal(1);
   }
   // /**
   //  * Gets the cached data of the upgrade.
@@ -4979,7 +4969,7 @@ var UpgradeStatic = class _UpgradeStatic {
   // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
   // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
   //     if (type === "sum") {
-  //         return this.cache.get(upgradeToCacheNameSum(start, end ?? E(0)));
+  //         return this.cache.get(upgradeToCacheNameSum(start, end ?? new Decimal(0)));
   //     } else {
   //         return this.cache.get(upgradeToCacheNameEL(start));
   //     }
@@ -4997,14 +4987,14 @@ var UpgradeStatic = class _UpgradeStatic {
   //     const data = type === "sum" ? {
   //         id: this.id,
   //         el: false,
-  //         start: E(start),
-  //         end: E(endOrStart),
-  //         cost: E(costSum),
+  //         start: new Decimal(start),
+  //         end: new Decimal(endOrStart),
+  //         cost: new Decimal(costSum),
   //     } : {
   //         id: this.id,
   //         el: true,
-  //         level: E(start),
-  //         cost: E(endOrStart),
+  //         level: new Decimal(start),
+  //         cost: new Decimal(endOrStart),
   //     };
   //     if (type === "sum") {
   //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
@@ -5027,7 +5017,7 @@ var Currency = class {
    * Constructs a new currency object with an initial value of 0.
    */
   constructor() {
-    this.value = E(0);
+    this.value = new Decimal(0);
     this.upgrades = {};
   }
 };
@@ -5062,16 +5052,16 @@ var CurrencyStatic = class {
    * const currency = new CurrencyStatic(undefined, [
    *     {
    *         id: "upgId1",
-   *         cost: (level: E): E => level.mul(10),
+   *         cost: (level: Decimal): Decimal => level.mul(10),
    *     },
    *     {
    *         id: "upgId2",
-   *         cost: (level: E): E => level.mul(20),
+   *         cost: (level: Decimal): Decimal => level.mul(20),
    *     }
    * ] as const satisfies UpgradeInit[]);
    * // CurrencyStatic<["upgId1", "upgId2"]>
    */
-  constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: E(0), defaultBoost: E(1) }) {
+  constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: new Decimal(0), defaultBoost: new Decimal(1) }) {
     this.defaultVal = defaults.defaultVal;
     this.defaultBoost = defaults.defaultBoost;
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
@@ -5101,13 +5091,13 @@ var CurrencyStatic = class {
    * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
    * @example
    * currency.reset();
-   * console.log(currency.value); // E(0), or the default value
+   * console.log(currency.value); // new Decimal(0), or the default value
    */
   reset(resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true) {
     if (resetCurrency) this.value = this.defaultVal;
     if (resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
-        upgrade.level = E(upgrade.defaultLevel);
+        upgrade.level = new Decimal(upgrade.defaultLevel);
         if (runUpgradeEffect) upgrade.effect?.(upgrade.level, upgrade, this);
       }
     }
@@ -5122,7 +5112,7 @@ var CurrencyStatic = class {
    * currency.gain(Math.random() * 10000);
    */
   gain(dt = 1e3) {
-    const toAdd = this.boost.calculate().mul(E(dt).div(1e3));
+    const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1e3));
     this.pointer.value = this.pointer.value.add(toAdd);
     return toAdd;
   }
@@ -5176,7 +5166,7 @@ var CurrencyStatic = class {
    *             "healthBoost",
    *             "Health Boost",
    *             "Boosts health by 2x per level.",
-   *             n => n.mul(E.pow(2, level.sub(1))),
+   *             n => n.mul(Decimal.pow(2, level.sub(1))),
    *             2,
    *         );
    *     }
@@ -5223,21 +5213,21 @@ var CurrencyStatic = class {
    * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [E(0), E(0)].
+   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
    * @example
    * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
-  // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: E, cost: E] {
+  // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: Decimal, cost: Decimal] {
   calculateUpgrade(id, target = Infinity, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
-      return [E(0), E(0)];
+      return [new Decimal(0), new Decimal(0)];
     }
     target = upgrade.level.add(target);
     if (upgrade.maxLevel !== void 0) {
-      target = E.min(target, upgrade.maxLevel);
+      target = Decimal.min(target, upgrade.maxLevel);
     }
     return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
   }
@@ -5257,7 +5247,7 @@ var CurrencyStatic = class {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
-      return E(0);
+      return new Decimal(0);
     }
     const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
     const nextCost = upgrade.cost(upgrade.level.add(amount));
@@ -5273,14 +5263,14 @@ var CurrencyStatic = class {
    * @example
    * // Calculate the cost of the next healthBoost upgrade
    * currency.gain(1e6); // Gain 1 thousand currency
-   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [E(100), E(1000)]
+   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
    * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
    */
   getNextCostMax(id, target = 1, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
       console.warn(`Upgrade "${id}" not found.`);
-      return E(0);
+      return new Decimal(0);
     }
     const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
     const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
@@ -5323,7 +5313,7 @@ var Attribute = class {
    * @param initial - The inital value of the attribute.
    */
   constructor(initial = 0) {
-    this.value = E(initial);
+    this.value = new Decimal(initial);
   }
 };
 __decorateClass([
@@ -5341,7 +5331,7 @@ var AttributeStatic = class {
    * @param initial - The initial value of the attribute. Defaults to 0.
    */
   constructor(pointer, useBoost = true, initial = 0) {
-    this.initial = E(initial);
+    this.initial = new Decimal(initial);
     pointer ??= new Attribute(this.initial);
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
     this.boost = useBoost ? new Boost(this.initial) : null;
@@ -5566,13 +5556,14 @@ export {
   Currency,
   CurrencyStatic,
   DEFAULT_ITERATIONS,
-  E,
+  Decimal,
   FORMATS,
   FormatTypeList,
   Grid,
   GridCell,
   LRUCache,
   ListNode,
+  ST_NAMES,
   UpgradeData,
   UpgradeStatic,
   calculateSum,
@@ -5581,6 +5572,7 @@ export {
   calculateUpgrade,
   decimalToJSONString,
   equalsTolerance,
+  formats,
   inverseFunctionApprox,
   roundingBase,
   upgradeToCacheNameEL

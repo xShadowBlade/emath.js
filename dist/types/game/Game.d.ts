@@ -1,7 +1,7 @@
 /**
  * @file Declares the main game class.
  */
-import type { DecimalSource } from "../E/eMain";
+import type { DecimalSource } from "../E/e";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
@@ -97,7 +97,7 @@ declare class Game {
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
-     * console.log(currency.value); // E(1)
+     * console.log(currency.value); // new Decimal(1)
      */
     addCurrency<N extends string, U extends UpgradeInit[] = []>(name: N, upgrades?: U): GameCurrency<N, U>;
     /**

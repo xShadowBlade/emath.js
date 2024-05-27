@@ -10,7 +10,7 @@ import type { Game, Pointer } from "../Game";
 // Recursive plain to class
 import { Currency } from "../../classes/Currency";
 import { UpgradeData } from "../../classes/Upgrade";
-import { E } from "../../E/eMain";
+import { Decimal } from "../../E/e";
 
 // Save validation
 import md5 from "md5";
@@ -388,7 +388,7 @@ class DataManager {
 
         // Convert plain object to class instance (recursive)
 
-        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: E(0) }));
+        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: new Decimal(0) }));
 
         /**
          * Converts a plain object to a class instance.

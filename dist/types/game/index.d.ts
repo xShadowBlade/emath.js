@@ -2,7 +2,7 @@
  * @file Exports the game module
  */
 import "reflect-metadata";
-import "../E/eMain";
+import "../E/e";
 export * from "./Game";
 export * from "./GameCurrency";
 export * from "./GameAttribute";

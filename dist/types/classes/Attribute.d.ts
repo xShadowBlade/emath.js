@@ -2,8 +2,8 @@
  * @file Declares the attribute and attributeStatic classes.
  */
 import "reflect-metadata";
-import { E, DecimalSource } from "../E/eMain";
 import { Boost } from "./Boost";
+import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../game/Game";
 /**
  * Represents an attribute in the game.
@@ -11,7 +11,7 @@ import type { Pointer } from "../game/Game";
  */
 declare class Attribute {
     /** The current value of the attribute. */
-    value: E;
+    value: Decimal;
     /**
      * Constructs a static attribute with an initial effect.
      * @param initial - The inital value of the attribute.
@@ -39,7 +39,7 @@ declare class AttributeStatic<B extends boolean = true> {
     /** @returns The data for the attribute. */
     get pointer(): Attribute;
     /** The initial value of the attribute. */
-    readonly initial: E;
+    readonly initial: Decimal;
     /**
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
@@ -63,12 +63,12 @@ declare class AttributeStatic<B extends boolean = true> {
      * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
      * @returns The calculated value of the attribute.
      */
-    get value(): E;
+    get value(): Decimal;
     /**
      * Sets the value of the attribute.
      * NOTE: This setter should not be used when boost is enabled.
      * @param value - The value to set the attribute to.
      */
-    set value(value: E);
+    set value(value: Decimal);
 }
 export { Attribute, AttributeStatic };

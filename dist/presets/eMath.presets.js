@@ -799,7 +799,7 @@ function decimalFormatGenerator(Decimal2) {
         altName: "Peta"
       },
       {
-        name: "E",
+        name: "Decimal",
         altName: "Exa"
       },
       {
@@ -913,7 +913,7 @@ var critical_tetr_values = [
     2
   ],
   [
-    // Base E (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
+    // Base Decimal (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
     1,
     // 0.0
     1.1121114330934079,
@@ -1066,7 +1066,7 @@ var critical_slog_values = [
     0
   ],
   [
-    // Base E
+    // Base Decimal
     -1,
     // 0.0
     -0.90603157029014,
@@ -4436,7 +4436,7 @@ var Decimal = class {
     return new Decimal(current).add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime)));
   }
   /**
-   * Creates a clone of the E instance.
+   * Creates a clone of the Decimal instance.
    * @deprecated
    * @returns A EClone instance that is a clone of the original.
    */
@@ -4444,7 +4444,7 @@ var Decimal = class {
     return this;
   }
   /**
-   * Creates a clone of the E instance. Helps with a webpack(?) bug
+   * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
    * @alias Decimal.normalizeFromComponents
    * @param x - The number to clone
    * @returns - The cloned number
@@ -4503,32 +4503,32 @@ var Decimal = class {
     return new Decimal(value).scale(s, p, mode, rev);
   }
   /**
-   * Formats the E instance with a specified accuracy and maximum decimal places.
+   * Formats the Decimal instance with a specified accuracy and maximum decimal places.
    * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
    * @param [max] - The maximum number of decimal places to display, defaults to `9`.
    * @param [type] - The type of format, defaults to `"mixed_sc"`.
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   format(acc = 2, max = 9, type = "mixed_sc") {
     return formats.format(this.clone(), acc, max, type);
   }
   /**
-   * Formats the E instance with a specified accuracy and maximum decimal places.
-   * @param e - The E instance to format.
+   * Formats the Decimal instance with a specified accuracy and maximum decimal places.
+   * @param e - The Decimal instance to format.
    * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
    * @param [max] - The maximum number of decimal places to display, defaults to `9`.
    * @param [type] - The type of format, defaults to `"mixed_sc"`.
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   static format(e, acc = 2, max = 9, type = "mixed_sc") {
     return formats.format(new Decimal(e), acc, max, type);
   }
   /**
-   * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
+   * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum decimal places.
    * @param [acc] - The desired accuracy (number of significant figures).
    * @param [max] - The maximum number of decimal places to display.
    * @param [type] - The type of format (default standard)
-   * @returns A string representing the formatted E value.
+   * @returns A string representing the formatted Decimal value.
    */
   formatST(acc = 2, max = 9, type = "st") {
     return formats.format(this.clone(), acc, max, type);
@@ -4537,7 +4537,7 @@ var Decimal = class {
     return formats.format(new Decimal(value), acc, max, type);
   }
   /**
-   * Formats the gain rate using the E instance.
+   * Formats the gain rate using the Decimal instance.
    * @param gain - The gain value to compare
    * @param [type] - The type of format (default mixed scientific)
    * @param [acc] - The desired accuracy (number of significant figures).
@@ -4556,10 +4556,10 @@ var Decimal = class {
     return formats.formatGain(new Decimal(value), gain, type, acc, max);
   }
   /**
-   * Converts the E instance to a Roman numeral representation.
+   * Converts the Decimal instance to a Roman numeral representation.
    * @param [max] - Max before it returns the original
-   * @returns A string representing the Roman numeral equivalent of the E value,
-   * or the original E instance if it is greater than or equal to 5000 or less than 1.
+   * @returns A string representing the Roman numeral equivalent of the Decimal value,
+   * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
    */
   toRoman(max = 5e3) {
     max = new Decimal(max);
@@ -4646,16 +4646,6 @@ Decimal = __decorateClass([
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
-// src/E/eMain.ts
-var E = (() => {
-  const out = (x) => new Decimal(x);
-  Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
-  }).includes(b)).forEach((prop) => {
-    out[prop] = Decimal[prop];
-  });
-  return out;
-})();
-
 // src/presets/GameFormats.ts
 function gameFormat(value, settings) {
   settings = Object.assign({
@@ -4667,19 +4657,19 @@ function gameFormat(value, settings) {
   if (time) {
     switch (formatTimeType) {
       case "short":
-        return E.formats.formatTime(value, acc, formatType);
+        return Decimal.formats.formatTime(value, acc, formatType);
       case "long":
-        return E.formats.formatTimeLong(value, true, 0, max, formatType);
+        return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
     }
   }
   if (multi) {
-    return E.formats.formatMult(value, acc);
+    return Decimal.formats.formatMult(value, acc);
   }
-  return E.format(value, acc, max, formatType);
+  return Decimal.format(value, acc, max, formatType);
 }
 function gameFormatGain(value, gain, settings) {
   const { formatType, acc, max } = settings;
-  return E.formatGain(value, gain, formatType, acc, max);
+  return Decimal.formatGain(value, gain, formatType, acc, max);
 }
 var GameFormatClass = class {
   constructor(settings) {

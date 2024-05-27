@@ -2,17 +2,17 @@
  * @file Skill tree class
  * Work in progress
  */
-import type { DecimalSource } from "../E/eMain";
-import { E } from "../E/eMain";
+import type { DecimalSource } from "../E/e";
+import { Decimal } from "../E/e";
 // import { calculateUpgrade } from "./currency";
 import type { CurrencyStatic } from "./Currency";
 import type { IUpgradeStatic } from "./Upgrade";
 
 interface ISkill extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
-    cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E];
-    costBulk?: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => [cost: E, amount: E]];
+    cost: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => Decimal];
+    costBulk?: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => [cost: Decimal, amount: Decimal]];
     required: ISkill[];
-    effect?: (level: E, context: ISkill) => void;
+    effect?: (level: Decimal, context: ISkill) => void;
 }
 
 /**
@@ -35,14 +35,14 @@ class SkillNode implements ISkill {
     constructor (
         id: string,
         name: string,
-        cost: [currency: CurrencyStatic, cost: (level: E, context: ISkill) => E],
+        cost: [currency: CurrencyStatic, cost: (level: Decimal, context: ISkill) => Decimal],
         description?: string,
-        effect?: (level: E, context: ISkill) => void,
+        effect?: (level: Decimal, context: ISkill) => void,
         maxLevel?: DecimalSource,
         required?: ISkill[],
     )
     // constructor (skillNode: ISkill);
-    // constructor (idOrSkillNode: string | ISkill, name: string, description: string, cost: DecimalSource, effect: (level: E, context: ISkill) => void, maxLevel: DecimalSource, required: ISkill[])
+    // constructor (idOrSkillNode: string | ISkill, name: string, description: string, cost: DecimalSource, effect: (level: Decimal, context: ISkill) => void, maxLevel: DecimalSource, required: ISkill[])
     {
         // if (typeof idOrSkillNode === "object") {
         //     const skillNode = idOrSkillNode;
@@ -59,10 +59,10 @@ class SkillNode implements ISkill {
         this.id = id;
         this.name = name ?? id;
         this.description = description ?? "";
-        this.cost = cost ?? (() => E(0));
+        this.cost = cost ?? (() => new Decimal(0));
         this.effect = effect;
         this.required = required ?? [];
-        this.maxLevel = maxLevel ? E(maxLevel) : E(0);
+        this.maxLevel = maxLevel ? new Decimal(maxLevel) : new Decimal(0);
     }
 
     /**

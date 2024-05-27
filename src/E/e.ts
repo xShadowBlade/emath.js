@@ -82,7 +82,7 @@ const critical_tetr_values = [
         2,
     ],
     [
-    // Base E (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
+    // Base Decimal (using http://myweb.astate.edu/wpaulsen/tetcalc/tetcalc.html )
         1, // 0.0
         1.1121114330934078681, // 0.1
         1.2310389249316089299, // 0.2
@@ -152,7 +152,7 @@ const critical_slog_values = [
         -0.11241087890006762, 0,
     ],
     [
-    // Base E
+    // Base Decimal
         -1, // 0.0
         -0.90603157029014, // 0.1
         -0.80786507256596, // 0.2
@@ -3530,7 +3530,7 @@ class Decimal {
         if (height > 10) {
             height = 10;
         }
-        // have to do this complicated song and dance since one of the critical_headers is Math.E, and in the future I'd like 1.5 as well
+        // have to do this complicated song and dance since one of the critical_headers is Math.Decimal, and in the future I'd like 1.5 as well
         if (base < 2) {
             base = 2;
         }
@@ -4223,7 +4223,7 @@ class Decimal {
     public static smoothDamp (current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal { return new Decimal(current).add(new Decimal(target).minus(new Decimal(current)).times(new Decimal(smoothing)).times(new Decimal(deltaTime))); };
 
     /**
-     * Creates a clone of the E instance.
+     * Creates a clone of the Decimal instance.
      * @deprecated
      * @returns A EClone instance that is a clone of the original.
      */
@@ -4232,7 +4232,7 @@ class Decimal {
     }
 
     /**
-     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
      * @alias Decimal.normalizeFromComponents
      * @param x - The number to clone
      * @returns - The cloned number
@@ -4289,35 +4289,35 @@ class Decimal {
     }
 
     /**
-     * Formats the E instance with a specified accuracy and maximum decimal places.
+     * Formats the Decimal instance with a specified accuracy and maximum decimal places.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     public format (acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string { return formats.format(this.clone(), acc, max, type); }
     /**
-     * Formats the E instance with a specified accuracy and maximum decimal places.
-     * @param e - The E instance to format.
+     * Formats the Decimal instance with a specified accuracy and maximum decimal places.
+     * @param e - The Decimal instance to format.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     public static format (e: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "mixed_sc"): string { return formats.format(new Decimal(e), acc, max, type); }
 
     /**
-     * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
+     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum decimal places.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     public formatST (acc: number = 2, max: number = 9, type: FormatType = "st"): string { return formats.format(this.clone(), acc, max, type); }
     public static formatST (value: DecimalSource, acc: number = 2, max: number = 9, type: FormatType = "st"): string { return formats.format(new Decimal(value), acc, max, type); }
 
     /**
-     * Formats the gain rate using the E instance.
+     * Formats the gain rate using the Decimal instance.
      * @param gain - The gain value to compare
      * @param [type] - The type of format (default mixed scientific)
      * @param [acc] - The desired accuracy (number of significant figures).
@@ -4333,10 +4333,10 @@ class Decimal {
     public static formatGain (value: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string { return formats.formatGain(new Decimal(value), gain, type, acc, max); }
 
     /**
-     * Converts the E instance to a Roman numeral representation.
+     * Converts the Decimal instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the Decimal value,
+     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
      */
     public toRoman (max: DecimalSource = 5000): string | Decimal {
         max = new Decimal(max);

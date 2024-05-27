@@ -1187,13 +1187,13 @@ declare class Decimal {
      */
     static smoothDamp(current: DecimalSource, target: DecimalSource, smoothing: DecimalSource, deltaTime: DecimalSource): Decimal;
     /**
-     * Creates a clone of the E instance.
+     * Creates a clone of the Decimal instance.
      * @deprecated
      * @returns A EClone instance that is a clone of the original.
      */
     clone(): this;
     /**
-     * Creates a clone of the E instance. Helps with a webpack(?) bug
+     * Creates a clone of the Decimal instance. Helps with a webpack(?) bug
      * @alias Decimal.normalizeFromComponents
      * @param x - The number to clone
      * @returns - The cloned number
@@ -1220,33 +1220,33 @@ declare class Decimal {
     scale(s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): this;
     static scale(value: DecimalSource, s: DecimalSource, p: DecimalSource, mode: string | number, rev?: boolean): Decimal;
     /**
-     * Formats the E instance with a specified accuracy and maximum decimal places.
+     * Formats the Decimal instance with a specified accuracy and maximum decimal places.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     format(acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the E instance with a specified accuracy and maximum decimal places.
-     * @param e - The E instance to format.
+     * Formats the Decimal instance with a specified accuracy and maximum decimal places.
+     * @param e - The Decimal instance to format.
      * @param [acc] - The desired accuracy (number of significant figures), defaults to `2`.
      * @param [max] - The maximum number of decimal places to display, defaults to `9`.
      * @param [type] - The type of format, defaults to `"mixed_sc"`.
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     static format(e: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the E instance in standard leter notation with a specified accuracy and maximum decimal places.
+     * Formats the Decimal instance in standard leter notation with a specified accuracy and maximum decimal places.
      * @param [acc] - The desired accuracy (number of significant figures).
      * @param [max] - The maximum number of decimal places to display.
      * @param [type] - The type of format (default standard)
-     * @returns A string representing the formatted E value.
+     * @returns A string representing the formatted Decimal value.
      */
     formatST(acc?: number, max?: number, type?: FormatType): string;
     static formatST(value: DecimalSource, acc?: number, max?: number, type?: FormatType): string;
     /**
-     * Formats the gain rate using the E instance.
+     * Formats the gain rate using the Decimal instance.
      * @param gain - The gain value to compare
      * @param [type] - The type of format (default mixed scientific)
      * @param [acc] - The desired accuracy (number of significant figures).
@@ -1261,10 +1261,10 @@ declare class Decimal {
     formatGain(gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     static formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     /**
-     * Converts the E instance to a Roman numeral representation.
+     * Converts the Decimal instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
-     * @returns A string representing the Roman numeral equivalent of the E value,
-     * or the original E instance if it is greater than or equal to 5000 or less than 1.
+     * @returns A string representing the Roman numeral equivalent of the Decimal value,
+     * or the original Decimal instance if it is greater than or equal to 5000 or less than 1.
      */
     toRoman(max?: DecimalSource): string | Decimal;
     static toRoman(value: DecimalSource, max: DecimalSource): string | Decimal;

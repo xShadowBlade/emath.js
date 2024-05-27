@@ -1,0 +1,62 @@
+---
+id: from-8-to-9
+title: Migrate from Version v8 to v9
+sidebar_label: Migrate from v8 to v9
+sidebar_position: 7
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+Version 9 of eMath.js will release with a few changes. This guide will help you migrate your existing code from version 8 to version 9.
+
+The following changes have been made in version 9:
+- Change from `E` to `Decimal` class from break_eternity.js
+    {/* - `E` class has been removed and replaced with `Decimal` class from `break_eternity.js`. */}
+    - `ESource` type has been renamed to `DecimalSource`, however you should import it from `break_eternity.js`
+
+{/* ## Change from `E` to `Decimal` class
+
+In version 9, the `E` class has been removed and replaced with the `Decimal` class from `break_eternity.js`. You should import the `Decimal` class from `break_eternity.js` and use it instead of the `E` class. */}
+
+## Change from `ESource` to `DecimalSource`
+
+In version 9, the `ESource` type has been renamed to `DecimalSource`. You should import it from `break_eternity.js` and use it instead of `ESource`.
+
+```ts title="script.ts"
+import { DecimalSource } from "break_eternity.js";
+```
+
+### wip
+
+```regex
+ESource
+```
+
+```regex
+DecimalSource
+```
+
+---
+
+```regex
+E\((.*?)\)
+```
+
+```regex
+new Decimal($1)
+```
+
+---
+
+```regex
+E
+```
+
+```regex
+Decimal
+```
+
+---
