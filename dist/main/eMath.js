@@ -5821,8 +5821,14 @@ var Grid = class {
 
 // src/E/eMain.ts
 var E = (() => {
-  console.warn("The E function is deprecated. Use the Decimal class directly.");
-  const out = (x) => new Decimal(x);
+  let shownWarning = false;
+  const out = (x) => {
+    if (!shownWarning) {
+      console.warn("The E function is deprecated. Use the Decimal class directly.");
+      shownWarning = true;
+    }
+    return new Decimal(x);
+  };
   Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {
   }).includes(b)).forEach((prop) => {
     out[prop] = Decimal[prop];

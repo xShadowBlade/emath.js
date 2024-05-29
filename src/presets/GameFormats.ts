@@ -3,7 +3,7 @@
  */
 import type { DecimalSource, FormatType } from "../E/e";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 
 /**
  * Interface for format gain settings.

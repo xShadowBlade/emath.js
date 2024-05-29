@@ -17,12 +17,6 @@ import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 
 /**
- * A pointer to a value or a function that returns a value by reference.
- * @template T - The type of the value to point to.
- */
-type Pointer<T> = (() => T) | T;
-
-/**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
  */
 interface GameConfigOptions {
@@ -215,5 +209,5 @@ class Game {
 
 // const upgrade1 = currency.static.getUpgrade("upgId1");
 
-export type { GameConfigOptions, Pointer };
+export type { GameConfigOptions };
 export { Game, gameDefaultConfig };

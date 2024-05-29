@@ -5,7 +5,7 @@
 import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToBase64, decompressFromBase64 } from "lz-string";
-import type { Game, Pointer } from "../Game";
+import type { Game } from "../Game";
 
 // Recursive plain to class
 import { Currency } from "../../classes/Currency";
@@ -15,14 +15,7 @@ import { Decimal } from "../../E/e";
 // Save validation
 import md5 from "md5";
 
-/** A class constructor */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ClassType = new (...args: any[]) => any;
-
-/** A plain object with unknown properties. */
-type UnknownObject = Record<string, unknown>;
-
-type ConstructableObject = object & { constructor: ClassType };
+import type { UnknownObject, ClassType, ConstructableObject, Pointer } from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -487,4 +480,4 @@ class DataManager {
 }
 
 export { DataManager };
-export type { UnknownObject, ClassType, SaveMetadata };
+export type { SaveMetadata };

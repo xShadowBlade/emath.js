@@ -2,7 +2,7 @@
  * @file Game formats class.
  */
 import type { DecimalSource, FormatType } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 /**
  * Interface for format gain settings.
  */

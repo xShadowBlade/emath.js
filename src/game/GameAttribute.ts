@@ -4,7 +4,8 @@
 
 import type { Decimal } from "../E/e";
 import type { Attribute, AttributeStatic } from "../classes/Attribute";
-import type { Game, Pointer } from "./Game";
+import type { Game } from "./Game";
+import type { Pointer } from "../common/types";
 
 /**
  * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.

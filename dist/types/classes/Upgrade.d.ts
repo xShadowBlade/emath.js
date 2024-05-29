@@ -3,7 +3,7 @@
  */
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode } from "./numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";

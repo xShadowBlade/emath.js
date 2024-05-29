@@ -6,7 +6,7 @@ import { Type } from "class-transformer";
 // import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 
 /**
  * Represents an attribute in the game.

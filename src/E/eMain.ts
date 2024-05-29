@@ -13,17 +13,23 @@ import type { DecimalSource } from "./e";
  * @param x - The value to convert to a Decimal instance.
  * @returns - The Decimal instance.
  */
-// @ts-expect-error Declared as a function, but adds properties later
-const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = (() => {
-    console.warn("The E function is deprecated. Use the Decimal class directly.");
-    const out = (x?: DecimalSource) => new Decimal(x);
+const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = ((): typeof E => {
+    let shownWarning = false;
+    const out = (x?: DecimalSource): Decimal => {
+        if (!shownWarning) {
+            console.warn("The E function is deprecated. Use the Decimal class directly.");
+            shownWarning = true;
+        }
+        return new Decimal(x);
+    };
 
-    // Copy properties from Decimal to Decimal
+    // Copy properties from Decimal to E
+    // eslint-disable-next-line @typescript-eslint/no-extraneous-class
     (Object.getOwnPropertyNames(Decimal).filter((b) => !Object.getOwnPropertyNames(class {}).includes(b))).forEach((prop) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (out as any)[prop] = (Decimal as any)[prop];
+        // @ts-expect-error - Assignment to a read-only property
+        (out as typeof E)[prop as keyof typeof Decimal] = (Decimal)[prop as keyof typeof Decimal];
     });
-    return out;
+    return out as typeof E;
 })();
 
 type E = Decimal;

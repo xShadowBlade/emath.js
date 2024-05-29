@@ -4,7 +4,7 @@
 import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
 // import { Type, Expose } from "class-transformer";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 
 /** An object representing a boost. */
 interface BoostsObjectInit {

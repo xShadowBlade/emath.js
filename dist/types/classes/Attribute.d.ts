@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import { Boost } from "./Boost";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 /**
  * Represents an attribute in the game.
  * Note: This is only meant for the data of an attribute. Use in combination with {@link AttributeStatic} for the actual attribute.

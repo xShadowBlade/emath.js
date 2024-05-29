@@ -1,8 +1,7 @@
 /**
  * @file Declares the gridCell and grid classes.
  */
-
-import type { UnknownObject } from "../game/managers/DataManager";
+import type { UnknownObject } from "../common/types";
 
 /**
  * Represents a grid cell with coordinates and properties.

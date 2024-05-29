@@ -3,11 +3,8 @@
  * Ex. Saving, loading, exporting, etc.
  */
 import "reflect-metadata";
-import type { Game, Pointer } from "../Game";
-/** A class constructor */
-type ClassType = new (...args: any[]) => any;
-/** A plain object with unknown properties. */
-type UnknownObject = Record<string, unknown>;
+import type { Game } from "../Game";
+import type { UnknownObject, Pointer } from "../../common/types";
 /**
  * Interface for the metadata of a save file.
  */
@@ -165,4 +162,4 @@ declare class DataManager {
     loadData(dataToLoad?: [SaveMetadata, UnknownObject] | null | string): null | boolean;
 }
 export { DataManager };
-export type { UnknownObject, ClassType, SaveMetadata };
+export type { SaveMetadata };

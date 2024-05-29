@@ -5,29 +5,13 @@ import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 // import { Decimal } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
 import { UpgradeData, UpgradeStatic, UpgradeInit, UpgradeInitArrayType, calculateUpgrade } from "./Upgrade";
 
-/**
- * Determines if a type is a primitive string.
- * @template T - The type to check.
- * @example
- * IsPrimitiveString<string>; // true
- * IsPrimitiveString<"asdf">; // false
- * IsPrimitiveString<number>; // false
- */
-type IsPrimitiveString<T> = "random string that no one should ever get randomly" & T extends "" ? false : true;
-
-/**
- * Converts a readonly type to a mutable type.
- * @template T - The readonly type to convert.
- */
-type Mutable<T> = {
-    -readonly [K in keyof T]: T[K];
-}
+import type { IsPrimitiveString, Mutable } from "../common/types";
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.

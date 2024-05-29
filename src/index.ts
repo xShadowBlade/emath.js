@@ -13,5 +13,7 @@ export * from "./classes/Attribute";
 export * from "./classes/Grid";
 export * from "./classes/numericalAnalysis";
 
+export type * from "./common/types";
+
 // deprecated
 export * from "./E/eMain";

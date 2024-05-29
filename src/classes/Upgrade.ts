@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../game/Game";
+import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
 import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";
