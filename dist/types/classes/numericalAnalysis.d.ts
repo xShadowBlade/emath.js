@@ -10,6 +10,8 @@ import { Decimal } from "../E/e";
  * Notes:
  * - The higher the amount of iterations, the more accurate the result will be, but the longer it will take to calculate.
  * - Time complexity is O(n) where n is the amount of iterations, scaling with the complexity of the function.
+ *
+ * Behold the extermely inaccurate benchmarking results:
  * - At 10 or less iterations, the time it takes to calculate is almost instant.
  * - At 25 iterations, the time it takes to calculate is ~1 ms and is accurate to a margin of error of ~1e-3.
  * - At 35 iterations, the time it takes to calculate is ~2 ms and is accurate to a margin of error of ~1e-5.
@@ -22,10 +24,16 @@ import { Decimal } from "../E/e";
 declare const DEFAULT_ITERATIONS = 30;
 /**
  * Represents different methods to calculate the mean.
- * Mode 1 `"arithmetic"` `(a+b)/2` is a bit faster but way less accurate for large numbers.
- * Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
+ *
+ * - Mode 1 `"arithmetic"` `(a+b)/2` is a bit faster but way less accurate for large numbers.
+ * - Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
+ * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
  */
-type MeanMode = "arithmetic" | "geometric" | 1 | 2;
+type MeanMode = MeanModeTuple[number] | PopStart<ArrayOfLength<AddOne<MeanModeTuple["length"]>>>[number];
+type MeanModeTuple = ["arithmetic", "geometric", "harmonic"];
+type ArrayOfLength<T extends number, U extends number[] = []> = U["length"] extends T ? U : ArrayOfLength<T, [...U, U["length"]]>;
+type AddOne<T extends number> = [0, ...ArrayOfLength<T>]["length"];
+type PopStart<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
 /**
  * The configuration object for the {@link equalsTolerance} function.
  */

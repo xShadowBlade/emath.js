@@ -5678,6 +5678,22 @@ import { Type, Expose as Expose2 } from "class-transformer";
 // src/classes/numericalAnalysis.ts
 var DEFAULT_ITERATIONS = 30;
 var DEFAULT_TOLERANCE = 1e-3;
+function mean(a, b, mode = "geometric") {
+  a = new Decimal(a);
+  b = new Decimal(b);
+  switch (mode) {
+    case "arithmetic":
+    case 1:
+      return a.add(b).div(2);
+    case "geometric":
+    case 2:
+    default:
+      return a.mul(b).sqrt();
+    case "harmonic":
+    case 3:
+      return new Decimal(2).div(a.reciprocal().add(b.reciprocal()));
+  }
+}
 function equalsTolerance(a, b, tolerance, config) {
   config = Object.assign({}, {
     verbose: false,
@@ -5717,17 +5733,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   for (let i = 0; i < iterations; i++) {
-    let mid;
-    switch (mode) {
-      case "arithmetic":
-      case 1:
-        mid = lowerBound.add(upperBound).div(2);
-        break;
-      case "geometric":
-      case 2:
-        mid = lowerBound.mul(upperBound).sqrt();
-        break;
-    }
+    const mid = mean(lowerBound, upperBound, mode);
     const midValue = f(mid);
     if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
       break;
