@@ -77,6 +77,12 @@ describe("inverseFunctionApprox", () => {
         assert(equalsTolerance(result.lowerBound, 5, equalTolerance * 100, toleranceConfig));
         assert(equalsTolerance(result.upperBound, 5, equalTolerance * 100, toleranceConfig));
     });
+
+    it("should return the correct result for large inputs", () => {
+        const f = (x: Decimal) => x.mul(x).sub(9);
+        const result = inverseFunctionApprox(f, 152399016);
+        assert(equalsTolerance(result.value, 12345, equalTolerance, toleranceConfig));
+    });
 });
 
 describe("calculateSum", () => {

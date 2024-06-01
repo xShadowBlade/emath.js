@@ -3,8 +3,8 @@
  */
 import { Decimal } from "emath.js";
 
-// const f = (x: E): E => x.pow(1.005).mul(2);
-const f = (x: Decimal): Decimal => x.pow(2).mul(1.35);
+const f = (x: Decimal): Decimal => x.pow(1.005).mul(2);
+// const f = (x: Decimal): Decimal => x.pow(2).mul(1.35);
 
 let a = new Decimal(2);
 
@@ -13,14 +13,14 @@ let interval: ReturnType<typeof setInterval>;
 const button = document.getElementById("nguformatStart");
 
 const stop = document.getElementById("nguformatStop");
-stop!.addEventListener("click", () => clearInterval(interval));
+stop?.addEventListener("click", () => { clearInterval(interval); });
 
 const reset = document.getElementById("nguformatReset");
-reset!.addEventListener("click", () => (a = new Decimal(1000)));
+reset?.addEventListener("click", () => { a = new Decimal(1000); });
 
 const display = document.getElementById("nguformatDisplay");
 
-button!.addEventListener("click", () => {
+button?.addEventListener("click", () => {
     interval = setInterval(() => {
         // a = a.pow(1.002).mul(1.35);
         a = f(a);
@@ -32,6 +32,6 @@ button!.addEventListener("click", () => {
         //     txt += `<br>Tier ${ct}: ${tier.div(E.pow(1000, ct - 1)).mod(1000).floor()}`;
         //     ct++;
         // }
-            display!.innerHTML = txt;
+        display!.innerHTML = txt;
     }, 50);
 });

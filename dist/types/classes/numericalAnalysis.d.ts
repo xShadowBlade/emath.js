@@ -29,11 +29,7 @@ declare const DEFAULT_ITERATIONS = 30;
  * - Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
  * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
  */
-type MeanMode = MeanModeTuple[number] | PopStart<ArrayOfLength<AddOne<MeanModeTuple["length"]>>>[number];
-type MeanModeTuple = ["arithmetic", "geometric", "harmonic"];
-type ArrayOfLength<T extends number, U extends number[] = []> = U["length"] extends T ? U : ArrayOfLength<T, [...U, U["length"]]>;
-type AddOne<T extends number> = [0, ...ArrayOfLength<T>]["length"];
-type PopStart<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
+type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
 /**
  * The configuration object for the {@link equalsTolerance} function.
  */
@@ -94,9 +90,10 @@ declare function calculateSumLoop(f: (n: Decimal) => Decimal, b: DecimalSource, 
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
  * @returns The calculated sum of `f(n)`.
  */
-declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number): Decimal;
+declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number, tolerance?: DecimalSource): Decimal;
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using either the trapezoidal rule or a basic loop depending on the size of `b - a`.
  * @param f - The function `f(n)` to calculate the sum.

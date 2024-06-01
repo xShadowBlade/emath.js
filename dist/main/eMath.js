@@ -5091,15 +5091,19 @@ function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
   }
   return sum;
 }
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE * 2) {
   a = new Decimal(a);
   b = new Decimal(b);
   let sum = new Decimal(0);
   const intervalWidth = b.sub(a).div(iterations);
-  for (let i = 0; i < iterations; i++) {
+  for (let i = iterations - 1; i >= 0; i--) {
     const x0 = a.add(intervalWidth.mul(i));
     const x1 = a.add(intervalWidth.mul(i + 1));
+    const oldSum = sum;
     sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
+    if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
+      break;
+    }
   }
   return sum;
 }

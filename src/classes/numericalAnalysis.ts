@@ -26,9 +26,15 @@ const DEFAULT_ITERATIONS = 30;
 
 /**
  * The default tolerance to compare the values with.
- * @default 1e-3
+ * Can be overriden by passing a custom tolerance.
+ *
+ * Used by:
+ * - {@link equalsTolerance}
+ * - {@link calculateSum} and {@link calculateSumApprox}, the latter of which uses the tolerance * 2 for speed.
+ * - {@link roundingBase}
+ * @default 0.001
  */
-const DEFAULT_TOLERANCE = 1e-3;
+const DEFAULT_TOLERANCE = 0.001;
 
 /**
  * Represents different methods to calculate the mean.
@@ -37,13 +43,16 @@ const DEFAULT_TOLERANCE = 1e-3;
  * - Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
  * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
  */
-type MeanMode = MeanModeTuple[number] | PopStart<ArrayOfLength<AddOne<MeanModeTuple["length"]>>>[number];
-type MeanModeTuple = ["arithmetic", "geometric", "harmonic"];
+type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
 
 // idk why im doing this bc i am too lazy to write 1 | 2 | 3
-type ArrayOfLength<T extends number, U extends number[] = []> = U["length"] extends T ? U : ArrayOfLength<T, [...U, U["length"]]>;
-type AddOne<T extends number> = [0, ...ArrayOfLength<T>]["length"];
-type PopStart<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
+
+// type MeanMode = MeanModeTuple[number] | PopStart<ArrayOfLength<AddOne<MeanModeTuple["length"]>>>[number];
+// type MeanModeTuple = ["arithmetic", "geometric", "harmonic"];
+
+// type ArrayOfLength<T extends number, U extends number[] = []> = U["length"] extends T ? U : ArrayOfLength<T, [...U, U["length"]]>;
+// type AddOne<T extends number> = [0, ...ArrayOfLength<T>]["length"];
+// type PopStart<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
 
 /**
  * Calculates the mean of two values using a specified method.
@@ -249,6 +258,7 @@ function calculateSumLoop (
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
  * @returns The calculated sum of `f(n)`.
  */
 function calculateSumApprox (
@@ -256,6 +266,7 @@ function calculateSumApprox (
     b: DecimalSource,
     a: DecimalSource = 0,
     iterations: number = DEFAULT_ITERATIONS,
+    tolerance: DecimalSource = DEFAULT_TOLERANCE * 2,
 ): Decimal {
     // Initialize the values
     a = new Decimal(a);
@@ -264,14 +275,42 @@ function calculateSumApprox (
     let sum = new Decimal(0);
     const intervalWidth = b.sub(a).div(iterations);
 
-    for (let i = 0; i < iterations; i++) {
+    // for (let i = 0; i < iterations; i++) {
+    for (let i = iterations - 1; i >= 0; i--) {
         const x0 = a.add(intervalWidth.mul(i));
         const x1 = a.add(intervalWidth.mul(i + 1));
 
+        const oldSum = sum;
+
         sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
+
+        // console.log({
+        //     oldSum: oldSum.format(),
+        //     sum: sum.format(),
+        //     delta: sum.sub(oldSum).format(),
+        //     x0: x0.format(),
+        //     x1: x1.format(),
+        //     i,
+        // });
+
+        // Stop the loop if the sums dont change much
+        if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
+            // console.log("sums close", { oldSum, sum, x0, x1, i, i2: iterations - i });
+            break;
+        }
     }
     return sum;
 }
+
+// test
+// const f = (x: Decimal): Decimal => x.pow(2);
+// const sum = calculateSumApprox(f, 10000);
+// console.log(sum.format());
+// console.log(equalsTolerance(sum, 333383335000, 1e-3, { verbose: true, mode: "geometric" }));
+
+// const inverse = inverseFunctionApprox(f, 152399025);
+// console.log(inverse.value.format());
+// console.log(equalsTolerance(inverse.value, 12345, 1e-3, { verbose: true, mode: "geometric" }));
 
 // /**
 //  * Approximates the sum of `f(n)` from `a` to `b` using a binary search method. Note: In versions before v9.0.0, this function used a trapezoidal rule method. This may cause slight inaccuracies but is overall significantly faster.
@@ -312,10 +351,10 @@ function calculateSumApprox (
 //         // debug
 //         // console.log({ oldSum, sum, delta: sum.sub(oldSum), mid, i });
 //         console.log({
-//             oldSum: oldSum.toString(),
-//             sum: sum.toString(),
-//             delta: sum.sub(oldSum).toString(),
-//             mid: mid.toString(),
+//             oldSum: oldSum.format(),
+//             sum: sum.format(),
+//             delta: sum.sub(oldSum).format(),
+//             mid: mid.format(),
 //             i,
 //         });
 
@@ -328,12 +367,6 @@ function calculateSumApprox (
 
 //     return sum;
 // }
-
-// test
-// const f = (x: Decimal): Decimal => x.pow(2);
-// const sum = calculateSumApprox(f, 1000);
-// console.log(sum.format());
-// console.log(equalsTolerance(sum, 333833500, 1e-3, { verbose: true, mode: "geometric" }));
 
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using either the trapezoidal rule or a basic loop depending on the size of `b - a`.
