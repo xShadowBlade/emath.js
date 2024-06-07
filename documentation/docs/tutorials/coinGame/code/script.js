@@ -1,6 +1,6 @@
 // Note: This is a simple example, and you should npm with typescript for a better development experience
 // Import from CDN
-const { E, Game } = window.eMath;
+const { Decimal, Game } = window.eMath;
 
 // Initialize game with options
 const gameOptions = {
@@ -21,7 +21,7 @@ const coinUpgrades = [
     {
         id: "upg1Coins", // Unique ID
         cost: level => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000),
+        maxLevel: new Decimal(1000),
         effect: (level, upgradeContext, currencyContext) => {
             // `currencyContext` is the context of the currency (coins in this case)
 

@@ -11,7 +11,7 @@ You can install ``eMath.js`` via [npm](#install-via-npm-recommended) or include 
 
 > Note: For advanced usage, using npm and Node.js is prefered.
 
-> Warning: HTML CDN as well as nodejs(?) is possibly bugged, causing unexpected behavior when working with the E instance. Typescript usage is prefered.
+> Warning: HTML CDN as well as nodejs(?) is possibly bugged, causing unexpected behavior when working with the Decimal instance. Typescript usage is prefered.
 
 ### Install via npm (recommended)
 
@@ -26,7 +26,7 @@ import { Boost, Currency } from "emath.js";
 import { Game } from "emath.js";
 ```
 
-> Warning (experimental): If you are using typescript with webpack, you could import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` and compile from source instead. This fixes a bug that causes unexpected behavior when working with the E instance.
+> Warning (experimental): If you are using typescript with webpack, you could import from ``"emath.js/ts"``, ``"emath.js/ts/game"``, or ``"emath.js/ts/pixiGame"`` and compile from source instead. This fixes a bug that causes unexpected behavior when working with the Decimal instance.
 
 ### Include using CDN
 

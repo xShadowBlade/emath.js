@@ -15,7 +15,7 @@ After you have set up the basics, now it's time to set up the game.
 <Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'},{label: 'TypeScript', value: 'ts'}]}>
     <TabItem value="js">
 ```js title="script.js"
-const { E, Game } = window.eMath;
+const { Decimal, Game } = window.eMath;
 
 // Initialize game with options
 const gameOptions = {
@@ -32,7 +32,7 @@ const coinGame = new Game(gameOptions);
     </TabItem>
     <TabItem value="ts">
 ```ts title="script.ts"
-import { E } from "emath.js";
+import { Decimal } from "emath.js";
 import { Game } from "emath.js/game";
 
 // Initialize game with options

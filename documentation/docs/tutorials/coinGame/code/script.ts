@@ -2,15 +2,15 @@
  * @file Coin Game tutorial code (typescript)
  */
 // Import from CDN
-// const { E, Game } = window.eMath;
+// const { Decimal, Game } = window.eMath;
 
 // Import from NPM
-// import { E } from "emath.js";
+// import { Decimal } from "emath.js";
 // import { Game } from "emath.js/game";
 
 // Import from local build
 // [projectRoot]/src/index is `emath.js`, [projectRoot]/src/game/index is `emath.js/game`
-import { E } from "../../../../../src/index";
+import { Decimal } from "../../../../../src/index";
 import { Game } from "../../../../../src/game/index";
 import type { UpgradeInit } from "../../../../../src/index";
 import type { GameConfigOptions } from "../../../../../src/game/index";
@@ -33,8 +33,8 @@ const coinGame = new Game(gameOptions);
 const coinUpgrades = [
     {
         id: "upg1Coins", // Unique ID
-        cost: (level): E => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000), // Maximum level of 1000
+        cost: (level): Decimal => level.mul(10), // Cost of 10 times the level
+        maxLevel: new Decimal(1000), // Maximum level of 1000
         effect: (level, upgradeContext, currencyContext): void => {
             // `currencyContext` is the context of the currency (coins in this case)
 

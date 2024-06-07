@@ -26,7 +26,7 @@ To create a currency, do either of the following:
     // All the methods are in `<GameCurrency>.static`, which contains the same methods as <CurrencyStatic>
     myCurrency.static.gain();
 
-    console.log(myCurrency.static.value); // E(1)
+    console.log(myCurrency.static.value); // new Decimal(1)
     ```
 
 2. Using without `Game` class
@@ -36,5 +36,5 @@ To create a currency, do either of the following:
 
     const myCurrency = new CurrencyStatic();
     myCurrency.gain();
-    console.log(myCurrency.value); // E(1)
+    console.log(myCurrency.value); // new Decimal(1)
     ```

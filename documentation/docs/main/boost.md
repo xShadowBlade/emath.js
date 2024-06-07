@@ -27,5 +27,5 @@ myBoost.setBoost({
     value: (input) => input.mul(2),
 });
 
-console.log(myBoost.calculate()); // E(2)
+console.log(myBoost.calculate()); // new Decimal(2)
 ```

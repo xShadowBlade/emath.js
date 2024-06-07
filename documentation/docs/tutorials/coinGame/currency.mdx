@@ -22,7 +22,7 @@ const coinUpgrades = [
     {
         id: "upg1Coins", // Unique ID
         cost: level => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000),
+        maxLevel: new Decimal(1000),
         effect: (level, upgradeContext, currencyContext) => {
             // `currencyContext` is the context of the currency (coins in this case)
 
@@ -49,8 +49,8 @@ const coins = coinGame.addCurrency("coins", coinUpgrades);
 const coinUpgrades = [
     {
         id: "upg1Coins", // Unique ID
-        cost: (level): E => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000), // Maximum level of 1000
+        cost: (level): Decimal => level.mul(10), // Cost of 10 times the level
+        maxLevel: new Decimal(1000), // Maximum level of 1000
         effect: (level, upgradeContext, currencyContext): void => {
             // `currencyContext` is the context of the currency (coins in this case)
 

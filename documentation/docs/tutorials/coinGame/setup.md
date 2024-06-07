@@ -31,10 +31,10 @@ This code sets up the project and imports ``emath.js/game`` using jsDelivr. Alte
 Now, create a js file named ``script.js`` and put the following code in it:
 
 ```js title="script.js"
-const { E, Game } = window.eMath;
+const { Decimal, Game } = window.eMath;
 ```
 
-This code extracts and imports the ``E`` and ``Game`` classes from the ``eMath`` object. These classes are used to create the game.
+This code extracts and imports the ``Decimal`` and ``Game`` classes from the ``eMath`` object. These classes are used to create the game.
 
 ### NodeJS setup
 

@@ -17,11 +17,11 @@ There are also corresponding typescript versions of those packages (`emath.js/ts
 Here is an example usage:
 
 ```js title="index.js"
-import { E } from "emath.js";
+import { Decimal } from "emath.js";
 import { Game } from "emath.js/game";
 
 // For CDN usage:
-// const { E, Game } = eMath; 
+// const { Decimal, Game } = eMath; 
 
 // Initialize game
 const coinGame = new Game();
@@ -31,7 +31,7 @@ const coins = coinGame.addCurrency("coins", [
     {
         id: "upg1Coins", // Unique ID
         cost: level => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000),
+        maxLevel: new Decimal(1000),
         effect: (level, upgradeContext, currencyContext) => {
             // `currencyContext` is the context of the currency (coins in this case)
 
@@ -93,7 +93,7 @@ The package exports a variable ``eMath`` and sets it to the window, so you don't
 This will set the `eMath` variable to the `window` object. You can then use it as follows:
 
 ```js title="index.js"
-const { E, Currency, Game } = eMath;
+const { Decimal, Currency, Game } = eMath;
 
 // rest of code here ...
 ```

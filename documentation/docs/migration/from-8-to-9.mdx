@@ -14,8 +14,9 @@ Version 9 of eMath.js will release with a few changes. This guide will help you 
 
 The following changes have been made in version 9:
 - Change from `E` to `Decimal` class from break_eternity.js
-    {/* - `E` class has been removed and replaced with `Decimal` class from `break_eternity.js`. */}
-    - `ESource` type has been renamed to `DecimalSource`, however you should import it from `break_eternity.js`
+- Change from `ESource` type to `DecimalSource` type
+
+You should still import from `"emath.js"` instead of `"break_eternity.js"`, but the `Decimal` class is now used instead of the `E` class.
 
 {/* ## Change from `E` to `Decimal` class
 
@@ -23,15 +24,15 @@ In version 9, the `E` class has been removed and replaced with the `Decimal` cla
 
 ## Change from `ESource` to `DecimalSource`
 
-In version 9, the `ESource` type has been renamed to `DecimalSource`. You should import it from `break_eternity.js` and use it instead of `ESource`.
+In version 9, the `ESource` type has been renamed to `DecimalSource`.
 
 ```ts title="script.ts"
-import { DecimalSource } from "break_eternity.js";
+import { DecimalSource } from "emath.js";
 ```
 
 ### Change from `E` to `Decimal`
 
-In version 9, the `E` class has been removed and replaced with the `Decimal` class from `break_eternity.js`. You should still import the `Decimal` class from `emath.js` and use it instead of the `E` class.
+In version 9, the `E` class has been removed and replaced with the `Decimal` class from `break_eternity.js`.
 
 ```ts title="script.ts"
 // Before (v8)
@@ -47,9 +48,13 @@ const number = new Decimal(10);
 const result = Decimal.add(number, new Decimal(5));
 ```
 
+You could still use the `E` function, but it is deprecated and will be removed in future versions.
+
 ### Regexes
 
 Here are some regexes that you can use to replace the `E` class with the `Decimal` class in your code:
+
+(Tip: In VSCode you can use the `Ctrl + Shift + H` shortcut to open the search and replace panel for all files, then click the `.*` button to enable regex mode)
 
 Search:
 
@@ -78,6 +83,8 @@ new Decimal($1)
 ```
 
 ---
+
+(you should be careful with this one, as it might replace other instances of `E` that are not the `E` class)
 
 Search:
 
