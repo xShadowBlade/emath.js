@@ -4,4 +4,7 @@
  */
 // import "reflect-metadata";
 
+import "../index";
+import "../game/index";
+
 export * from "./GameFormats";

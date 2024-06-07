@@ -18,22 +18,26 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 
 This project started when I was trying to create my first incremental game. I found it difficult to implement certain systems like upgrades and saving. When I eventually made those systems, I wanted to make a package so I could streamline those tools. After a few months of development, I have finally developed it into a presentable state (I should have started it with v0.1.0 instead of v1.0.0 . . .).
 
-Note: This package uses break_eternity.js by exporting a function `E` which is used both to construct and use methods on numbers. For example,
+Note: This package uses break_eternity.js by exporting the class `Decimal` directly. You should import the `Decimal` class from `emath.js` instead of `break_eternity.js`. For example,
 
 ```js
-import { E } from "emath.js";
+import { Decimal } from "emath.js";
 
-const num1 = E(10); // Equivalent to new Decimal(10)
-const num2 = num1.add(5); // Equivalent to num.add(5)
+const num1 = new Decimal(10);
+const num2 = num1.add(5);
 
-const num3 = E(20);
-const num4 = E.pow(num1, num3); // Equivalent to num1.pow(num3), or Decimal.pow(num1, num3)
-
-// Also has built-in formatting
-console.log(num4.format()); // 100 Qt
+const num3 = new Decimal(20);
+const num4 = Decimal.pow(num1, num3);
 ```
 
-This feature was originally provided to make the package more concise and easier to use. However, it ended up being a bit confusing. It will be removed in the future.
+This was done in order to implement the saving/loading system using [`class-transformer`](https://github.com/typestack/class-transformer) and [`reflect-metadata`](https://github.com/rbuckton/reflect-metadata) (which are the only dependencies of this package).
+
+You cannot import directly from `break_eternity.js` as the package [targets a version of javascript (es5)](https://github.com/Patashu/break_eternity.js/issues/114) that is not supported by `class-transformer` and `reflect-metadata`.
+
+<!-- ## Features
+
+- [**Currency System**]: Create currencies with upgrades and boosts (e.g. modifiers, multipliers, effect of upgrades, etc.)
+- [**Upgrade System**]: Create upgrades for currencies with costs, effects, and more. -->
 
 ## Example Usage
 
@@ -42,11 +46,11 @@ This is a simple example of how to use the package. It creates a game with a cur
 > Note: This example uses javascript. It is recommended to use typescript for better type checking.
 
 ```js
-import { E } from "emath.js";
+import { Decimal } from "emath.js";
 import { Game } from "emath.js/game";
 
 // For CDN usage:
-// const { E, Game } = eMath; 
+// const { Decimal, Game } = eMath; 
 
 // Initialize game
 const coinGame = new Game();
@@ -56,8 +60,10 @@ const coins = coinGame.addCurrency("coins", [
     {
         id: "upg1Coins", // Unique ID
         cost: level => level.mul(10), // Cost of 10 times the level
-        maxLevel: E(1000),
+        maxLevel: new Decimal(1000),
         effect: (level, upgradeContext, currencyContext) => {
+            // `level` is the level of the upgrade
+            // `upgradeContext` is the context of the upgrade (this upgrade)
             // `currencyContext` is the context of the currency (coins in this case)
 
             // Access the `boost` object to add a boost
@@ -128,8 +134,18 @@ npm install emath.js
 
 #### emath.js/game
 
+Also includes `"emath.js"` so you only need to include this script.
+
 ```html
 <script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/game/eMath.game.min.js"></script>
+```
+
+#### emath.js/presets
+
+Also includes `"emath.js"` and `"emath.js/game"` so you only need to include this script.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/presets/eMath.presets.min.js"></script>
 ```
 
 ---

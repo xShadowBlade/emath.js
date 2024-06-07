@@ -1343,7 +1343,7 @@ declare const formats: {
         getAbbreviation(group: number, progress: number): string;
         beyondOg(x: number): string;
         abbreviationLength(group: number): number;
-        getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
+        getAbbreviationAndValue(x: Decimal): [string, Decimal];
         formatElementalPart(abbreviation: string, n: Decimal): string;
         format(value: Decimal, acc?: number): string;
     };
@@ -1397,7 +1397,7 @@ declare const formats: {
         getAbbreviation(group: number, progress: number): string;
         beyondOg(x: number): string;
         abbreviationLength(group: number): number;
-        getAbbreviationAndValue(x: Decimal): (string | Decimal)[];
+        getAbbreviationAndValue(x: Decimal): [string, Decimal];
         formatElementalPart(abbreviation: string, n: Decimal): string;
         format(value: Decimal, acc?: number): string;
     };

@@ -54,7 +54,7 @@ declare const eMath: {
             getAbbreviation(group: number, progress: number): string;
             beyondOg(x: number): string;
             abbreviationLength(group: number): number;
-            getAbbreviationAndValue(x: eMathMain.Decimal): (string | eMathMain.Decimal)[];
+            getAbbreviationAndValue(x: eMathMain.Decimal): [string, eMathMain.Decimal];
             formatElementalPart(abbreviation: string, n: eMathMain.Decimal): string;
             format(value: eMathMain.Decimal, acc?: number): string;
         };
@@ -109,7 +109,7 @@ declare const eMath: {
             getAbbreviation(group: number, progress: number): string;
             beyondOg(x: number): string;
             abbreviationLength(group: number): number;
-            getAbbreviationAndValue(x: eMathMain.Decimal): (string | eMathMain.Decimal)[];
+            getAbbreviationAndValue(x: eMathMain.Decimal): [string, eMathMain.Decimal];
             formatElementalPart(abbreviation: string, n: eMathMain.Decimal): string;
             format(value: eMathMain.Decimal, acc?: number): string;
         };

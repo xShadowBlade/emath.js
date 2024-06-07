@@ -1137,7 +1137,7 @@ function decimalFormatGenerator(Decimal2) {
         if (n.eq(1)) {
           return abbreviation;
         }
-        return `${n} ${abbreviation}`;
+        return `${n.toString()} ${abbreviation}`;
       },
       format(value, acc = 2) {
         if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4))))) return "e" + FORMATS2.elemental.format(value.log10(), acc);

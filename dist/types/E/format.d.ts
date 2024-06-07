@@ -1,5 +1,22 @@
 /**
  * @file Declares a generator function for formats for the Decimal library.
+ * Adapted from MrRedShark77's Incremental Mass Rewritten (https://github.com/MrRedShark77/incremental-mass-rewritten)
+ * Modified to be written in typescript and adds JSDoc comments.
+ */
+/**
+ * MIT License
+ *
+ * Copyright (c) 2021 MrRedShark77
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  */
 import type { Decimal as DecimalType, DecimalSource } from "./e";
 type Decimal = DecimalType;
@@ -49,7 +66,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
             getAbbreviation(group: number, progress: number): string;
             beyondOg(x: number): string;
             abbreviationLength(group: number): number;
-            getAbbreviationAndValue(x: Decimal): (string | DecimalType)[];
+            getAbbreviationAndValue(x: Decimal): [string, Decimal];
             formatElementalPart(abbreviation: string, n: Decimal): string;
             format(value: Decimal, acc?: number): string;
         };
@@ -192,7 +209,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
             getAbbreviation(group: number, progress: number): string;
             beyondOg(x: number): string;
             abbreviationLength(group: number): number;
-            getAbbreviationAndValue(x: Decimal): (string | DecimalType)[];
+            getAbbreviationAndValue(x: Decimal): [string, Decimal];
             formatElementalPart(abbreviation: string, n: Decimal): string;
             format(value: Decimal, acc?: number): string;
         };
@@ -287,4 +304,5 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         };
     };
 };
-export { decimalFormatGenerator, FormatType, ST_NAMES, FormatTypeList };
+export type { FormatType };
+export { decimalFormatGenerator, ST_NAMES, FormatTypeList };
