@@ -15,4 +15,5 @@ type E = Decimal;
  * @deprecated Use the DecimalSource type directly. This type will be removed in a future version.
  */
 type ESource = DecimalSource;
-export { E, ESource };
+export { E };
+export type { ESource };

@@ -5,9 +5,9 @@
   "description": "eMath.js test",
   "type": "module",
   "scripts": {
-    "build": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai",
+    "build": "esbuild ./tests/**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai",
     "build-and-test": "npm run build && npm run test",
-    "build:watch": "esbuild ./**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai --watch",
+    "build:watch": "esbuild ./tests/**/*.test.ts --bundle --outdir=build/ --platform=node --format=esm --sourcemap --external:emath.js --external:mocha --external:chai --watch",
     "test": "mocha build/**/*.test.js"
   },
   "author": "xShadowBlade",
