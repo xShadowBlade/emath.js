@@ -46,7 +46,8 @@ type ESource = DecimalSource;
 // console.log(Decimal, Object.getOwnPropertyNames(Decimal));
 // console.log(Decimal.pow(2, 3).format());
 
-export { E, ESource };
+export { E };
+export type { ESource };
 // export * from "./formats";
 // export { FORMATS, FormatTypeList } from "./e";
 // export type { FormatType } from "./e";

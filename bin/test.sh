@@ -1,3 +1,0 @@
-cd examples
-node
-cd ..

@@ -15,8 +15,8 @@
         },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
-            "default": "./dist/presets/eMath.presets.js",
-            "import": "./dist/presets/eMath.presets.mjs"
+            "import": "./dist/presets/eMath.presets.mjs",
+            "default": "./dist/presets/eMath.presets.js"
         },
         "./ts": {
             "default": "./src/index.ts"
@@ -30,16 +30,16 @@
     },
     "scripts": {
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
-        "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.config.json\"",
+        "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.json\"",
         "build:main": "node bin/build/build.js",
         "build:main:watch": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
-        "doc": "typedoc --options typedoc.config.json",
+        "doc": "typedoc --options typedoc.json",
         "lint": "eslint src/**/*.ts",
         "lint:fix": "eslint --fix src/**/*.ts",
         "test": "cd test && npm run test && cd ..",
         "build-and-test": "node bin/build/build.js && cd test && npm run test && cd ..",
-        "build-and-build-and-test": "echo \"worst script name\" && concurrently \"node bin/build/build.js\" \"cd test && npm run build && cd ..\" && cd test && npm run test && cd .."
+        "build-and-build-and-test": "concurrently \"node bin/build/build.js\" \"cd test && npm run build && cd ..\" && cd test && npm run test && cd .."
     },
     "repository": {
         "type": "git",

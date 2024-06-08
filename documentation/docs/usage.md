@@ -11,8 +11,8 @@ After you have installed it via [npm](./install#install-via-npm) or [HTML CDN](.
 
 ### Node.js Usage
 
-The ESM package currently exports 4 packages: `emath.js`, `emath.js/game`, and `emath.js/presets`.
-There are also corresponding typescript versions of those packages (`emath.js/ts`, `emath.js/game/ts`, and `emath.js/presets/ts`) if you want to use your own build tool to compile from source.
+The ESM package currently exports 3 packages: `emath.js`, `emath.js/game`, and `emath.js/presets`.
+There are also corresponding typescript versions of those packages (`emath.js/ts`, `emath.js/ts/game`, and `emath.js/presets/ts`) if you want to use your own build tool to compile from source.
 
 Here is an example usage:
 

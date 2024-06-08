@@ -10,7 +10,7 @@ eMath.js is a JavaScript library designed to provide tools for incremental game 
 <br>
 <img src="https://img.shields.io/github/stars/xShadowBlade/emath.js?color=yellow&style=for-the-badge">
 <a href="https://github.com/xShadowBlade/emath.js/issues" alt=""><img src="https://img.shields.io/github/issues/xShadowBlade/emath.js?style=for-the-badge"></a>
- <br><img src="https://img.shields.io/github/v/release/xShadowBlade/emath.js?color=green&style=for-the-badge">
+<br><img src="https://img.shields.io/github/v/release/xShadowBlade/emath.js?color=green&style=for-the-badge">
 <br><img src="https://img.shields.io/badge/Made%20by%3A-xShadowBlade%232720-blue?style=social&logo=discord">
 </div>
 
@@ -123,6 +123,8 @@ npm install emath.js
 
 ### Include using CDN
 
+Include the following script in your HTML file. It will set the global variable `eMath` to the `window` object.
+
 > Note: There is no development build for CDN, as it is used for nodejs.
 > Replace `@latest` with the version you want to use. (e.g. `@8.3.0`), or use `@latest` for the latest version.
 
@@ -142,7 +144,9 @@ Also includes `"emath.js"` so you only need to include this script.
 
 #### emath.js/presets
 
-Also includes `"emath.js"` and `"emath.js/game"` so you only need to include this script.
+Sets the global variable `eMathPresets` to the `window` object.
+
+> Note: This does not include either `"emath.js"` or `"emath.js/game"`.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/emath.js@latest/dist/presets/eMath.presets.min.js"></script>
