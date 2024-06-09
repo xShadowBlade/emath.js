@@ -3,10 +3,24 @@
  */
 import type { GameCurrency } from "./GameCurrency";
 
+type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
+    currenciesToReset: GameCurrency | GameCurrency[];
+    extender?: GameReset | GameReset[];
+}
+
 /**
  * Represents a game reset.
  */
 class GameReset {
+    /**
+     * Creates a new instance of the game reset from an object.
+     * @param object - The object to create the game reset from.
+     * @returns The newly created game reset.
+     */
+    public static fromObject (object: GameResetFromObject): GameReset {
+        return new GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
+    }
+
     /** The unique identifier for the game reset to prevent infinite loops. */
     private readonly id: symbol;
 

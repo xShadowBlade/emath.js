@@ -2,10 +2,20 @@
  * @file This file contains all the reset layer related classes.
  */
 import type { GameCurrency } from "./GameCurrency";
+type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
+    currenciesToReset: GameCurrency | GameCurrency[];
+    extender?: GameReset | GameReset[];
+};
 /**
  * Represents a game reset.
  */
 declare class GameReset {
+    /**
+     * Creates a new instance of the game reset from an object.
+     * @param object - The object to create the game reset from.
+     * @returns The newly created game reset.
+     */
+    static fromObject(object: GameResetFromObject): GameReset;
     /** The unique identifier for the game reset to prevent infinite loops. */
     private readonly id;
     /** The currencies to reset. */

@@ -7052,7 +7052,15 @@ var GameAttribute = class {
 };
 
 // src/game/ResetLayer.ts
-var GameReset = class {
+var GameReset = class _GameReset {
+  /**
+   * Creates a new instance of the game reset from an object.
+   * @param object - The object to create the game reset from.
+   * @returns The newly created game reset.
+   */
+  static fromObject(object) {
+    return new _GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
+  }
   /**
    * Creates a new instance of the game reset.
    * @param currenciesToReset The currencies to reset.
@@ -7202,12 +7210,24 @@ var Game = class _Game {
   /**
    * Creates a new game reset object with the specified currencies to reset.
    * @param args - The arguments for the game reset. See {@link GameReset} for more information.
+   * @param currenciesToReset The currencies to reset.
+   * @param extender The extender for the game reset.
+   * @param onReset Function to run during reset.
+   * @param condition A condition that must be met for the reset to occur.
    * @returns The newly created game reset object.
    */
   // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
   addReset(...args) {
     const reset = new GameReset(...args);
     return reset;
+  }
+  /**
+   * Creates a new game reset object from an object. See {@link GameReset.fromObject} for more information.
+   * @param object - The object to create the game reset from.
+   * @returns The newly created game reset object.
+   */
+  addResetFromObject(object) {
+    return GameReset.fromObject(object);
   }
 };
 /*! Bundled license information:
