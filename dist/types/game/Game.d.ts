@@ -108,11 +108,10 @@ declare class Game {
     addAttribute<B extends boolean = true>(name: string, useBoost?: B, initial?: DecimalSource): GameAttribute<B>;
     /**
      * Creates a new game reset object with the specified currencies to reset.
-     * @param currenciesToReset - The currencies to reset.
-     * @param extender - An optional object to extend the game reset object with.
+     * @param args - The arguments for the game reset. See {@link GameReset} for more information.
      * @returns The newly created game reset object.
      */
-    addReset(currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset;
+    addReset(...args: ConstructorParameters<typeof GameReset>): GameReset;
 }
 export type { GameConfigOptions };
 export { Game, gameDefaultConfig };

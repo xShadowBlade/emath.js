@@ -185,12 +185,12 @@ class Game {
 
     /**
      * Creates a new game reset object with the specified currencies to reset.
-     * @param currenciesToReset - The currencies to reset.
-     * @param extender - An optional object to extend the game reset object with.
+     * @param args - The arguments for the game reset. See {@link GameReset} for more information.
      * @returns The newly created game reset object.
      */
-    public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
-        const reset = new GameReset(currenciesToReset, extender);
+    // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
+    public addReset (...args: ConstructorParameters<typeof GameReset>): GameReset {
+        const reset = new GameReset(...args);
         return reset;
     }
 }

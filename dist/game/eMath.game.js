@@ -7056,26 +7056,44 @@ var GameReset = class {
   /**
    * Creates a new instance of the game reset.
    * @param currenciesToReset The currencies to reset.
-   * @param extender The extender for the game reset. WARNING: Do not set this to the same object, as it will cause an infinite loop.
+   * @param extender The extender for the game reset.
+   * @param onReset Function to run during {@link reset}.
+   * @param condition A condition that must be met for the reset to occur.
    */
-  constructor(currenciesToReset, extender) {
+  constructor(currenciesToReset, extender, onReset, condition) {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
     this.extender = Array.isArray(extender) ? extender : extender ? [extender] : [];
+    this.onReset = onReset;
+    this.condition = condition;
     this.id = Symbol();
   }
   /**
-   * Resets a currency to its default value, and runs the extender's reset function if it exists (recursively).
+   * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
+   * @param force Whether to force the reset. Defaults to `false`.
+   * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
+   * @param cached The set of cached symbols to prevent infinite loops.
    */
-  reset() {
-    this.onReset?.(this);
-    this.currenciesToReset.forEach((currency) => {
-      currency.static.reset();
-    });
+  reset(force = false, forceExtenders = true, cached = /* @__PURE__ */ new Set()) {
+    if (force || (typeof this.condition === "function" ? !this.condition(this) : !this.condition) && typeof this.condition !== "undefined") {
+      return;
+    }
+    const resetThis = () => {
+      this.onReset?.(this);
+      this.currenciesToReset.forEach((currency) => {
+        currency.static.reset();
+      });
+    };
+    if (this.extender.length === 0) {
+      resetThis();
+      return;
+    }
     this.extender.forEach((extender) => {
-      if (extender.id !== this.id) {
-        extender.reset();
+      if (!cached.has(extender.id)) {
+        cached.add(extender.id);
+        extender.reset(forceExtenders || force, forceExtenders, cached);
       }
     });
+    resetThis();
   }
 };
 
@@ -7183,12 +7201,12 @@ var Game = class _Game {
   }
   /**
    * Creates a new game reset object with the specified currencies to reset.
-   * @param currenciesToReset - The currencies to reset.
-   * @param extender - An optional object to extend the game reset object with.
+   * @param args - The arguments for the game reset. See {@link GameReset} for more information.
    * @returns The newly created game reset object.
    */
-  addReset(currenciesToReset, extender) {
-    const reset = new GameReset(currenciesToReset, extender);
+  // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
+  addReset(...args) {
+    const reset = new GameReset(...args);
     return reset;
   }
 };
