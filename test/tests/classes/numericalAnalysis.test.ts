@@ -40,7 +40,7 @@ describe("inverseFunctionApprox", () => {
 
     it("should return the upper bound when the function is not monotonically increasing", () => {
         const f = (x: Decimal) => x.sub(5);
-        const result = inverseFunctionApprox(f, new Decimal(10));
+        const result = inverseFunctionApprox(f, Decimal.dTen);
         assert(equalsTolerance(result.value, 10, equalTolerance, toleranceConfig));
         assert(equalsTolerance(result.lowerBound, 10, equalTolerance, toleranceConfig));
         assert(equalsTolerance(result.upperBound, 10, equalTolerance, toleranceConfig));

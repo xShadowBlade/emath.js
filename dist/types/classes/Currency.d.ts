@@ -30,7 +30,7 @@ declare class Currency {
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
- * console.log(currency.value); // new Decimal(1)
+ * console.log(currency.value); // Decimal.dOne
  */
 declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
@@ -85,7 +85,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
-     * console.log(currency.value); // new Decimal(0), or the default value
+     * console.log(currency.value); // Decimal.dZero, or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
     /**
@@ -168,7 +168,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);

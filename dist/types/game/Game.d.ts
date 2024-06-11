@@ -92,7 +92,7 @@ declare class Game {
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
-     * console.log(currency.value); // new Decimal(1)
+     * console.log(currency.value); // Decimal.dOne
      */
     addCurrency<N extends string, U extends UpgradeInit[] = []>(name: N, upgrades?: U): GameCurrency<N, U>;
     /**

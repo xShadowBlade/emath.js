@@ -259,9 +259,9 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.old_sc.format(slog.floor(), 0);
+                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.old_sc.format(slog.floor(), 0);
                     }
-                    const m = ex.div(new Decimal(10).pow(e));
+                    const m = ex.div(Decimal.dTen.pow(e));
                     return (e.log10().gte(9) ? "" : m.toFixed(4)) + "e" + FORMATS.old_sc.format(e, 0);
                 }
             },
@@ -287,7 +287,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
+                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
                     }
                     const m = ex.div(new Decimal(1000).pow(e.div(3).floor()));
 
@@ -321,7 +321,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 ex = new Decimal(ex);
                 const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
                 if (layer.lte(0)) return format(ex, acc, max, "sc");
-                ex = new Decimal(10).pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
+                ex = Decimal.dTen.pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
                 const meta = layer.div(10).floor();
                 const layer_id = layer.toNumber() % 10 - 1;
                 return format(ex, Math.max(4, acc), max, "sc") + " " + (meta.gte(1) ? "meta" + (meta.gte(2) ? "^" + format(meta, 0, max, "sc") : "") + "-" : "") + (isNaN(layer_id) ? "nanity" : FORMATS.layer.layers[layer_id]);
@@ -481,7 +481,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
 
     // console.log(Decimal);
 
-    const INFINITY_NUM = new Decimal(2).pow(1024);
+    const INFINITY_NUM = Decimal.dTwo.pow(1024);
     const SUBSCRIPT_NUMBERS = "₀₁₂₃₄₅₆₇₈₉";
     const SUPERSCRIPT_NUMBERS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
@@ -535,7 +535,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
             case "scientific": {
                 if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
                     const e2 = ex.log10().ceil();
-                    const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : new Decimal(10).pow(e2));
+                    const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : Decimal.dTen.pow(e2));
                     const be = e2.mul(-1).max(1).log10().gte(9);
                     return neg + (be ? "" : m.toFixed(2)) + "e" + format(e2, 0, max, "mixed_sc");
                 } else if (e.lt(max)) {
@@ -544,9 +544,9 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : new Decimal(10).pow(slog.sub(slog.floor())).toFixed(2)) + "F" + format(slog.floor(), 0);
+                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(2)) + "F" + format(slog.floor(), 0);
                     }
-                    const m = ex.div(new Decimal(10).pow(e));
+                    const m = ex.div(Decimal.dTen.pow(e));
                     const be = e.log10().gte(9);
                     return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
                 }
@@ -567,7 +567,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 else {
                     let ee3 = Math.floor(e3.log(1e3).toNumber());
                     if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
-                    e3 = e3.sub(1).div(new Decimal(10).pow(ee3 * 3));
+                    e3 = e3.sub(1).div(Decimal.dTen.pow(ee3 * 3));
                     while (e3.gt(0)) {
                         const div1000 = e3.div(1e3).floor();
                         const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
@@ -581,8 +581,8 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                     }
                 }
 
-                const m = ex.div(new Decimal(10).pow(e3_mul));
-                const fixedAmt = acc === 2 ? new Decimal(2).sub(e.sub(e3_mul)).add(1).toNumber() : acc;
+                const m = ex.div(Decimal.dTen.pow(e3_mul));
+                const fixedAmt = acc === 2 ? Decimal.dTwo.sub(e.sub(e3_mul)).add(1).toNumber() : acc;
                 return neg + (ee.gte(10) ? "" : (m.toFixed(fixedAmt)) + " ") + final;
             }
             default:
@@ -667,7 +667,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      */
     function formatReduction (ex: DecimalSource): string {
         ex = new Decimal(ex);
-        return format(new Decimal(1).sub(ex).mul(100)) + "%";
+        return format(Decimal.dOne.sub(ex).mul(100)) + "%";
     }
 
     /**

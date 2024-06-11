@@ -75,7 +75,7 @@ function mean (a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric")
             return a.mul(b).sqrt();
         case "harmonic":
         case 3:
-            return new Decimal(2).div(a.reciprocal().add(b.reciprocal()));
+            return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
     }
 }
 
@@ -160,16 +160,16 @@ function inverseFunctionApprox (
     tolerance = DEFAULT_TOLERANCE,
 ): { value: Decimal; lowerBound: Decimal; upperBound: Decimal } {
     // Set the initial bounds
-    let lowerBound = new Decimal(1);
+    let lowerBound = Decimal.dOne;
     // let upperBound = new Decimal(n);
     let upperBound = new Decimal(n);
 
     // If the function evaluates to 0, return 0
     if (f(upperBound).eq(0)) {
         return {
-            value: new Decimal(0),
-            lowerBound: new Decimal(0),
-            upperBound: new Decimal(0),
+            value: Decimal.dZero,
+            lowerBound: Decimal.dZero,
+            upperBound: Decimal.dZero,
         };
     }
 
@@ -245,7 +245,7 @@ function calculateSumLoop (
 
         // If the difference/quotent between the inital sum and the new sum is less than epsilon, break
         const diff = initSum.div(sum);
-        if (diff.lte(1) && diff.gt(new Decimal(1).sub(epsilon))) break;
+        if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
     }
     // console.log({ sum, iterations: new Decimal(b).sub(n).add(a) });
     return sum;
@@ -272,7 +272,7 @@ function calculateSumApprox (
     a = new Decimal(a);
     b = new Decimal(b);
 
-    let sum = new Decimal(0);
+    let sum = Decimal.dZero;
     const intervalWidth = b.sub(a).div(iterations);
 
     // for (let i = 0; i < iterations; i++) {
@@ -339,7 +339,7 @@ function calculateSumApprox (
 //     const n = new Decimal(iterations);
 //     const h = b.sub(a).div(n);
 
-//     let sum = new Decimal(0);
+//     let sum = Decimal.dZero;
 //     // for (let i = 0; i < iterations; i++) {
 //     for (let i = iterations; i > 0; i--) {
 //         // const mid = a.add(h.mul(i)).add(h.div(2));

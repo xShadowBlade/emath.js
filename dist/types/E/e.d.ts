@@ -1302,7 +1302,7 @@ declare class Decimal {
      * @example
      * randomProb(0.5); // 50% chance of returning true
      * randomProb(0.25); // 25% chance of returning true
-     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * randomProb(Decimal.dOne.div(1000)); // 1 in 1000 chance of returning true
      * // Anything less than ~1e-16 will always return false due to floating point errors
      */
     static randomProb(rng: DecimalSource): boolean;
@@ -1312,6 +1312,13 @@ declare const formats: {
     toSuperscript: (value: number) => string;
     formatST: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
     format: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
+    /**
+     * Returns true if 'value' is greater than or equal to 'other'.
+     * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
+     * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.
+     * For example, if you put in 1e-9, then any number closer to the
+     * larger number than (larger number)*1e-9 will be considered equal.
+     */
     formatGain: (amt: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number | undefined, max?: number | undefined) => string;
     formatTime: (ex: DecimalSource, acc?: number, type?: string) => string;
     formatTimeLong: (ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;

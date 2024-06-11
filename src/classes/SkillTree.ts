@@ -59,10 +59,10 @@ class SkillNode implements ISkill {
         this.id = id;
         this.name = name ?? id;
         this.description = description ?? "";
-        this.cost = cost ?? (() => new Decimal(0));
+        this.cost = cost ?? (() => Decimal.dZero);
         this.effect = effect;
         this.required = required ?? [];
-        this.maxLevel = maxLevel ? new Decimal(maxLevel) : new Decimal(0);
+        this.maxLevel = maxLevel ? new Decimal(maxLevel) : Decimal.dZero;
     }
 
     /**

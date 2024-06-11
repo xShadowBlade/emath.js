@@ -143,7 +143,7 @@ class Game {
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
-     * console.log(currency.value); // new Decimal(1)
+     * console.log(currency.value); // Decimal.dOne
      */
     public addCurrency<N extends string, U extends UpgradeInit[] = []> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
         // Set the data and static objects

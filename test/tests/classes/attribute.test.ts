@@ -15,7 +15,7 @@ describe("Attribute", () => {
 
     describe("constructor", () => {
         it("should create an attribute with default value 0", () => {
-            assert(testAttribute.value.equals(new Decimal(0)));
+            assert(testAttribute.value.equals(Decimal.dZero));
         });
 
         it("should create an attribute with specified initial value", () => {
@@ -30,7 +30,7 @@ describe("AttributeStatic", () => {
     describe("constructor", () => {
         it("should create an attribute static with default initial value and boost disabled", () => {
             const attributeStatic = new AttributeStatic(undefined, false);
-            assert(attributeStatic.value.equals(new Decimal(0)));
+            assert(attributeStatic.value.equals(Decimal.dZero));
             assert.isNull(attributeStatic.boost);
         });
 

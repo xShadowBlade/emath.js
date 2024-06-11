@@ -20,7 +20,7 @@ import type { CurrencyStatic } from "./Currency";
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+ * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
 declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
 /**
@@ -71,7 +71,7 @@ interface UpgradeInit {
      * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade. If you want to buy the maximum amount of upgrades possible, this will be `Infinity`.
-     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // A cost function that returns the sum of the levels and the target.
      * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.

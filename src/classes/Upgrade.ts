@@ -22,7 +22,7 @@ import type { CurrencyStatic } from "./Currency";
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to `15`.
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+ * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
 function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end: DecimalSource = Infinity, mode?: MeanMode, iterations?: number, el = false): [amount: Decimal, cost: Decimal] {
     value = new Decimal(value);
@@ -35,7 +35,7 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
     // Special case: If target is less than 1, just return 0
     if (target.lt(0)) {
         console.warn("calculateUpgrade: Invalid target: ", target);
-        return [new Decimal(0), new Decimal(0)];
+        return [Decimal.dZero, Decimal.dZero];
     }
 
     // Set el from the upgrade object if it exists
@@ -50,7 +50,7 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
     //     if (value.gte(cost)) {
     //         if (el) {
     //             const cachedEL = cached as UpgradeCachedEL;
-    //             return [cachedEL.level, new Decimal(0)];
+    //             return [cachedEL.level, Decimal.dZero];
     //         }
     //         const cachedSum = cached as UpgradeCachedSum;
     //         return [cachedSum.end.sub(cachedSum.start), cost];
@@ -62,16 +62,16 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
         // console.log("target === 1");
         const cost = upgrade.cost(upgrade.level);
         const canAfford = value.gte(cost);
-        let out: [Decimal, Decimal] = [new Decimal(0), new Decimal(0)];
+        let out: [Decimal, Decimal] = [Decimal.dZero, Decimal.dZero];
         if (el) {
-            // return [canAfford ? new Decimal(1) : new Decimal(0), new Decimal(0)];
-            out[0] = canAfford ? new Decimal(1) : new Decimal(0);
+            // return [canAfford ? Decimal.dOne : Decimal.dZero, Decimal.dZero];
+            out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
 
             // Set the cache
             // upgrade.setCached("el", start, cost);
             return out;
         } else {
-            out = [canAfford ? new Decimal(1) : new Decimal(0), canAfford ? cost : new Decimal(0)];
+            out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost : Decimal.dZero];
 
             // Set the cache
             // upgrade.setCached("sum", start, end, cost);
@@ -84,7 +84,7 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
         // console.log("costBulk");
         const [amount, cost] = upgrade.costBulk(value, upgrade.level, target);
         const canAfford = value.gte(cost);
-        const out: [Decimal, Decimal] = [canAfford ? amount : new Decimal(0), canAfford && !el ? cost : new Decimal(0)];
+        const out: [Decimal, Decimal] = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost : Decimal.dZero];
 
         // Set the cache
 
@@ -104,7 +104,7 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
         const costTargetFn = (level: Decimal): Decimal => upgrade.cost(level.add(start));
         const maxLevelAffordable = Decimal.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
         // const cost = upgrade.cost(maxLevelAffordable);
-        const cost = new Decimal(0);
+        const cost = Decimal.dZero;
 
         // Set the cache
         // upgrade.setCached("el", start, cost);
@@ -185,7 +185,7 @@ interface UpgradeInit {
      * WARNING: In v8.x.x and above, the return order is [amount, cost] instead of [cost, amount].
      * @param level - The current level of the upgrade.
      * @param target - The target level of the upgrade. If you want to buy the maximum amount of upgrades possible, this will be `Infinity`.
-     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns [amount, cost] - The cost of the upgrades and the amount of upgrades you can buy. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // A cost function that returns the sum of the levels and the target.
      * // In this example, the cost function is twice the level. The cost bulk function is the sum of the levels and the target.
@@ -339,7 +339,7 @@ class UpgradeData implements IUpgradeData {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
         this.id = init.id;
-        this.level = init.level ? new Decimal(init.level) : new Decimal(1);
+        this.level = init.level ? new Decimal(init.level) : Decimal.dOne;
     }
 }
 
@@ -392,7 +392,7 @@ class UpgradeStatic implements IUpgradeStatic {
     get level (): Decimal {
         // many fallbacks for some reason
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return ((this ?? { data: { level: new Decimal(1) } }).data ?? { level: new Decimal(1) }).level;
+        return ((this ?? { data: { level: Decimal.dOne } }).data ?? { level: Decimal.dOne }).level;
     }
     set level (n: DecimalSource) {
         this.data.level = new Decimal(n);
@@ -417,7 +417,7 @@ class UpgradeStatic implements IUpgradeStatic {
         this.maxLevel = init.maxLevel;
         this.effect = init.effect;
         this.el = init.el;
-        this.defaultLevel = init.level ?? new Decimal(1);
+        this.defaultLevel = init.level ?? Decimal.dOne;
     }
 
     // /**
@@ -431,7 +431,7 @@ class UpgradeStatic implements IUpgradeStatic {
     // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
     // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
     //     if (type === "sum") {
-    //         return this.cache.get(upgradeToCacheNameSum(start, end ?? new Decimal(0)));
+    //         return this.cache.get(upgradeToCacheNameSum(start, end ?? Decimal.dZero));
     //     } else {
     //         return this.cache.get(upgradeToCacheNameEL(start));
     //     }

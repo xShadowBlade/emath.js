@@ -35,7 +35,7 @@ class Currency {
      * Constructs a new currency object with an initial value of 0.
      */
     constructor () {
-        this.value = new Decimal(0);
+        this.value = Decimal.dZero;
         // this.upgrades = [];
         this.upgrades = {};
         // this.boost = new boost();
@@ -50,7 +50,7 @@ class Currency {
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
- * console.log(currency.value); // new Decimal(1)
+ * console.log(currency.value); // Decimal.dOne
  */
 class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
@@ -108,7 +108,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: new Decimal(0), defaultBoost: new Decimal(1) }) {
+    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
         // this.defaultVal = new Decimal(defaultVal);
         // this.defaultBoost = new Decimal(defaultBoost);
         this.defaultVal = defaults.defaultVal;
@@ -151,13 +151,13 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
      * @example
      * currency.reset();
-     * console.log(currency.value); // new Decimal(0), or the default value
+     * console.log(currency.value); // Decimal.dZero, or the default value
      */
     public reset (resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true): void {
         if (resetCurrency) this.value = this.defaultVal;
         if (resetUpgradeLevels) {
             // this.upgrades.forEach((upgrade) => {
-            //     upgrade.level = new Decimal(0);
+            //     upgrade.level = Decimal.dZero;
             // });
             for (const upgrade of Object.values(this.upgrades)) {
                 (upgrade as UpgradeStatic).level = new Decimal((upgrade as UpgradeStatic).defaultLevel);
@@ -307,7 +307,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [new Decimal(0), new Decimal(0)].
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
@@ -318,7 +318,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return [new Decimal(0), new Decimal(0)];
+            return [Decimal.dZero, Decimal.dZero];
         }
 
         // Calculate the target based on the maxLevel
@@ -351,7 +351,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return new Decimal(0);
+            return Decimal.dZero;
         }
         const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
 
@@ -376,7 +376,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         const upgrade = this.getUpgrade(id);
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
-            return new Decimal(0);
+            return Decimal.dZero;
         }
         const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
         const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0]))
@@ -499,7 +499,7 @@ for (let i = 0; i < 3; i++) {
 
     console.log({
         calc: calc.map(formatFn),
-        acc: formatFn(costFn(upgrade?.level ?? new Decimal(1)).div(newCurrency)),
+        acc: formatFn(costFn(upgrade?.level ?? Decimal.dOne).div(newCurrency)),
     });
 
     console.log({

@@ -4624,7 +4624,7 @@ class Decimal {
      * @example
      * randomProb(0.5); // 50% chance of returning true
      * randomProb(0.25); // 25% chance of returning true
-     * randomProb(new Decimal(1).div(1000)); // 1 in 1000 chance of returning true
+     * randomProb(Decimal.dOne.div(1000)); // 1 in 1000 chance of returning true
      * // Anything less than ~1e-16 will always return false due to floating point errors
      */
     public static randomProb (rng: DecimalSource): boolean {

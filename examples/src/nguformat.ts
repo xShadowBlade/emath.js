@@ -6,7 +6,7 @@ import { Decimal } from "emath.js";
 const f = (x: Decimal): Decimal => x.pow(1.005).mul(2);
 // const f = (x: Decimal): Decimal => x.pow(2).mul(1.35);
 
-let a = new Decimal(2);
+let a = Decimal.dTwo;
 
 let interval: ReturnType<typeof setInterval>;
 

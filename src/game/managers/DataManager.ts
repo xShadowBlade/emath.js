@@ -381,7 +381,7 @@ class DataManager {
 
         // Convert plain object to class instance (recursive)
 
-        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: new Decimal(0) }));
+        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
 
         /**
          * Converts a plain object to a class instance.

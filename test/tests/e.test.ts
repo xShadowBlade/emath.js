@@ -34,7 +34,7 @@ describe("Decimal", () => {
                 formatted: "1.00e999",
             },
             {
-                value: new Decimal(2).tetrate(5),
+                value: Decimal.dTwo.tetrate(5),
                 formatted: "2.00e19,728",
             },
             {
