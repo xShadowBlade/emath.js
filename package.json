@@ -58,7 +58,7 @@
         "@typescript-eslint/parser": "^7.0.2",
         "break_eternity.js": "^2.0.0",
         "concurrently": "^8.2.2",
-        "esbuild": "0.21.4",
+        "esbuild": "0.21.5",
         "esbuild-plugin-replace": "^1.4.0",
         "eslint": "^8.50.0",
         "eslint-config-prettier": "^9.0.0",
