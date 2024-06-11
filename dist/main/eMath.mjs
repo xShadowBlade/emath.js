@@ -4821,20 +4821,26 @@ Decimal.formats = formats;
 
 // src/classes/Boost.ts
 var BoostObject = class {
-  // eslint-disable-next-line jsdoc/require-returns
-  /** @deprecated Use {@link description} instead */
+  /**
+   * @returns The description of the boost.
+   * @deprecated Use {@link description} instead
+   */
   get desc() {
     return this.description;
   }
   get description() {
     return this.descriptionFn();
   }
+  /**
+   * Constructs a new boost object.
+   * @param init - The initialization object.
+   */
   constructor(init) {
     this.id = init.id;
     this.name = init.name ?? "";
-    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
     this.value = init.value;
     this.order = init.order ?? 99;
+    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
   }
 };
 var Boost = class {
@@ -5228,10 +5234,6 @@ var UpgradeStatic = class _UpgradeStatic {
 import "reflect-metadata";
 import { Type as Type2 } from "class-transformer";
 var Currency = class {
-  // public upgrades: UpgradeData<string>[];
-  // /** A boost object that affects the currency gain. */
-  // @Expose()
-  // public boost: boost;
   /**
    * Constructs a new currency object with an initial value of 0.
    */
@@ -5286,13 +5288,7 @@ var CurrencyStatic = class {
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
     this.boost = new Boost(this.defaultBoost);
     this.pointer.value = this.defaultVal;
-    this.upgrades = {
-      // *[Symbol.iterator] () {
-      //     for (const upgrade of Object.values(this)) {
-      //         yield upgrade;
-      //     }
-      // },
-    };
+    this.upgrades = {};
     if (upgrades) this.addUpgrade(upgrades);
   }
   /**
@@ -5366,6 +5362,39 @@ var CurrencyStatic = class {
     return this.upgrades[id] ?? null;
   }
   /**
+   * Queries upgrades based on the provided id. Returns an array of upgrades that match the id.
+   * @param id - The id of the upgrade to query.
+   * @returns An array of upgrades that match the id.
+   * @example
+   * const currency = new CurrencyStatic(undefined, [
+   *     { id: "healthBoostSmall", cost: (level) => level.mul(10) },
+   *     { id: "healthBoostLarge", cost: (level) => level.mul(20) },
+   *     { id: "damageBoostSmall", cost: (level) => level.mul(10) },
+   *     { id: "damageBoostLarge", cost: (level) => level.mul(20) },
+   * ] as const satisfies UpgradeInit[]);
+   *
+   * // Get all health upgrades
+   * const healthUpgrades = currency.queryUpgrade(/health/); // [{ id: "healthBoostSmall", ... }, { id: "healthBoostLarge", ... }]
+   *
+   * // Get all small upgrades
+   * const smallUpgrades = currency.queryUpgrade(["healthBoostSmall", "damageBoostSmall"]);
+   * // or
+   * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
+   */
+  queryUpgrade(id) {
+    const allUpgradeIds = Object.keys(this.upgrades);
+    if (id instanceof RegExp) {
+      const regex = id;
+      const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
+      return matchedIds.map((matchedId) => this.upgrades[matchedId]);
+    }
+    if (typeof id === "string") {
+      id = [id];
+    }
+    const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
+    return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
+  }
+  /**
    * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
    * @param upgrades - An array of upgrade objects.
    * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
@@ -5393,20 +5422,20 @@ var CurrencyStatic = class {
    */
   addUpgrade(upgrades, runEffectInstantly = true) {
     if (!Array.isArray(upgrades)) upgrades = [upgrades];
-    const addedUpgradeList = {};
+    const addedUpgradeList = [];
     for (const upgrade of upgrades) {
-      const addedUpgradeData = this.pointerAddUpgrade(upgrade);
+      this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
       if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
-      addedUpgradeList[upgrade.id] = addedUpgradeStatic;
       this.upgrades[upgrade.id] = addedUpgradeStatic;
+      addedUpgradeList.push(addedUpgradeStatic);
     }
-    return Object.values(addedUpgradeList);
+    return addedUpgradeList;
   }
   /**
    * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
    * @param id - The id of the upgrade to update.
-   * @param upgrade - The upgrade object to update.
+   * @param newUpgrade - The new upgrade object.
    * @example
    * currency.updateUpgrade("healthBoost", {
    *     name: "New Health Boost".
@@ -5417,13 +5446,10 @@ var CurrencyStatic = class {
    *     }
    * });
    */
-  updateUpgrade(id, upgrade) {
-    const upgrade1 = this.getUpgrade(id);
-    if (upgrade1 === null) return;
-    upgrade1.name = upgrade.name ?? upgrade1.name;
-    upgrade1.cost = upgrade.cost ?? upgrade1.cost;
-    upgrade1.maxLevel = upgrade.maxLevel ?? upgrade1.maxLevel;
-    upgrade1.effect = upgrade.effect ?? upgrade1.effect;
+  updateUpgrade(id, newUpgrade) {
+    const oldUpgrade = this.getUpgrade(id);
+    if (oldUpgrade === null) return;
+    Object.assign(oldUpgrade, newUpgrade);
   }
   /**
    * Calculates the cost and how many upgrades you can buy.
@@ -5437,7 +5463,6 @@ var CurrencyStatic = class {
    * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
-  // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: Decimal, cost: Decimal] {
   calculateUpgrade(id, target = Infinity, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {

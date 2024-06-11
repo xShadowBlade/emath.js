@@ -3,10 +3,11 @@
  */
 import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
-// import { Type, Expose } from "class-transformer";
 import type { Pointer } from "../common/types";
 
-/** An object representing a boost. */
+/**
+ * An object representing a boost.
+ */
 interface BoostsObjectInit {
     /** The ID of the boost. */
     id: string;
@@ -53,36 +54,36 @@ interface BoostsObjectInit {
     order?: number;
 }
 
-/** Represents an indiviual boost object. */
+/**
+ * Represents an indiviual boost object.
+ */
 class BoostObject implements BoostsObjectInit {
-    // public id; name; desc; value; order;
-    public id: string;
-    public name: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public descriptionFn: (...args: any[]) => string;
-    // eslint-disable-next-line jsdoc/require-returns
-    /** @deprecated Use {@link description} instead */
-    public get desc (): string { return this.description; }
-    public get description (): string {
-        return this.descriptionFn();
-    }
-    public value: (input: Decimal) => Decimal;
-    public order: number;
+    // Assign the properties from the BoostsObjectInit interface
+    public id; name; value; order;
 
-    constructor (init: BoostObject | BoostsObjectInit) {
-        // if (init instanceof boostObject) {
-        //     init = init as boostObject;
-        // }
+    // TODO: Change the args of descriptionFn to be more specific
+    public descriptionFn: (...args: any[]) => string;
+
+    /**
+     * @returns The description of the boost.
+     * @deprecated Use {@link description} instead
+     */
+    public get desc (): string { return this.description; }
+    public get description (): string { return this.descriptionFn(); }
+
+    /**
+     * Constructs a new boost object.
+     * @param init - The initialization object.
+     */
+    constructor (init: BoostsObjectInit) {
+        // Assign the properties from the BoostsObjectInit interface
         this.id = init.id;
         this.name = init.name ?? "";
-        // this.desc = init.desc ?? "";
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
-        // this.descriptionFn = init.description || init.desc ?
-        //     (init.description ? (typeof init.description === "function" ? init.description : () => init.description as string) : (
-        //         init.desc ? (typeof init.desc === "function" ? init.desc : () => init.desc as string) : () => ""
-        //     ))
         this.value = init.value;
         this.order = init.order ?? 99;
+
+        // Assign the description function
+        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
     }
 }
 
@@ -92,11 +93,9 @@ class BoostObject implements BoostsObjectInit {
  */
 class Boost {
     /** An array of boost objects. */
-    // @Type(() => boostObject)
     public readonly boostArray: BoostObject[];
 
     /** The base effect value. */
-    // @Expose()
     public readonly baseEffect: Decimal;
 
     /**
@@ -136,7 +135,6 @@ class Boost {
         const boostList: BoostObject[] = [];
         const indexList: number[] = [];
         for (let i = 0; i < this.boostArray.length; i++) {
-            // if (i === this.boostArray.length) break;
             if (
                 (typeof id === "string" && id === this.boostArray[i].id) ||
                 (id instanceof RegExp && id.test(this.boostArray[i].id))
@@ -176,11 +174,12 @@ class Boost {
 
     /**
      * Sets or updates a boost with the given parameters.
+     * @deprecated Use the other overload instead.
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param description - The description of the boost.
      * @param value - The value of the boost (function).
-     * @param order - The order of the boost (higher order go first)
+     * @param order - The order of the boost (lower order go first)
      * @example
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
@@ -200,9 +199,13 @@ class Boost {
      */
     public setBoost (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     public setBoost (arg1: string | (BoostsObjectInit | BoostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: Decimal) => Decimal, arg5?: number): void {
-        if (!arg1) return; // class-transformer bug
+        // class-transformer bug where it doesn't recognize the overload
+        if (!arg1) return;
+
         if (typeof arg1 === "string") {
             // Basic set using parameters
+
+            // Assign the parameters to the variables
             const id = arg1;
             const name = arg2 ?? "";
             const description = arg3 ?? "";
@@ -245,6 +248,7 @@ class Boost {
     public calculate (base: DecimalSource = this.baseEffect): Decimal {
         let output: Decimal = new Decimal(base);
         let boosts = this.boostArray;
+
         // Sort boosts by order from lowest to highest
         boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);
         for (const boost of boosts) {

@@ -3,11 +3,11 @@
  */
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../common/types";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
-import { UpgradeData, UpgradeStatic, UpgradeInit, UpgradeInitArrayType } from "./Upgrade";
-import type { IsPrimitiveString } from "../common/types";
+import { UpgradeData, UpgradeStatic } from "./Upgrade";
+import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
+import type { Pointer, IsPrimitiveString } from "../common/types";
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
@@ -120,6 +120,27 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      */
     getUpgrade<T extends S>(id: T): IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null;
     /**
+     * Queries upgrades based on the provided id. Returns an array of upgrades that match the id.
+     * @param id - The id of the upgrade to query.
+     * @returns An array of upgrades that match the id.
+     * @example
+     * const currency = new CurrencyStatic(undefined, [
+     *     { id: "healthBoostSmall", cost: (level) => level.mul(10) },
+     *     { id: "healthBoostLarge", cost: (level) => level.mul(20) },
+     *     { id: "damageBoostSmall", cost: (level) => level.mul(10) },
+     *     { id: "damageBoostLarge", cost: (level) => level.mul(20) },
+     * ] as const satisfies UpgradeInit[]);
+     *
+     * // Get all health upgrades
+     * const healthUpgrades = currency.queryUpgrade(/health/); // [{ id: "healthBoostSmall", ... }, { id: "healthBoostLarge", ... }]
+     *
+     * // Get all small upgrades
+     * const smallUpgrades = currency.queryUpgrade(["healthBoostSmall", "damageBoostSmall"]);
+     * // or
+     * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
+     */
+    queryUpgrade(id: S | S[] | RegExp): UpgradeStatic[];
+    /**
      * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
      * @param upgrades - An array of upgrade objects.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
@@ -149,7 +170,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
-     * @param upgrade - The upgrade object to update.
+     * @param newUpgrade - The new upgrade object.
      * @example
      * currency.updateUpgrade("healthBoost", {
      *     name: "New Health Boost".
@@ -160,7 +181,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      *     }
      * });
      */
-    updateUpgrade(id: S, upgrade: Partial<UpgradeInit>): void;
+    updateUpgrade(id: S, newUpgrade: Partial<UpgradeInit>): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.

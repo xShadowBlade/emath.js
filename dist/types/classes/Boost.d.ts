@@ -4,7 +4,9 @@
 import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
-/** An object representing a boost. */
+/**
+ * An object representing a boost.
+ */
 interface BoostsObjectInit {
     /** The ID of the boost. */
     id: string;
@@ -44,17 +46,26 @@ interface BoostsObjectInit {
     /** The order at which the boost is applied. Lower orders are applied first. */
     order?: number;
 }
-/** Represents an indiviual boost object. */
+/**
+ * Represents an indiviual boost object.
+ */
 declare class BoostObject implements BoostsObjectInit {
     id: string;
     name: string;
-    descriptionFn: (...args: any[]) => string;
-    /** @deprecated Use {@link description} instead */
-    get desc(): string;
-    get description(): string;
     value: (input: Decimal) => Decimal;
     order: number;
-    constructor(init: BoostObject | BoostsObjectInit);
+    descriptionFn: (...args: any[]) => string;
+    /**
+     * @returns The description of the boost.
+     * @deprecated Use {@link description} instead
+     */
+    get desc(): string;
+    get description(): string;
+    /**
+     * Constructs a new boost object.
+     * @param init - The initialization object.
+     */
+    constructor(init: BoostsObjectInit);
 }
 /**
  * Represents a boost manager that applies various effects to a base value.
@@ -105,11 +116,12 @@ declare class Boost {
     removeBoost(id: string): void;
     /**
      * Sets or updates a boost with the given parameters.
+     * @deprecated Use the other overload instead.
      * @param id - The ID of the boost.
      * @param name - The name of the boost.
      * @param description - The description of the boost.
      * @param value - The value of the boost (function).
-     * @param order - The order of the boost (higher order go first)
+     * @param order - The order of the boost (lower order go first)
      * @example
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));

@@ -3,15 +3,14 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { Type } from "class-transformer";
-import { Decimal, DecimalSource } from "../E/e";
-// import { Decimal } from "../E/e";
-import type { Pointer } from "../common/types";
 
+import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
-import { UpgradeData, UpgradeStatic, UpgradeInit, UpgradeInitArrayType, calculateUpgrade } from "./Upgrade";
+import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
 
-import type { IsPrimitiveString, Mutable } from "../common/types";
+import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
+import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
@@ -25,20 +24,13 @@ class Currency {
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
     public upgrades: Record<string, UpgradeData>;
-    // public upgrades: UpgradeData<string>[];
-
-    // /** A boost object that affects the currency gain. */
-    // @Expose()
-    // public boost: boost;
 
     /**
      * Constructs a new currency object with an initial value of 0.
      */
     constructor () {
         this.value = Decimal.dZero;
-        // this.upgrades = [];
         this.upgrades = {};
-        // this.boost = new boost();
     }
 }
 
@@ -54,12 +46,7 @@ class Currency {
  */
 class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
     /** An array that represents upgrades, their costs, and their effects. */
-    // public upgrades: upgradeStatic[];
     public readonly upgrades: Record<S, UpgradeStatic>;
-    // public upgrades: {
-    //     [id: string]: UpgradeStatic;
-    //     [Symbol.iterator]: IterableIterator<UpgradeStatic>;
-    // };
 
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
@@ -109,36 +96,31 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
     constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
-        // this.defaultVal = new Decimal(defaultVal);
-        // this.defaultBoost = new Decimal(defaultBoost);
+        // Assign the default values
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
 
+        // Assign the pointer function
         this.pointerFn = typeof pointer === "function" ? pointer : (): Currency => pointer;
-        this.boost = new Boost(this.defaultBoost);
-        // this.upgradeCache = new LRUCache(CurrencyStatic.cacheSize);
 
+        // Set the boost object
+        this.boost = new Boost(this.defaultBoost);
+
+        // Set the pointer value to the default value
         this.pointer.value = this.defaultVal;
 
-        // this.upgrades = [];
         // @ts-expect-error - Properties are added in the next line
-        this.upgrades = {
-            // *[Symbol.iterator] () {
-            //     for (const upgrade of Object.values(this)) {
-            //         yield upgrade;
-            //     }
-            // },
-        };
+        this.upgrades = {};
 
+        // Add upgrades
         if (upgrades) this.addUpgrade(upgrades);
-
-        // this.upgrades = this.upgrades;
     }
 
     /**
      * Updates / applies effects to the currency on load.
      */
     public onLoadData (): void {
+        // Call the effect function for each upgrade
         for (const upgrade of Object.values(this.upgrades)) {
             (upgrade as UpgradeStatic).effect?.((upgrade as UpgradeStatic).level, (upgrade as UpgradeStatic), this as CurrencyStatic);
         }
@@ -154,13 +136,16 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * console.log(currency.value); // Decimal.dZero, or the default value
      */
     public reset (resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true): void {
+        // Reset the value
         if (resetCurrency) this.value = this.defaultVal;
+
+        // Reset the upgrades
         if (resetUpgradeLevels) {
-            // this.upgrades.forEach((upgrade) => {
-            //     upgrade.level = Decimal.dZero;
-            // });
             for (const upgrade of Object.values(this.upgrades)) {
+                // Reset the level to the default level
                 (upgrade as UpgradeStatic).level = new Decimal((upgrade as UpgradeStatic).defaultLevel);
+
+                // Call the effect function for each upgrade
                 if (runUpgradeEffect) (upgrade as UpgradeStatic).effect?.((upgrade as UpgradeStatic).level, (upgrade as UpgradeStatic), this as CurrencyStatic);
             }
         };
@@ -187,8 +172,6 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      */
     private pointerAddUpgrade (upgrades: UpgradeInit): UpgradeData {
         const upgradesToAdd = new UpgradeData(upgrades);
-        // this.pointer.upgrades.push(upgradesToAdd);
-        // console.log("pointerAdd", { upgradesToAdd });
         this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
         return upgradesToAdd;
     };
@@ -199,7 +182,6 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * @returns The upgrade object if found, otherwise null.
      */
     private pointerGetUpgrade (id: string): UpgradeData | null {
-        // console.log("pointerGet", { id, upgrades: this.pointer });
         return this.pointer.upgrades[id] ?? null;
     }
 
@@ -212,15 +194,50 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    public getUpgrade<T extends S> (id: T): IsPrimitiveString<S> extends false ?
-        // {
-        //     [K in keyof U]: U[K]["id"] extends T ? ConvertInitToStatic<U[K]> : never;
-        // }[number]
-        UpgradeStatic
-    : UpgradeStatic | null {
+    public getUpgrade<T extends S> (id: T): IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null {
         // // @ts-expect-error - This is a hack to get the type to work
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.upgrades[id] ?? null;
+    }
+
+    /**
+     * Queries upgrades based on the provided id. Returns an array of upgrades that match the id.
+     * @param id - The id of the upgrade to query.
+     * @returns An array of upgrades that match the id.
+     * @example
+     * const currency = new CurrencyStatic(undefined, [
+     *     { id: "healthBoostSmall", cost: (level) => level.mul(10) },
+     *     { id: "healthBoostLarge", cost: (level) => level.mul(20) },
+     *     { id: "damageBoostSmall", cost: (level) => level.mul(10) },
+     *     { id: "damageBoostLarge", cost: (level) => level.mul(20) },
+     * ] as const satisfies UpgradeInit[]);
+     *
+     * // Get all health upgrades
+     * const healthUpgrades = currency.queryUpgrade(/health/); // [{ id: "healthBoostSmall", ... }, { id: "healthBoostLarge", ... }]
+     *
+     * // Get all small upgrades
+     * const smallUpgrades = currency.queryUpgrade(["healthBoostSmall", "damageBoostSmall"]);
+     * // or
+     * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
+     */
+    public queryUpgrade (id: S | S[] | RegExp): UpgradeStatic[] {
+        const allUpgradeIds = Object.keys(this.upgrades) as S[];
+
+        // If the id is a regular expression search for all upgrades that match the regex
+        if (id instanceof RegExp) {
+            const regex = id;
+            const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
+            return matchedIds.map((matchedId) => this.upgrades[matchedId]);
+        }
+
+        // Convert to array if not already
+        if (typeof id === "string") {
+            id = [id];
+        }
+
+        // If the id is an array, return all upgrades that match the ids
+        const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
+        return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
     }
 
     /**
@@ -250,35 +267,37 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * });
      */
     public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): UpgradeStatic[] {
+        // Convert to array if not already
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
-        // console.log({ upgrades });
+        // Create an array to store the added upgrades
+        const addedUpgradeList: UpgradeStatic[] = [];
 
-        // Adds standard (object instead of array)
-        const addedUpgradeList: Record<string, UpgradeStatic> = {};
         for (const upgrade of upgrades) {
-            // console.log(upgrade.id);
+            // Add the upgrade to the data
+            this.pointerAddUpgrade(upgrade);
 
-            const addedUpgradeData = this.pointerAddUpgrade(upgrade);
-            // const addedUpgradeStatic = new UpgradeStatic(upgrade, () => addedUpgradeData);
-            // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id) as UpgradeData);
+            // Create the upgrade object
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!);
 
+            // Run the effect instantly if needed
             if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this as CurrencyStatic);
-            addedUpgradeList[upgrade.id] = addedUpgradeStatic;
+
+            // Add the upgrade to this.upgrades
             (this.upgrades as Record<string, UpgradeStatic>)[upgrade.id] = addedUpgradeStatic;
+
+            // Add the upgrade to the list
+            addedUpgradeList.push(addedUpgradeStatic);
         }
 
-        // console.log({ addedUpgradeList });
-
-        // return addedUpgradeList;
-        return Object.values(addedUpgradeList);
+        return addedUpgradeList;
     }
 
     /**
      * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
      * @param id - The id of the upgrade to update.
-     * @param upgrade - The upgrade object to update.
+     * @param newUpgrade - The new upgrade object.
      * @example
      * currency.updateUpgrade("healthBoost", {
      *     name: "New Health Boost".
@@ -289,15 +308,15 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      *     }
      * });
      */
-    public updateUpgrade (id: S, upgrade: Partial<UpgradeInit>): void {
-        // const upgrade1 = this.getUpgrade(id);
-        const upgrade1 = (this.getUpgrade(id) as Mutable<UpgradeStatic> | null);
-        if (upgrade1 === null) return;
+    public updateUpgrade (id: S, newUpgrade: Partial<UpgradeInit>): void {
+        // Get the upgrade
+        const oldUpgrade = (this.getUpgrade(id) as Mutable<UpgradeStatic> | null);
 
-        upgrade1.name = upgrade.name ?? upgrade1.name;
-        upgrade1.cost = upgrade.cost ?? upgrade1.cost;
-        upgrade1.maxLevel = upgrade.maxLevel ?? upgrade1.maxLevel;
-        upgrade1.effect = upgrade.effect ?? upgrade1.effect;
+        // If the upgrade doesn't exist, return
+        if (oldUpgrade === null) return;
+
+        // Update the upgrade
+        Object.assign(oldUpgrade, newUpgrade);
     }
 
     /**
@@ -312,10 +331,11 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    // public calculateUpgrade (id: string, target: DecimalSource = 1, el: boolean = false): [amount: Decimal, cost: Decimal] {
     public calculateUpgrade (id: S, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal] {
-        // const [id] = args;
+        // Get the upgrade
         const upgrade = this.getUpgrade(id);
+
+        // If the upgrade doesn't exist, return [0, 0]
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
             return [Decimal.dZero, Decimal.dZero];
@@ -324,10 +344,8 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         // Calculate the target based on the maxLevel
         target = upgrade.level.add(target);
 
+        // Cap the target to the max level if it exists
         if (upgrade.maxLevel !== undefined) {
-            // target = Decimal.min(target, upgrade.maxLevel.sub(upgrade.level));
-            // console.log({ target, maxLevel: upgrade.maxLevel, level: upgrade.level });
-
             target = Decimal.min(target, upgrade.maxLevel);
         }
 
@@ -347,14 +365,19 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * const nextCost = currency.getNextCost("healthBoost");
      */
     public getNextCost (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
-        // throw new Error("This function is broken and may throw a RangeError. Use calculateUpgrade instead.");
+        // Get the upgrade
         const upgrade = this.getUpgrade(id);
+
+        // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
             return Decimal.dZero;
         }
+
+        // Calculate the amount of upgrades you can buy
         const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
 
+        // Calculate the cost of the next upgrade
         const nextCost = upgrade.cost(upgrade.level.add(amount));
         return nextCost;
     }
@@ -373,12 +396,19 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
     public getNextCostMax (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+        // Get the upgrade
         const upgrade = this.getUpgrade(id);
+
+        // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
             return Decimal.dZero;
         }
+
+        // Calculate the amount of upgrades you can buy
         const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
+
+        // Calculate the cost of the next upgrade after the maximum affordable quantity
         const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0]))
             .add(upgCalc[1]);
         return nextCost;
@@ -396,12 +426,16 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * currency.buyUpgrade("healthBoost", 10);
      */
     public buyUpgrade (id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
+        // Get the upgrade
         const upgrade = this.getUpgrade(id);
+
+        // If the upgrade doesn't exist, return false
         if (upgrade === null) {
             console.warn(`Upgrade "${id}" not found.`);
             return false;
         }
 
+        // Calculate the amount of upgrades you can buy
         const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
 
         // Check if affordable
@@ -414,8 +448,6 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
 
         // Set the upgrade level
         upgrade.level = upgrade.level.add(amount);
-
-        // console.log("upgrade.level", upgrade.level);
 
         // Call the effect function if it exists
         upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
