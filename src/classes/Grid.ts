@@ -7,7 +7,7 @@ import type { UnknownObject } from "../common/types";
  * Represents a grid cell with coordinates and properties.
  * @template P - The type of the properties of the grid cell.
  */
-class GridCell<P extends UnknownObject = UnknownObject> {
+class GridCell<P extends object = UnknownObject> {
     /** The x-coordinate of the cell. */
     public x: number;
 
@@ -45,7 +45,7 @@ class GridCell<P extends UnknownObject = UnknownObject> {
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    public getValue (name: string): unknown {
+    public getValue (name: keyof P): P[keyof P] {
         return this.properties[name];
     }
 }
@@ -54,7 +54,7 @@ class GridCell<P extends UnknownObject = UnknownObject> {
  * Represents a grid with cells.
  * @template P - The type of the properties of the grid cells.
  */
-class Grid<P extends UnknownObject = UnknownObject> {
+class Grid<P extends object = UnknownObject> {
     /** The size of the grid along the x-axis. */
     public xSize: number;
 
