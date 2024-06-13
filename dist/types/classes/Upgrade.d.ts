@@ -37,8 +37,9 @@ interface UpgradeInit {
     /**
      * The description of the upgrade.
      * Can be a string or a function that returns a string.
-     * Made into a getter function to allow for dynamic descriptions.
-     * Note: The use of a function is deprecated. Use a getter function instead.
+     * @param level - The current level of the upgrade.
+     * @param upgradeContext - The upgrade object that the description is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
      * @example
      * // A dynamic description that returns a string
      * const description = (a, b) => `This is a ${a} that returns a ${b}`;
@@ -53,7 +54,7 @@ interface UpgradeInit {
      * // Getter function
      * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
-    description?: ((...args: any[]) => string) | string;
+    description?: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => string) | string;
     /**
      * The cost of upgrades at a certain level.
      * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
@@ -194,15 +195,8 @@ declare class UpgradeData implements IUpgradeData {
 interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
     maxLevel?: Decimal;
     name: string;
-    description: string;
+    readonly description: string;
     defaultLevel: Decimal;
-    /**
-     * A function that returns a description of the upgrade.
-     * @deprecated Use a getter function instead.
-     * @param args - Arguments to pass to the description function.
-     * @returns The description of the upgrade.
-     */
-    descriptionFn: (...args: any[]) => string;
 }
 /**
  * Represents the backend for an upgrade.
@@ -215,17 +209,24 @@ declare class UpgradeStatic implements IUpgradeStatic {
     maxLevel: Decimal | undefined;
     effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
-    descriptionFn: (...args: any[]) => string;
     defaultLevel: Decimal;
     /** The default size of the cache. Should be one less than a power of 2. */
     static cacheSize: number;
-    /** The cache to store the values of certain upgrade levels */
+    /**
+     * The cache to store the values of certain upgrade levels.
+     * @deprecated Unfinished
+     */
     cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
     /** @returns The data of the upgrade. */
-    protected dataPointerFn: () => UpgradeData;
+    private dataPointerFn;
     /** @returns The data of the upgrade. */
     get data(): UpgradeData;
+    /** @returns The currency static class that the upgrade is being run on. */
+    protected currencyPointerFn: () => CurrencyStatic;
+    /** The description of the upgrade as a function. */
+    private descriptionFn;
     get description(): string;
+    set description(value: Exclude<UpgradeInit["description"], undefined>);
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
@@ -236,9 +237,10 @@ declare class UpgradeStatic implements IUpgradeStatic {
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+     * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
      * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
      */
-    constructor(init: UpgradeInit, dataPointer: Pointer<UpgradeData>, cacheSize?: number);
+    constructor(init: UpgradeInit, dataPointer: Pointer<UpgradeData>, currencyPointer: Pointer<CurrencyStatic>, cacheSize?: number);
 }
 export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
 export { UpgradeData, UpgradeStatic, calculateUpgrade };

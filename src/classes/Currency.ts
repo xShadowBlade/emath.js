@@ -279,7 +279,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
 
             // Create the upgrade object
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!);
+            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
 
             // Run the effect instantly if needed
             if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this as CurrencyStatic);

@@ -5901,7 +5901,10 @@ var UpgradeStatic = class _UpgradeStatic {
     return this.dataPointerFn();
   }
   get description() {
-    return this.descriptionFn();
+    return this.descriptionFn(this.level, this, this.currencyPointerFn());
+  }
+  set description(value) {
+    this.descriptionFn = typeof value === "function" ? value : () => value;
   }
   /**
    * The current level of the upgrade.
@@ -5917,11 +5920,13 @@ var UpgradeStatic = class _UpgradeStatic {
    * Constructs a new static upgrade object.
    * @param init - The upgrade object to initialize.
    * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+   * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
    * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
    */
-  constructor(init, dataPointer, cacheSize) {
+  constructor(init, dataPointer, currencyPointer, cacheSize) {
     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
     this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+    this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
     this.cache = new LRUCache(cacheSize ?? _UpgradeStatic.cacheSize);
     this.id = init.id;
     this.name = init.name ?? init.id;
@@ -6173,7 +6178,7 @@ var CurrencyStatic = class {
     const addedUpgradeList = [];
     for (const upgrade of upgrades) {
       this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id));
+      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id), () => this);
       if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
       this.upgrades[upgrade.id] = addedUpgradeStatic;
       addedUpgradeList.push(addedUpgradeStatic);
