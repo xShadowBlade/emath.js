@@ -10,7 +10,7 @@ import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
 import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
-import { GameReset } from "./ResetLayer";
+import { GameReset } from "./GameReset";
 
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
@@ -185,6 +185,8 @@ class Game {
 
     /**
      * Creates a new game reset object with the specified currencies to reset.
+     * @deprecated Use the class {@link GameReset} instead.
+     * This method is a wrapper for the class and does not provide any additional functionality.
      * @param args - The arguments for the game reset. See {@link GameReset} for more information.
      * @param currenciesToReset The currencies to reset.
      * @param extender The extender for the game reset.
@@ -199,7 +201,9 @@ class Game {
     }
 
     /**
-     * Creates a new game reset object from an object. See {@link GameReset.fromObject} for more information.
+     * Creates a new game reset object from an object.
+     * @deprecated Use the static method {@link GameReset.fromObject} instead.
+     * This method is a wrapper for the static method and does not provide any additional functionality.
      * @param object - The object to create the game reset from.
      * @returns The newly created game reset object.
      */
