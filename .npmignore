@@ -3,3 +3,8 @@
 # Allow src and dist directories
 !/src
 !/dist
+
+# Ignore .md files
+*.md
+# Allow README.md
+!README.md
