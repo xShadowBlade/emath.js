@@ -121,8 +121,8 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      */
     public onLoadData (): void {
         // Call the effect function for each upgrade
-        for (const upgrade of Object.values(this.upgrades)) {
-            (upgrade as UpgradeStatic).effect?.((upgrade as UpgradeStatic).level, (upgrade as UpgradeStatic), this as CurrencyStatic);
+        for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
+            this.runUpgradeEffect(upgrade);
         }
     }
 
@@ -141,12 +141,12 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
 
         // Reset the upgrades
         if (resetUpgradeLevels) {
-            for (const upgrade of Object.values(this.upgrades)) {
+            for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
                 // Reset the level to the default level
-                (upgrade as UpgradeStatic).level = new Decimal((upgrade as UpgradeStatic).defaultLevel);
+                upgrade.level = new Decimal(upgrade.defaultLevel);
 
                 // Call the effect function for each upgrade
-                if (runUpgradeEffect) (upgrade as UpgradeStatic).effect?.((upgrade as UpgradeStatic).level, (upgrade as UpgradeStatic), this as CurrencyStatic);
+                if (runUpgradeEffect) this.runUpgradeEffect(upgrade);
             }
         };
     }
@@ -282,10 +282,10 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
             const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
 
             // Run the effect instantly if needed
-            if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this as CurrencyStatic);
+            if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.upgrades
-            (this.upgrades as Record<string, UpgradeStatic>)[upgrade.id] = addedUpgradeStatic;
+            this.upgrades[upgrade.id as S] = addedUpgradeStatic;
 
             // Add the upgrade to the list
             addedUpgradeList.push(addedUpgradeStatic);
@@ -317,6 +317,14 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
 
         // Update the upgrade
         Object.assign(oldUpgrade, newUpgrade);
+    }
+
+    /**
+     * Runs the effect of an upgrade.
+     * @param upgrade - The upgrade to run the effect for.
+     */
+    public runUpgradeEffect (upgrade: UpgradeStatic): void {
+        upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
     }
 
     /**
@@ -450,7 +458,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         upgrade.level = upgrade.level.add(amount);
 
         // Call the effect function if it exists
-        upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
+        this.runUpgradeEffect(upgrade);
 
         // Return true to indicate a successful upgrade
         return true;

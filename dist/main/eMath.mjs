@@ -5301,7 +5301,7 @@ var CurrencyStatic = class {
    */
   onLoadData() {
     for (const upgrade of Object.values(this.upgrades)) {
-      upgrade.effect?.(upgrade.level, upgrade, this);
+      this.runUpgradeEffect(upgrade);
     }
   }
   /**
@@ -5318,7 +5318,7 @@ var CurrencyStatic = class {
     if (resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = new Decimal(upgrade.defaultLevel);
-        if (runUpgradeEffect) upgrade.effect?.(upgrade.level, upgrade, this);
+        if (runUpgradeEffect) this.runUpgradeEffect(upgrade);
       }
     }
     ;
@@ -5431,7 +5431,7 @@ var CurrencyStatic = class {
     for (const upgrade of upgrades) {
       this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id), () => this);
-      if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
+      if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
       this.upgrades[upgrade.id] = addedUpgradeStatic;
       addedUpgradeList.push(addedUpgradeStatic);
     }
@@ -5455,6 +5455,13 @@ var CurrencyStatic = class {
     const oldUpgrade = this.getUpgrade(id);
     if (oldUpgrade === null) return;
     Object.assign(oldUpgrade, newUpgrade);
+  }
+  /**
+   * Runs the effect of an upgrade.
+   * @param upgrade - The upgrade to run the effect for.
+   */
+  runUpgradeEffect(upgrade) {
+    upgrade.effect?.(upgrade.level, upgrade, this);
   }
   /**
    * Calculates the cost and how many upgrades you can buy.
@@ -5548,7 +5555,7 @@ var CurrencyStatic = class {
     }
     this.pointer.value = this.pointer.value.sub(cost);
     upgrade.level = upgrade.level.add(amount);
-    upgrade.effect?.(upgrade.level, upgrade, this);
+    this.runUpgradeEffect(upgrade);
     return true;
   }
 };

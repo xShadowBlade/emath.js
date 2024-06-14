@@ -183,6 +183,11 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      */
     updateUpgrade(id: S, newUpgrade: Partial<UpgradeInit>): void;
     /**
+     * Runs the effect of an upgrade.
+     * @param upgrade - The upgrade to run the effect for.
+     */
+    private runUpgradeEffect;
+    /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
      * @param id - The ID or position of the upgrade to calculate.

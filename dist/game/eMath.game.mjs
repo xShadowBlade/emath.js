@@ -6015,7 +6015,7 @@ var CurrencyStatic = class {
    */
   onLoadData() {
     for (const upgrade of Object.values(this.upgrades)) {
-      upgrade.effect?.(upgrade.level, upgrade, this);
+      this.runUpgradeEffect(upgrade);
     }
   }
   /**
@@ -6032,7 +6032,7 @@ var CurrencyStatic = class {
     if (resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = new Decimal(upgrade.defaultLevel);
-        if (runUpgradeEffect) upgrade.effect?.(upgrade.level, upgrade, this);
+        if (runUpgradeEffect) this.runUpgradeEffect(upgrade);
       }
     }
     ;
@@ -6145,7 +6145,7 @@ var CurrencyStatic = class {
     for (const upgrade of upgrades) {
       this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id), () => this);
-      if (addedUpgradeStatic.effect && runEffectInstantly) addedUpgradeStatic.effect(addedUpgradeStatic.level, addedUpgradeStatic, this);
+      if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
       this.upgrades[upgrade.id] = addedUpgradeStatic;
       addedUpgradeList.push(addedUpgradeStatic);
     }
@@ -6169,6 +6169,13 @@ var CurrencyStatic = class {
     const oldUpgrade = this.getUpgrade(id);
     if (oldUpgrade === null) return;
     Object.assign(oldUpgrade, newUpgrade);
+  }
+  /**
+   * Runs the effect of an upgrade.
+   * @param upgrade - The upgrade to run the effect for.
+   */
+  runUpgradeEffect(upgrade) {
+    upgrade.effect?.(upgrade.level, upgrade, this);
   }
   /**
    * Calculates the cost and how many upgrades you can buy.
@@ -6262,7 +6269,7 @@ var CurrencyStatic = class {
     }
     this.pointer.value = this.pointer.value.sub(cost);
     upgrade.level = upgrade.level.add(amount);
-    upgrade.effect?.(upgrade.level, upgrade, this);
+    this.runUpgradeEffect(upgrade);
     return true;
   }
 };
@@ -6786,7 +6793,7 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "9.0.1";
+      version = "9.1.0";
     } catch (error) {
       version = "8.3.0";
     }
@@ -7047,7 +7054,7 @@ var GameAttribute = class {
   }
 };
 
-// src/game/ResetLayer.ts
+// src/game/GameReset.ts
 var GameReset = class _GameReset {
   /**
    * Creates a new instance of the game reset from an object.
@@ -7205,6 +7212,8 @@ var Game = class _Game {
   }
   /**
    * Creates a new game reset object with the specified currencies to reset.
+   * @deprecated Use the class {@link GameReset} instead.
+   * This method is a wrapper for the class and does not provide any additional functionality.
    * @param args - The arguments for the game reset. See {@link GameReset} for more information.
    * @param currenciesToReset The currencies to reset.
    * @param extender The extender for the game reset.
@@ -7218,7 +7227,9 @@ var Game = class _Game {
     return reset;
   }
   /**
-   * Creates a new game reset object from an object. See {@link GameReset.fromObject} for more information.
+   * Creates a new game reset object from an object.
+   * @deprecated Use the static method {@link GameReset.fromObject} instead.
+   * This method is a wrapper for the static method and does not provide any additional functionality.
    * @param object - The object to create the game reset from.
    * @returns The newly created game reset object.
    */
