@@ -33,8 +33,9 @@ declare class Currency {
  * console.log(currency.value); // Decimal.dOne
  */
 declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
-    /** An array that represents upgrades, their costs, and their effects. */
+    /** An array that represents upgrades */
     readonly upgrades: Record<S, UpgradeStatic>;
+    /** An array that represents items and their effects. */
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
@@ -186,7 +187,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * Runs the effect of an upgrade.
      * @param upgrade - The upgrade to run the effect for.
      */
-    private runUpgradeEffect;
+    runUpgradeEffect(upgrade: UpgradeStatic): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.

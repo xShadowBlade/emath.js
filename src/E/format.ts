@@ -818,7 +818,8 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         return `${metric(num, 2)} ${metric(num, 1)}eV${c2 ? "/c^2" : ""}`;
     }
 
-    const formats = {...FORMATS, ...{
+    const formats = {
+        ...FORMATS,
         toSubscript,
         toSuperscript,
         formatST,
@@ -832,7 +833,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         expMult,
         metric,
         ev,
-    }};
+    };
 
     return {
         FORMATS,

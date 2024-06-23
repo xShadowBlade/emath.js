@@ -24,7 +24,16 @@ import type { CurrencyStatic } from "./Currency";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
-function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end: DecimalSource = Infinity, mode?: MeanMode, iterations?: number, el = false): [amount: Decimal, cost: Decimal] {
+function calculateUpgrade (
+    value: DecimalSource,
+    upgrade: UpgradeStatic,
+    start?: DecimalSource,
+    end: DecimalSource = Infinity,
+    mode?: MeanMode,
+    iterations?: number,
+    el = false,
+): [amount: Decimal, cost: Decimal] {
+    // Normalize the values
     value = new Decimal(value);
     start = new Decimal(start ?? upgrade.level);
     end = new Decimal(end);
@@ -32,6 +41,7 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
     const target = end.sub(start);
 
     // console.log("calculateUpgrade", { value, start, end, target, mode, iterations, el });
+
     // Special case: If target is less than 1, just return 0
     if (target.lt(0)) {
         console.warn("calculateUpgrade: Invalid target: ", target);
@@ -129,6 +139,136 @@ function calculateUpgrade (value: DecimalSource, upgrade: UpgradeStatic, start?:
     // Set the cache
     // upgrade.setCached("sum", start, end, cost);
     return [maxLevelAffordableActual, cost];
+}
+
+/**
+ * Calculates the cost and how many items you can buy
+ * @param value - The current value of the currency.
+ * @param item - The item object to calculate.
+ * @param target - The target quantity to reach for the item. If not provided, it will buy the maximum amount of items possible (using target = Infinity).
+ * @returns [amount, cost] - Returns the amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+ */
+function calculateItem (value: DecimalSource, item: Item, target: DecimalSource = Infinity): [amount: Decimal, cost: Decimal] {
+    // Normalize the values
+    value = new Decimal(value);
+    target = new Decimal(target);
+
+    // Special case: If target is less than 1, just return 0
+    if (target.lt(0)) {
+        console.warn("calculateItem: Invalid target: ", target);
+        return [Decimal.dZero, Decimal.dZero];
+    }
+
+    // Special case: If target is 1, just check it manually
+    if (target.eq(1)) {
+        const cost = item.cost();
+        return [value.gte(cost) ? Decimal.dOne : Decimal.dZero, value.gte(cost) ? cost : Decimal.dZero];
+    }
+
+    // Binary Search with sum calculation
+    const maxLevelAffordable = inverseFunctionApprox(
+        (x: Decimal) => item.cost().mul(x),
+        value,
+    ).value.floor()
+        .min(target);
+    const cost = item.cost().mul(maxLevelAffordable);
+
+    return [maxLevelAffordable, cost];
+}
+
+/**
+ * An interface for an item. An item is a type of upgrade that does not have a level. Ex. A potion that gives you 10 gold.
+ */
+interface IItem {
+    /**
+     * The ID of the upgrade.
+     * Used to retrieve the upgrade later.
+     */
+    readonly id: string;
+
+    /** The name of the upgrade. Defaults to the ID. */
+    name?: string;
+
+    /**
+     * The description of the upgrade.
+     * Can be a string or a function that returns a string.
+     * @param level - The current level of the upgrade.
+     * @param itemContext - The upgrade object that the description is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
+     *
+     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     *
+     * const upgrade = currencyStatic.getUpgrade("upgradeID");
+     *
+     * // Getter property
+     * console.log(upgrade.description); // "This is a undefined that returns a undefined"
+     *
+     * // Getter function
+     * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     */
+    description?: ((level: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => string) | string;
+
+    /**
+     * The cost of upgrades at a certain level.
+     * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
+     * Also, if you do not set your own `costBulk` function, the function should always be greater than the level.
+     * @param level - The CURRENT (not next) level of the upgrade. It will always be a positive integer.
+     * @returns The cost of the upgrade. It should be a non-negative integer greater than or equal to 0.
+     * @example
+     * // An item that costs 10.
+     * () => new Decimal(10)
+     */
+    cost: (() => Decimal);
+
+    /**
+     * The effect of the item. This runs when the item is bought, and instantly if `runEffectInstantly` is true.
+     * @param amount - The amount of the item that was bought.
+     * @param itemContext - The item object that the effect is being run on.
+     * @param currencyContext - The currency static class that the item is being run on.
+     */
+    effect?: (amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
+}
+
+/**
+ * Represents an item.
+ */
+class Item implements IItem {
+    public id; name; cost; effect;
+
+    constructor (init: IItem, dataPointer: Pointer<ItemData>, currencyPointer: Pointer<CurrencyStatic>) {
+        this.id = init.id;
+        this.name = init.name ?? init.id;
+        this.cost = init.cost;
+        this.effect = init.effect;
+    };
+}
+
+/**
+ * The data of an item.
+ */
+interface IItemData {
+    id: string;
+
+    /**
+     * The amount of the item that was bought.
+     */
+    amount: Decimal;
+}
+
+/**
+ * Represents the frontend for an item.
+ */
+class ItemData implements IItemData {
+    @Expose() public id: string;
+    @Type(() => Decimal) public amount;
+
+    constructor (init: IItemData) {
+        this.id = init.id;
+        this.amount = init.amount;
+    }
 }
 
 /**
@@ -239,7 +379,7 @@ interface UpgradeInit {
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
+type UpgradeInitArrayType<U extends Readonly<UpgradeInit>[]> = U[number]["id"] extends never ? string : U[number]["id"];
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
@@ -356,7 +496,7 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
  * Represents the backend for an upgrade.
  */
 class UpgradeStatic implements IUpgradeStatic {
-    public id; name; cost; costBulk; maxLevel; effect; el?; defaultLevel: Decimal;
+    public id; name; cost; costBulk; maxLevel; effect; el?; defaultLevel;
 
     /** The default size of the cache. Should be one less than a power of 2. */
     public static cacheSize = 15;

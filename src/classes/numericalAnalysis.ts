@@ -79,7 +79,6 @@ function mean (a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric")
     }
 }
 
-
 interface EqualsToleranceBounds {
     lowerBound: DecimalSource;
     upperBound: DecimalSource;
@@ -236,7 +235,7 @@ function calculateSumLoop (
     let sum: Decimal = new Decimal();
     let n = new Decimal(b);
 
-    // Perform the loop (decrementing n to sometimes take advantage of episilon)
+    // Perform the loop (decrementing n to sometimes take advantage of epsilon)
     for (; n.gte(a); n = n.sub(1)) {
         const initSum = sum;
         const value = f(n);

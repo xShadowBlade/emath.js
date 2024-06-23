@@ -121,7 +121,7 @@ interface UpgradeInit {
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends UpgradeInit[]> = U[number]["id"] extends never ? string : U[number]["id"];
+type UpgradeInitArrayType<U extends Readonly<UpgradeInit>[]> = U[number]["id"] extends never ? string : U[number]["id"];
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
  * @deprecated Use an object index instead.

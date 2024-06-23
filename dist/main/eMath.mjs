@@ -818,7 +818,8 @@ function decimalFormatGenerator(Decimal2) {
   function ev(num, c2 = false) {
     return `${metric(num, 2)} ${metric(num, 1)}eV${c2 ? "/c^2" : ""}`;
   }
-  const formats2 = { ...FORMATS2, ...{
+  const formats2 = {
+    ...FORMATS2,
     toSubscript,
     toSuperscript,
     formatST,
@@ -832,7 +833,7 @@ function decimalFormatGenerator(Decimal2) {
     expMult,
     metric,
     ev
-  } };
+  };
   return {
     FORMATS: FORMATS2,
     formats: formats2
@@ -5117,6 +5118,18 @@ function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iteration
   const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
   return [maxLevelAffordableActual, cost];
 }
+var ItemData = class {
+  constructor(init) {
+    this.id = init.id;
+    this.amount = init.amount;
+  }
+};
+__decorateClass([
+  Expose2()
+], ItemData.prototype, "id", 2);
+__decorateClass([
+  Type(() => Decimal)
+], ItemData.prototype, "amount", 2);
 function decimalToJSONString(n) {
   n = new Decimal(n);
   return `${n.sign}/${n.mag}/${n.layer}`;
@@ -5558,6 +5571,28 @@ var CurrencyStatic = class {
     this.runUpgradeEffect(upgrade);
     return true;
   }
+  // /**
+  //  * Adds an item.
+  //  * @param items - The items to add.
+  //  */
+  // public addItem (items: IItem | IItem[]): void {
+  //     // Convert to array if not already
+  //     if (!Array.isArray(items)) items = [items];
+  //     for (const item of items) {
+  //         // Add the item to the data
+  //         // this.pointerAddUpgrade(upgrade);
+  //         // Create the upgrade object
+  //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  //         const addedUpgradeStatic = new Item(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
+  //         // Run the effect instantly if needed
+  //         if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+  //         // Add the upgrade to this.item
+  //         this.item[upgrade.id as S] = addedUpgradeStatic;
+  //         // Add the upgrade to the list
+  //         addedUpgradeList.push(addedUpgradeStatic);
+  //     }
+  //     return addedUpgradeList;
+  // }
 };
 
 // src/classes/Attribute.ts

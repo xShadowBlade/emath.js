@@ -1311,8 +1311,7 @@ declare const formats: {
     toSubscript: (value: number) => string;
     toSuperscript: (value: number) => string;
     formatST: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
-    format: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string;
-    /**
+    format: (ex: DecimalSource, acc?: number, max?: number, type?: FormatType) => string; /**
      * Returns true if 'value' is greater than or equal to 'other'.
      * However, the two Decimals are considered equal if they're approximately equal up to a certain tolerance.
      * Tolerance is a relative tolerance, multiplied by the greater of the magnitudes of the two arguments.

@@ -45,8 +45,11 @@ class Currency {
  * console.log(currency.value); // Decimal.dOne
  */
 class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
-    /** An array that represents upgrades, their costs, and their effects. */
+    /** An array that represents upgrades */
     public readonly upgrades: Record<S, UpgradeStatic>;
+
+    /** An array that represents items and their effects. */
+    // public readonly items: Record<string, Item> = {};
 
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
@@ -463,6 +466,35 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         // Return true to indicate a successful upgrade
         return true;
     }
+
+    // /**
+    //  * Adds an item.
+    //  * @param items - The items to add.
+    //  */
+    // public addItem (items: IItem | IItem[]): void {
+    //     // Convert to array if not already
+    //     if (!Array.isArray(items)) items = [items];
+
+    //     for (const item of items) {
+    //         // Add the item to the data
+    //         // this.pointerAddUpgrade(upgrade);
+
+    //         // Create the upgrade object
+    //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //         const addedUpgradeStatic = new Item(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
+
+    //         // Run the effect instantly if needed
+    //         if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+
+    //         // Add the upgrade to this.item
+    //         this.item[upgrade.id as S] = addedUpgradeStatic;
+
+    //         // Add the upgrade to the list
+    //         addedUpgradeList.push(addedUpgradeStatic);
+    //     }
+
+    //     return addedUpgradeList;
+    // }
 }
 
 export { Currency, CurrencyStatic };
