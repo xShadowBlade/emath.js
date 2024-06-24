@@ -8,6 +8,7 @@ export * from "./E/lru-cache";
 export * from "./E/e";
 export * from "./classes/Boost";
 export * from "./classes/Upgrade";
+export * from "./classes/Item";
 export * from "./classes/Currency";
 export * from "./classes/Attribute";
 export * from "./classes/Grid";

@@ -4,8 +4,17 @@
  * that when pressed gives you coins that you can use
  * on an upgrade that gives you more coins on gain.
  */
-import { Decimal, UpgradeInit } from "emath.js";
+import { Decimal } from "emath.js";
+import type { UpgradeInit, ItemInit } from "emath.js";
 import { Game } from "emath.js/game";
+
+// Set eMath and eMathGame to window for debugging
+void (async (): Promise<void> => {
+    // @ts-expect-error - Ignore error (for debugging)
+    window.eMath = await import("emath.js");
+    // @ts-expect-error - Ignore error (for debugging)
+    window.eMathGame = await import("emath.js/game");
+})();
 
 // Initialize game
 const coinGame = new Game({
@@ -25,8 +34,8 @@ const coinsUpgrades = [
     {
         id: "upg1Coins", // Unique ID
         name: "Basic Coin Boost",
-        cost: level => level.mul(10), // Cost of 10 times the level
-        effect: function (level, _, currency) {
+        cost: (level): Decimal => level.mul(10), // Cost of 10 times the level
+        effect: function (level, _, currency): void {
             currency.boost.setBoost(
                 "boostUpg1Coins",
                 "Basic Coin Boost",
@@ -35,11 +44,25 @@ const coinsUpgrades = [
                 1,
             );
         },
-        maxLevel: new Decimal(1000), // Max level of 1000
-    }
+        // maxLevel: new Decimal(1000), // Max level of 1000
+    },
 ] as const satisfies UpgradeInit[];
 
 const coins = coinGame.addCurrency("coins", coinsUpgrades);
+
+// Add item
+const items = [
+    {
+        id: "item1",
+        name: "Gold Coin",
+        description: "A coin made of gold. (Cosmetic)",
+        effect: (amount, _, currency): void => {
+            currency.gain(amount);
+        },
+        cost: (): Decimal => new Decimal(1000),
+    },
+] as const satisfies ItemInit[];
+coins.static.addItem(items);
 
 // Initialize / Load game
 coinGame.init();
@@ -49,12 +72,14 @@ console.log(coinGame.dataManager.loadData());
 const coinsDisplay = document.getElementById("coinsDisplay");
 
 /** Function to update the coins display */
-function updateDisplay () {
+function updateDisplay (): void {
     // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     coinsDisplay!.innerHTML = `
         Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.static.boost.calculate())})
         <br>
         Upgrade 1 Level: ${coins.static.getUpgrade("upg1Coins").level.format()}
+        <br>
+        Item 1: ${coins.static.getItem("item1").amount.format()}
     `;
 }
 updateDisplay();
@@ -63,11 +88,12 @@ updateDisplay();
 const gainButton = document.getElementById("coinGain");
 
 /** Function to gain coins */
-function gainCoins () {
+function gainCoins (): void {
     // Triggers when button is pressed
     coins.static.gain(); // Gain
     updateDisplay(); // Updates the display for the amount of coins
     updateDisplayUpgrade();
+    updateDisplayItem();
 }
 gainButton!.addEventListener("click", gainCoins);
 
@@ -75,18 +101,37 @@ gainButton!.addEventListener("click", gainCoins);
 const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
-function updateDisplayUpgrade () {
-    buyUpgradesButton!.innerHTML = `Buy ${coins.static.calculateUpgrade("upg1Coins")[0].format()} Upgrades for ${coins.static.calculateUpgrade("upg1Coins")[1].format()} Coins (b)`;
+function updateDisplayUpgrade (): void {
+    const calculatedUpg = coins.static.calculateUpgrade("upg1Coins");
+
+    buyUpgradesButton!.innerHTML = `Buy ${calculatedUpg[0].format()} Upgrades for ${calculatedUpg[1].format()} Coins (b)`;
 }
 updateDisplayUpgrade();
 
 /** Function to buy upgrades */
-function buyUpgrades () {
+function buyUpgrades (): void {
     coins.static.buyUpgrade("upg1Coins");
     updateDisplayUpgrade();
     updateDisplay();
 }
 buyUpgradesButton!.addEventListener("click", buyUpgrades);
+
+const buyItem1Button = document.getElementById("buyItem1Button");
+
+function updateDisplayItem (): void {
+    const calculatedItem = coins.static.calculateItem("item1");
+
+    buyItem1Button!.innerHTML = `Buy ${calculatedItem[0].format()} Gold Coins for ${calculatedItem[1].format()} Coins`;
+}
+updateDisplayItem();
+
+/** Function to buy items */
+function buyItems (): void {
+    coins.static.buyItem("item1");
+    updateDisplayItem();
+    updateDisplay();
+}
+buyItem1Button!.addEventListener("click", buyItems);
 
 // Hotkeys
 coinGame.keyManager.addKey([
@@ -100,6 +145,11 @@ coinGame.keyManager.addKey([
         key: "b",
         onDownContinuous: buyUpgrades,
     },
+    {
+        id: "Buy Items",
+        key: "n",
+        onDownContinuous: buyItems,
+    }
 ]);
 
 // Saving and Loading

@@ -54,11 +54,14 @@ __export(src_exports, {
   FormatTypeList: () => FormatTypeList,
   Grid: () => Grid,
   GridCell: () => GridCell,
+  Item: () => Item,
+  ItemData: () => ItemData,
   LRUCache: () => LRUCache,
   ListNode: () => ListNode,
   ST_NAMES: () => ST_NAMES,
   UpgradeData: () => UpgradeData,
   UpgradeStatic: () => UpgradeStatic,
+  calculateItem: () => calculateItem,
   calculateSum: () => calculateSum,
   calculateSumApprox: () => calculateSumApprox,
   calculateSumLoop: () => calculateSumLoop,
@@ -71,7 +74,7 @@ __export(src_exports, {
   upgradeToCacheNameEL: () => upgradeToCacheNameEL
 });
 module.exports = __toCommonJS(src_exports);
-var import_reflect_metadata4 = require("reflect-metadata");
+var import_reflect_metadata5 = require("reflect-metadata");
 
 // src/E/lru-cache.ts
 var LRUCache = class {
@@ -5135,7 +5138,7 @@ function roundingBase(x, base = 10, acc = 0, max = 1e3) {
 }
 
 // src/classes/Upgrade.ts
-function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iterations, el = false) {
+function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, iterations, el = false) {
   value = new Decimal(value);
   start = new Decimal(start ?? upgrade.level);
   end = new Decimal(end);
@@ -5179,18 +5182,6 @@ function calculateUpgrade(value, upgrade, start, end = Infinity, mode, iteration
   const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
   return [maxLevelAffordableActual, cost];
 }
-var ItemData = class {
-  constructor(init) {
-    this.id = init.id;
-    this.amount = init.amount;
-  }
-};
-__decorateClass([
-  (0, import_class_transformer2.Expose)()
-], ItemData.prototype, "id", 2);
-__decorateClass([
-  (0, import_class_transformer2.Type)(() => Decimal)
-], ItemData.prototype, "amount", 2);
 function decimalToJSONString(n) {
   n = new Decimal(n);
   return `${n.sign}/${n.mag}/${n.layer}`;
@@ -5309,9 +5300,81 @@ var UpgradeStatic = class _UpgradeStatic {
   // }
 };
 
-// src/classes/Currency.ts
+// src/classes/Item.ts
 var import_reflect_metadata2 = require("reflect-metadata");
 var import_class_transformer3 = require("class-transformer");
+function calculateItem(value, item, target = Decimal.dInf) {
+  value = new Decimal(value);
+  target = new Decimal(target);
+  if (target.lt(0)) {
+    console.warn("calculateItem: Invalid target: ", target);
+    return [Decimal.dZero, Decimal.dZero];
+  }
+  if (target.eq(1)) {
+    const cost2 = item.cost();
+    return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
+  }
+  const maxLevelAffordable = value.div(item.cost()).floor().min(target);
+  const cost = item.cost().mul(maxLevelAffordable);
+  return [maxLevelAffordable, cost];
+}
+var Item = class {
+  /**
+   * Creates a new item.
+   * @param init - The initialization data for the item.
+   * @param dataPointer - The pointer to the data of the item.
+   * @param currencyPointer - The pointer to the currency static class that the item is being run on.
+   */
+  constructor(init, dataPointer, currencyPointer) {
+    this.defaultAmount = Decimal.dZero;
+    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
+    this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
+    this.id = init.id;
+    this.name = init.name ?? init.id;
+    this.cost = init.cost;
+    this.effect = init.effect;
+    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
+    this.defaultAmount = init.amount ?? Decimal.dZero;
+  }
+  /** @returns The data of the item. */
+  get data() {
+    return this.dataPointerFn();
+  }
+  get description() {
+    return this.descriptionFn(this.amount, this, this.currencyPointerFn());
+  }
+  set description(value) {
+    this.descriptionFn = typeof value === "function" ? value : () => value;
+  }
+  /**
+   * The amount of the item that was bought.
+   * @returns The amount of the item that was bought.
+   */
+  get amount() {
+    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? { amount: Decimal.dOne }).amount;
+  }
+  set amount(n) {
+    this.data.amount = new Decimal(n);
+  }
+};
+var ItemData = class {
+  constructor(init) {
+    init = init ?? {};
+    this.id = init.id;
+    this.amount = init.amount ?? Decimal.dZero;
+  }
+};
+__decorateClass([
+  (0, import_class_transformer3.Expose)()
+], ItemData.prototype, "id", 2);
+__decorateClass([
+  (0, import_class_transformer3.Type)(() => Decimal)
+], ItemData.prototype, "amount", 2);
+
+// src/classes/Currency.ts
+var import_reflect_metadata3 = require("reflect-metadata");
+var import_class_transformer4 = require("class-transformer");
 var Currency = class {
   /**
    * Constructs a new currency object with an initial value of 0.
@@ -5319,30 +5382,19 @@ var Currency = class {
   constructor() {
     this.value = Decimal.dZero;
     this.upgrades = {};
+    this.items = {};
   }
 };
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => Decimal)
+  (0, import_class_transformer4.Type)(() => Decimal)
 ], Currency.prototype, "value", 2);
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => UpgradeData)
+  (0, import_class_transformer4.Type)(() => UpgradeData)
 ], Currency.prototype, "upgrades", 2);
+__decorateClass([
+  (0, import_class_transformer4.Type)(() => ItemData)
+], Currency.prototype, "items", 2);
 var CurrencyStatic = class {
-  /** @returns The pointer of the data. */
-  get pointer() {
-    return this.pointerFn();
-  }
-  /**
-   * The current value of the currency.
-   * Note: If you want to change the value, use {@link gain} instead.
-   * @returns The current value of the currency.
-   */
-  get value() {
-    return this.pointer.value;
-  }
-  set value(value) {
-    this.pointer.value = value;
-  }
   /**
    * Constructs a new currnecy
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
@@ -5362,6 +5414,8 @@ var CurrencyStatic = class {
    * // CurrencyStatic<["upgId1", "upgId2"]>
    */
   constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
+    /** An array that represents items and their effects. */
+    this.items = {};
     this.defaultVal = defaults.defaultVal;
     this.defaultBoost = defaults.defaultBoost;
     this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
@@ -5369,6 +5423,21 @@ var CurrencyStatic = class {
     this.pointer.value = this.defaultVal;
     this.upgrades = {};
     if (upgrades) this.addUpgrade(upgrades);
+  }
+  /** @returns The pointer of the data. */
+  get pointer() {
+    return this.pointerFn();
+  }
+  /**
+   * The current value of the currency.
+   * Note: If you want to change the value, use {@link gain} instead.
+   * @returns The current value of the currency.
+   */
+  get value() {
+    return this.pointer.value;
+  }
+  set value(value) {
+    this.pointer.value = value;
   }
   /**
    * Updates / applies effects to the currency on load.
@@ -5378,21 +5447,34 @@ var CurrencyStatic = class {
       this.runUpgradeEffect(upgrade);
     }
   }
-  /**
-   * Resets the currency and upgrade levels.
-   * @param resetCurrency - Whether to reset the currency value. Default is true.
-   * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
-   * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
-   * @example
-   * currency.reset();
-   * console.log(currency.value); // Decimal.dZero, or the default value
-   */
-  reset(resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true) {
-    if (resetCurrency) this.value = this.defaultVal;
-    if (resetUpgradeLevels) {
+  reset(resetCurrencyOrResetObj, resetUpgradeLevels, runUpgradeEffect) {
+    const resetObj = {
+      resetCurrency: true,
+      resetUpgradeLevels: true,
+      resetItemAmounts: true,
+      runUpgradeEffect: true
+    };
+    if (typeof resetCurrencyOrResetObj === "object") {
+      Object.assign(resetObj, resetCurrencyOrResetObj);
+    } else {
+      Object.assign(resetObj, {
+        resetCurrency: resetCurrencyOrResetObj,
+        resetUpgradeLevels,
+        runUpgradeEffect
+      });
+    }
+    if (resetObj.resetCurrency) this.value = this.defaultVal;
+    if (resetObj.resetUpgradeLevels) {
       for (const upgrade of Object.values(this.upgrades)) {
         upgrade.level = new Decimal(upgrade.defaultLevel);
-        if (runUpgradeEffect) this.runUpgradeEffect(upgrade);
+        if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
+      }
+    }
+    ;
+    if (resetObj.resetItemAmounts) {
+      for (const item of Object.values(this.items)) {
+        item.amount = new Decimal(item.defaultAmount);
+        if (resetObj.runUpgradeEffect) this.runUpgradeEffect(item);
       }
     }
     ;
@@ -5531,11 +5613,15 @@ var CurrencyStatic = class {
     Object.assign(oldUpgrade, newUpgrade);
   }
   /**
-   * Runs the effect of an upgrade.
+   * Runs the effect of an upgrade or item.
    * @param upgrade - The upgrade to run the effect for.
    */
   runUpgradeEffect(upgrade) {
-    upgrade.effect?.(upgrade.level, upgrade, this);
+    if (upgrade instanceof UpgradeStatic) {
+      upgrade.effect?.(upgrade.level, upgrade, this);
+    } else {
+      upgrade.effect?.(upgrade.amount, upgrade, this);
+    }
   }
   /**
    * Calculates the cost and how many upgrades you can buy.
@@ -5632,33 +5718,87 @@ var CurrencyStatic = class {
     this.runUpgradeEffect(upgrade);
     return true;
   }
-  // /**
-  //  * Adds an item.
-  //  * @param items - The items to add.
-  //  */
-  // public addItem (items: IItem | IItem[]): void {
-  //     // Convert to array if not already
-  //     if (!Array.isArray(items)) items = [items];
-  //     for (const item of items) {
-  //         // Add the item to the data
-  //         // this.pointerAddUpgrade(upgrade);
-  //         // Create the upgrade object
-  //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //         const addedUpgradeStatic = new Item(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
-  //         // Run the effect instantly if needed
-  //         if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
-  //         // Add the upgrade to this.item
-  //         this.item[upgrade.id as S] = addedUpgradeStatic;
-  //         // Add the upgrade to the list
-  //         addedUpgradeList.push(addedUpgradeStatic);
-  //     }
-  //     return addedUpgradeList;
-  // }
+  /**
+   * Adds an item to the data class.
+   * @param items - The items to add.
+   * @returns The added items.
+   */
+  pointerAddItem(items) {
+    const itemToAdd = new ItemData(items);
+    this.pointer.items[items.id] = itemToAdd;
+    return itemToAdd;
+  }
+  /**
+   * Retrieves an item object from the data pointer based on the provided id.
+   * @param id - The id of the item to retrieve.
+   * @returns The item object if found, otherwise null.
+   */
+  pointerGetItem(id) {
+    return this.pointer.items[id] ?? null;
+  }
+  /**
+   * Adds an item.
+   * @param items - The items to add.
+   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+   */
+  addItem(items, runEffectInstantly = true) {
+    if (!Array.isArray(items)) items = [items];
+    for (const item of items) {
+      this.pointerAddItem(item);
+      const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id), () => this);
+      if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+      this.items[item.id] = addedUpgradeStatic;
+    }
+  }
+  /**
+   * Retrieves an item object based on the provided id.
+   * @param id - The id of the item to retrieve.
+   * @returns The item object if found, otherwise null.
+   */
+  getItem(id) {
+    return this.items[id] ?? null;
+  }
+  /**
+   * Calculates the cost and how many items you can buy.
+   * See {@link calculateItem} for more information.
+   * @param id - The ID or position of the item to calculate.
+   * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+   * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+   */
+  calculateItem(id, target = Infinity) {
+    const item = this.getItem(id);
+    if (item === null) {
+      console.warn(`Item "${id}" not found.`);
+      return [Decimal.dZero, Decimal.dZero];
+    }
+    return calculateItem(this.value, item, target);
+  }
+  /**
+   * Buys an item based on its ID or array position if enough currency is available.
+   * @param id - The ID or position of the item to buy or upgrade.
+   * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
+   */
+  buyItem(id, target) {
+    const item = this.getItem(id);
+    if (item === null) {
+      console.warn(`Item "${id}" not found.`);
+      return false;
+    }
+    const [amount, cost] = this.calculateItem(id, target);
+    if (amount.lte(0)) {
+      return false;
+    }
+    this.pointer.value = this.pointer.value.sub(cost);
+    item.amount = item.amount.add(amount);
+    this.runUpgradeEffect(item);
+    return true;
+  }
 };
 
 // src/classes/Attribute.ts
-var import_reflect_metadata3 = require("reflect-metadata");
-var import_class_transformer4 = require("class-transformer");
+var import_reflect_metadata4 = require("reflect-metadata");
+var import_class_transformer5 = require("class-transformer");
 var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
@@ -5669,7 +5809,7 @@ var Attribute = class {
   }
 };
 __decorateClass([
-  (0, import_class_transformer4.Type)(() => Decimal)
+  (0, import_class_transformer5.Type)(() => Decimal)
 ], Attribute.prototype, "value", 2);
 var AttributeStatic = class {
   /** @returns The data for the attribute. */

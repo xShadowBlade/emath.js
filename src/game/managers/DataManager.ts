@@ -10,6 +10,7 @@ import type { Game } from "../Game";
 // Recursive plain to class
 import { Currency } from "../../classes/Currency";
 import { UpgradeData } from "../../classes/Upgrade";
+import { ItemData } from "../../classes/Item";
 import { Decimal } from "../../E/e";
 
 // Save validation
@@ -369,6 +370,9 @@ class DataManager {
                     // Merge upgrades
                     targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
                     out[key] = targetCurrency;
+
+                    // Merge items
+                    targetCurrency.items = { ...sourceCurrency.items, ...targetCurrency.items };
                 } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
                     // Recursive
                     out[key] = deepMerge((sourcePlain as Record<string, UnknownObject>)[key], (source as Record<string, UnknownObject>)[key], (target as Record<string, UnknownObject>)[key]);
@@ -382,6 +386,7 @@ class DataManager {
         // Convert plain object to class instance (recursive)
 
         const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
+        const ItemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
 
         /**
          * Converts a plain object to a class instance.
@@ -393,10 +398,11 @@ class DataManager {
             // Convert the object
             const out = plainToInstance(templateClassToConvert, plain) as ClassType;
 
-            // Special case for Currency.upgrades
             if (out instanceof Currency) {
+                // Special case for Currency.upgrades
                 for (const upgradeName in out.upgrades) {
                     const upgrade = out.upgrades[upgradeName];
+
                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
                         // Delete the upgrade if it's invalid (extraneous properties, etc.)
@@ -405,6 +411,20 @@ class DataManager {
                         continue;
                     }
                     out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
+                }
+
+                // Special case for Currency.items
+                for (const itemName in out.items) {
+                    const item = out.items[itemName];
+
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    if (!item || !ItemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
+                        // Delete the item if it's invalid (extraneous properties, etc.)
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        delete out.items[itemName];
+                        continue;
+                    }
+                    out.items[itemName] = plainToInstance(ItemData, item);
                 }
             }
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

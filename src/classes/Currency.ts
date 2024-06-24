@@ -8,9 +8,18 @@ import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
 import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
+import { ItemData, Item, calculateItem } from "./Item";
 
 import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
+import type { ItemInit } from "./Item";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
+
+interface CurrencyStaticResetOptions {
+    resetCurrency: boolean;
+    resetUpgradeLevels: boolean;
+    resetItemAmounts: boolean;
+    runUpgradeEffect: boolean;
+}
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
@@ -25,12 +34,17 @@ class Currency {
     @Type(() => UpgradeData)
     public upgrades: Record<string, UpgradeData>;
 
+    /** An array that represents items and their effects. */
+    @Type(() => ItemData)
+    public items: Record<string, ItemData>;
+
     /**
      * Constructs a new currency object with an initial value of 0.
      */
     constructor () {
         this.value = Decimal.dZero;
         this.upgrades = {};
+        this.items = {};
     }
 }
 
@@ -49,7 +63,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
     public readonly upgrades: Record<S, UpgradeStatic>;
 
     /** An array that represents items and their effects. */
-    // public readonly items: Record<string, Item> = {};
+    public readonly items: Record<string, Item> = {};
 
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
@@ -138,18 +152,48 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * currency.reset();
      * console.log(currency.value); // Decimal.dZero, or the default value
      */
-    public reset (resetCurrency = true, resetUpgradeLevels = true, runUpgradeEffect = true): void {
+    public reset (resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
+    public reset (reset?: Partial<CurrencyStaticResetOptions>): void;
+    public reset (resetCurrencyOrResetObj?: boolean | Partial<CurrencyStaticResetOptions>, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void {
+        const resetObj: CurrencyStaticResetOptions = {
+            resetCurrency: true,
+            resetUpgradeLevels: true,
+            resetItemAmounts: true,
+            runUpgradeEffect: true,
+        };
+        // Parse the arguments
+        if (typeof resetCurrencyOrResetObj === "object") {
+            Object.assign(resetObj, resetCurrencyOrResetObj);
+        } else {
+            Object.assign(resetObj, {
+                resetCurrency: resetCurrencyOrResetObj,
+                resetUpgradeLevels: resetUpgradeLevels,
+                runUpgradeEffect: runUpgradeEffect,
+            });
+        }
+
         // Reset the value
-        if (resetCurrency) this.value = this.defaultVal;
+        if (resetObj.resetCurrency) this.value = this.defaultVal;
 
         // Reset the upgrades
-        if (resetUpgradeLevels) {
+        if (resetObj.resetUpgradeLevels) {
             for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
                 // Reset the level to the default level
                 upgrade.level = new Decimal(upgrade.defaultLevel);
 
                 // Call the effect function for each upgrade
-                if (runUpgradeEffect) this.runUpgradeEffect(upgrade);
+                if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
+            }
+        };
+
+        // Reset the items
+        if (resetObj.resetItemAmounts) {
+            for (const item of Object.values<Item>(this.items)) {
+                // Reset the amount to the default amount
+                item.amount = new Decimal(item.defaultAmount);
+
+                // Call the effect function for each item
+                if (resetObj.runUpgradeEffect) this.runUpgradeEffect(item);
             }
         };
     }
@@ -323,11 +367,15 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
     }
 
     /**
-     * Runs the effect of an upgrade.
+     * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    public runUpgradeEffect (upgrade: UpgradeStatic): void {
-        upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
+    public runUpgradeEffect (upgrade: UpgradeStatic | Item): void {
+        if (upgrade instanceof UpgradeStatic) {
+            upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
+        } else {
+            upgrade.effect?.(upgrade.amount, upgrade, this as CurrencyStatic);
+        }
     }
 
     /**
@@ -467,34 +515,116 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         return true;
     }
 
-    // /**
-    //  * Adds an item.
-    //  * @param items - The items to add.
-    //  */
-    // public addItem (items: IItem | IItem[]): void {
-    //     // Convert to array if not already
-    //     if (!Array.isArray(items)) items = [items];
+    /**
+     * Adds an item to the data class.
+     * @param items - The items to add.
+     * @returns The added items.
+     */
+    private pointerAddItem (items: ItemInit): ItemData {
+        const itemToAdd = new ItemData(items);
+        this.pointer.items[items.id] = itemToAdd;
+        return itemToAdd;
+    };
 
-    //     for (const item of items) {
-    //         // Add the item to the data
-    //         // this.pointerAddUpgrade(upgrade);
+    /**
+     * Retrieves an item object from the data pointer based on the provided id.
+     * @param id - The id of the item to retrieve.
+     * @returns The item object if found, otherwise null.
+     */
+    private pointerGetItem (id: string): ItemData | null {
+        return this.pointer.items[id] ?? null;
+    }
 
-    //         // Create the upgrade object
-    //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    //         const addedUpgradeStatic = new Item(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
+    /**
+     * Adds an item.
+     * @param items - The items to add.
+     * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+     */
+    public addItem (items: ItemInit | ItemInit[], runEffectInstantly = true): void {
+        // Convert to array if not already
+        if (!Array.isArray(items)) items = [items];
 
-    //         // Run the effect instantly if needed
-    //         if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+        for (const item of items) {
+            // Add the item to the data
+            this.pointerAddItem(item);
 
-    //         // Add the upgrade to this.item
-    //         this.item[upgrade.id as S] = addedUpgradeStatic;
+            // Create the upgrade object
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id)!, () => this as CurrencyStatic);
 
-    //         // Add the upgrade to the list
-    //         addedUpgradeList.push(addedUpgradeStatic);
-    //     }
+            // Run the effect instantly if needed
+            if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
 
-    //     return addedUpgradeList;
-    // }
+            // Add the upgrade to this.item
+            this.items[item.id] = addedUpgradeStatic;
+        }
+    }
+
+    /**
+     * Retrieves an item object based on the provided id.
+     * @param id - The id of the item to retrieve.
+     * @returns The item object if found, otherwise null.
+     */
+    public getItem (id: string): Item | null {
+        return this.items[id] ?? null;
+    }
+
+    /**
+     * Calculates the cost and how many items you can buy.
+     * See {@link calculateItem} for more information.
+     * @param id - The ID or position of the item to calculate.
+     * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+     * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+     */
+    public calculateItem (id: string, target: DecimalSource = Infinity): [amount: Decimal, cost: Decimal] {
+        // Get the item
+        const item = this.getItem(id);
+
+        // If the item doesn't exist, return [0, 0]
+        if (item === null) {
+            console.warn(`Item "${id}" not found.`);
+            return [Decimal.dZero, Decimal.dZero];
+        }
+
+        return calculateItem(this.value, item, target);
+    }
+
+    /**
+     * Buys an item based on its ID or array position if enough currency is available.
+     * @param id - The ID or position of the item to buy or upgrade.
+     * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
+     */
+    public buyItem (id: string, target?: DecimalSource): boolean {
+        // Get the item
+        const item = this.getItem(id);
+
+        // If the item doesn't exist, return false
+        if (item === null) {
+            console.warn(`Item "${id}" not found.`);
+            return false;
+        }
+
+        // Calculate the amount of items you can buy
+        const [amount, cost] = this.calculateItem(id, target);
+
+        // Check if affordable
+        if (amount.lte(0)) {
+            return false;
+        }
+
+        // Deduct the cost from available currency
+        this.pointer.value = this.pointer.value.sub(cost);
+
+        // Set the item level
+        item.amount = item.amount.add(amount);
+
+        // Call the effect function if it exists
+        this.runUpgradeEffect(item);
+
+        // Return true to indicate a successful upgrade
+        return true;
+    }
 }
 
 export { Currency, CurrencyStatic };

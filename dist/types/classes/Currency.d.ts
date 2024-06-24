@@ -6,8 +6,16 @@ import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis";
 import { UpgradeData, UpgradeStatic } from "./Upgrade";
+import { ItemData, Item } from "./Item";
 import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
+import type { ItemInit } from "./Item";
 import type { Pointer, IsPrimitiveString } from "../common/types";
+interface CurrencyStaticResetOptions {
+    resetCurrency: boolean;
+    resetUpgradeLevels: boolean;
+    resetItemAmounts: boolean;
+    runUpgradeEffect: boolean;
+}
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
@@ -17,6 +25,8 @@ declare class Currency {
     value: Decimal;
     /** An array that represents upgrades and their levels. */
     upgrades: Record<string, UpgradeData>;
+    /** An array that represents items and their effects. */
+    items: Record<string, ItemData>;
     /**
      * Constructs a new currency object with an initial value of 0.
      */
@@ -36,6 +46,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
     /** An array that represents upgrades */
     readonly upgrades: Record<S, UpgradeStatic>;
     /** An array that represents items and their effects. */
+    readonly items: Record<string, Item>;
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
@@ -89,6 +100,7 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * console.log(currency.value); // Decimal.dZero, or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
+    reset(reset?: Partial<CurrencyStaticResetOptions>): void;
     /**
      * The new currency value after applying the boost.
      * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
@@ -184,10 +196,10 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      */
     updateUpgrade(id: S, newUpgrade: Partial<UpgradeInit>): void;
     /**
-     * Runs the effect of an upgrade.
+     * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    runUpgradeEffect(upgrade: UpgradeStatic): void;
+    runUpgradeEffect(upgrade: UpgradeStatic | Item): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
@@ -240,5 +252,44 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * currency.buyUpgrade("healthBoost", 10);
      */
     buyUpgrade(id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
+    /**
+     * Adds an item to the data class.
+     * @param items - The items to add.
+     * @returns The added items.
+     */
+    private pointerAddItem;
+    /**
+     * Retrieves an item object from the data pointer based on the provided id.
+     * @param id - The id of the item to retrieve.
+     * @returns The item object if found, otherwise null.
+     */
+    private pointerGetItem;
+    /**
+     * Adds an item.
+     * @param items - The items to add.
+     * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+     */
+    addItem(items: ItemInit | ItemInit[], runEffectInstantly?: boolean): void;
+    /**
+     * Retrieves an item object based on the provided id.
+     * @param id - The id of the item to retrieve.
+     * @returns The item object if found, otherwise null.
+     */
+    getItem(id: string): Item | null;
+    /**
+     * Calculates the cost and how many items you can buy.
+     * See {@link calculateItem} for more information.
+     * @param id - The ID or position of the item to calculate.
+     * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+     * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+     */
+    calculateItem(id: string, target?: DecimalSource): [amount: Decimal, cost: Decimal];
+    /**
+     * Buys an item based on its ID or array position if enough currency is available.
+     * @param id - The ID or position of the item to buy or upgrade.
+     * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
+     */
+    buyItem(id: string, target?: DecimalSource): boolean;
 }
 export { Currency, CurrencyStatic };
