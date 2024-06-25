@@ -1,0 +1,79 @@
+---
+id: upgrade
+title: Upgrade
+sidebar_label: Upgrade
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+---
+
+[Link to auto generated docs](https://xshadowblade.github.io/emath.js/typedoc/classes/classes_Upgrade.UpgradeStatic.html)
+
+The `Upgrade` class represents an upgrade that can be bought with a currency. It is used to store the cost of the upgrade, the effect of the upgrade, and the maximum level of the upgrade.
+
+It is used internally by the `CurrencyStatic` class to calculate the cost and amount of upgrades that can be bought. It is not recommended to use this class on its own without a `CurrencyStatic` class.
+ 
+## Usage
+
+There are three ways to create upgrades:
+
+1. Create upgrades using the second parameter of the `<Game>.addCurrency` method. (Recommended)
+2. Create upgrades with the second parameter of the constructor of the `CurrencyStatic` class.
+3. Using the `addUpgrade` method of the `CurrencyStatic` class. (Deprecated)
+
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="script.js"
+// Import game if using the first method
+import { myGame } from "./game.js";
+
+// Upgrades for the currency
+const myCurrencyUpgrades = [
+    {
+        id: "upg1", // Unique ID
+        cost: level => level.mul(2), // Cost of 2 times the level
+        maxLevel: new Decimal(1000), // Maximum level of 1000
+        effect: (level) => console.log(`Bought upgrade to level ${level}`),
+    },
+    // Add more upgrades here ...
+];
+
+// Create a new currency in `Game` with upgrades (recommended)
+const myCurrency = myGame.addCurrency("myCurrency", myCurrencyUpgrades);
+
+// Create a new currency with upgrades
+const myCurrency = new CurrencyStatic(undefined, myCurrencyUpgrades);
+```
+    </TabItem>
+    <TabItem value="ts">
+
+If you are using TypeScript, it is also recommended to do type assertion with the upgrades array to get better type checking with upgrade ids with methods such as `getUpgrade` and `buyUpgrade`.
+
+```ts title="script.ts"
+// For TypeScript, you need to import the type
+import type { UpgradeInit } from "emath.js";
+// Import game if using the first method
+import { myGame } from "./game";
+
+// Upgrades for the currency
+const myCurrencyUpgrades = [
+    {
+        id: "upg1", // Unique ID
+        cost: level => level.mul(2), // Cost of 2 times the level
+        maxLevel: new Decimal(1000), // Maximum level of 1000
+        effect: (level) => console.log(`Bought upgrade to level ${level}`),
+    },
+    // Add more upgrades here ...
+// Type assertion for better type checking
+] as const satisfies UpgradeInit[];
+
+// Create a new currency in `Game` with upgrades (recommended)
+const myCurrency = myGame.addCurrency("myCurrency", myCurrencyUpgrades);
+
+// Create a new currency with upgrades
+const myCurrency = new CurrencyStatic(undefined, myCurrencyUpgrades);
+```
+    </TabItem>
+</Tabs>

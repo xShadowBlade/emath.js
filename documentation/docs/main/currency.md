@@ -21,6 +21,7 @@ To create a currency, do either of the following:
 
     // 1 parameter - `name` is required. It must be unique,
     // as it is used for saving/loading to identify the currnecy.
+    // Another parameter - `upgrades` is optional. See the `Upgrade` class for more information.
     const myCurrency = myGame.addCurrency("myCurrency");
 
     // All the methods are in `<GameCurrency>.static`, which contains the same methods as <CurrencyStatic>
