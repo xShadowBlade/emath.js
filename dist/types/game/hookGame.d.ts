@@ -159,6 +159,7 @@ declare const eMath: {
     Attribute: typeof eMathMain.Attribute;
     AttributeStatic: typeof eMathMain.AttributeStatic;
     GridCell: typeof eMathMain.GridCell;
+    GridCellCollection: typeof eMathMain.GridCellCollection;
     Grid: typeof eMathMain.Grid;
     equalsTolerance: typeof eMathMain.equalsTolerance;
     inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;

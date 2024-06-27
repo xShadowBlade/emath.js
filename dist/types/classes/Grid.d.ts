@@ -2,6 +2,7 @@
  * @file Declares the gridCell and grid classes.
  */
 import type { UnknownObject } from "../common/types";
+type Directions = "up" | "right" | "down" | "left";
 /**
  * Represents a grid cell with coordinates and properties.
  * @template P - The type of the properties of the grid cell.
@@ -11,6 +12,8 @@ declare class GridCell<P extends object = UnknownObject> {
     x: number;
     /** The y-coordinate of the cell. */
     y: number;
+    /** The grid instance the cell belongs to. */
+    private gridSymbol;
     /** The properties of the cell. */
     properties: P;
     /**
@@ -18,84 +21,125 @@ declare class GridCell<P extends object = UnknownObject> {
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.
+     * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props?: P);
+    constructor(x: number, y: number, props: P | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
      * @param value - The value to set.
      * @returns The set value.
      */
-    setValue(name: keyof P, value: P[keyof P]): typeof value;
+    set(name: keyof P, value: P[keyof P]): typeof value;
+    /** @deprecated Use {@link set} instead. */
+    setValue: (name: keyof P, value: P[keyof P]) => typeof value;
     /**
      * Gets the value of a property on the cell.
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    getValue(name: keyof P): P[keyof P];
+    get(name: keyof P): P[keyof P];
+    /** @deprecated Use {@link get} instead. */
+    getValue: (name: keyof P) => P[keyof P];
+    /**
+     * Gets the cell in a specific direction from the current cell.
+     * @param direction - The direction to move.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cell in the specified direction.
+     */
+    direction(direction: Directions, distance?: number): GridCell<P>;
+    /**
+     * Gets the cell to the right of the current cell. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cell to the right.
+     */
+    up(distance?: number): GridCell<P>;
+    /**
+     * Gets the cell to the right of the current cell. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cell to the right.
+     */
+    right(distance?: number): GridCell<P>;
+    /**
+     * Gets the cell below the current cell. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cell below.
+     */
+    down(distance?: number): GridCell<P>;
+    /**
+     * Gets the cell to the left of the current cell. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cell to the left.
+     */
+    left(distance?: number): GridCell<P>;
+}
+/**
+ * Represents a collection of grid cells.
+ * @template P - The type of the properties of the grid cells.
+ */
+declare class GridCellCollection<P extends object = UnknownObject> extends Array<GridCell<P>> {
+    /**
+     * Initializes a new instance of the grid cell collection.
+     * @param cells - The cells to initialize with.
+     */
+    constructor(cells: GridCell<P> | GridCell<P>[]);
 }
 /**
  * Represents a grid with cells.
  * @template P - The type of the properties of the grid cells.
  */
 declare class Grid<P extends object = UnknownObject> {
+    /** A map of grid instances. */
+    private static instances;
+    static getInstance(key: symbol): Grid;
     /** The size of the grid along the x-axis. */
     xSize: number;
     /** The size of the grid along the x-axis. */
     ySize: number;
     /** Represents the cells of the grid. */
     cells: GridCell<P>[][];
+    /** A symbol to store the grid instance. */
+    private gridSymbol;
     /**
      * Initializes a new instance of the grid.
      * @param xSize - The size of the grid along the x-axis.
-     * @param ySize - The size of the grid along the y-axis.
+     * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(xSize: number, ySize: number, starterProps?: P);
+    constructor(xSize: number, ySize?: number, starterProps?: P);
     /**
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.
      */
-    getAll(): GridCell<P>[];
-    /**
-     * Returns an array of all grid cells.
-     * @returns An array of all grid cells.
-     * @deprecated Use getAll() instead.
-     */
-    all(): GridCell<P>[];
+    getAll(): GridCellCollection<P>;
+    /** @deprecated Use {@link getAll} instead. */
+    all: () => GridCellCollection<P>;
     /**
      * Gets an array containing all cells that have the same x coordinate.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      */
-    getAllX(x: number): GridCell<P>[];
-    /**
-     * Returns an array of all grid cells with the same x coordinate.
-     * @param x The x coordinate to check.
-     * @returns An array of all grid cells with the same x coordinate.
-     * @deprecated Use getAllX() instead.
-     */
-    allX(x: number): GridCell<P>[];
+    getAllX(x: number): GridCellCollection<P>;
+    /** @deprecated Use {@link getAllX} instead. */
+    allX: (x: number) => GridCellCollection<P>;
     /**
      * Gets an array containing all cells that have the same y coordinate.
      * @returns - An array of all cells.
      * @param y - The y coordinate to check.
      */
-    getAllY(y: number): GridCell<P>[];
-    /**
-     * Returns an array of all grid cells with the same y coordinate.
-     * @param y The y coordinate to check.
-     * @returns An array of all grid cells with the same y coordinate.
-     * @deprecated Use allY() instead.
-     */
-    allY(y: number): GridCell<P>[];
+    getAllY(y: number): GridCellCollection<P>;
+    /** @deprecated Use {@link getAllY} instead. */
+    allY: (y: number) => GridCellCollection<P>;
     /**
      * Gets a cell.
      * @returns - The cell.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
      */
-    getCell(x: number, y: number): GridCell<P>;
+    getCell(x: number, y: number, overflow?: boolean): GridCell<P>;
+    /** @deprecated Use {@link getCell} instead. */
+    get: (x: number, y: number, overflow?: boolean) => GridCell<P>;
     /**
      * Sets the value of a cell in the grid.
      * @param x The x-coordinate of the cell.
@@ -103,27 +147,29 @@ declare class Grid<P extends object = UnknownObject> {
      * @param value The value to set for the cell.
      */
     setCell(x: number, y: number, value: GridCell<P>): void;
+    /** @deprecated Use {@link setCell} instead. */
+    set: (x: number, y: number, value: GridCell<P>) => void;
     /**
-     * Gets an array containing all cells adjacent to a specific cell.
+     * Gets an array containing all cells orthagonally adjacent to a specific cell.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    getAdjacent(x: number, y: number): GridCell<P>[];
+    getAdjacent(x: number, y: number): GridCellCollection<P>;
     /**
-     * Gets an array containing all cells diagonal from a specific cell.
+     * Gets an array containing all cells diagonally adjacent from a specific cell.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    getDiagonal(x: number, y: number): GridCell<P>[];
+    getDiagonal(x: number, y: number): GridCellCollection<P>;
     /**
      * Gets an array containing all cells that surround a cell.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      */
-    getEncircling(x: number, y: number): GridCell<P>[];
+    getEncircling(x: number, y: number): GridCellCollection<P>;
     /**
      * Calculates the distance between two points on the grid.
      * @deprecated Use your own distance function instead.
@@ -135,4 +181,4 @@ declare class Grid<P extends object = UnknownObject> {
      */
     static getDistance(x1: number, y1: number, x2: number, y2: number): number;
 }
-export { GridCell, Grid };
+export { GridCell, GridCellCollection, Grid };

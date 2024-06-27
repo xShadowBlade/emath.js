@@ -54,6 +54,7 @@ __export(src_exports, {
   FormatTypeList: () => FormatTypeList,
   Grid: () => Grid,
   GridCell: () => GridCell,
+  GridCellCollection: () => GridCellCollection,
   Item: () => Item,
   ItemData: () => ItemData,
   LRUCache: () => LRUCache,
@@ -5870,11 +5871,17 @@ var GridCell = class {
    * @param x - The x-coordinate.
    * @param y - The y-coordinate.
    * @param props - The properties to initialize with.
+   * @param gridSymbol - The symbol of the grid the cell belongs to.
    */
-  constructor(x, y, props) {
+  constructor(x, y, props = {}, gridSymbol) {
+    /** @deprecated Use {@link set} instead. */
+    this.setValue = this.set.bind(this);
+    /** @deprecated Use {@link get} instead. */
+    this.getValue = this.get.bind(this);
     this.x = x;
     this.y = y;
-    this.properties = props ?? {};
+    this.properties = props;
+    this.gridSymbol = gridSymbol;
   }
   /**
    * Sets the value of a property on the cell.
@@ -5882,7 +5889,7 @@ var GridCell = class {
    * @param value - The value to set.
    * @returns The set value.
    */
-  setValue(name, value) {
+  set(name, value) {
     this.properties[name] = value;
     return value;
   }
@@ -5891,48 +5898,120 @@ var GridCell = class {
    * @param name - The name of the property.
    * @returns - The value of the property.
    */
-  getValue(name) {
+  get(name) {
     return this.properties[name];
   }
+  // Directions
+  /**
+   * Gets the cell in a specific direction from the current cell.
+   * @param direction - The direction to move.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cell in the specified direction.
+   */
+  direction(direction, distance = 1) {
+    const grid = Grid.getInstance(this.gridSymbol);
+    switch (direction) {
+      case "up":
+        return grid.getCell(this.x, this.y - distance);
+      case "right":
+        return grid.getCell(this.x + distance, this.y);
+      case "down":
+        return grid.getCell(this.x, this.y + distance);
+      case "left":
+        return grid.getCell(this.x - distance, this.y);
+      default:
+        throw new Error("Invalid direction");
+    }
+  }
+  /**
+   * Gets the cell to the right of the current cell. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cell to the right.
+   */
+  up(distance = 1) {
+    return this.direction("up", distance);
+  }
+  /**
+   * Gets the cell to the right of the current cell. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cell to the right.
+   */
+  right(distance = 1) {
+    return this.direction("right", distance);
+  }
+  /**
+   * Gets the cell below the current cell. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cell below.
+   */
+  down(distance = 1) {
+    return this.direction("down", distance);
+  }
+  /**
+   * Gets the cell to the left of the current cell. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cell to the left.
+   */
+  left(distance = 1) {
+    return this.direction("left", distance);
+  }
 };
-var Grid = class {
+var GridCellCollection = class extends Array {
+  /**
+   * Initializes a new instance of the grid cell collection.
+   * @param cells - The cells to initialize with.
+   */
+  constructor(cells) {
+    cells = Array.isArray(cells) ? cells : [cells];
+    super(...cells);
+  }
+};
+var Grid = class _Grid {
   /**
    * Initializes a new instance of the grid.
    * @param xSize - The size of the grid along the x-axis.
-   * @param ySize - The size of the grid along the y-axis.
+   * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
    * @param starterProps - The properties to initialize with.
    */
   constructor(xSize, ySize, starterProps) {
-    this.xSize = xSize;
-    this.ySize = ySize;
+    /** Represents the cells of the grid. */
     this.cells = [];
-    for (let a = 0; a < ySize; a++) {
+    /** A symbol to store the grid instance. */
+    this.gridSymbol = Symbol();
+    /** @deprecated Use {@link getAll} instead. */
+    this.all = this.getAll.bind(this);
+    /** @deprecated Use {@link getAllX} instead. */
+    this.allX = this.getAllX.bind(this);
+    /** @deprecated Use {@link getAllY} instead. */
+    this.allY = this.getAllY.bind(this);
+    /** @deprecated Use {@link getCell} instead. */
+    this.get = this.getCell.bind(this);
+    /** @deprecated Use {@link setCell} instead. */
+    this.set = this.setCell.bind(this);
+    _Grid.instances[this.gridSymbol] = this;
+    this.xSize = xSize;
+    this.ySize = ySize ?? xSize;
+    for (let a = 0; a < this.ySize; a++) {
       this.cells[a] = [];
-      for (let b = 0; b < xSize; b++) {
-        this.cells[a][b] = new GridCell(b, a, starterProps);
+      for (let b = 0; b < this.xSize; b++) {
+        this.cells[a][b] = new GridCell(b, a, starterProps, this.gridSymbol);
       }
     }
+  }
+  static {
+    /** A map of grid instances. */
+    // private static instances = new Map<symbol, Grid>();
+    this.instances = {};
+  }
+  static getInstance(key) {
+    return _Grid.instances[key];
   }
   /**
    * Gets an array containing all cells in the grid.
    * @returns - An array of all cells.
    */
   getAll() {
-    const output = [];
-    for (let a = 0; a < this.ySize; a++) {
-      for (let b = 0; b < this.xSize; b++) {
-        output.push(this.cells[a][b]);
-      }
-    }
-    return output;
-  }
-  /**
-   * Returns an array of all grid cells.
-   * @returns An array of all grid cells.
-   * @deprecated Use getAll() instead.
-   */
-  all() {
-    return this.getAll();
+    return new GridCellCollection(this.cells.flat());
   }
   /**
    * Gets an array containing all cells that have the same x coordinate.
@@ -5944,16 +6023,7 @@ var Grid = class {
     for (let i = 0; i < this.ySize; i++) {
       output.push(this.cells[i][x]);
     }
-    return output;
-  }
-  /**
-   * Returns an array of all grid cells with the same x coordinate.
-   * @param x The x coordinate to check.
-   * @returns An array of all grid cells with the same x coordinate.
-   * @deprecated Use getAllX() instead.
-   */
-  allX(x) {
-    return this.getAllX(x);
+    return new GridCellCollection(output);
   }
   /**
    * Gets an array containing all cells that have the same y coordinate.
@@ -5961,25 +6031,21 @@ var Grid = class {
    * @param y - The y coordinate to check.
    */
   getAllY(y) {
-    return this.cells[y];
-  }
-  /**
-   * Returns an array of all grid cells with the same y coordinate.
-   * @param y The y coordinate to check.
-   * @returns An array of all grid cells with the same y coordinate.
-   * @deprecated Use allY() instead.
-   */
-  allY(y) {
-    return this.getAllY(y);
+    return new GridCellCollection(this.cells[y]);
   }
   /**
    * Gets a cell.
    * @returns - The cell.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
+   * @param overflow - Whether to allow overflow. Defaults to `true`.
    */
-  getCell(x, y) {
-    return this.cells[y][x];
+  getCell(x, y, overflow = true) {
+    x = overflow ? (x + this.xSize) % this.xSize : x;
+    y = overflow ? (y + this.ySize) % this.ySize : y;
+    const out = this.cells[y][x];
+    if (!out) throw new Error(`Grid: Invalid cell coordinates: (${x}, ${y})`);
+    return out;
   }
   /**
    * Sets the value of a cell in the grid.
@@ -5991,32 +6057,32 @@ var Grid = class {
     this.cells[y][x] = value;
   }
   /**
-   * Gets an array containing all cells adjacent to a specific cell.
+   * Gets an array containing all cells orthagonally adjacent to a specific cell.
    * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    */
   getAdjacent(x, y) {
-    const output = [];
-    output[0] = this.getCell(x, y + 1);
-    output[1] = this.getCell(x + 1, y);
-    output[2] = this.getCell(x, y - 1);
-    output[3] = this.getCell(x - 1, y + 1);
-    return output;
+    return new GridCellCollection([
+      this.getCell(x, y + 1),
+      this.getCell(x + 1, y),
+      this.getCell(x, y - 1),
+      this.getCell(x - 1, y)
+    ]);
   }
   /**
-   * Gets an array containing all cells diagonal from a specific cell.
+   * Gets an array containing all cells diagonally adjacent from a specific cell.
    * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    */
   getDiagonal(x, y) {
-    const output = [];
-    output[0] = this.getCell(x - 1, y + 1);
-    output[1] = this.getCell(x + 1, y + 1);
-    output[2] = this.getCell(x + 1, y - 1);
-    output[3] = this.getCell(x - 1, y - 1);
-    return output;
+    return new GridCellCollection([
+      this.getCell(x - 1, y + 1),
+      this.getCell(x + 1, y + 1),
+      this.getCell(x + 1, y - 1),
+      this.getCell(x - 1, y - 1)
+    ]);
   }
   /**
    * Gets an array containing all cells that surround a cell.
@@ -6025,7 +6091,10 @@ var Grid = class {
    * @param y - The y coordinate to check.
    */
   getEncircling(x, y) {
-    return this.getAdjacent(x, y).concat(this.getDiagonal(x, y));
+    return new GridCellCollection([
+      ...this.getAdjacent(x, y),
+      ...this.getDiagonal(x, y)
+    ]);
   }
   /**
    * Calculates the distance between two points on the grid.
