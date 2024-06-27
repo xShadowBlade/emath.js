@@ -5841,22 +5841,32 @@ var GridCell = class {
    * Gets the cell in a specific direction from the current cell.
    * @param direction - The direction to move.
    * @param distance - The distance to move. Defaults to 1.
+   * @param fill - Whether to fill the cells. Defaults to `false`.
    * @returns - The cell in the specified direction.
    */
-  direction(direction, distance = 1) {
+  direction(direction, distance = 1, fill) {
     const grid = Grid.getInstance(this.gridSymbol);
-    switch (direction) {
-      case "up":
-        return grid.getCell(this.x, this.y - distance);
-      case "right":
-        return grid.getCell(this.x + distance, this.y);
-      case "down":
-        return grid.getCell(this.x, this.y + distance);
-      case "left":
-        return grid.getCell(this.x - distance, this.y);
-      default:
-        throw new Error("Invalid direction");
-    }
+    const out = (() => {
+      switch (direction) {
+        case "up":
+          return grid.getCell(this.x, this.y - distance);
+        case "right":
+          return grid.getCell(this.x + distance, this.y);
+        case "down":
+          return grid.getCell(this.x, this.y + distance);
+        case "left":
+          return grid.getCell(this.x - distance, this.y);
+        case "adjacent":
+          return grid.getAdjacent(this.x, this.y, distance, fill);
+        case "diagonal":
+          return grid.getDiagonal(this.x, this.y, distance, fill);
+        case "encircling":
+          return grid.getEncircling(this.x, this.y, distance, fill);
+        default:
+          throw new Error("Invalid direction");
+      }
+    })();
+    return out;
   }
   /**
    * Gets the cell to the right of the current cell. Can be chained.
@@ -5891,7 +5901,7 @@ var GridCell = class {
     return this.direction("left", distance);
   }
 };
-var GridCellCollection = class extends Array {
+var GridCellCollection = class _GridCellCollection extends Array {
   /**
    * Initializes a new instance of the grid cell collection.
    * @param cells - The cells to initialize with.
@@ -5899,6 +5909,99 @@ var GridCellCollection = class extends Array {
   constructor(cells) {
     cells = Array.isArray(cells) ? cells : [cells];
     super(...cells);
+    this.removeDuplicates();
+  }
+  /**
+   * Removes duplicate cells from the collection.
+   * Modifies the array in place.
+   */
+  removeDuplicates() {
+    const duplicatedIndexes = [];
+    this.forEach((cell, index) => {
+      if (this.indexOf(cell) !== index) duplicatedIndexes.push(index);
+    });
+    duplicatedIndexes.forEach((index) => this.splice(index, 1));
+  }
+  // Directions
+  /**
+   * Gets the cells in a specific direction from the current cells.
+   * @param direction - The direction to move.
+   * @param distance - The distance to move. Defaults to 1.
+   * @param fill - Whether to fill the cells. Defaults to `false`.
+   * @returns - The cells in the specified direction.
+   */
+  direction(direction, distance, fill) {
+    if (["up", "right", "down", "left"].includes(direction)) {
+      return new _GridCellCollection(this.map((cell) => cell.direction(direction, distance, fill)));
+    }
+    const output = [];
+    for (const cell of this) {
+      output.push(...cell.direction(direction, distance, fill));
+    }
+    return new _GridCellCollection(output);
+  }
+  /**
+   * Gets the cells above the current cells. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cells above.
+   */
+  up(distance) {
+    return this.direction("up", distance);
+  }
+  /**
+   * Gets the cells to the right of the current cells. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cells to the right.
+   */
+  right(distance) {
+    return this.direction("right", distance);
+  }
+  /**
+   * Gets the cells below the current cells. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cells below.
+   */
+  down(distance) {
+    return this.direction("down", distance);
+  }
+  /**
+   * Gets the cells to the left of the current cells. Can be chained.
+   * @param distance - The distance to move. Defaults to 1.
+   * @returns - The cells to the left.
+   */
+  left(distance) {
+    return this.direction("left", distance);
+  }
+  // Other direction
+  /**
+   * Gets the cells adjacent to the current cells. Can be chained.
+   * Note: Can be slow with large collections.
+   * @param distance - The distance to move. Defaults to 1.
+   * @param fill - Whether to fill the cells. Defaults to `false`.
+   * @returns - The cells adjacent.
+   */
+  adjacent(distance, fill) {
+    return this.direction("adjacent", distance, fill);
+  }
+  /**
+   * Gets the cells diagonally from the current cells. Can be chained.
+   * Note: Can be slow with large collections.
+   * @param distance - The distance to move. Defaults to 1.
+   * @param fill - Whether to fill the cells. Defaults to `false`.
+   * @returns - The cells diagonally.
+   */
+  diagonal(distance, fill) {
+    return this.direction("diagonal", distance, fill);
+  }
+  /**
+   * Gets the cells encircling the current cells. Can be chained.
+   * Note: Can be slow with large collections.
+   * @param distance - The distance to move. Defaults to 1.
+   * @param fill - Whether to fill the cells. Defaults to `false`.
+   * @returns - The cells encircling.
+   */
+  encircling(distance, fill) {
+    return this.direction("encircling", distance, fill);
   }
 };
 var Grid = class _Grid {
@@ -5996,40 +6099,116 @@ var Grid = class _Grid {
    * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
+   * @param distance - The distance to check. Defaults to 1.
+   * @param fill - Whether to fill the adjacent cells. Defaults to `false`.
    */
-  getAdjacent(x, y) {
-    return new GridCellCollection([
-      this.getCell(x, y + 1),
-      this.getCell(x + 1, y),
-      this.getCell(x, y - 1),
-      this.getCell(x - 1, y)
-    ]);
+  getAdjacent(x, y, distance = 1, fill = false) {
+    if (distance === 1) {
+      return new GridCellCollection([
+        this.getCell(x, y + 1),
+        this.getCell(x + 1, y),
+        this.getCell(x, y - 1),
+        this.getCell(x - 1, y)
+      ]);
+    }
+    if (!fill) {
+      return new GridCellCollection([
+        this.getCell(x, y + distance),
+        this.getCell(x + distance, y),
+        this.getCell(x, y - distance),
+        this.getCell(x - distance, y)
+      ]);
+    }
+    const output = [];
+    for (let i = 1; i <= distance; i++) {
+      output.push(this.getCell(x, y + i));
+      output.push(this.getCell(x + i, y));
+      output.push(this.getCell(x, y - i));
+      output.push(this.getCell(x - i, y));
+    }
+    return new GridCellCollection(output);
   }
   /**
    * Gets an array containing all cells diagonally adjacent from a specific cell.
    * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
+   * @param distance - The distance to check. Defaults to 1.
+   * @param fill - Whether to fill the diagonal. Defaults to `false`.
    */
-  getDiagonal(x, y) {
-    return new GridCellCollection([
-      this.getCell(x - 1, y + 1),
-      this.getCell(x + 1, y + 1),
-      this.getCell(x + 1, y - 1),
-      this.getCell(x - 1, y - 1)
-    ]);
+  getDiagonal(x, y, distance = 1, fill = false) {
+    if (distance === 1) {
+      return new GridCellCollection([
+        this.getCell(x - 1, y + 1),
+        this.getCell(x + 1, y + 1),
+        this.getCell(x + 1, y - 1),
+        this.getCell(x - 1, y - 1)
+      ]);
+    }
+    if (!fill) {
+      return new GridCellCollection([
+        this.getCell(x - distance, y + distance),
+        this.getCell(x + distance, y + distance),
+        this.getCell(x + distance, y - distance),
+        this.getCell(x - distance, y - distance)
+      ]);
+    }
+    const output = [];
+    for (let i = 1; i <= distance; i++) {
+      output.push(this.getCell(x - i, y + i));
+      output.push(this.getCell(x + i, y + i));
+      output.push(this.getCell(x + i, y - i));
+      output.push(this.getCell(x - i, y - i));
+    }
+    return new GridCellCollection(output);
+  }
+  /**
+   * Gets an array containing all cells that surround a cell at a specific distance.
+   * @param x - The x coordinate to check.
+   * @param y - The y coordinate to check.
+   * @param distance - The distance to check.
+   * @returns - An array of all cells.
+   */
+  getEncirclingAtDistance(x, y, distance) {
+    if (distance <= 1) {
+      return new GridCellCollection([
+        ...this.getAdjacent(x, y),
+        ...this.getDiagonal(x, y)
+      ]);
+    }
+    const output = [];
+    for (let i = 1; i < distance; i++) {
+      output.push(this.getCell(x - distance + i, y - distance));
+    }
+    for (let i = 1; i < distance; i++) {
+      output.push(this.getCell(x + distance, y - distance + i));
+    }
+    for (let i = 1; i < distance; i++) {
+      output.push(this.getCell(x + distance - i, y + distance));
+    }
+    for (let i = 1; i < distance; i++) {
+      output.push(this.getCell(x - distance, y + distance - i));
+    }
+    output.push(...this.getDiagonal(x, y, distance, false));
+    return new GridCellCollection(output);
   }
   /**
    * Gets an array containing all cells that surround a cell.
    * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
+   * @param distance - The distance to check. Defaults to 1.
+   * @param fill - Whether to fill the surrounding cells. Defaults to `false`.
    */
-  getEncircling(x, y) {
-    return new GridCellCollection([
-      ...this.getAdjacent(x, y),
-      ...this.getDiagonal(x, y)
-    ]);
+  getEncircling(x, y, distance = 1, fill = false) {
+    if (distance === 1 || !fill) {
+      return this.getEncirclingAtDistance(x, y, distance);
+    }
+    const output = [];
+    for (let i = 1; i <= distance; i++) {
+      output.push(...this.getEncirclingAtDistance(x, y, i));
+    }
+    return new GridCellCollection(output);
   }
   /**
    * Calculates the distance between two points on the grid.

@@ -2,7 +2,8 @@
  * @file Declares the gridCell and grid classes.
  */
 import type { UnknownObject } from "../common/types";
-type Directions = "up" | "right" | "down" | "left";
+type DirectionCollection = "adjacent" | "diagonal" | "encircling";
+type Directions = "up" | "right" | "down" | "left" | DirectionCollection;
 /**
  * Represents a grid cell with coordinates and properties.
  * @template P - The type of the properties of the grid cell.
@@ -45,9 +46,10 @@ declare class GridCell<P extends object = UnknownObject> {
      * Gets the cell in a specific direction from the current cell.
      * @param direction - The direction to move.
      * @param distance - The distance to move. Defaults to 1.
+     * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cell in the specified direction.
      */
-    direction(direction: Directions, distance?: number): GridCell<P>;
+    direction<D extends Directions>(direction: D, distance?: number, fill?: boolean): D extends DirectionCollection ? GridCellCollection<P> : GridCell<P>;
     /**
      * Gets the cell to the right of the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
@@ -83,6 +85,67 @@ declare class GridCellCollection<P extends object = UnknownObject> extends Array
      * @param cells - The cells to initialize with.
      */
     constructor(cells: GridCell<P> | GridCell<P>[]);
+    /**
+     * Removes duplicate cells from the collection.
+     * Modifies the array in place.
+     */
+    removeDuplicates(): void;
+    /**
+     * Gets the cells in a specific direction from the current cells.
+     * @param direction - The direction to move.
+     * @param distance - The distance to move. Defaults to 1.
+     * @param fill - Whether to fill the cells. Defaults to `false`.
+     * @returns - The cells in the specified direction.
+     */
+    direction(direction: Directions, distance?: number, fill?: boolean): GridCellCollection<P>;
+    /**
+     * Gets the cells above the current cells. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cells above.
+     */
+    up(distance?: number): GridCellCollection<P>;
+    /**
+     * Gets the cells to the right of the current cells. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cells to the right.
+     */
+    right(distance?: number): GridCellCollection<P>;
+    /**
+     * Gets the cells below the current cells. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cells below.
+     */
+    down(distance?: number): GridCellCollection<P>;
+    /**
+     * Gets the cells to the left of the current cells. Can be chained.
+     * @param distance - The distance to move. Defaults to 1.
+     * @returns - The cells to the left.
+     */
+    left(distance?: number): GridCellCollection<P>;
+    /**
+     * Gets the cells adjacent to the current cells. Can be chained.
+     * Note: Can be slow with large collections.
+     * @param distance - The distance to move. Defaults to 1.
+     * @param fill - Whether to fill the cells. Defaults to `false`.
+     * @returns - The cells adjacent.
+     */
+    adjacent(distance?: number, fill?: boolean): GridCellCollection<P>;
+    /**
+     * Gets the cells diagonally from the current cells. Can be chained.
+     * Note: Can be slow with large collections.
+     * @param distance - The distance to move. Defaults to 1.
+     * @param fill - Whether to fill the cells. Defaults to `false`.
+     * @returns - The cells diagonally.
+     */
+    diagonal(distance?: number, fill?: boolean): GridCellCollection<P>;
+    /**
+     * Gets the cells encircling the current cells. Can be chained.
+     * Note: Can be slow with large collections.
+     * @param distance - The distance to move. Defaults to 1.
+     * @param fill - Whether to fill the cells. Defaults to `false`.
+     * @returns - The cells encircling.
+     */
+    encircling(distance?: number, fill?: boolean): GridCellCollection<P>;
 }
 /**
  * Represents a grid with cells.
@@ -154,22 +217,36 @@ declare class Grid<P extends object = UnknownObject> {
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
+     * @param distance - The distance to check. Defaults to 1.
+     * @param fill - Whether to fill the adjacent cells. Defaults to `false`.
      */
-    getAdjacent(x: number, y: number): GridCellCollection<P>;
+    getAdjacent(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
     /**
      * Gets an array containing all cells diagonally adjacent from a specific cell.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
+     * @param distance - The distance to check. Defaults to 1.
+     * @param fill - Whether to fill the diagonal. Defaults to `false`.
      */
-    getDiagonal(x: number, y: number): GridCellCollection<P>;
+    getDiagonal(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
+    /**
+     * Gets an array containing all cells that surround a cell at a specific distance.
+     * @param x - The x coordinate to check.
+     * @param y - The y coordinate to check.
+     * @param distance - The distance to check.
+     * @returns - An array of all cells.
+     */
+    private getEncirclingAtDistance;
     /**
      * Gets an array containing all cells that surround a cell.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
+     * @param distance - The distance to check. Defaults to 1.
+     * @param fill - Whether to fill the surrounding cells. Defaults to `false`.
      */
-    getEncircling(x: number, y: number): GridCellCollection<P>;
+    getEncircling(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
     /**
      * Calculates the distance between two points on the grid.
      * @deprecated Use your own distance function instead.
