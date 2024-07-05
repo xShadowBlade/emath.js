@@ -24,7 +24,7 @@ declare class GridCell<P extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props: P | undefined, gridSymbol: symbol);
+    constructor(x: number, y: number, props: (P | ((grid: GridCell<P>) => P)) | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
@@ -42,6 +42,13 @@ declare class GridCell<P extends object = UnknownObject> {
     get(name: keyof P): P[keyof P];
     /** @deprecated Use {@link get} instead. */
     getValue: (name: keyof P) => P[keyof P];
+    /**
+     * Gets the cell a specified distance away from the current cell.
+     * @param x - The x distance to move
+     * @param y - The y distance to move
+     * @returns The translated cell
+     */
+    translate(x?: number, y?: number): GridCell<P>;
     /**
      * Gets the cell in a specific direction from the current cell.
      * @param direction - The direction to move.
@@ -90,6 +97,13 @@ declare class GridCellCollection<P extends object = UnknownObject> extends Array
      * Modifies the array in place.
      */
     removeDuplicates(): void;
+    /**
+     * Gets the cells a specified distance away from the current cell.
+     * @param x - The x distance to move
+     * @param y - The y distance to move
+     * @returns The translated cells
+     */
+    translate(x?: number, y?: number): GridCellCollection<P>;
     /**
      * Gets the cells in a specific direction from the current cells.
      * @param direction - The direction to move.
@@ -154,7 +168,12 @@ declare class GridCellCollection<P extends object = UnknownObject> extends Array
 declare class Grid<P extends object = UnknownObject> {
     /** A map of grid instances. */
     private static instances;
-    static getInstance(key: symbol): Grid;
+    /**
+     * Gets the grid instance with the specified key.
+     * @param key - The key of the grid instance.
+     * @returns - The grid instance.
+     */
+    static getInstance<T extends object = UnknownObject>(key: symbol): Grid<T>;
     /** The size of the grid along the x-axis. */
     xSize: number;
     /** The size of the grid along the x-axis. */
@@ -169,7 +188,7 @@ declare class Grid<P extends object = UnknownObject> {
      * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(xSize: number, ySize?: number, starterProps?: P);
+    constructor(xSize: number, ySize?: number, starterProps?: P | ((grid: GridCell<P>) => P));
     /**
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.

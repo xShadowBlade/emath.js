@@ -30,10 +30,12 @@ class GridCell<P extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor (x: number, y: number, props: P = {} as P, gridSymbol: symbol) {
+    constructor (x: number, y: number, props: P | ((grid: GridCell<P>) => P) = {} as P, gridSymbol: symbol) {
         this.x = x;
         this.y = y;
-        this.properties = props;
+
+        // Object destructuring to prevent reference sharing
+        this.properties = typeof props === "function" ? { ...props(this) } : { ...props };
         this.gridSymbol = gridSymbol;
     }
 
@@ -62,6 +64,16 @@ class GridCell<P extends object = UnknownObject> {
     public getValue = this.get.bind(this);
 
     // Directions
+
+    /**
+     * Gets the cell a specified distance away from the current cell.
+     * @param x - The x distance to move
+     * @param y - The y distance to move
+     * @returns The translated cell
+     */
+    public translate (x = 0, y = 0): GridCell<P> {
+        return Grid.getInstance<P>(this.gridSymbol).getCell(this.x + x, this.y + y);
+    }
 
     /**
      * Gets the cell in a specific direction from the current cell.
@@ -175,6 +187,16 @@ class GridCellCollection<P extends object = UnknownObject> extends Array<GridCel
     // Directions
 
     /**
+     * Gets the cells a specified distance away from the current cell.
+     * @param x - The x distance to move
+     * @param y - The y distance to move
+     * @returns The translated cells
+     */
+    public translate (x = 0, y = 0): GridCellCollection<P> {
+        return new GridCellCollection(this.map(cell => cell.translate(x, y)));
+    }
+
+    /**
      * Gets the cells in a specific direction from the current cells.
      * @param direction - The direction to move.
      * @param distance - The distance to move. Defaults to 1.
@@ -182,18 +204,7 @@ class GridCellCollection<P extends object = UnknownObject> extends Array<GridCel
      * @returns - The cells in the specified direction.
      */
     public direction (direction: Directions, distance?: number, fill?: boolean): GridCellCollection<P> {
-        if ([ "up", "right", "down", "left" ].includes(direction)) {
-            return new GridCellCollection(this.map(cell => cell.direction(direction as Exclude<Directions, DirectionCollection>, distance, fill)));
-        }
-
-        const output: GridCell<P>[] = [];
-
-        // Iterate through each cell
-        for (const cell of this) {
-            output.push(...cell.direction(direction as DirectionCollection, distance, fill));
-        }
-
-        return new GridCellCollection(output);
+        return new GridCellCollection(this.flatMap(cell => cell.direction(direction, distance, fill)));
     }
 
     /**
@@ -277,8 +288,13 @@ class Grid<P extends object = UnknownObject> {
     // private static instances = new Map<symbol, Grid>();
     private static instances: Record<symbol, Grid> = {};
 
-    public static getInstance (key: symbol): Grid {
-        return Grid.instances[key];
+    /**
+     * Gets the grid instance with the specified key.
+     * @param key - The key of the grid instance.
+     * @returns - The grid instance.
+     */
+    public static getInstance<T extends object = UnknownObject> (key: symbol): Grid<T> {
+        return Grid.instances[key] as Grid<T>;
     }
 
     /** The size of the grid along the x-axis. */
@@ -299,7 +315,7 @@ class Grid<P extends object = UnknownObject> {
      * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor (xSize: number, ySize?: number, starterProps?: P) {
+    constructor (xSize: number, ySize?: number, starterProps?: P | ((grid: GridCell<P>) => P)) {
         // @ts-expect-error - Generic class type
         Grid.instances[this.gridSymbol] = this;
 
@@ -411,7 +427,7 @@ class Grid<P extends object = UnknownObject> {
             ]);
         }
 
-        const output: GridCell<P>[] = [];
+        const output: GridCell<P>[] = [this.getCell(x, y)];
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
@@ -453,7 +469,7 @@ class Grid<P extends object = UnknownObject> {
             ]);
         }
 
-        const output: GridCell<P>[] = [];
+        const output: GridCell<P>[] = [this.getCell(x, y)];
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
@@ -487,22 +503,22 @@ class Grid<P extends object = UnknownObject> {
         const output: GridCell<P>[] = [];
 
         // Get the top row
-        for (let i = 1; i < distance; i++) {
+        for (let i = 1; i < distance * 2; i++) {
             output.push(this.getCell(x - distance + i, y - distance));
         }
 
         // Get the right column
-        for (let i = 1; i < distance; i++) {
+        for (let i = 1; i < distance * 2; i++) {
             output.push(this.getCell(x + distance, y - distance + i));
         }
 
         // Get the bottom row
-        for (let i = 1; i < distance; i++) {
+        for (let i = 1; i < distance * 2; i++) {
             output.push(this.getCell(x + distance - i, y + distance));
         }
 
         // Get the left column
-        for (let i = 1; i < distance; i++) {
+        for (let i = 1; i < distance * 2; i++) {
             output.push(this.getCell(x - distance, y + distance - i));
         }
 
@@ -526,7 +542,7 @@ class Grid<P extends object = UnknownObject> {
             return this.getEncirclingAtDistance(x, y, distance);
         }
 
-        const output: GridCell<P>[] = [];
+        const output: GridCell<P>[] = [this.getCell(x, y)];
         // Return all the distances
         for (let i = 1; i <= distance; i++) {
             output.push(...this.getEncirclingAtDistance(x, y, i));
@@ -552,9 +568,11 @@ class Grid<P extends object = UnknownObject> {
 export { GridCell, GridCellCollection, Grid };
 
 // test
-// const grid = new Grid(10);
+// const grid = new Grid(100);
 
-// const newCell = grid.getAdjacent(5, 5, 2).adjacent(3, true);
+// // const newCell = grid.getAdjacent(5, 5, 2).adjacent(3, true).left();
+
+// const newCell = grid.getAll();
 
 // console.log(newCell.map(cell => ({
 //     x: cell.x,

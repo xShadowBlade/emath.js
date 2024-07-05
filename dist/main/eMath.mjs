@@ -5815,7 +5815,7 @@ var GridCell = class {
     this.getValue = this.get.bind(this);
     this.x = x;
     this.y = y;
-    this.properties = props;
+    this.properties = typeof props === "function" ? { ...props(this) } : { ...props };
     this.gridSymbol = gridSymbol;
   }
   /**
@@ -5837,6 +5837,15 @@ var GridCell = class {
     return this.properties[name];
   }
   // Directions
+  /**
+   * Gets the cell a specified distance away from the current cell.
+   * @param x - The x distance to move
+   * @param y - The y distance to move
+   * @returns The translated cell
+   */
+  translate(x = 0, y = 0) {
+    return Grid.getInstance(this.gridSymbol).getCell(this.x + x, this.y + y);
+  }
   /**
    * Gets the cell in a specific direction from the current cell.
    * @param direction - The direction to move.
@@ -5924,6 +5933,15 @@ var GridCellCollection = class _GridCellCollection extends Array {
   }
   // Directions
   /**
+   * Gets the cells a specified distance away from the current cell.
+   * @param x - The x distance to move
+   * @param y - The y distance to move
+   * @returns The translated cells
+   */
+  translate(x = 0, y = 0) {
+    return new _GridCellCollection(this.map((cell) => cell.translate(x, y)));
+  }
+  /**
    * Gets the cells in a specific direction from the current cells.
    * @param direction - The direction to move.
    * @param distance - The distance to move. Defaults to 1.
@@ -5931,14 +5949,7 @@ var GridCellCollection = class _GridCellCollection extends Array {
    * @returns - The cells in the specified direction.
    */
   direction(direction, distance, fill) {
-    if (["up", "right", "down", "left"].includes(direction)) {
-      return new _GridCellCollection(this.map((cell) => cell.direction(direction, distance, fill)));
-    }
-    const output = [];
-    for (const cell of this) {
-      output.push(...cell.direction(direction, distance, fill));
-    }
-    return new _GridCellCollection(output);
+    return new _GridCellCollection(this.flatMap((cell) => cell.direction(direction, distance, fill)));
   }
   /**
    * Gets the cells above the current cells. Can be chained.
@@ -6041,6 +6052,11 @@ var Grid = class _Grid {
     // private static instances = new Map<symbol, Grid>();
     this.instances = {};
   }
+  /**
+   * Gets the grid instance with the specified key.
+   * @param key - The key of the grid instance.
+   * @returns - The grid instance.
+   */
   static getInstance(key) {
     return _Grid.instances[key];
   }
@@ -6119,7 +6135,7 @@ var Grid = class _Grid {
         this.getCell(x - distance, y)
       ]);
     }
-    const output = [];
+    const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
       output.push(this.getCell(x, y + i));
       output.push(this.getCell(x + i, y));
@@ -6153,7 +6169,7 @@ var Grid = class _Grid {
         this.getCell(x - distance, y - distance)
       ]);
     }
-    const output = [];
+    const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
       output.push(this.getCell(x - i, y + i));
       output.push(this.getCell(x + i, y + i));
@@ -6177,16 +6193,16 @@ var Grid = class _Grid {
       ]);
     }
     const output = [];
-    for (let i = 1; i < distance; i++) {
+    for (let i = 1; i < distance * 2; i++) {
       output.push(this.getCell(x - distance + i, y - distance));
     }
-    for (let i = 1; i < distance; i++) {
+    for (let i = 1; i < distance * 2; i++) {
       output.push(this.getCell(x + distance, y - distance + i));
     }
-    for (let i = 1; i < distance; i++) {
+    for (let i = 1; i < distance * 2; i++) {
       output.push(this.getCell(x + distance - i, y + distance));
     }
-    for (let i = 1; i < distance; i++) {
+    for (let i = 1; i < distance * 2; i++) {
       output.push(this.getCell(x - distance, y + distance - i));
     }
     output.push(...this.getDiagonal(x, y, distance, false));
@@ -6204,7 +6220,7 @@ var Grid = class _Grid {
     if (distance === 1 || !fill) {
       return this.getEncirclingAtDistance(x, y, distance);
     }
-    const output = [];
+    const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
       output.push(...this.getEncirclingAtDistance(x, y, i));
     }
