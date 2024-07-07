@@ -73,4 +73,4 @@ This project would not be possible without the contributions of its community me
 
 **Note:** This package is currently in development and is subject to major changes. If you have any questions or need further assistance, feel free to reach out to the project maintainers.
 
-![Made by: xShadowBlade#2720](https://img.shields.io/badge/Made%20by%3A-xShadowBlade%232720-blue?style=social&logo=discord)
+![Made by: @.xshadowblade](https://img.shields.io/badge/Discord%3A-%40.xshadowblade-blue?style=social&logo=discord)
