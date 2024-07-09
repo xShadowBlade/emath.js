@@ -207,7 +207,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     cost: (level: Decimal) => Decimal;
     costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal]) | undefined;
     maxLevel: Decimal | undefined;
-    effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void) | undefined;
+    effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     defaultLevel: Decimal;
     /** The default size of the cache. Should be one less than a power of 2. */

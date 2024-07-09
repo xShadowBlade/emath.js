@@ -3,8 +3,20 @@
  */
 import type { UnknownObject } from "../common/types";
 
-type DirectionCollection = "adjacent" | "diagonal" | "encircling";
-type Directions = "up" | "right" | "down" | "left" | DirectionCollection;
+/**
+ * Grid directions that result in {@link GridCell}
+ */
+type GridDirectionCell = "up" | "right" | "down" | "left";
+
+/**
+ * Grid directions that result in {@link GridCellCollection}
+ */
+type GridDirectionCollection = "adjacent" | "diagonal" | "encircling";
+
+/**
+ * Grid directions
+ */
+type GridDirection = GridDirectionCell | GridDirectionCollection;
 
 /**
  * Represents a grid cell with coordinates and properties.
@@ -19,6 +31,11 @@ class GridCell<P extends object = UnknownObject> {
 
     /** The grid instance the cell belongs to. */
     private gridSymbol: symbol;
+
+    /** @returns The grid instance the cell belongs to. */
+    public get grid (): Grid<P> {
+        return Grid.getInstance(this.gridSymbol);
+    }
 
     /** The properties of the cell. */
     public properties: P;
@@ -82,8 +99,8 @@ class GridCell<P extends object = UnknownObject> {
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cell in the specified direction.
      */
-    public direction<D extends Directions> (direction: D, distance = 1, fill?: boolean): D extends DirectionCollection ? GridCellCollection<P> : GridCell<P> {
-        const grid = Grid.getInstance(this.gridSymbol);
+    public direction<D extends GridDirection> (direction: D, distance = 1, fill?: boolean): D extends GridDirectionCollection ? GridCellCollection<P> : GridCell<P> {
+        const grid = this.grid as Grid;
 
         const out: GridCell | GridCellCollection = ((): typeof out => {
             switch (direction) {
@@ -106,7 +123,7 @@ class GridCell<P extends object = UnknownObject> {
             }
         })();
 
-        return out as D extends DirectionCollection ? GridCellCollection<P> : GridCell<P>;
+        return out as D extends GridDirectionCollection ? GridCellCollection<P> : GridCell<P>;
     }
 
     /**
@@ -155,12 +172,15 @@ class GridCellCollection<P extends object = UnknownObject> extends Array<GridCel
      * Initializes a new instance of the grid cell collection.
      * @param cells - The cells to initialize with.
      */
-    constructor (cells: GridCell<P> | GridCell<P>[]) {
+    constructor (cells: GridCell<P> | (GridCell<P> | undefined)[]) {
         // Normalize the input to an array of cells
         cells = Array.isArray(cells) ? cells : [cells];
 
+        // Filter out undefined cells
+        cells = cells.filter((cell): cell is GridCell<P> => cell !== undefined);
+
         // Call the parent constructor with the cells
-        super(...cells);
+        super(...cells as GridCell<P>[]);
 
         // Remove duplicates
         this.removeDuplicates();
@@ -203,7 +223,7 @@ class GridCellCollection<P extends object = UnknownObject> extends Array<GridCel
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells in the specified direction.
      */
-    public direction (direction: Directions, distance?: number, fill?: boolean): GridCellCollection<P> {
+    public direction (direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<P> {
         return new GridCellCollection(this.flatMap(cell => cell.direction(direction, distance, fill)));
     }
 
@@ -369,18 +389,29 @@ class Grid<P extends object = UnknownObject> {
 
     /**
      * Gets a cell.
-     * @returns - The cell.
+     * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - The cell.
      */
-    public getCell (x: number, y: number, overflow = true): GridCell<P> {
+    public getCell<O extends boolean = true> (x: number, y: number, overflow: O = true as O): O extends true ? GridCell<P> : GridCell<P> | undefined {
+        // Normalize the coordinates based on overflow
         x = overflow ? (x + this.xSize) % this.xSize : x;
         y = overflow ? (y + this.ySize) % this.ySize : y;
 
-        const out = this.cells[y][x];
+        let out: GridCell<P> | undefined;
+
+        try {
+            out = this.cells[y][x];
+        } catch (e) {
+            return undefined as never;
+        }
+
+        // If the cell is undefined, return undefined
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!out) throw new Error(`Grid: Invalid cell coordinates: (${x}, ${y})`);
+        if (!out) return undefined as never;
+
         return out;
     }
     /** @deprecated Use {@link getCell} instead. */
@@ -400,30 +431,31 @@ class Grid<P extends object = UnknownObject> {
 
     /**
      * Gets an array containing all cells orthagonally adjacent to a specific cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the adjacent cells. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    public getAdjacent (x: number, y: number, distance = 1, fill = false): GridCellCollection<P> {
+    public getAdjacent (x: number, y: number, distance = 1, fill = false, overflow = true): GridCellCollection<P> {
         // If the distance is 1, return the adjacent cells
         if (distance === 1) {
             return new GridCellCollection([
-                this.getCell(x, y + 1),
-                this.getCell(x + 1, y),
-                this.getCell(x, y - 1),
-                this.getCell(x - 1, y),
+                this.getCell(x, y + 1, overflow),
+                this.getCell(x + 1, y, overflow),
+                this.getCell(x, y - 1, overflow),
+                this.getCell(x - 1, y, overflow),
             ]);
         }
 
         // If the fill is false, return the adjacent cells at the distance
         if (!fill) {
             return new GridCellCollection([
-                this.getCell(x, y + distance),
-                this.getCell(x + distance, y),
-                this.getCell(x, y - distance),
-                this.getCell(x - distance, y),
+                this.getCell(x, y + distance, overflow),
+                this.getCell(x + distance, y, overflow),
+                this.getCell(x, y - distance, overflow),
+                this.getCell(x - distance, y, overflow),
             ]);
         }
 
@@ -431,10 +463,12 @@ class Grid<P extends object = UnknownObject> {
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
-            output.push(this.getCell(x, y + i));
-            output.push(this.getCell(x + i, y));
-            output.push(this.getCell(x, y - i));
-            output.push(this.getCell(x - i, y));
+            output.push(...new GridCellCollection([
+                this.getCell(x, y + i, overflow),
+                this.getCell(x + i, y, overflow),
+                this.getCell(x, y - i, overflow),
+                this.getCell(x - i, y, overflow),
+            ]));
         }
 
         return new GridCellCollection(output);
@@ -442,30 +476,31 @@ class Grid<P extends object = UnknownObject> {
 
     /**
      * Gets an array containing all cells diagonally adjacent from a specific cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the diagonal. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    public getDiagonal (x: number, y: number, distance = 1, fill = false): GridCellCollection<P> {
+    public getDiagonal (x: number, y: number, distance = 1, fill = false, overflow = true): GridCellCollection<P> {
         // If the distance is 1, return the diagonal cells
         if (distance === 1) {
             return new GridCellCollection([
-                this.getCell(x - 1, y + 1),
-                this.getCell(x + 1, y + 1),
-                this.getCell(x + 1, y - 1),
-                this.getCell(x - 1, y - 1),
+                this.getCell(x - 1, y + 1, overflow),
+                this.getCell(x + 1, y + 1, overflow),
+                this.getCell(x + 1, y - 1, overflow),
+                this.getCell(x - 1, y - 1, overflow),
             ]);
         }
 
         // If the fill is false, return the diagonal cells at the distance
         if (!fill) {
             return new GridCellCollection([
-                this.getCell(x - distance, y + distance),
-                this.getCell(x + distance, y + distance),
-                this.getCell(x + distance, y - distance),
-                this.getCell(x - distance, y - distance),
+                this.getCell(x - distance, y + distance, overflow),
+                this.getCell(x + distance, y + distance, overflow),
+                this.getCell(x + distance, y - distance, overflow),
+                this.getCell(x - distance, y - distance, overflow),
             ]);
         }
 
@@ -473,10 +508,12 @@ class Grid<P extends object = UnknownObject> {
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
-            output.push(this.getCell(x - i, y + i));
-            output.push(this.getCell(x + i, y + i));
-            output.push(this.getCell(x + i, y - i));
-            output.push(this.getCell(x - i, y - i));
+            output.push(...new GridCellCollection([
+                this.getCell(x - i, y + i, overflow),
+                this.getCell(x + i, y + i, overflow),
+                this.getCell(x + i, y - i, overflow),
+                this.getCell(x - i, y - i, overflow),
+            ]));
         }
 
         return new GridCellCollection(output);
@@ -487,14 +524,15 @@ class Grid<P extends object = UnknownObject> {
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param distance - The distance to check.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - An array of all cells.
      */
-    private getEncirclingAtDistance (x: number, y: number, distance: number): GridCellCollection<P> {
+    private getEncirclingAtDistance (x: number, y: number, distance: number, overflow = true): GridCellCollection<P> {
         // If the distance is 1, return the encircling cells
         if (distance <= 1) {
             return new GridCellCollection([
-                ...this.getAdjacent(x, y),
-                ...this.getDiagonal(x, y),
+                ...this.getAdjacent(x, y, 1, false, overflow),
+                ...this.getDiagonal(x, y, 1, false, overflow),
             ]);
         }
 
@@ -502,50 +540,48 @@ class Grid<P extends object = UnknownObject> {
 
         const output: GridCell<P>[] = [];
 
-        // Get the top row
         for (let i = 1; i < distance * 2; i++) {
-            output.push(this.getCell(x - distance + i, y - distance));
-        }
+            output.push(...new GridCellCollection([
+                // Get the top row
+                this.getCell(x - distance + i, y - distance, overflow),
 
-        // Get the right column
-        for (let i = 1; i < distance * 2; i++) {
-            output.push(this.getCell(x + distance, y - distance + i));
-        }
+                // Get the right column
+                this.getCell(x + distance, y - distance + i, overflow),
 
-        // Get the bottom row
-        for (let i = 1; i < distance * 2; i++) {
-            output.push(this.getCell(x + distance - i, y + distance));
-        }
+                // Get the bottom row
+                this.getCell(x + distance - i, y + distance, overflow),
 
-        // Get the left column
-        for (let i = 1; i < distance * 2; i++) {
-            output.push(this.getCell(x - distance, y + distance - i));
+                // Get the left column
+                this.getCell(x - distance, y + distance - i, overflow),
+            ]));
         }
 
         // Get diagonal cells
-        output.push(...this.getDiagonal(x, y, distance, false));
+        output.push(...this.getDiagonal(x, y, distance, false, overflow));
 
         return new GridCellCollection(output);
     }
 
     /**
      * Gets an array containing all cells that surround a cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the surrounding cells. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    public getEncircling (x: number, y: number, distance = 1, fill = false): GridCellCollection<P> {
+    public getEncircling (x: number, y: number, distance = 1, fill = false, overflow = true): GridCellCollection<P> {
         // If the distance is 1, or fill is false return the encircling cells
         if (distance === 1 || !fill) {
-            return this.getEncirclingAtDistance(x, y, distance);
+            return this.getEncirclingAtDistance(x, y, distance, overflow);
         }
 
         const output: GridCell<P>[] = [this.getCell(x, y)];
+
         // Return all the distances
         for (let i = 1; i <= distance; i++) {
-            output.push(...this.getEncirclingAtDistance(x, y, i));
+            output.push(...this.getEncirclingAtDistance(x, y, i, overflow));
         }
 
         return new GridCellCollection(output);
@@ -566,6 +602,7 @@ class Grid<P extends object = UnknownObject> {
 }
 
 export { GridCell, GridCellCollection, Grid };
+export type { GridDirection, GridDirectionCell, GridDirectionCollection };
 
 // test
 // const grid = new Grid(100);

@@ -6999,7 +6999,7 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
-      version = "9.1.0";
+      version = "9.2.0";
     } catch (error) {
       version = "8.3.0";
     }

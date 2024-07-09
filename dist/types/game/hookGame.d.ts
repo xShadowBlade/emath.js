@@ -21,9 +21,9 @@ declare const eMath: {
     formats: {
         toSubscript: (value: number) => string;
         toSuperscript: (value: number) => string;
-        formatST: (ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: "sc" | "st" | eMathMain.FormatType) => string;
+        formatST: (ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType) => string;
         format: (ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType) => string;
-        formatGain: (amt: eMathMain.DecimalSource, gain: eMathMain.DecimalSource, type?: eMathMain.FormatType, acc?: number, max?: number) => string;
+        formatGain: (amt: eMathMain.DecimalSource, gain: eMathMain.DecimalSource, type?: eMathMain.FormatType, acc?: number | undefined, max?: number | undefined) => string;
         formatTime: (ex: eMathMain.DecimalSource, acc?: number, type?: string) => string;
         formatTimeLong: (ex: eMathMain.DecimalSource, ms?: boolean, acc?: number, max?: number, type?: eMathMain.FormatType) => string;
         formatReduction: (ex: eMathMain.DecimalSource) => string;
@@ -65,25 +65,25 @@ declare const eMath: {
             format(ex: eMathMain.DecimalSource, acc?: number): string;
         };
         mixed_sc: {
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number): string;
         };
         layer: {
             layers: string[];
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number | undefined): string;
         };
         standard: {
             tier1(x: number): string;
             tier2(x: number): string;
         };
         inf: {
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number | undefined): string;
         };
         alphabet: {
             config: {
                 alphabet: string;
             };
             getAbbreviation(ex: eMathMain.DecimalSource, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number): string;
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
         };
     };
     FORMATS: {
@@ -120,25 +120,25 @@ declare const eMath: {
             format(ex: eMathMain.DecimalSource, acc?: number): string;
         };
         mixed_sc: {
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number): string;
         };
         layer: {
             layers: string[];
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number | undefined): string;
         };
         standard: {
             tier1(x: number): string;
             tier2(x: number): string;
         };
         inf: {
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number | undefined, max?: number | undefined): string;
         };
         alphabet: {
             config: {
                 alphabet: string;
             };
             getAbbreviation(ex: eMathMain.DecimalSource, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number): string;
-            format(ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number): string;
+            format(ex: eMathMain.DecimalSource, acc?: number, max?: number, type?: eMathMain.FormatType, start?: eMathMain.DecimalSource, startDouble?: boolean, abbStart?: number | undefined): string;
         };
     };
     ST_NAMES: string[][][];
@@ -168,6 +168,6 @@ declare const eMath: {
     calculateSum: typeof eMathMain.calculateSum;
     roundingBase: typeof eMathMain.roundingBase;
     DEFAULT_ITERATIONS: 30;
-    E: ((x?: eMathMain.DecimalSource) => eMathMain.Decimal) & typeof eMathMain.Decimal;
+    E: ((x?: eMathMain.DecimalSource | undefined) => eMathMain.Decimal) & typeof eMathMain.Decimal;
 };
 export default eMath;

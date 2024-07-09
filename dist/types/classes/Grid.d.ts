@@ -2,8 +2,18 @@
  * @file Declares the gridCell and grid classes.
  */
 import type { UnknownObject } from "../common/types";
-type DirectionCollection = "adjacent" | "diagonal" | "encircling";
-type Directions = "up" | "right" | "down" | "left" | DirectionCollection;
+/**
+ * Grid directions that result in {@link GridCell}
+ */
+type GridDirectionCell = "up" | "right" | "down" | "left";
+/**
+ * Grid directions that result in {@link GridCellCollection}
+ */
+type GridDirectionCollection = "adjacent" | "diagonal" | "encircling";
+/**
+ * Grid directions
+ */
+type GridDirection = GridDirectionCell | GridDirectionCollection;
 /**
  * Represents a grid cell with coordinates and properties.
  * @template P - The type of the properties of the grid cell.
@@ -15,6 +25,8 @@ declare class GridCell<P extends object = UnknownObject> {
     y: number;
     /** The grid instance the cell belongs to. */
     private gridSymbol;
+    /** @returns The grid instance the cell belongs to. */
+    get grid(): Grid<P>;
     /** The properties of the cell. */
     properties: P;
     /**
@@ -24,7 +36,7 @@ declare class GridCell<P extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props: (P | ((grid: GridCell<P>) => P)) | undefined, gridSymbol: symbol);
+    constructor(x: number, y: number, props: P | ((grid: GridCell<P>) => P) | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
@@ -56,7 +68,7 @@ declare class GridCell<P extends object = UnknownObject> {
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cell in the specified direction.
      */
-    direction<D extends Directions>(direction: D, distance?: number, fill?: boolean): D extends DirectionCollection ? GridCellCollection<P> : GridCell<P>;
+    direction<D extends GridDirection>(direction: D, distance?: number, fill?: boolean): D extends GridDirectionCollection ? GridCellCollection<P> : GridCell<P>;
     /**
      * Gets the cell to the right of the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
@@ -91,7 +103,7 @@ declare class GridCellCollection<P extends object = UnknownObject> extends Array
      * Initializes a new instance of the grid cell collection.
      * @param cells - The cells to initialize with.
      */
-    constructor(cells: GridCell<P> | GridCell<P>[]);
+    constructor(cells: GridCell<P> | (GridCell<P> | undefined)[]);
     /**
      * Removes duplicate cells from the collection.
      * Modifies the array in place.
@@ -111,7 +123,7 @@ declare class GridCellCollection<P extends object = UnknownObject> extends Array
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells in the specified direction.
      */
-    direction(direction: Directions, distance?: number, fill?: boolean): GridCellCollection<P>;
+    direction(direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<P>;
     /**
      * Gets the cells above the current cells. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
@@ -214,14 +226,15 @@ declare class Grid<P extends object = UnknownObject> {
     allY: (y: number) => GridCellCollection<P>;
     /**
      * Gets a cell.
-     * @returns - The cell.
+     * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - The cell.
      */
-    getCell(x: number, y: number, overflow?: boolean): GridCell<P>;
+    getCell<O extends boolean = true>(x: number, y: number, overflow?: O): O extends true ? GridCell<P> : GridCell<P> | undefined;
     /** @deprecated Use {@link getCell} instead. */
-    get: (x: number, y: number, overflow?: boolean) => GridCell<P>;
+    get: <O extends boolean = true>(x: number, y: number, overflow?: O) => O extends true ? GridCell<P> : GridCell<P> | undefined;
     /**
      * Sets the value of a cell in the grid.
      * @param x The x-coordinate of the cell.
@@ -233,39 +246,43 @@ declare class Grid<P extends object = UnknownObject> {
     set: (x: number, y: number, value: GridCell<P>) => void;
     /**
      * Gets an array containing all cells orthagonally adjacent to a specific cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the adjacent cells. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    getAdjacent(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
+    getAdjacent(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<P>;
     /**
      * Gets an array containing all cells diagonally adjacent from a specific cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the diagonal. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    getDiagonal(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
+    getDiagonal(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<P>;
     /**
      * Gets an array containing all cells that surround a cell at a specific distance.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param distance - The distance to check.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - An array of all cells.
      */
     private getEncirclingAtDistance;
     /**
      * Gets an array containing all cells that surround a cell.
-     * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
-     * @param distance - The distance to check. Defaults to 1.
+     * @param distance - The distance to check. Defaults to `1`.
      * @param fill - Whether to fill the surrounding cells. Defaults to `false`.
+     * @param overflow - Whether to allow overflow. Defaults to `true`.
+     * @returns - An array of all cells.
      */
-    getEncircling(x: number, y: number, distance?: number, fill?: boolean): GridCellCollection<P>;
+    getEncircling(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<P>;
     /**
      * Calculates the distance between two points on the grid.
      * @deprecated Use your own distance function instead.
@@ -278,3 +295,4 @@ declare class Grid<P extends object = UnknownObject> {
     static getDistance(x1: number, y1: number, x2: number, y2: number): number;
 }
 export { GridCell, GridCellCollection, Grid };
+export type { GridDirection, GridDirectionCell, GridDirectionCollection };

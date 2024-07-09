@@ -76,7 +76,7 @@ declare class Item implements ItemInit {
     id: string;
     name: string;
     cost: () => Decimal;
-    effect: ((amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void) | undefined;
+    effect: ((amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
     defaultAmount: Decimal;
     /** @returns The data of the item. */
     private dataPointerFn;

@@ -5818,6 +5818,10 @@ var GridCell = class {
     this.properties = typeof props === "function" ? { ...props(this) } : { ...props };
     this.gridSymbol = gridSymbol;
   }
+  /** @returns The grid instance the cell belongs to. */
+  get grid() {
+    return Grid.getInstance(this.gridSymbol);
+  }
   /**
    * Sets the value of a property on the cell.
    * @param name - The name of the property.
@@ -5854,7 +5858,7 @@ var GridCell = class {
    * @returns - The cell in the specified direction.
    */
   direction(direction, distance = 1, fill) {
-    const grid = Grid.getInstance(this.gridSymbol);
+    const grid = this.grid;
     const out = (() => {
       switch (direction) {
         case "up":
@@ -5917,6 +5921,7 @@ var GridCellCollection = class _GridCellCollection extends Array {
    */
   constructor(cells) {
     cells = Array.isArray(cells) ? cells : [cells];
+    cells = cells.filter((cell) => cell !== void 0);
     super(...cells);
     this.removeDuplicates();
   }
@@ -6089,16 +6094,22 @@ var Grid = class _Grid {
   }
   /**
    * Gets a cell.
-   * @returns - The cell.
+   * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    * @param overflow - Whether to allow overflow. Defaults to `true`.
+   * @returns - The cell.
    */
   getCell(x, y, overflow = true) {
     x = overflow ? (x + this.xSize) % this.xSize : x;
     y = overflow ? (y + this.ySize) % this.ySize : y;
-    const out = this.cells[y][x];
-    if (!out) throw new Error(`Grid: Invalid cell coordinates: (${x}, ${y})`);
+    let out;
+    try {
+      out = this.cells[y][x];
+    } catch (e) {
+      return void 0;
+    }
+    if (!out) return void 0;
     return out;
   }
   /**
@@ -6112,69 +6123,75 @@ var Grid = class _Grid {
   }
   /**
    * Gets an array containing all cells orthagonally adjacent to a specific cell.
-   * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
-   * @param distance - The distance to check. Defaults to 1.
+   * @param distance - The distance to check. Defaults to `1`.
    * @param fill - Whether to fill the adjacent cells. Defaults to `false`.
+   * @param overflow - Whether to allow overflow. Defaults to `true`.
+   * @returns - An array of all cells.
    */
-  getAdjacent(x, y, distance = 1, fill = false) {
+  getAdjacent(x, y, distance = 1, fill = false, overflow = true) {
     if (distance === 1) {
       return new GridCellCollection([
-        this.getCell(x, y + 1),
-        this.getCell(x + 1, y),
-        this.getCell(x, y - 1),
-        this.getCell(x - 1, y)
+        this.getCell(x, y + 1, overflow),
+        this.getCell(x + 1, y, overflow),
+        this.getCell(x, y - 1, overflow),
+        this.getCell(x - 1, y, overflow)
       ]);
     }
     if (!fill) {
       return new GridCellCollection([
-        this.getCell(x, y + distance),
-        this.getCell(x + distance, y),
-        this.getCell(x, y - distance),
-        this.getCell(x - distance, y)
+        this.getCell(x, y + distance, overflow),
+        this.getCell(x + distance, y, overflow),
+        this.getCell(x, y - distance, overflow),
+        this.getCell(x - distance, y, overflow)
       ]);
     }
     const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
-      output.push(this.getCell(x, y + i));
-      output.push(this.getCell(x + i, y));
-      output.push(this.getCell(x, y - i));
-      output.push(this.getCell(x - i, y));
+      output.push(...new GridCellCollection([
+        this.getCell(x, y + i, overflow),
+        this.getCell(x + i, y, overflow),
+        this.getCell(x, y - i, overflow),
+        this.getCell(x - i, y, overflow)
+      ]));
     }
     return new GridCellCollection(output);
   }
   /**
    * Gets an array containing all cells diagonally adjacent from a specific cell.
-   * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
-   * @param distance - The distance to check. Defaults to 1.
+   * @param distance - The distance to check. Defaults to `1`.
    * @param fill - Whether to fill the diagonal. Defaults to `false`.
+   * @param overflow - Whether to allow overflow. Defaults to `true`.
+   * @returns - An array of all cells.
    */
-  getDiagonal(x, y, distance = 1, fill = false) {
+  getDiagonal(x, y, distance = 1, fill = false, overflow = true) {
     if (distance === 1) {
       return new GridCellCollection([
-        this.getCell(x - 1, y + 1),
-        this.getCell(x + 1, y + 1),
-        this.getCell(x + 1, y - 1),
-        this.getCell(x - 1, y - 1)
+        this.getCell(x - 1, y + 1, overflow),
+        this.getCell(x + 1, y + 1, overflow),
+        this.getCell(x + 1, y - 1, overflow),
+        this.getCell(x - 1, y - 1, overflow)
       ]);
     }
     if (!fill) {
       return new GridCellCollection([
-        this.getCell(x - distance, y + distance),
-        this.getCell(x + distance, y + distance),
-        this.getCell(x + distance, y - distance),
-        this.getCell(x - distance, y - distance)
+        this.getCell(x - distance, y + distance, overflow),
+        this.getCell(x + distance, y + distance, overflow),
+        this.getCell(x + distance, y - distance, overflow),
+        this.getCell(x - distance, y - distance, overflow)
       ]);
     }
     const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
-      output.push(this.getCell(x - i, y + i));
-      output.push(this.getCell(x + i, y + i));
-      output.push(this.getCell(x + i, y - i));
-      output.push(this.getCell(x - i, y - i));
+      output.push(...new GridCellCollection([
+        this.getCell(x - i, y + i, overflow),
+        this.getCell(x + i, y + i, overflow),
+        this.getCell(x + i, y - i, overflow),
+        this.getCell(x - i, y - i, overflow)
+      ]));
     }
     return new GridCellCollection(output);
   }
@@ -6183,46 +6200,48 @@ var Grid = class _Grid {
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    * @param distance - The distance to check.
+   * @param overflow - Whether to allow overflow. Defaults to `true`.
    * @returns - An array of all cells.
    */
-  getEncirclingAtDistance(x, y, distance) {
+  getEncirclingAtDistance(x, y, distance, overflow = true) {
     if (distance <= 1) {
       return new GridCellCollection([
-        ...this.getAdjacent(x, y),
-        ...this.getDiagonal(x, y)
+        ...this.getAdjacent(x, y, 1, false, overflow),
+        ...this.getDiagonal(x, y, 1, false, overflow)
       ]);
     }
     const output = [];
     for (let i = 1; i < distance * 2; i++) {
-      output.push(this.getCell(x - distance + i, y - distance));
+      output.push(...new GridCellCollection([
+        // Get the top row
+        this.getCell(x - distance + i, y - distance, overflow),
+        // Get the right column
+        this.getCell(x + distance, y - distance + i, overflow),
+        // Get the bottom row
+        this.getCell(x + distance - i, y + distance, overflow),
+        // Get the left column
+        this.getCell(x - distance, y + distance - i, overflow)
+      ]));
     }
-    for (let i = 1; i < distance * 2; i++) {
-      output.push(this.getCell(x + distance, y - distance + i));
-    }
-    for (let i = 1; i < distance * 2; i++) {
-      output.push(this.getCell(x + distance - i, y + distance));
-    }
-    for (let i = 1; i < distance * 2; i++) {
-      output.push(this.getCell(x - distance, y + distance - i));
-    }
-    output.push(...this.getDiagonal(x, y, distance, false));
+    output.push(...this.getDiagonal(x, y, distance, false, overflow));
     return new GridCellCollection(output);
   }
   /**
    * Gets an array containing all cells that surround a cell.
-   * @returns - An array of all cells.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
-   * @param distance - The distance to check. Defaults to 1.
+   * @param distance - The distance to check. Defaults to `1`.
    * @param fill - Whether to fill the surrounding cells. Defaults to `false`.
+   * @param overflow - Whether to allow overflow. Defaults to `true`.
+   * @returns - An array of all cells.
    */
-  getEncircling(x, y, distance = 1, fill = false) {
+  getEncircling(x, y, distance = 1, fill = false, overflow = true) {
     if (distance === 1 || !fill) {
-      return this.getEncirclingAtDistance(x, y, distance);
+      return this.getEncirclingAtDistance(x, y, distance, overflow);
     }
     const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
-      output.push(...this.getEncirclingAtDistance(x, y, i));
+      output.push(...this.getEncirclingAtDistance(x, y, i, overflow));
     }
     return new GridCellCollection(output);
   }
