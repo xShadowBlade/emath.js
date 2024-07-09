@@ -21,9 +21,9 @@ After you have set up [currency and upgrades](./currency), you can set up reset 
 const gems = coinGame.addCurrency("gems");
 
 // Add a boost to the currency
-gems.static.boost.setBoost({
+gems.boost.setBoost({
     id: "boostFromCoins",
-    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+    value: n => n.plus(coins.value.div(10)), // Gain 10% of coins
 });
 
 // Add a reset layer to the currency
@@ -31,10 +31,10 @@ const prestige = coinGame.addReset(coins);
 
 prestige.onReset = () => {
     // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
-    if (coins.static.value.lt(1000)) return;
+    if (coins.value.lt(1000)) return;
 
     // Gain gems based on the amount of coins before reset (set by the boost)
-    gems.static.gain();
+    gems.gain();
 };
 
 // Call the reset layer
@@ -49,9 +49,9 @@ prestige.reset();
 const gems = coinGame.addCurrency("gems");
 
 // Add a boost to the currency
-gems.static.boost.setBoost({
+gems.boost.setBoost({
     id: "boostFromCoins",
-    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+    value: n => n.plus(coins.value.div(10)), // Gain 10% of coins
 });
 
 // Add a reset layer to the currency
@@ -59,10 +59,10 @@ const prestige = coinGame.addReset(coins);
 
 prestige.onReset = (): void => {
     // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
-    if (coins.static.value.lt(1000)) return;
+    if (coins.value.lt(1000)) return;
 
     // Gain gems based on the amount of coins before reset (set by the boost)
-    gems.static.gain();
+    gems.gain();
 };
 
 // Call the reset layer

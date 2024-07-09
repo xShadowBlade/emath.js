@@ -48,7 +48,7 @@ myGame.keyManager.addKey([
     {
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: () => myCurrency.static.gain(),
+        onDownContinuous: () => myCurrency.gain(),
     },
 ]);
 ```

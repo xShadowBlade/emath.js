@@ -59,7 +59,7 @@ const reset1 = game.addReset(myCurrency);
 
 reset1.onReset = () => {
     // Gain gems on reset
-    gems.static.gain();
+    gems.gain();
 }
 
 // Call the reset

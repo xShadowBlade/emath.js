@@ -81,10 +81,10 @@ coinGame.init();
 coinGame.dataManager.loadData();
 
 // Gain coins
-coins.static.gain();
+coins.gain();
 
 // Buy (max) upgrades
-coins.static.buyUpgrade("upg1Coins");
+coins.buyUpgrade("upg1Coins");
 
 // Hotkeys
 coinGame.keyManager.addKey([
@@ -92,13 +92,13 @@ coinGame.keyManager.addKey([
         id: "gainCoins",
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: () => coins.static.gain(),
+        onDownContinuous: () => coins.gain(),
     },
     {
         id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
-        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+        onDownContinuous: () => coins.buyUpgrade("upg1Coins"),
     },
 ]);
 

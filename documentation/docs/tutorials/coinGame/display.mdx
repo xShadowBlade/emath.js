@@ -46,7 +46,7 @@ This code sets up the body of the HTML file with a paragraph element to display 
 
 // Gain coins button
 const gainCoins = () => {
-    coins.static.gain();
+    coins.gain();
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
@@ -58,7 +58,7 @@ document.getElementById("gainGems").addEventListener("click", gainGems);
 
 // Buy (max) upgrades button
 const buyUpgrades = () => {
-    coins.static.buyUpgrade("upg1Coins");
+    coins.buyUpgrade("upg1Coins");
 };
 document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
@@ -68,8 +68,8 @@ const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
-    coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
-    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
+    coinsDisplay.innerHTML = `Coins: ${coins.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.value.format()}`;
 });
 ```
     </TabItem>
@@ -82,7 +82,7 @@ coinGame.eventManager.setEvent("render", "interval", 0, () => {
 
 // Gain coins button
 const gainCoins = (): void => {
-    coins.static.gain();
+    coins.gain();
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
@@ -94,7 +94,7 @@ document.getElementById("gainGems").addEventListener("click", gainGems);
 
 // Buy (max) upgrades button
 const buyUpgrades = (): void => {
-    coins.static.buyUpgrade("upg1Coins");
+    coins.buyUpgrade("upg1Coins");
 };
 document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
@@ -104,8 +104,8 @@ const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
-    coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
-    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
+    coinsDisplay.innerHTML = `Coins: ${coins.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.value.format()}`;
 });
 
 ```

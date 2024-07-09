@@ -34,13 +34,13 @@ coinGame.keyManager.addKey([
         id: "gainCoins",
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: () => coins.static.gain(),
+        onDownContinuous: () => coins.gain(),
     },
     {
         id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
-        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+        onDownContinuous: () => coins.buyUpgrade("upg1Coins"),
     },
 ]);
 
@@ -71,13 +71,13 @@ coinGame.keyManager.addKey([
         id: "gainCoins",
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: (): void => void coins.static.gain(),
+        onDownContinuous: (): void => void coins.gain(),
     },
     {
         id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
-        onDownContinuous: (): void => void coins.static.buyUpgrade("upg1Coins"),
+        onDownContinuous: (): void => void coins.buyUpgrade("upg1Coins"),
     },
 ]);
 

@@ -24,10 +24,10 @@ To create a currency, do either of the following:
     // Another parameter - `upgrades` is optional. See the `Upgrade` class for more information.
     const myCurrency = myGame.addCurrency("myCurrency");
 
-    // All the methods are in `<GameCurrency>.static`, which contains the same methods as <CurrencyStatic>
-    myCurrency.static.gain();
+    // <GameCurrency> extends <CurrencyStatic> so it contains the same methods and properties.  
+    myCurrency.gain();
 
-    console.log(myCurrency.static.value); // new Decimal(1)
+    console.log(myCurrency.value); // new Decimal(1)
     ```
 
 2. Using without `Game` class

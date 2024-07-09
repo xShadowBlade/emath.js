@@ -45,9 +45,9 @@ const coins = coinGame.addCurrency("coins", coinUpgrades);
 const gems = coinGame.addCurrency("gems");
 
 // Add a boost to the currency
-gems.static.boost.setBoost({
+gems.boost.setBoost({
     id: "boostFromCoins",
-    value: n => n.plus(coins.static.value.div(10)), // Gain 10% of coins
+    value: n => n.plus(coins.value.div(10)), // Gain 10% of coins
 });
 
 // Add a reset layer to the currency
@@ -55,10 +55,10 @@ const prestige = coinGame.addReset(coins);
 
 prestige.onReset = () => {
     // Add a requirement to reset. In this case, the player needs at least 1000 coins to reset
-    if (coins.static.value.lt(1000)) return;
+    if (coins.value.lt(1000)) return;
 
     // Gain gems based on the amount of coins before reset (set by the boost)
-    gems.static.gain();
+    gems.gain();
 };
 
 // Call the reset layer
@@ -68,7 +68,7 @@ prestige.onReset = () => {
 
 // Gain coins button
 const gainCoins = () => {
-    coins.static.gain();
+    coins.gain();
 };
 document.getElementById("gainCoins").addEventListener("click", gainCoins);
 
@@ -80,7 +80,7 @@ document.getElementById("gainGems").addEventListener("click", gainGems);
 
 // Buy (max) upgrades button
 const buyUpgrades = () => {
-    coins.static.buyUpgrade("upg1Coins");
+    coins.buyUpgrade("upg1Coins");
 };
 document.getElementById("buyUpgrades").addEventListener("click", buyUpgrades);
 
@@ -90,8 +90,8 @@ const gemsDisplay = document.getElementById("gemsDisplay");
 
 // Add a render event that executes every frame
 coinGame.eventManager.setEvent("render", "interval", 0, () => {
-    coinsDisplay.innerHTML = `Coins: ${coins.static.value.format()}`;
-    gemsDisplay.innerHTML = `Gems: ${gems.static.value.format()}`;
+    coinsDisplay.innerHTML = `Coins: ${coins.value.format()}`;
+    gemsDisplay.innerHTML = `Gems: ${gems.value.format()}`;
 });
 
 // Advanced
@@ -109,13 +109,13 @@ coinGame.keyManager.addKey([
         id: "gainCoins",
         name: "Gain Coins",
         key: "g",
-        onDownContinuous: () => coins.static.gain(),
+        onDownContinuous: () => coins.gain(),
     },
     {
         id: "buyUpgrades",
         name: "Buy Upgrades",
         key: "b",
-        onDownContinuous: () => coins.static.buyUpgrade("upg1Coins"),
+        onDownContinuous: () => coins.buyUpgrade("upg1Coins"),
     },
 ]);
 
