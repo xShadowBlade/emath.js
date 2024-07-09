@@ -56,7 +56,10 @@ class DataManager {
     /** The current game data. */
     private data: UnknownObject = {};
 
-    /** The static game data. */
+    /**
+     * The static game data.
+     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
+     */
     private static: UnknownObject = {};
 
     /** A reference to the game instance. */
@@ -140,11 +143,14 @@ class DataManager {
     /**
      * Sets the static data for the given key.
      * This data is not affected by data loading and saving, and is mainly used internally.
+     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
      */
     public setStatic<t> (key: string, value: t): t {
+        console.warn("setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+
         if (typeof this.static[key] === "undefined" && this.normalData) {
             console.warn("After initializing data, you should not add new properties to staticData.");
         }
@@ -154,11 +160,13 @@ class DataManager {
 
     /**
      * Gets the static data for the given key.
-     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
+     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
      * @param key - The key to get the static data for.
      * @returns The static data for the given key.
      */
     public getStatic (key: string): unknown {
+        console.warn("getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+
         return this.static[key];
     }
 

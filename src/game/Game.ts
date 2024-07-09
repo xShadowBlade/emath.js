@@ -3,8 +3,10 @@
  */
 
 import type { DecimalSource } from "../E/e";
-import { Currency, CurrencyStatic } from "../classes/Currency";
-import { Attribute, AttributeStatic } from "../classes/Attribute";
+import type { CurrencyStatic } from "../classes/Currency";
+import { Currency } from "../classes/Currency";
+import type { AttributeStatic } from "../classes/Attribute";
+import { Attribute } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
 import { DataManager } from "./managers/DataManager";
@@ -150,14 +152,10 @@ class Game {
         this.dataManager.setData(name, {
             currency: new Currency(),
         });
-        this.dataManager.setStatic(name, {
-            currency: new CurrencyStatic(() => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades),
-        });
 
         // Create the class instance
         const classInstance = new GameCurrency(
-            () => (this.dataManager.getData(name) as { currency: Currency }).currency,
-            () => (this.dataManager.getStatic(name) as { currency: CurrencyStatic<U> }).currency,
+            [(): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades] as ConstructorParameters<typeof CurrencyStatic>,
             this,
             name,
         );
@@ -177,9 +175,11 @@ class Game {
      */
     public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: DecimalSource = 0): GameAttribute<B> {
         this.dataManager.setData(name, new Attribute(initial));
-        this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name) as Attribute, useBoost, initial));
 
-        const classInstance = new GameAttribute(this.dataManager.getData(name) as Attribute, this.dataManager.getStatic(name) as AttributeStatic<B>, this);
+        const classInstance = new GameAttribute(
+            [this.dataManager.getData(name) as Attribute, useBoost, initial] as ConstructorParameters<typeof AttributeStatic>,
+            this,
+        );
         return classInstance;
     }
 

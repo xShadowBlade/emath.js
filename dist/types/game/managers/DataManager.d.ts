@@ -39,7 +39,10 @@ declare class DataManager {
     private normalDataPlain?;
     /** The current game data. */
     private data;
-    /** The static game data. */
+    /**
+     * The static game data.
+     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
+     */
     private static;
     /** A reference to the game instance. */
     private readonly gameRef;
@@ -86,6 +89,7 @@ declare class DataManager {
     /**
      * Sets the static data for the given key.
      * This data is not affected by data loading and saving, and is mainly used internally.
+     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
      * @param key - The key to set the static data for.
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
@@ -93,7 +97,7 @@ declare class DataManager {
     setStatic<t>(key: string, value: t): t;
     /**
      * Gets the static data for the given key.
-     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
+     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
      * @param key - The key to get the static data for.
      * @returns The static data for the given key.
      */

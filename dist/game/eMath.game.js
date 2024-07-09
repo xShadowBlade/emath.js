@@ -6899,7 +6899,10 @@ var DataManager = class {
   constructor(gameRef) {
     /** The current game data. */
     this.data = {};
-    /** The static game data. */
+    /**
+     * The static game data.
+     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
+     */
     this.static = {};
     /** A queue of functions to call when the game data is loaded. */
     this.eventsOnLoad = [];
@@ -6958,11 +6961,13 @@ var DataManager = class {
   /**
    * Sets the static data for the given key.
    * This data is not affected by data loading and saving, and is mainly used internally.
+   * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
    * @param key - The key to set the static data for.
    * @param value - The value to set the static data to.
    * @returns A getter for the static data.
    */
   setStatic(key, value) {
+    console.warn("setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
     if (typeof this.static[key] === "undefined" && this.normalData) {
       console.warn("After initializing data, you should not add new properties to staticData.");
     }
@@ -6971,11 +6976,12 @@ var DataManager = class {
   }
   /**
    * Gets the static data for the given key.
-   * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking.
+   * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
    * @param key - The key to get the static data for.
    * @returns The static data for the given key.
    */
   getStatic(key) {
+    console.warn("getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
     return this.static[key];
   }
   /**
@@ -7204,69 +7210,67 @@ var DataManager = class {
 };
 
 // src/game/GameCurrency.ts
-var GameCurrency = class {
-  /** @returns The data for the currency. */
+var GameCurrency = class extends CurrencyStatic {
+  /**
+   * @returns The data for the currency.
+   * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
+   */
   get data() {
-    return this.dataPointer();
+    return this.pointer;
   }
-  /** @returns The static data for the currency. */
+  /**
+   * @returns The static data for the currency.
+   * @deprecated Use this class as a static class as it now has all the properties of {@link CurrencyStatic}. This property is only here for backwards compatibility.
+   */
   get static() {
-    return this.staticPointer();
+    return this;
   }
   /**
    * Creates a new instance of the game class.
-   * @param currencyPointer - A function that returns the current currency value.
-   * @param staticPointer - A function that returns the static data for the game.
+   * @param currencyStaticParams - The parameters for the currency static class.
    * @param gamePointer A pointer to the game instance.
    * @param name - The name of the currency. This is optional, and you can use it for display purposes.
    */
-  constructor(currencyPointer, staticPointer, gamePointer, name) {
-    this.dataPointer = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
-    this.staticPointer = typeof staticPointer === "function" ? staticPointer : () => staticPointer;
+  constructor(currencyStaticParams, gamePointer, name) {
+    if (typeof currencyStaticParams === "function") {
+      throw new Error("GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead.");
+    }
+    super(...currencyStaticParams);
     this.game = gamePointer;
     this.name = name;
     this.game.dataManager.addEventOnLoad(() => {
       this.static.onLoadData();
     });
   }
-  /**
-   * Gets the value of the game currency.
-   * Note: There is no setter for this property. To change the value of the currency, use the corresponding methods in the static class.
-   * @returns The value of the game currency.
-   */
-  get value() {
-    return this.data.value;
-  }
 };
 
 // src/game/GameAttribute.ts
-var GameAttribute = class {
+var GameAttribute = class extends AttributeStatic {
+  /**
+   * @returns The data for the attribute.
+   * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
+   */
+  get data() {
+    return this.pointer;
+  }
+  /**
+   * @returns The static data for the attribute.
+   * @deprecated Use this class as a static. This property is only here for backwards compatibility.
+   */
+  get static() {
+    return this;
+  }
   /**
    * Creates a new instance of the attribute class.
-   * @param attributePointer - A function that returns the current attribute value.
-   * @param staticPointer - A function that returns the static data for the attribute.
+   * @param attributeStaticParams - The parameters for the attribute static class.
    * @param gamePointer A pointer to the game instance.
    */
-  constructor(attributePointer, staticPointer, gamePointer) {
-    this.data = typeof attributePointer === "function" ? attributePointer() : attributePointer;
-    this.static = typeof staticPointer === "function" ? staticPointer() : staticPointer;
+  constructor(attributeStaticParams, gamePointer) {
+    if (typeof attributeStaticParams === "function") {
+      throw new Error("GameAttribute constructor does not accept a function as the first parameter. Use the <Game>.addAttribute method instead.");
+    }
+    super(...attributeStaticParams);
     this.game = gamePointer;
-  }
-  /**
-   * Gets the value of the attribute.
-   * NOTE: This getter is sometimes inaccurate.
-   * @returns The value of the attribute.
-   */
-  get value() {
-    return this.static.value;
-  }
-  /**
-   * Sets the value of the attribute.
-   * NOTE: This setter should not be used when boost is enabled.
-   * @param value - The value to set the attribute to.
-   */
-  set value(value) {
-    this.data.value = value;
   }
 };
 
@@ -7399,12 +7403,8 @@ var Game = class _Game {
     this.dataManager.setData(name, {
       currency: new Currency()
     });
-    this.dataManager.setStatic(name, {
-      currency: new CurrencyStatic(() => this.dataManager.getData(name).currency, upgrades)
-    });
     const classInstance = new GameCurrency(
-      () => this.dataManager.getData(name).currency,
-      () => this.dataManager.getStatic(name).currency,
+      [() => this.dataManager.getData(name).currency, upgrades],
       this,
       name
     );
@@ -7422,8 +7422,10 @@ var Game = class _Game {
    */
   addAttribute(name, useBoost = true, initial = 0) {
     this.dataManager.setData(name, new Attribute(initial));
-    this.dataManager.setStatic(name, new AttributeStatic(this.dataManager.getData(name), useBoost, initial));
-    const classInstance = new GameAttribute(this.dataManager.getData(name), this.dataManager.getStatic(name), this);
+    const classInstance = new GameAttribute(
+      [this.dataManager.getData(name), useBoost, initial],
+      this
+    );
     return classInstance;
   }
   /**
