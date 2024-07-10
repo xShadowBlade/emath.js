@@ -5333,35 +5333,6 @@ __decorateClass([
   Type3(() => ItemData)
 ], Currency.prototype, "items", 2);
 var CurrencyStatic = class {
-  /**
-   * Constructs a new currnecy
-   * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param upgrades - An array of upgrade objects.
-   * @param defaults - The default value and boost of the currency.
-   * @example
-   * const currency = new CurrencyStatic(undefined, [
-   *     {
-   *         id: "upgId1",
-   *         cost: (level: Decimal): Decimal => level.mul(10),
-   *     },
-   *     {
-   *         id: "upgId2",
-   *         cost: (level: Decimal): Decimal => level.mul(20),
-   *     }
-   * ] as const satisfies UpgradeInit[]);
-   * // CurrencyStatic<["upgId1", "upgId2"]>
-   */
-  constructor(pointer = new Currency(), upgrades, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
-    /** An array that represents items and their effects. */
-    this.items = {};
-    this.defaultVal = defaults.defaultVal;
-    this.defaultBoost = defaults.defaultBoost;
-    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = new Boost(this.defaultBoost);
-    this.pointer.value = this.defaultVal;
-    this.upgrades = {};
-    if (upgrades) this.addUpgrade(upgrades);
-  }
   /** @returns The pointer of the data. */
   get pointer() {
     return this.pointerFn();
@@ -5376,6 +5347,36 @@ var CurrencyStatic = class {
   }
   set value(value) {
     this.pointer.value = value;
+  }
+  /**
+   * Constructs a new currnecy
+   * @param pointer - A function or reference that returns the pointer of the data / frontend.
+   * @param upgrades - An array of upgrade objects.
+   * @param items - An array of item objects.
+   * @param defaults - The default value and boost of the currency.
+   * @example
+   * const currency = new CurrencyStatic(undefined, [
+   *     {
+   *         id: "upgId1",
+   *         cost: (level: Decimal): Decimal => level.mul(10),
+   *     },
+   *     {
+   *         id: "upgId2",
+   *         cost: (level: Decimal): Decimal => level.mul(20),
+   *     }
+   * ] as const satisfies UpgradeInit[]);
+   * // CurrencyStatic<["upgId1", "upgId2"]>
+   */
+  constructor(pointer = new Currency(), upgrades, items, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
+    this.defaultVal = defaults.defaultVal;
+    this.defaultBoost = defaults.defaultBoost;
+    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+    this.boost = new Boost(this.defaultBoost);
+    this.pointer.value = this.defaultVal;
+    this.upgrades = {};
+    if (upgrades) this.addUpgrade(upgrades);
+    this.items = {};
+    if (items) this.addItem(items);
   }
   /**
    * Updates / applies effects to the currency on load.

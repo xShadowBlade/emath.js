@@ -8,7 +8,7 @@ import { MeanMode } from "./numericalAnalysis";
 import { UpgradeData, UpgradeStatic } from "./Upgrade";
 import { ItemData, Item } from "./Item";
 import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
-import type { ItemInit } from "./Item";
+import type { ItemInit, ItemInitArrayType } from "./Item";
 import type { Pointer, IsPrimitiveString } from "../common/types";
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -37,16 +37,18 @@ declare class Currency {
  * All the functions are here instead of the `currency` class.
  * @template UpgradeInitArray - The inital upgrades
  * @template UpgradeIds - An string union that represents the names of the upgrades.
+ * @template ItemInitArray - The inital items
+ * @template ItemIds - An string union that represents the names of the items.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>> {
+declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>, ItemInitArray extends Readonly<ItemInit>[] = [], ItemIds extends string = ItemInitArrayType<ItemInitArray>> {
     /** An array that represents upgrades */
     readonly upgrades: Record<UpgradeIds, UpgradeStatic>;
     /** An array that represents items and their effects. */
-    readonly items: Record<string, Item>;
+    readonly items: Record<ItemIds, Item>;
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
     /** @returns The pointer of the data. */
@@ -68,6 +70,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * Constructs a new currnecy
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
+     * @param items - An array of item objects.
      * @param defaults - The default value and boost of the currency.
      * @example
      * const currency = new CurrencyStatic(undefined, [
@@ -82,7 +85,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInitArray, defaults?: {
+    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInitArray, items?: ItemInitArray, defaults?: {
         defaultVal: Decimal;
         defaultBoost: Decimal;
     });
@@ -281,7 +284,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * @param id - The id of the item to retrieve.
      * @returns The item object if found, otherwise null.
      */
-    getItem(id: string): Item | null;
+    getItem<T extends ItemIds>(id: T): IsPrimitiveString<ItemIds> extends false ? Item : Item | null;
     /**
      * Calculates the cost and how many items you can buy.
      * See {@link calculateItem} for more information.
@@ -290,7 +293,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    calculateItem(id: string, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
+    calculateItem(id: ItemIds, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
     /**
      * Buys an item based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the item to buy or upgrade.
@@ -298,6 +301,6 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    buyItem(id: string, tier: DecimalSource, target?: DecimalSource): boolean;
+    buyItem(id: ItemIds, tier: DecimalSource, target?: DecimalSource): boolean;
 }
 export { Currency, CurrencyStatic };

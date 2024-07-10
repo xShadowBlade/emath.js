@@ -11,6 +11,7 @@ import { GameReset } from "./GameReset";
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
+import type { ItemInit } from "../classes/Item";
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
  */
@@ -86,15 +87,17 @@ declare class Game {
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @template N - The name
      * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
+     * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @param upgrades - The upgrades for the currency.
+     * @param items - The items for the currency.
      * @returns A new instance of the gameCurrency class.
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
      * console.log(currency.value); // Decimal.dOne
      */
-    addCurrency<N extends string, U extends UpgradeInit[] = []>(name: N, upgrades?: U): GameCurrency<N, U>;
+    addCurrency<N extends string, U extends Readonly<UpgradeInit>[] = [], I extends Readonly<ItemInit>[] = []>(name: N, upgrades?: U, items?: I): GameCurrency<N, U, I>;
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.

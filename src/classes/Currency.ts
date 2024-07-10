@@ -11,7 +11,7 @@ import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
 import { ItemData, Item, calculateItem } from "./Item";
 
 import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
-import type { ItemInit } from "./Item";
+import type { ItemInit, ItemInitArrayType } from "./Item";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
 
 interface CurrencyStaticResetOptions {
@@ -53,17 +53,24 @@ class Currency {
  * All the functions are here instead of the `currency` class.
  * @template UpgradeInitArray - The inital upgrades
  * @template UpgradeIds - An string union that represents the names of the upgrades.
+ * @template ItemInitArray - The inital items
+ * @template ItemIds - An string union that represents the names of the items.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>> {
+class CurrencyStatic<
+    UpgradeInitArray extends Readonly<UpgradeInit>[] = [],
+    UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>,
+    ItemInitArray extends Readonly<ItemInit>[] = [],
+    ItemIds extends string = ItemInitArrayType<ItemInitArray>,
+> {
     /** An array that represents upgrades */
     public readonly upgrades: Record<UpgradeIds, UpgradeStatic>;
 
     /** An array that represents items and their effects. */
-    public readonly items: Record<string, Item> = {};
+    public readonly items: Record<ItemIds, Item>;
 
     /** A function that returns the pointer of the data */
     protected readonly pointerFn: (() => Currency);
@@ -98,6 +105,7 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
      * Constructs a new currnecy
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
+     * @param items - An array of item objects.
      * @param defaults - The default value and boost of the currency.
      * @example
      * const currency = new CurrencyStatic(undefined, [
@@ -112,7 +120,12 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: UpgradeInitArray, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
+    constructor (
+        pointer: Pointer<Currency> = new Currency(),
+        upgrades?: UpgradeInitArray,
+        items?: ItemInitArray,
+        defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
+    ) {
         // Assign the default values
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
@@ -131,6 +144,12 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
 
         // Add upgrades
         if (upgrades) this.addUpgrade(upgrades);
+
+        // @ts-expect-error - Properties are added in the next line
+        this.items = {};
+
+        // Add items
+        if (items) this.addItem(items);
     }
 
     /**
@@ -563,7 +582,7 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
             if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.item
-            this.items[item.id] = addedUpgradeStatic;
+            this.items[item.id as ItemIds] = addedUpgradeStatic;
         }
     }
 
@@ -572,7 +591,9 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
      * @param id - The id of the item to retrieve.
      * @returns The item object if found, otherwise null.
      */
-    public getItem (id: string): Item | null {
+    public getItem<T extends ItemIds> (id: T): IsPrimitiveString<ItemIds> extends false ? Item : Item | null {
+        // // @ts-expect-error - This is a hack to get the type to work
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.items[id] ?? null;
     }
 
@@ -584,7 +605,7 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    public calculateItem (id: string, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal] {
+    public calculateItem (id: ItemIds, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal] {
         // Get the item
         const item = this.getItem(id);
 
@@ -604,7 +625,7 @@ class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], Upgr
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    public buyItem (id: string, tier: DecimalSource, target?: DecimalSource): boolean {
+    public buyItem (id: ItemIds, tier: DecimalSource, target?: DecimalSource): boolean {
         // Get the item
         const item = this.getItem(id);
 

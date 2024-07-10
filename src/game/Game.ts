@@ -17,6 +17,7 @@ import { GameReset } from "./GameReset";
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
+import type { ItemInit } from "../classes/Item";
 
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
@@ -139,15 +140,21 @@ class Game {
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @template N - The name
      * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
+     * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @param upgrades - The upgrades for the currency.
+     * @param items - The items for the currency.
      * @returns A new instance of the gameCurrency class.
      * @example
      * const currency = game.addCurrency("currency");
      * currency.static.gain();
      * console.log(currency.value); // Decimal.dOne
      */
-    public addCurrency<N extends string, U extends UpgradeInit[] = []> (name: N, upgrades: U = [] as unknown as U): GameCurrency<N, U> {
+    public addCurrency<N extends string, U extends Readonly<UpgradeInit>[] = [], I extends Readonly<ItemInit>[] = []> (
+        name: N,
+        upgrades: U = [] as unknown as U,
+        items: I = [] as unknown as I,
+    ): GameCurrency<N, U, I> {
         // Set the data and static objects
         this.dataManager.setData(name, {
             currency: new Currency(),
@@ -155,7 +162,7 @@ class Game {
 
         // Create the class instance
         const classInstance = new GameCurrency(
-            [(): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades] as ConstructorParameters<typeof CurrencyStatic>,
+            [(): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades, items] as ConstructorParameters<typeof CurrencyStatic>,
             this,
             name,
         );
@@ -196,6 +203,8 @@ class Game {
      */
     // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
     public addReset (...args: ConstructorParameters<typeof GameReset>): GameReset {
+        console.warn("Game.addReset is deprecated. Use the GameReset class instead.");
+
         const reset = new GameReset(...args);
         return reset;
     }

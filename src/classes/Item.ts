@@ -6,6 +6,7 @@ import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import type { CurrencyStatic } from "./Currency";
+import type { UpgradeInitArrayType } from "./Upgrade";
 
 /**
  * Calculates the cost and how many items you can buy.
@@ -109,6 +110,12 @@ interface ItemInit {
 }
 
 /**
+ * Infers the id type of an item array. See {@link UpgradeInitArrayType}
+ * @template I - The item array
+ */
+type ItemInitArrayType<I extends Readonly<ItemInit>[]> = I[number]["id"] extends never ? string : I[number]["id"];
+
+/**
  * Represents an item.
  */
 class Item implements ItemInit {
@@ -194,4 +201,4 @@ class ItemData implements IItemData {
 }
 
 export { Item, ItemData, calculateItem };
-export type { ItemInit, IItemData };
+export type { ItemInit, IItemData, ItemInitArrayType };

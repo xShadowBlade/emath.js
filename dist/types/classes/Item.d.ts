@@ -71,6 +71,11 @@ interface ItemInit {
     amount?: Decimal;
 }
 /**
+ * Infers the id type of an item array. See {@link UpgradeInitArrayType}
+ * @template I - The item array
+ */
+type ItemInitArrayType<I extends Readonly<ItemInit>[]> = I[number]["id"] extends never ? string : I[number]["id"];
+/**
  * Represents an item.
  */
 declare class Item implements ItemInit {
@@ -117,4 +122,4 @@ declare class ItemData implements IItemData {
     constructor(init: IItemData);
 }
 export { Item, ItemData, calculateItem };
-export type { ItemInit, IItemData };
+export type { ItemInit, IItemData, ItemInitArrayType };

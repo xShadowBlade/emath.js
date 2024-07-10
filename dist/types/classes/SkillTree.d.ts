@@ -20,7 +20,7 @@ declare class SkillNode implements ISkill {
     id: string;
     name: string;
     description: string;
-    cost: [currency: CurrencyStatic<[], string>, cost: (level: Decimal, context: ISkill) => Decimal];
+    cost: [currency: CurrencyStatic<[], string, [], string>, cost: (level: Decimal, context: ISkill) => Decimal];
     required: ISkill[];
     maxLevel: Decimal;
     effect: ((level: Decimal, context: ISkill) => void) | undefined;
