@@ -8,9 +8,9 @@ import type { Game } from "./Game";
 /**
  * Represents a game attribute. {@link Attribute} is the data class and {@link AttributeStatic} is the static class where all the useful functions are.
  * To use, destruct the `data` and `static` properties from the class.
- * @template B - Indicates whether the boost is enabled. Defaults to true.
+ * @template EnableBoosst - Indicates whether the boost is enabled. Defaults to true.
  */
-class GameAttribute<B extends boolean = true> extends AttributeStatic<B> {
+class GameAttribute<EnableBoosst extends boolean = true> extends AttributeStatic<EnableBoosst> {
     /**
      * @returns The data for the attribute.
      * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
@@ -35,7 +35,7 @@ class GameAttribute<B extends boolean = true> extends AttributeStatic<B> {
      * @param attributeStaticParams - The parameters for the attribute static class.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor (attributeStaticParams: ConstructorParameters<typeof AttributeStatic<B>>, gamePointer?: Game) {
+    constructor (attributeStaticParams: ConstructorParameters<typeof AttributeStatic<EnableBoosst>>, gamePointer?: Game) {
         // "backwards compatibility" lol
         if (typeof attributeStaticParams === "function") {
             throw new Error("GameAttribute constructor does not accept a function as the first parameter. Use the <Game>.addAttribute method instead.");

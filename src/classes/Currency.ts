@@ -51,16 +51,16 @@ class Currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template U - The inital upgrades
- * @template S - An string union that represents the names of the upgrades.
+ * @template UpgradeInitArray - The inital upgrades
+ * @template UpgradeIds - An string union that represents the names of the upgrades.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = UpgradeInitArrayType<U>> {
+class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>> {
     /** An array that represents upgrades */
-    public readonly upgrades: Record<S, UpgradeStatic>;
+    public readonly upgrades: Record<UpgradeIds, UpgradeStatic>;
 
     /** An array that represents items and their effects. */
     public readonly items: Record<string, Item> = {};
@@ -112,7 +112,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: U, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
+    constructor (pointer: Pointer<Currency> = new Currency(), upgrades?: UpgradeInitArray, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
         // Assign the default values
         this.defaultVal = defaults.defaultVal;
         this.defaultBoost = defaults.defaultBoost;
@@ -241,7 +241,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    public getUpgrade<T extends S> (id: T): IsPrimitiveString<S> extends false ? UpgradeStatic : UpgradeStatic | null {
+    public getUpgrade<T extends UpgradeIds> (id: T): IsPrimitiveString<UpgradeIds> extends false ? UpgradeStatic : UpgradeStatic | null {
         // // @ts-expect-error - This is a hack to get the type to work
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.upgrades[id] ?? null;
@@ -267,8 +267,8 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // or
      * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
      */
-    public queryUpgrade (id: S | S[] | RegExp): UpgradeStatic[] {
-        const allUpgradeIds = Object.keys(this.upgrades) as S[];
+    public queryUpgrade (id: UpgradeIds | UpgradeIds[] | RegExp): UpgradeStatic[] {
+        const allUpgradeIds = Object.keys(this.upgrades) as UpgradeIds[];
 
         // If the id is a regular expression search for all upgrades that match the regex
         if (id instanceof RegExp) {
@@ -332,7 +332,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
             if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.upgrades
-            this.upgrades[upgrade.id as S] = addedUpgradeStatic;
+            this.upgrades[upgrade.id as UpgradeIds] = addedUpgradeStatic;
 
             // Add the upgrade to the list
             addedUpgradeList.push(addedUpgradeStatic);
@@ -355,7 +355,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      *     }
      * });
      */
-    public updateUpgrade (id: S, newUpgrade: Partial<UpgradeInit>): void {
+    public updateUpgrade (id: UpgradeIds, newUpgrade: Partial<UpgradeInit>): void {
         // Get the upgrade
         const oldUpgrade = (this.getUpgrade(id) as Mutable<UpgradeStatic> | null);
 
@@ -397,7 +397,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    public calculateUpgrade (id: S, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal] {
+    public calculateUpgrade (id: UpgradeIds, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal] {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -430,7 +430,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    public getNextCost (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCost (id: UpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -461,7 +461,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    public getNextCostMax (id: S, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCostMax (id: UpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -491,7 +491,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    public buyUpgrade (id: S, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
+    public buyUpgrade (id: UpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 

@@ -23,7 +23,7 @@ declare class Attribute {
  *
  * Note: This class is essentially a wrapper around {@link Boost}, and if you choose not to use boosts, you can use {@link Decimal} directly.
  * It may be marked as deprecated in the future.
- * @template B - Indicates whether the boost is enabled. Defaults to true.
+ * @template EnableBoost - Indicates whether the boost is enabled. Defaults to true.
  * @example
  * const health = new AttributeStatic(undefined, true, 100); // AttributeStatic<true>
  * // Set a health boost that multiplies the health by 1.1
@@ -33,7 +33,7 @@ declare class Attribute {
  * });
  * console.log(health.value); // 110
  */
-declare class AttributeStatic<B extends boolean = true> {
+declare class AttributeStatic<EnableBoost extends boolean = true> {
     /** The data for the attribute. */
     protected readonly pointerFn: (() => Attribute);
     /** @returns The data for the attribute. */
@@ -44,14 +44,14 @@ declare class AttributeStatic<B extends boolean = true> {
      * The boost of the attribute.
      * NOTE: This will not be used if the boost is disabled.
      */
-    readonly boost: B extends true ? Boost : null;
+    readonly boost: EnableBoost extends true ? Boost : null;
     /**
      * Constructs a new instance of the Attribute class.
      * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
      * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor(pointer?: Pointer<Attribute>, useBoost?: B, initial?: DecimalSource);
+    constructor(pointer?: Pointer<Attribute>, useBoost?: EnableBoost, initial?: DecimalSource);
     /**
      * Updates the value of the attribute.
      * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
