@@ -199,7 +199,13 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    runUpgradeEffect(upgrade: UpgradeStatic | Item): void;
+    runUpgradeEffect(upgrade: UpgradeStatic): void;
+    /**
+     * Runs the effect of an upgrade or item.
+     * @param item - The item to run the effect for.
+     * @param tier - The tier of the item that was bought.
+     */
+    runItemEffect(item: Item, tier?: DecimalSource): void;
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
@@ -280,16 +286,18 @@ declare class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends s
      * Calculates the cost and how many items you can buy.
      * See {@link calculateItem} for more information.
      * @param id - The ID or position of the item to calculate.
+     * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    calculateItem(id: string, target?: DecimalSource): [amount: Decimal, cost: Decimal];
+    calculateItem(id: string, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
     /**
      * Buys an item based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the item to buy or upgrade.
+     * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    buyItem(id: string, target?: DecimalSource): boolean;
+    buyItem(id: string, tier: DecimalSource, target?: DecimalSource): boolean;
 }
 export { Currency, CurrencyStatic };

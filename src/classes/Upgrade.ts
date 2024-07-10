@@ -162,17 +162,17 @@ interface UpgradeInit {
      * @param currencyContext - The currency static class that the upgrade is being run on.
      * @example
      * // A dynamic description that returns a string
-     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
+     * const description = (level) => `This upgrade is at level ${level}`;
      *
      * // ... create upgrade here (see currencyStatic.addUpgrade)
      *
      * const upgrade = currencyStatic.getUpgrade("upgradeID");
      *
-     * // Getter property
-     * console.log(upgrade.description); // "This is a undefined that returns a undefined"
+     * // Buy 1 level of the upgrade
+     * currencyStatic.buyUpgrade("upgradeID", 1);
      *
-     * // Getter function
-     * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     * // Getter property
+     * console.log(upgrade.description); // "This upgrade is at level 1"
      */
     description?: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => string) | string;
 

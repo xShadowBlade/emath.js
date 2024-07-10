@@ -9,63 +9,64 @@ import type { CurrencyStatic } from "./Currency";
  * Calculates the cost and how many items you can buy.
  * @param value - The current value of the currency.
  * @param item - The item object to calculate.
+ * @param tier - The tier of the item to buy. Defaults to 1.
  * @param target - The target quantity to reach for the item. If not provided, it will buy the maximum amount of items possible (using target = Infinity).
  * @returns [amount, cost] - Returns the amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
-declare function calculateItem(value: DecimalSource, item: Item, target?: DecimalSource): [amount: Decimal, cost: Decimal];
+declare function calculateItem(value: DecimalSource, item: Item, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
 /**
  * An interface for an item. An item is a type of upgrade that does not have a level. Ex. A potion that gives you 10 gold.
  */
 interface ItemInit {
     /**
-     * The ID of the upgrade.
-     * Used to retrieve the upgrade later.
+     * The ID of the item.
+     * Used to retrieve the item later.
      */
     readonly id: string;
-    /** The name of the upgrade. Defaults to the ID. */
+    /** The name of the item. Defaults to the ID. */
     name?: string;
     /**
-     * The description of the upgrade.
+     * The description of the item.
      * Can be a string or a function that returns a string.
-     * @param level - The current level of the upgrade.
-     * @param itemContext - The upgrade object that the description is being run on.
-     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @param level - The current level of the item.
+     * @param itemContext - The item object that the description is being run on.
+     * @param currencyContext - The currency static class that the item is being run on.
      * @example
      * // A dynamic description that returns a string
      * const description = (a, b) => `This is a ${a} that returns a ${b}`;
      *
-     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     * // ... create item here (see currencyStatic.addUpgrade)
      *
-     * const upgrade = currencyStatic.getUpgrade("upgradeID");
+     * const item = currencyStatic.getUpgrade("itemID");
      *
      * // Getter property
-     * console.log(upgrade.description); // "This is a undefined that returns a undefined"
+     * console.log(item.description); // "This is a undefined that returns a undefined"
      *
      * // Getter function
-     * console.log(upgrade.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     * console.log(item.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
     description?: ((level: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => string) | string;
     /**
-     * The cost of upgrades at a certain level.
-     * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
-     * Also, if you do not set your own `costBulk` function, the function should always be greater than the level.
-     * @param level - The CURRENT (not next) level of the upgrade. It will always be a positive integer.
-     * @returns The cost of the upgrade. It should be a non-negative integer greater than or equal to 0.
+     * The cost of items at a certain level.
+     * @param level - The level that the cost is being calculated for.
+     * @returns The cost of the item. It should be a non-negative integer greater than or equal to 0.
      * @example
-     * // An item that costs 10.
-     * () => new Decimal(10)
+     * // An item that costs 10 times the level
+     * (level) => level.mul(10);
      */
-    cost: (() => Decimal);
+    cost: ((level: Decimal) => Decimal);
     /**
      * The effect of the item. This runs when the item is bought, and instantly if `runEffectInstantly` is true.
-     * @param amount - The amount of the item that was bought.
+     * @param tier - The tier of the item that was bought.
+     * @param amount - The amount of the item currently owned.
      * @param itemContext - The item object that the effect is being run on.
      * @param currencyContext - The currency static class that the item is being run on.
      */
-    effect?: (amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
+    effect?: (tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
     /**
      * The default amount of the item.
      * Automatically set to `0` if not provided.
+     * @deprecated This does not account for items that were bought on different tiers. You should use your own amount system.
      */
     amount?: Decimal;
 }
@@ -75,21 +76,22 @@ interface ItemInit {
 declare class Item implements ItemInit {
     id: string;
     name: string;
-    cost: () => Decimal;
-    effect: ((amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic<[], string>) => void) | undefined;
+    cost: (level: Decimal) => Decimal;
+    effect: ((tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void) | undefined;
     defaultAmount: Decimal;
     /** @returns The data of the item. */
     private dataPointerFn;
     /** @returns The data of the item. */
     get data(): ItemData;
-    /** @returns The currency static class that the upgrade is being run on. */
+    /** @returns The currency static class that the item is being run on. */
     protected currencyPointerFn: () => CurrencyStatic;
-    /** The description of the upgrade as a function. */
+    /** The description of the item as a function. */
     private descriptionFn;
     get description(): string;
     set description(value: Exclude<ItemInit["description"], undefined>);
     /**
      * The amount of the item that was bought.
+     * @deprecated This does not account for items that were bought on different tiers.
      * @returns The amount of the item that was bought.
      */
     get amount(): Decimal;

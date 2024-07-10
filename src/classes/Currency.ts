@@ -193,7 +193,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
                 item.amount = new Decimal(item.defaultAmount);
 
                 // Call the effect function for each item
-                if (resetObj.runUpgradeEffect) this.runUpgradeEffect(item);
+                if (resetObj.runUpgradeEffect) this.runItemEffect(item);
             }
         };
     }
@@ -370,12 +370,19 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    public runUpgradeEffect (upgrade: UpgradeStatic | Item): void {
-        if (upgrade instanceof UpgradeStatic) {
-            upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
-        } else {
-            upgrade.effect?.(upgrade.amount, upgrade, this as CurrencyStatic);
-        }
+    public runUpgradeEffect (upgrade: UpgradeStatic): void {
+        upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
+    }
+
+    /**
+     * Runs the effect of an upgrade or item.
+     * @param item - The item to run the effect for.
+     * @param tier - The tier of the item that was bought.
+     */
+    public runItemEffect (item: Item, tier: DecimalSource = Decimal.dOne): void {
+        tier = new Decimal(tier);
+
+        item.effect?.(item.amount, tier, item, this as CurrencyStatic);
     }
 
     /**
@@ -553,7 +560,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
             const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id)!, () => this as CurrencyStatic);
 
             // Run the effect instantly if needed
-            if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+            if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.item
             this.items[item.id] = addedUpgradeStatic;
@@ -573,10 +580,11 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
      * Calculates the cost and how many items you can buy.
      * See {@link calculateItem} for more information.
      * @param id - The ID or position of the item to calculate.
+     * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    public calculateItem (id: string, target: DecimalSource = Infinity): [amount: Decimal, cost: Decimal] {
+    public calculateItem (id: string, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal] {
         // Get the item
         const item = this.getItem(id);
 
@@ -586,16 +594,17 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
             return [Decimal.dZero, Decimal.dZero];
         }
 
-        return calculateItem(this.value, item, target);
+        return calculateItem(this.value, item, tier, target);
     }
 
     /**
      * Buys an item based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the item to buy or upgrade.
+     * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    public buyItem (id: string, target?: DecimalSource): boolean {
+    public buyItem (id: string, tier: DecimalSource, target?: DecimalSource): boolean {
         // Get the item
         const item = this.getItem(id);
 
@@ -606,7 +615,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         }
 
         // Calculate the amount of items you can buy
-        const [amount, cost] = this.calculateItem(id, target);
+        const [amount, cost] = this.calculateItem(id, tier, target);
 
         // Check if affordable
         if (amount.lte(0)) {
@@ -620,7 +629,7 @@ class CurrencyStatic<U extends Readonly<UpgradeInit>[] = [], S extends string = 
         item.amount = item.amount.add(amount);
 
         // Call the effect function if it exists
-        this.runUpgradeEffect(item);
+        this.runItemEffect(item, tier);
 
         // Return true to indicate a successful upgrade
         return true;

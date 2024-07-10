@@ -5304,19 +5304,20 @@ var UpgradeStatic = class _UpgradeStatic {
 // src/classes/Item.ts
 var import_reflect_metadata2 = require("reflect-metadata");
 var import_class_transformer3 = require("class-transformer");
-function calculateItem(value, item, target = Decimal.dInf) {
+function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) {
   value = new Decimal(value);
+  tier = new Decimal(tier);
   target = new Decimal(target);
   if (target.lt(0)) {
     console.warn("calculateItem: Invalid target: ", target);
     return [Decimal.dZero, Decimal.dZero];
   }
   if (target.eq(1)) {
-    const cost2 = item.cost();
+    const cost2 = item.cost(tier);
     return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
   }
-  const maxLevelAffordable = value.div(item.cost()).floor().min(target);
-  const cost = item.cost().mul(maxLevelAffordable);
+  const maxLevelAffordable = value.div(item.cost(tier)).floor().min(target);
+  const cost = item.cost(tier).mul(maxLevelAffordable);
   return [maxLevelAffordable, cost];
 }
 var Item = class {
@@ -5350,6 +5351,7 @@ var Item = class {
   }
   /**
    * The amount of the item that was bought.
+   * @deprecated This does not account for items that were bought on different tiers.
    * @returns The amount of the item that was bought.
    */
   get amount() {
@@ -5475,7 +5477,7 @@ var CurrencyStatic = class {
     if (resetObj.resetItemAmounts) {
       for (const item of Object.values(this.items)) {
         item.amount = new Decimal(item.defaultAmount);
-        if (resetObj.runUpgradeEffect) this.runUpgradeEffect(item);
+        if (resetObj.runUpgradeEffect) this.runItemEffect(item);
       }
     }
     ;
@@ -5618,11 +5620,16 @@ var CurrencyStatic = class {
    * @param upgrade - The upgrade to run the effect for.
    */
   runUpgradeEffect(upgrade) {
-    if (upgrade instanceof UpgradeStatic) {
-      upgrade.effect?.(upgrade.level, upgrade, this);
-    } else {
-      upgrade.effect?.(upgrade.amount, upgrade, this);
-    }
+    upgrade.effect?.(upgrade.level, upgrade, this);
+  }
+  /**
+   * Runs the effect of an upgrade or item.
+   * @param item - The item to run the effect for.
+   * @param tier - The tier of the item that was bought.
+   */
+  runItemEffect(item, tier = Decimal.dOne) {
+    tier = new Decimal(tier);
+    item.effect?.(item.amount, tier, item, this);
   }
   /**
    * Calculates the cost and how many upgrades you can buy.
@@ -5747,7 +5754,7 @@ var CurrencyStatic = class {
     for (const item of items) {
       this.pointerAddItem(item);
       const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id), () => this);
-      if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+      if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
       this.items[item.id] = addedUpgradeStatic;
     }
   }
@@ -5763,36 +5770,38 @@ var CurrencyStatic = class {
    * Calculates the cost and how many items you can buy.
    * See {@link calculateItem} for more information.
    * @param id - The ID or position of the item to calculate.
+   * @param tier - The tier of the item that to calculate.
    * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
    * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
    */
-  calculateItem(id, target = Infinity) {
+  calculateItem(id, tier, target) {
     const item = this.getItem(id);
     if (item === null) {
       console.warn(`Item "${id}" not found.`);
       return [Decimal.dZero, Decimal.dZero];
     }
-    return calculateItem(this.value, item, target);
+    return calculateItem(this.value, item, tier, target);
   }
   /**
    * Buys an item based on its ID or array position if enough currency is available.
    * @param id - The ID or position of the item to buy or upgrade.
+   * @param tier - The tier of the item that to calculate.
    * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
    */
-  buyItem(id, target) {
+  buyItem(id, tier, target) {
     const item = this.getItem(id);
     if (item === null) {
       console.warn(`Item "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateItem(id, target);
+    const [amount, cost] = this.calculateItem(id, tier, target);
     if (amount.lte(0)) {
       return false;
     }
     this.pointer.value = this.pointer.value.sub(cost);
     item.amount = item.amount.add(amount);
-    this.runUpgradeEffect(item);
+    this.runItemEffect(item, tier);
     return true;
   }
 };

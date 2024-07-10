@@ -36,7 +36,7 @@ declare class GridCell<P extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props: P | ((grid: GridCell<P>) => P) | undefined, gridSymbol: symbol);
+    constructor(x: number, y: number, props: (P | ((grid: GridCell<P>) => P)) | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
