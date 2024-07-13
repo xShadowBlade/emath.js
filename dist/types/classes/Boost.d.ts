@@ -149,6 +149,15 @@ declare class Boost {
         (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
     };
     /**
+     * Clears all boosts from the boost manager.
+     * @example
+     * // Clear all boosts
+     * boost.clearBoosts();
+     * // boostArray is now []
+     * // baseEffect is still the same
+     */
+    clearBoosts(): void;
+    /**
      * Calculates the cumulative effect of all boosts on the base effect.
      * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
      * @returns The calculated effect after applying boosts.

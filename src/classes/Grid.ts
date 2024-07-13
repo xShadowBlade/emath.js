@@ -42,6 +42,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
 
     /**
      * Initializes a new instance of the grid cell.
+     * Note: The properties are copied using object spread to prevent reference sharing. This may break with getters and setters.
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.
@@ -52,7 +53,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
         this.y = y;
 
         // Object destructuring to prevent reference sharing
-        this.properties = typeof props === "function" ? { ...props(this) } : { ...props };
+        this.properties = typeof props === "function" ? props(this) : { ...props };
         this.gridSymbol = gridSymbol;
     }
 

@@ -31,6 +31,7 @@ declare class GridCell<PropertiesType extends object = UnknownObject> {
     properties: PropertiesType;
     /**
      * Initializes a new instance of the grid cell.
+     * Note: The properties are copied using object spread to prevent reference sharing. This may break with getters and setters.
      * @param x - The x-coordinate.
      * @param y - The y-coordinate.
      * @param props - The properties to initialize with.

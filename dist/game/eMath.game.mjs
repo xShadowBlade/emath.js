@@ -5660,6 +5660,17 @@ var Boost = class {
     }
   }
   /**
+   * Clears all boosts from the boost manager.
+   * @example
+   * // Clear all boosts
+   * boost.clearBoosts();
+   * // boostArray is now []
+   * // baseEffect is still the same
+   */
+  clearBoosts() {
+    this.boostArray.length = 0;
+  }
+  /**
    * Calculates the cumulative effect of all boosts on the base effect.
    * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
    * @returns The calculated effect after applying boosts.
@@ -7094,7 +7105,10 @@ var DataManager = class {
     }
     const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
     function deepMerge(sourcePlain, source, target) {
-      if (!sourcePlain || !source || !target) throw new Error("dataManager.deepMerge(): Missing arguments.");
+      if (!sourcePlain || !source || !target) {
+        console.warn("dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
+        return target ?? {};
+      }
       const out = target;
       for (const key in sourcePlain) {
         if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {

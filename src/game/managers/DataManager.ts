@@ -352,7 +352,11 @@ class DataManager {
          * @returns The merged object.
          */
         function deepMerge (sourcePlain: UnknownObject | null | undefined, source: UnknownObject | null | undefined, target: UnknownObject | null): UnknownObject {
-            if (!sourcePlain || !source || !target) throw new Error("dataManager.deepMerge(): Missing arguments.");
+            if (!sourcePlain || !source || !target) {
+                console.warn("dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
+                return target ?? {};
+            }
+
             const out = target;
             for (const key in sourcePlain) {
                 if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
@@ -462,6 +466,7 @@ class DataManager {
                 // Convert the object using the normal data
                 const normalDataClass = (normal[key] as ConstructableObject).constructor;
 
+                // Check if the object is a plain object
                 if (normalDataClass === Object) {
                     // If the object doesn't match a template class, convert it recursively
                     (out as Record<string, object>)[key] = plainToInstanceRecursive((normal as Record<string, UnknownObject>)[key], (plain as Record<string, UnknownObject>)[key]);

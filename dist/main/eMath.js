@@ -4992,6 +4992,17 @@ var Boost = class {
     }
   }
   /**
+   * Clears all boosts from the boost manager.
+   * @example
+   * // Clear all boosts
+   * boost.clearBoosts();
+   * // boostArray is now []
+   * // baseEffect is still the same
+   */
+  clearBoosts() {
+    this.boostArray.length = 0;
+  }
+  /**
    * Calculates the cumulative effect of all boosts on the base effect.
    * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
    * @returns The calculated effect after applying boosts.
@@ -5878,6 +5889,7 @@ var AttributeStatic = class {
 var GridCell = class {
   /**
    * Initializes a new instance of the grid cell.
+   * Note: The properties are copied using object spread to prevent reference sharing. This may break with getters and setters.
    * @param x - The x-coordinate.
    * @param y - The y-coordinate.
    * @param props - The properties to initialize with.
@@ -5890,7 +5902,7 @@ var GridCell = class {
     this.getValue = this.get.bind(this);
     this.x = x;
     this.y = y;
-    this.properties = typeof props === "function" ? { ...props(this) } : { ...props };
+    this.properties = typeof props === "function" ? props(this) : { ...props };
     this.gridSymbol = gridSymbol;
   }
   /** @returns The grid instance the cell belongs to. */
