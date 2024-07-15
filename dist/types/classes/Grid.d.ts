@@ -194,7 +194,13 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
     /** Represents the cells of the grid. */
     cells: GridCell<PropertiesType>[][];
     /** A symbol to store the grid instance. */
-    private gridSymbol;
+    private readonly gridSymbol;
+    /**
+     * The properties to initialize with.
+     * @param grid - The grid cell to initialize with.
+     * @returns - The properties to initialize with.
+     */
+    private readonly starterProps;
     /**
      * Initializes a new instance of the grid.
      * @param xSize - The size of the grid along the x-axis.
@@ -202,6 +208,12 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * @param starterProps - The properties to initialize with.
      */
     constructor(xSize: number, ySize?: number, starterProps?: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType));
+    /**
+     * Resizes the grid. Merges the cells if the new grid is bigger and truncates the cells if the new grid is smaller.
+     * @param xSize - The new size of the grid along the x-axis.
+     * @param ySize - The new size of the grid along the y-axis. Defaults to `xSize`.
+     */
+    resize(xSize: number, ySize?: number): void;
     /**
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.

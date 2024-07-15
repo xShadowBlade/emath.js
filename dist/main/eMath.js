@@ -6001,6 +6001,14 @@ var GridCell = class {
     return this.direction("left", distance);
   }
 };
+function validateCoordinates(x, y, isSize = true) {
+  const message = isSize ? "Size" : "Coordinates";
+  if (typeof x !== "number" || typeof y !== "number") throw new RangeError(`${message} must be numbers: ${x}, ${y}`);
+  if (!Number.isInteger(x) || !Number.isInteger(y)) throw new RangeError(`${message} must be integers: ${x}, ${y}`);
+  if (x < 0 || y < 0) throw new RangeError(`${message} must be positive: ${x}, ${y}`);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError(`${message} must be finite: ${x}, ${y}`);
+  if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) throw new RangeError(`${message} must be safe integers: ${x}, ${y}`);
+}
 var GridCellCollection = class _GridCellCollection extends Array {
   /**
    * Initializes a new instance of the grid cell collection.
@@ -6130,12 +6138,14 @@ var Grid = class _Grid {
     /** @deprecated Use {@link setCell} instead. */
     this.set = this.setCell.bind(this);
     _Grid.instances[this.gridSymbol] = this;
+    this.starterProps = starterProps ?? {};
     this.xSize = xSize;
     this.ySize = ySize ?? xSize;
-    for (let a = 0; a < this.ySize; a++) {
-      this.cells[a] = [];
-      for (let b = 0; b < this.xSize; b++) {
-        this.cells[a][b] = new GridCell(b, a, starterProps, this.gridSymbol);
+    validateCoordinates(this.xSize, this.ySize, true);
+    for (let y = 0; y < this.ySize; y++) {
+      this.cells[y] = [];
+      for (let x = 0; x < this.xSize; x++) {
+        this.cells[y][x] = new GridCell(x, y, starterProps, this.gridSymbol);
       }
     }
   }
@@ -6151,6 +6161,47 @@ var Grid = class _Grid {
    */
   static getInstance(key) {
     return _Grid.instances[key];
+  }
+  /**
+   * Resizes the grid. Merges the cells if the new grid is bigger and truncates the cells if the new grid is smaller.
+   * @param xSize - The new size of the grid along the x-axis.
+   * @param ySize - The new size of the grid along the y-axis. Defaults to `xSize`.
+   */
+  resize(xSize, ySize) {
+    const oldXSize = this.xSize;
+    const oldYSize = this.ySize;
+    this.xSize = xSize;
+    this.ySize = ySize ?? xSize;
+    validateCoordinates(this.xSize, this.ySize, true);
+    (() => {
+      if (this.ySize === oldYSize) return;
+      if (this.ySize < oldYSize) {
+        this.cells.length = this.ySize;
+      }
+      if (this.ySize > oldYSize) {
+        for (let y = oldYSize; y < this.ySize; y++) {
+          this.cells[y] = [];
+          for (let x = 0; x < oldXSize; x++) {
+            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+          }
+        }
+      }
+    })();
+    (() => {
+      if (this.xSize === oldXSize) return;
+      if (this.xSize < oldXSize) {
+        for (let y = 0; y < this.ySize; y++) {
+          this.cells[y].length = this.xSize;
+        }
+      }
+      if (this.xSize > oldXSize) {
+        for (let y = 0; y < this.ySize; y++) {
+          for (let x = oldXSize; x < this.xSize; x++) {
+            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+          }
+        }
+      }
+    })();
   }
   /**
    * Gets an array containing all cells in the grid.

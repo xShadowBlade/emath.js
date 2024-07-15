@@ -165,6 +165,32 @@ class GridCell<PropertiesType extends object = UnknownObject> {
 }
 
 /**
+ * Validates the components of the coordinates.
+ * @throws {RangeError} An error if the coordinates are invalid.
+ * @param x - The x component
+ * @param y - The y component
+ * @param isSize - Whether the coordinates are for the size. Defaults to `true`.
+ */
+function validateCoordinates (x: number, y: number, isSize = true): void {
+    const message = isSize ? "Size" : "Coordinates";
+
+    // If the coordinates are not numbers, throw an error
+    if (typeof x !== "number" || typeof y !== "number") throw new RangeError(`${message} must be numbers: ${x}, ${y}`);
+
+    // If the coordinates are not integers, throw an error
+    if (!Number.isInteger(x) || !Number.isInteger(y)) throw new RangeError(`${message} must be integers: ${x}, ${y}`);
+
+    // If the coordinates are negative, throw an error
+    if (x < 0 || y < 0) throw new RangeError(`${message} must be positive: ${x}, ${y}`);
+
+    // If the coordinates are not finite, throw an error
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError(`${message} must be finite: ${x}, ${y}`);
+
+    // If the coordinates are not safe integers, throw an error
+    if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) throw new RangeError(`${message} must be safe integers: ${x}, ${y}`);
+}
+
+/**
  * Represents a collection of grid cells.
  * @template PropertiesType - The type of the properties of the grid cells.
  */
@@ -328,7 +354,14 @@ class Grid<PropertiesType extends object = UnknownObject> {
     public cells: GridCell<PropertiesType>[][] = [];
 
     /** A symbol to store the grid instance. */
-    private gridSymbol = Symbol();
+    private readonly gridSymbol = Symbol();
+
+    /**
+     * The properties to initialize with.
+     * @param grid - The grid cell to initialize with.
+     * @returns - The properties to initialize with.
+     */
+    private readonly starterProps: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType);
 
     /**
      * Initializes a new instance of the grid.
@@ -337,19 +370,95 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * @param starterProps - The properties to initialize with.
      */
     constructor (xSize: number, ySize?: number, starterProps?: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType)) {
+        // Assign the instance symbol to the grid
         // @ts-expect-error - Generic class type
         Grid.instances[this.gridSymbol] = this;
+
+        this.starterProps = starterProps ?? {} as PropertiesType;
 
         this.xSize = xSize;
         this.ySize = ySize ?? xSize;
 
-        for (let a = 0; a < this.ySize; a++) {
-            this.cells[a] = [];
-            for (let b = 0; b < this.xSize; b++) {
-                // iterates through every cell
-                this.cells[a][b] = new GridCell(b, a, starterProps, this.gridSymbol);
+        // Validate the size
+        validateCoordinates(this.xSize, this.ySize, true);
+
+        // Create the cells
+        for (let y = 0; y < this.ySize; y++) {
+            // Create the row
+            this.cells[y] = [];
+
+            for (let x = 0; x < this.xSize; x++) {
+                // Create the cell
+                this.cells[y][x] = new GridCell(x, y, starterProps, this.gridSymbol);
             }
         }
+    }
+
+    /**
+     * Resizes the grid. Merges the cells if the new grid is bigger and truncates the cells if the new grid is smaller.
+     * @param xSize - The new size of the grid along the x-axis.
+     * @param ySize - The new size of the grid along the y-axis. Defaults to `xSize`.
+     */
+    public resize (xSize: number, ySize?: number): void {
+        // Assign the values to the grid
+        const oldXSize = this.xSize;
+        const oldYSize = this.ySize;
+
+        this.xSize = xSize;
+        this.ySize = ySize ?? xSize;
+
+        // Validate the size
+        validateCoordinates(this.xSize, this.ySize, true);
+
+        // Handle the y-axis
+        ((): void => {
+            // If the new size is the same as the old size, return
+            if (this.ySize === oldYSize) return;
+
+            // If the new size is smaller, truncate the cells
+            if (this.ySize < oldYSize) {
+                // Hacky way to truncate the cells without changing the reference
+                this.cells.length = this.ySize;
+            }
+
+            // If the new size is bigger, merge the cells but only until the old x size, the new columns will be added later
+            if (this.ySize > oldYSize) {
+                for (let y = oldYSize; y < this.ySize; y++) {
+                    // Create the row
+                    this.cells[y] = [];
+
+                    for (let x = 0; x < oldXSize; x++) {
+                        // Create the cell
+                        this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+                    }
+                }
+            }
+        })();
+
+        // Handle the x-axis
+        ((): void => {
+            // If the new size is the same as the old size, return
+            if (this.xSize === oldXSize) return;
+
+            // If the new size is smaller, truncate the cells
+            if (this.xSize < oldXSize) {
+                // Iterate through the rows, truncating the cells
+                for (let y = 0; y < this.ySize; y++) {
+                    // Hacky way to truncate the cells without changing the reference
+                    this.cells[y].length = this.xSize;
+                }
+            }
+
+            // If the new size is bigger, merge the cells
+            if (this.xSize > oldXSize) {
+                for (let y = 0; y < this.ySize; y++) {
+                    for (let x = oldXSize; x < this.xSize; x++) {
+                        // Create the cell
+                        this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+                    }
+                }
+            }
+        })();
     }
 
     /**
