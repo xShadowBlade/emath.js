@@ -33,11 +33,22 @@ interface SaveMetadata {
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 declare class DataManager {
-    /**  Game data in its initial state. */
+    /**
+     * Game data in its initial state.
+     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
+     * It is set when calling {@link DataManager.init}.
+     */
     private normalData?;
-    /** Game data in its initial state, as a plain object. */
+    /**
+     * Game data in its initial state, as a plain object.
+     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
+     * It is set when calling {@link DataManager.init}.
+     */
     private normalDataPlain?;
-    /** The current game data. */
+    /**
+     * The current game data.
+     * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
+     */
     private data;
     /**
      * The static game data.
@@ -46,7 +57,11 @@ declare class DataManager {
     private static;
     /** A reference to the game instance. */
     private readonly gameRef;
-    /** A queue of functions to call when the game data is loaded. */
+    /**
+     * A queue of functions to call when the game data is loaded.
+     * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
+     * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
+     */
     private readonly eventsOnLoad;
     /**
      * Creates a new instance of the game class.

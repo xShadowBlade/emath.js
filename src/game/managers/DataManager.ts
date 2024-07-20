@@ -47,13 +47,24 @@ interface SaveMetadata {
  * The other methods are used internally, but can be used for more advanced functionality / customization.
  */
 class DataManager {
-    /**  Game data in its initial state. */
+    /**
+     * Game data in its initial state.
+     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
+     * It is set when calling {@link DataManager.init}.
+     */
     private normalData?: UnknownObject;
 
-    /** Game data in its initial state, as a plain object. */
+    /**
+     * Game data in its initial state, as a plain object.
+     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
+     * It is set when calling {@link DataManager.init}.
+     */
     private normalDataPlain?: UnknownObject;
 
-    /** The current game data. */
+    /**
+     * The current game data.
+     * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
+     */
     private data: UnknownObject = {};
 
     /**
@@ -65,7 +76,11 @@ class DataManager {
     /** A reference to the game instance. */
     private readonly gameRef: Game;
 
-    /** A queue of functions to call when the game data is loaded. */
+    /**
+     * A queue of functions to call when the game data is loaded.
+     * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
+     * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
+     */
     private readonly eventsOnLoad: (() => void)[] = [];
 
     /**
@@ -188,7 +203,13 @@ class DataManager {
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
     public compileDataRaw (data = this.data): [SaveMetadata, object] {
+        // Call the `beforeCompileData` event on the game eventManager
+        this.gameRef.eventManager.dispatch("beforeCompileData");
+
+        // Convert the data to a plain object that can be stringified
         const gameDataString = instanceToPlain(data);
+
+        // Create a hash of the data
         const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
 
         // Get the version of the eMath library
@@ -197,9 +218,10 @@ class DataManager {
             // @ts-expect-error - Replaced by esbuild
             version = PKG_VERSION as string;
         } catch (error) {
-            version = "8.3.0";
+            version = "9.3.0";
         }
 
+        // Create the metadata for the save file
         const saveMetadata: SaveMetadata = {
             hash: hasedData,
             game: {
@@ -212,6 +234,7 @@ class DataManager {
             },
         };
 
+        // Return a tuple containing the metadata and the data
         return [saveMetadata, gameDataString];
     }
 
@@ -264,6 +287,7 @@ class DataManager {
             return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
         }
 
+        // Compare the hash of the data with the hash in the save file. If they don't match, the data has been tampered with.
         const hashSave = saveMetadata.hash;
         const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
 
@@ -275,9 +299,16 @@ class DataManager {
      * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
      */
     public resetData (reload = false): void {
+        // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
         if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+
+        // Reset the data
         this.data = this.normalData;
+
+        // Save the data
         this.saveData();
+
+        // Reload the page if specified (this may help with some issues with saving data)
         if (reload) window.location.reload();
     };
 
@@ -287,10 +318,20 @@ class DataManager {
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
     public saveData (dataToSave = this.compileData()): void {
+        // Call the `beforeSaveData` event on the game eventManager
+        this.gameRef.eventManager.dispatch("beforeSaveData");
+
+        // If the data is empty, throw
         if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+
+        // If local storage is not supported, throw
+        if (!(window.localStorage as unknown)) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+
+        // Save the data to local storage
         window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+
+        // Call the `saveData` event on the game eventManager
+        this.gameRef.eventManager.dispatch("saveData");
     };
 
     /**
@@ -507,6 +548,9 @@ class DataManager {
         for (const obj of this.eventsOnLoad) {
             obj();
         }
+
+        // Call the `loadData` event on the game eventManager
+        this.gameRef.eventManager.dispatch("loadData");
 
         return isDataValid;
     };

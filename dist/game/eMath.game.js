@@ -6755,14 +6755,16 @@ var EventTypes = /* @__PURE__ */ ((EventTypes2) => {
 var eventManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30
-  // pixiApp: undefined,
 };
 var EventManager = class _EventManager {
   /**
    * Creates a new event manager.
    * @param config - The config to use for this event manager.
+   * @param events - The events to add to the event manager.
+   * These events will be added to the event manager's callback events, although you could omit this and add events manually
+   * (though this is not recommended as you won't get type checking).
    */
-  constructor(config) {
+  constructor(config, events) {
     /**
      * Adds a new event
      * @deprecated Use {@link EventManager.setEvent} instead.
@@ -6771,6 +6773,12 @@ var EventManager = class _EventManager {
     this.addEvent = this.setEvent.bind(this);
     this.config = _EventManager.configManager.parse(config);
     this.events = {};
+    this.callbackEvents = {};
+    if (events) {
+      for (const event of events) {
+        this.callbackEvents[event] = [];
+      }
+    }
     if (this.config.autoAddInterval) {
       const fps = this.config.fps ?? 30;
       this.tickerInterval = setInterval(() => {
@@ -6783,6 +6791,30 @@ var EventManager = class _EventManager {
     this.configManager = new ConfigManager(eventManagerDefaultConfig);
   }
   /**
+   * Adds a callback to an event.
+   * If you want to use a timer event, use {@link EventManager.setEvent} instead.
+   * @param event - The event to add the callback to.
+   * @param callback - The callback to add to the event.
+   */
+  on(event, callback) {
+    if (!this.callbackEvents[event]) {
+      this.callbackEvents[event] = [];
+    }
+    this.callbackEvents[event].push({ type: event, callback });
+  }
+  /**
+   * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
+   * @param event - The event to dispatch.
+   */
+  dispatch(event) {
+    if (!this.callbackEvents[event]) {
+      return;
+    }
+    for (const callback of this.callbackEvents[event]) {
+      callback.callback();
+    }
+  }
+  /**
    * The function that is called every frame, executes all events.
    */
   tickerFunction() {
@@ -6793,7 +6825,7 @@ var EventManager = class _EventManager {
           {
             if (currentTime - event.intervalLast >= event.delay) {
               const dt = currentTime - event.intervalLast;
-              event.callbackFn(dt);
+              event.callback(dt);
               event.intervalLast = currentTime;
             }
           }
@@ -6803,7 +6835,7 @@ var EventManager = class _EventManager {
           {
             const dt = currentTime - event.timeCreated;
             if (currentTime - event.timeCreated >= event.delay) {
-              event.callbackFn(dt);
+              event.callback(dt);
               delete this.events[event.name];
             }
           }
@@ -6849,6 +6881,7 @@ var EventManager = class _EventManager {
   }
   /**
    * Adds a new event or changes an existing event to the event system.
+   * If you want to add a callback event, use {@link EventManager.on} instead.
    * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
    * @param type - The type of the event, either "interval" or "timeout".
    * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
@@ -6874,7 +6907,7 @@ var EventManager = class _EventManager {
               name,
               type,
               delay: typeof delay === "number" ? delay : delay.toNumber(),
-              callbackFn,
+              callback: callbackFn,
               timeCreated: Date.now(),
               intervalLast: Date.now()
             };
@@ -6888,7 +6921,7 @@ var EventManager = class _EventManager {
             name,
             type,
             delay: typeof delay === "number" ? delay : delay.toNumber(),
-            callbackFn,
+            callback: callbackFn,
             timeCreated: Date.now()
           };
           return event;
@@ -6897,7 +6930,8 @@ var EventManager = class _EventManager {
     })();
   }
   /**
-   * Removes an event from the event system.
+   * Removes a timer event from the event manager.
+   * Does not remove callback events.
    * @param name - The name of the event to remove.
    * @example
    * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
@@ -6918,14 +6952,21 @@ var DataManager = class {
    * @param gameRef - A function that returns the game instance.
    */
   constructor(gameRef) {
-    /** The current game data. */
+    /**
+     * The current game data.
+     * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
+     */
     this.data = {};
     /**
      * The static game data.
      * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
      */
     this.static = {};
-    /** A queue of functions to call when the game data is loaded. */
+    /**
+     * A queue of functions to call when the game data is loaded.
+     * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
+     * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
+     */
     this.eventsOnLoad = [];
     this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
   }
@@ -7022,13 +7063,14 @@ var DataManager = class {
    * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
    */
   compileDataRaw(data = this.data) {
+    this.gameRef.eventManager.dispatch("beforeCompileData");
     const gameDataString = (0, import_class_transformer6.instanceToPlain)(data);
     const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     let version;
     try {
       version = "9.3.0";
     } catch (error) {
-      version = "8.3.0";
+      version = "9.3.0";
     }
     const saveMetadata = {
       hash: hasedData,
@@ -7102,9 +7144,11 @@ var DataManager = class {
    * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
    */
   saveData(dataToSave = this.compileData()) {
+    this.gameRef.eventManager.dispatch("beforeSaveData");
     if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
     if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
     window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+    this.gameRef.eventManager.dispatch("saveData");
   }
   /**
    * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
@@ -7229,6 +7273,7 @@ var DataManager = class {
     for (const obj of this.eventsOnLoad) {
       obj();
     }
+    this.gameRef.eventManager.dispatch("loadData");
     return isDataValid;
   }
 };

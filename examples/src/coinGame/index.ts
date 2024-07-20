@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * @file
  * In this example, we will create a button
@@ -7,14 +8,6 @@
 import { Decimal } from "emath.js";
 import type { UpgradeInit, ItemInit } from "emath.js";
 import { Game } from "emath.js/game";
-
-// Set eMath and eMathGame to window for debugging
-void (async (): Promise<void> => {
-    // @ts-expect-error - Ignore error (for debugging)
-    window.eMath = await import("emath.js");
-    // @ts-expect-error - Ignore error (for debugging)
-    window.eMathGame = await import("emath.js/game");
-})();
 
 // Initialize game
 const coinGame = new Game({
@@ -26,10 +19,9 @@ const coinGame = new Game({
         framerate: 30,
     },
 });
-(window as typeof window & { coinGame: typeof coinGame }).coinGame = coinGame; // For debugging
+Object.assign(window, { coinGame }); // For debugging
 
 // Initialize coins and static coins
-
 const coinsUpgrades = [
     {
         id: "upg1Coins", // Unique ID
@@ -48,21 +40,22 @@ const coinsUpgrades = [
     },
 ] as const satisfies UpgradeInit[];
 
-const coins = coinGame.addCurrency("coins", coinsUpgrades);
-
-// Add item
 const items = [
     {
         id: "item1",
         name: "Gold Coin",
         description: "A coin made of gold. (Cosmetic)",
         effect: (amount, _, currency): void => {
-            currency.gain(amount);
+            // currency.gain(amount);
         },
         cost: (): Decimal => new Decimal(1000),
     },
 ] as const satisfies ItemInit[];
-coins.static.addItem(items);
+
+const coins = coinGame.addCurrency("coins", coinsUpgrades, items);
+
+// Add item
+coins.addItem(items);
 
 // Initialize / Load game
 coinGame.init();
@@ -75,11 +68,11 @@ const coinsDisplay = document.getElementById("coinsDisplay");
 function updateDisplay (): void {
     // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     coinsDisplay!.innerHTML = `
-        Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.static.boost.calculate())})
+        Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.boost.calculate())})
         <br>
-        Upgrade 1 Level: ${coins.static.getUpgrade("upg1Coins").level.format()}
+        Upgrade 1 Level: ${coins.getUpgrade("upg1Coins").level.format()}
         <br>
-        Item 1: ${coins.static.getItem("item1").amount.format()}
+        Item 1: ${coins.getItem("item1").amount.format()}
     `;
 }
 updateDisplay();
@@ -90,7 +83,7 @@ const gainButton = document.getElementById("coinGain");
 /** Function to gain coins */
 function gainCoins (): void {
     // Triggers when button is pressed
-    coins.static.gain(); // Gain
+    coins.gain(); // Gain
     updateDisplay(); // Updates the display for the amount of coins
     updateDisplayUpgrade();
     updateDisplayItem();
@@ -102,7 +95,7 @@ const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
 function updateDisplayUpgrade (): void {
-    const calculatedUpg = coins.static.calculateUpgrade("upg1Coins");
+    const calculatedUpg = coins.calculateUpgrade("upg1Coins");
 
     buyUpgradesButton!.innerHTML = `Buy ${calculatedUpg[0].format()} Upgrades for ${calculatedUpg[1].format()} Coins (b)`;
 }
@@ -110,7 +103,7 @@ updateDisplayUpgrade();
 
 /** Function to buy upgrades */
 function buyUpgrades (): void {
-    coins.static.buyUpgrade("upg1Coins");
+    coins.buyUpgrade("upg1Coins");
     updateDisplayUpgrade();
     updateDisplay();
 }
@@ -119,7 +112,7 @@ buyUpgradesButton!.addEventListener("click", buyUpgrades);
 const buyItem1Button = document.getElementById("buyItem1Button");
 
 function updateDisplayItem (): void {
-    const calculatedItem = coins.static.calculateItem("item1");
+    const calculatedItem = coins.calculateItem("item1");
 
     buyItem1Button!.innerHTML = `Buy ${calculatedItem[0].format()} Gold Coins for ${calculatedItem[1].format()} Coins`;
 }
@@ -127,11 +120,11 @@ updateDisplayItem();
 
 /** Function to buy items */
 function buyItems (): void {
-    coins.static.buyItem("item1");
+    coins.buyItem("item1");
     updateDisplayItem();
     updateDisplay();
 }
-buyItem1Button!.addEventListener("click", buyItems);
+buyItem1Button?.addEventListener("click", buyItems);
 
 // Hotkeys
 coinGame.keyManager.addKey([
@@ -149,7 +142,7 @@ coinGame.keyManager.addKey([
         id: "Buy Items",
         key: "n",
         onDownContinuous: buyItems,
-    }
+    },
 ]);
 
 // Saving and Loading
