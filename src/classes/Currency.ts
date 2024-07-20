@@ -625,7 +625,7 @@ class CurrencyStatic<
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    public buyItem (id: ItemIds, tier: DecimalSource, target?: DecimalSource): boolean {
+    public buyItem (id: ItemIds, tier?: DecimalSource, target?: DecimalSource): boolean {
         // Get the item
         const item = this.getItem(id);
 

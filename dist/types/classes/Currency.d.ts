@@ -301,6 +301,6 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    buyItem(id: ItemIds, tier: DecimalSource, target?: DecimalSource): boolean;
+    buyItem(id: ItemIds, tier?: DecimalSource, target?: DecimalSource): boolean;
 }
 export { Currency, CurrencyStatic };
