@@ -34,4 +34,4 @@ type ConstructableObject = object & {
  * @template T - The type of the value to point to.
  */
 type Pointer<T> = (() => T) | T;
-export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer };
+export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer, };

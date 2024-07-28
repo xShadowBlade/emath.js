@@ -41,7 +41,7 @@ class Currency {
     /**
      * Constructs a new currency object with an initial value of 0.
      */
-    constructor () {
+    constructor() {
         this.value = Decimal.dZero;
         this.upgrades = {};
         this.items = {};
@@ -73,10 +73,10 @@ class CurrencyStatic<
     public readonly items: Record<ItemIds, Item>;
 
     /** A function that returns the pointer of the data */
-    protected readonly pointerFn: (() => Currency);
+    protected readonly pointerFn: () => Currency;
 
     /** @returns The pointer of the data. */
-    protected get pointer (): Currency {
+    protected get pointer(): Currency {
         return this.pointerFn();
     }
 
@@ -94,10 +94,10 @@ class CurrencyStatic<
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
      */
-    get value (): Decimal {
+    get value(): Decimal {
         return this.pointer.value;
     }
-    set value (value: Decimal) {
+    set value(value: Decimal) {
         this.pointer.value = value;
     }
 
@@ -120,7 +120,7 @@ class CurrencyStatic<
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor (
+    constructor(
         pointer: Pointer<Currency> = new Currency(),
         upgrades?: UpgradeInitArray,
         items?: ItemInitArray,
@@ -131,7 +131,8 @@ class CurrencyStatic<
         this.defaultBoost = defaults.defaultBoost;
 
         // Assign the pointer function
-        this.pointerFn = typeof pointer === "function" ? pointer : (): Currency => pointer;
+        this.pointerFn =
+            typeof pointer === "function" ? pointer : (): Currency => pointer;
 
         // Set the boost object
         this.boost = new Boost(this.defaultBoost);
@@ -155,7 +156,7 @@ class CurrencyStatic<
     /**
      * Updates / applies effects to the currency on load.
      */
-    public onLoadData (): void {
+    public onLoadData(): void {
         // Call the effect function for each upgrade
         for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
             this.runUpgradeEffect(upgrade);
@@ -171,9 +172,17 @@ class CurrencyStatic<
      * currency.reset();
      * console.log(currency.value); // Decimal.dZero, or the default value
      */
-    public reset (resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
-    public reset (reset?: Partial<CurrencyStaticResetOptions>): void;
-    public reset (resetCurrencyOrResetObj?: boolean | Partial<CurrencyStaticResetOptions>, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void {
+    public reset(
+        resetCurrency?: boolean,
+        resetUpgradeLevels?: boolean,
+        runUpgradeEffect?: boolean,
+    ): void;
+    public reset(reset?: Partial<CurrencyStaticResetOptions>): void;
+    public reset(
+        resetCurrencyOrResetObj?: boolean | Partial<CurrencyStaticResetOptions>,
+        resetUpgradeLevels?: boolean,
+        runUpgradeEffect?: boolean,
+    ): void {
         const resetObj: CurrencyStaticResetOptions = {
             resetCurrency: true,
             resetUpgradeLevels: true,
@@ -203,7 +212,7 @@ class CurrencyStatic<
                 // Call the effect function for each upgrade
                 if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
             }
-        };
+        }
 
         // Reset the items
         if (resetObj.resetItemAmounts) {
@@ -214,7 +223,7 @@ class CurrencyStatic<
                 // Call the effect function for each item
                 if (resetObj.runUpgradeEffect) this.runItemEffect(item);
             }
-        };
+        }
     }
 
     /**
@@ -225,7 +234,7 @@ class CurrencyStatic<
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10000);
      */
-    public gain (dt: DecimalSource = 1000): Decimal {
+    public gain(dt: DecimalSource = 1000): Decimal {
         const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1000));
         this.pointer.value = this.pointer.value.add(toAdd);
         return toAdd;
@@ -236,18 +245,18 @@ class CurrencyStatic<
      * @param upgrades - Upgrade to add
      * @returns The upgrade object.
      */
-    private pointerAddUpgrade (upgrades: UpgradeInit): UpgradeData {
+    private pointerAddUpgrade(upgrades: UpgradeInit): UpgradeData {
         const upgradesToAdd = new UpgradeData(upgrades);
         this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
         return upgradesToAdd;
-    };
+    }
 
     /**
      * Retrieves an upgrade object from the data pointer based on the provided id.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      */
-    private pointerGetUpgrade (id: string): UpgradeData | null {
+    private pointerGetUpgrade(id: string): UpgradeData | null {
         return this.pointer.upgrades[id] ?? null;
     }
 
@@ -260,7 +269,11 @@ class CurrencyStatic<
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    public getUpgrade<T extends UpgradeIds> (id: T): IsPrimitiveString<UpgradeIds> extends false ? UpgradeStatic : UpgradeStatic | null {
+    public getUpgrade<T extends UpgradeIds>(
+        id: T,
+    ): IsPrimitiveString<UpgradeIds> extends false
+        ? UpgradeStatic
+        : UpgradeStatic | null {
         // // @ts-expect-error - This is a hack to get the type to work
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.upgrades[id] ?? null;
@@ -286,13 +299,17 @@ class CurrencyStatic<
      * // or
      * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
      */
-    public queryUpgrade (id: UpgradeIds | UpgradeIds[] | RegExp): UpgradeStatic[] {
+    public queryUpgrade(
+        id: UpgradeIds | UpgradeIds[] | RegExp,
+    ): UpgradeStatic[] {
         const allUpgradeIds = Object.keys(this.upgrades) as UpgradeIds[];
 
         // If the id is a regular expression search for all upgrades that match the regex
         if (id instanceof RegExp) {
             const regex = id;
-            const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
+            const matchedIds = allUpgradeIds.filter((upgrade) =>
+                regex.test(upgrade),
+            );
             return matchedIds.map((matchedId) => this.upgrades[matchedId]);
         }
 
@@ -302,7 +319,9 @@ class CurrencyStatic<
         }
 
         // If the id is an array, return all upgrades that match the ids
-        const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
+        const matchedUpgrades = allUpgradeIds.filter((upgrade) =>
+            id.includes(upgrade),
+        );
         return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
     }
 
@@ -332,7 +351,10 @@ class CurrencyStatic<
      *     }
      * });
      */
-    public addUpgrade (upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): UpgradeStatic[] {
+    public addUpgrade(
+        upgrades: UpgradeInit | UpgradeInit[],
+        runEffectInstantly = true,
+    ): UpgradeStatic[] {
         // Convert to array if not already
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
@@ -344,8 +366,11 @@ class CurrencyStatic<
             this.pointerAddUpgrade(upgrade);
 
             // Create the upgrade object
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id)!, () => this as CurrencyStatic);
+            const addedUpgradeStatic = new UpgradeStatic(
+                upgrade,
+                () => this.pointerGetUpgrade(upgrade.id)!,
+                () => this as CurrencyStatic,
+            );
 
             // Run the effect instantly if needed
             if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
@@ -374,9 +399,12 @@ class CurrencyStatic<
      *     }
      * });
      */
-    public updateUpgrade (id: UpgradeIds, newUpgrade: Partial<UpgradeInit>): void {
+    public updateUpgrade(
+        id: UpgradeIds,
+        newUpgrade: Partial<UpgradeInit>,
+    ): void {
         // Get the upgrade
-        const oldUpgrade = (this.getUpgrade(id) as Mutable<UpgradeStatic> | null);
+        const oldUpgrade = this.getUpgrade(id) as Mutable<UpgradeStatic> | null;
 
         // If the upgrade doesn't exist, return
         if (oldUpgrade === null) return;
@@ -389,7 +417,7 @@ class CurrencyStatic<
      * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    public runUpgradeEffect (upgrade: UpgradeStatic): void {
+    public runUpgradeEffect(upgrade: UpgradeStatic): void {
         upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
     }
 
@@ -398,7 +426,7 @@ class CurrencyStatic<
      * @param item - The item to run the effect for.
      * @param tier - The tier of the item that was bought.
      */
-    public runItemEffect (item: Item, tier: DecimalSource = Decimal.dOne): void {
+    public runItemEffect(item: Item, tier: DecimalSource = Decimal.dOne): void {
         tier = new Decimal(tier);
 
         item.effect?.(item.amount, tier, item, this as CurrencyStatic);
@@ -416,7 +444,12 @@ class CurrencyStatic<
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    public calculateUpgrade (id: UpgradeIds, target: DecimalSource = Infinity, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal] {
+    public calculateUpgrade(
+        id: UpgradeIds,
+        target: DecimalSource = Infinity,
+        mode?: MeanMode,
+        iterations?: number,
+    ): [amount: Decimal, cost: Decimal] {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -434,7 +467,14 @@ class CurrencyStatic<
             target = Decimal.min(target, upgrade.maxLevel);
         }
 
-        return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
+        return calculateUpgrade(
+            this.value,
+            upgrade,
+            upgrade.level,
+            target,
+            mode,
+            iterations,
+        );
     }
 
     /**
@@ -449,7 +489,12 @@ class CurrencyStatic<
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    public getNextCost (id: UpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCost(
+        id: UpgradeIds,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -480,7 +525,12 @@ class CurrencyStatic<
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    public getNextCostMax (id: UpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCostMax(
+        id: UpgradeIds,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -494,7 +544,8 @@ class CurrencyStatic<
         const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
 
         // Calculate the cost of the next upgrade after the maximum affordable quantity
-        const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0]))
+        const nextCost = upgrade
+            .cost(upgrade.level.add(upgCalc[0]))
             .add(upgCalc[1]);
         return nextCost;
     }
@@ -510,7 +561,12 @@ class CurrencyStatic<
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    public buyUpgrade (id: UpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
+    public buyUpgrade(
+        id: UpgradeIds,
+        target?: DecimalSource,
+        mode?: MeanMode,
+        iterations?: number,
+    ): boolean {
         // Get the upgrade
         const upgrade = this.getUpgrade(id);
 
@@ -521,7 +577,12 @@ class CurrencyStatic<
         }
 
         // Calculate the amount of upgrades you can buy
-        const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+        const [amount, cost] = this.calculateUpgrade(
+            id,
+            target,
+            mode,
+            iterations,
+        );
 
         // Check if affordable
         if (amount.lte(0)) {
@@ -546,18 +607,18 @@ class CurrencyStatic<
      * @param items - The items to add.
      * @returns The added items.
      */
-    private pointerAddItem (items: ItemInit): ItemData {
+    private pointerAddItem(items: ItemInit): ItemData {
         const itemToAdd = new ItemData(items);
         this.pointer.items[items.id] = itemToAdd;
         return itemToAdd;
-    };
+    }
 
     /**
      * Retrieves an item object from the data pointer based on the provided id.
      * @param id - The id of the item to retrieve.
      * @returns The item object if found, otherwise null.
      */
-    private pointerGetItem (id: string): ItemData | null {
+    private pointerGetItem(id: string): ItemData | null {
         return this.pointer.items[id] ?? null;
     }
 
@@ -566,7 +627,10 @@ class CurrencyStatic<
      * @param items - The items to add.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      */
-    public addItem (items: ItemInit | ItemInit[], runEffectInstantly = true): void {
+    public addItem(
+        items: ItemInit | ItemInit[],
+        runEffectInstantly = true,
+    ): void {
         // Convert to array if not already
         if (!Array.isArray(items)) items = [items];
 
@@ -576,7 +640,11 @@ class CurrencyStatic<
 
             // Create the upgrade object
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id)!, () => this as CurrencyStatic);
+            const addedUpgradeStatic = new Item(
+                item,
+                () => this.pointerGetItem(item.id)!,
+                () => this as CurrencyStatic,
+            );
 
             // Run the effect instantly if needed
             if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
@@ -591,7 +659,9 @@ class CurrencyStatic<
      * @param id - The id of the item to retrieve.
      * @returns The item object if found, otherwise null.
      */
-    public getItem<T extends ItemIds> (id: T): IsPrimitiveString<ItemIds> extends false ? Item : Item | null {
+    public getItem<T extends ItemIds>(
+        id: T,
+    ): IsPrimitiveString<ItemIds> extends false ? Item : Item | null {
         // // @ts-expect-error - This is a hack to get the type to work
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return this.items[id] ?? null;
@@ -605,7 +675,11 @@ class CurrencyStatic<
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    public calculateItem (id: ItemIds, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal] {
+    public calculateItem(
+        id: ItemIds,
+        tier?: DecimalSource,
+        target?: DecimalSource,
+    ): [amount: Decimal, cost: Decimal] {
         // Get the item
         const item = this.getItem(id);
 
@@ -625,7 +699,11 @@ class CurrencyStatic<
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    public buyItem (id: ItemIds, tier?: DecimalSource, target?: DecimalSource): boolean {
+    public buyItem(
+        id: ItemIds,
+        tier?: DecimalSource,
+        target?: DecimalSource,
+    ): boolean {
         // Get the item
         const item = this.getItem(id);
 

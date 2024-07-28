@@ -35,13 +35,16 @@ interface FormatSettings extends FormatGainSettings {
  * @param settings - The settings to use for formatting.
  * @returns The formatted value.
  */
-function gameFormat (value: DecimalSource, settings: FormatSettings): string {
+function gameFormat(value: DecimalSource, settings: FormatSettings): string {
     // Assign default settings (deprecated as default parameters are used instead)
-    settings = Object.assign({
-        formatType: "mixed_sc",
-        acc: 2,
-        max: 9,
-    }, settings);
+    settings = Object.assign(
+        {
+            formatType: "mixed_sc",
+            acc: 2,
+            max: 9,
+        },
+        settings,
+    );
 
     // console.log("gameFormat settings", settings);
 
@@ -53,7 +56,13 @@ function gameFormat (value: DecimalSource, settings: FormatSettings): string {
             case "short":
                 return Decimal.formats.formatTime(value, acc, formatType);
             case "long":
-                return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
+                return Decimal.formats.formatTimeLong(
+                    value,
+                    true,
+                    0,
+                    max,
+                    formatType,
+                );
         }
     }
 
@@ -63,7 +72,7 @@ function gameFormat (value: DecimalSource, settings: FormatSettings): string {
         return Decimal.formats.formatMult(value, acc);
     }
     return Decimal.format(value, acc, max, formatType);
-};
+}
 
 /**
  * Formats the gain of a game format based on the provided settings.
@@ -72,7 +81,11 @@ function gameFormat (value: DecimalSource, settings: FormatSettings): string {
  * @param settings - The settings for formatting the gain.
  * @returns The formatted gain as a string.
  */
-function gameFormatGain (value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string {
+function gameFormatGain(
+    value: DecimalSource,
+    gain: DecimalSource,
+    settings: FormatGainSettings,
+): string {
     // return gameFormat(value, props.settings);
     const { formatType, acc, max } = settings;
     return Decimal.formatGain(value, gain, formatType, acc, max);
@@ -89,12 +102,15 @@ class GameFormatClass {
     /**
      * @returns The settings to use for formatting.
      */
-    public get settings (): FormatSettings {
+    public get settings(): FormatSettings {
         return this.settingsFn();
     }
-    constructor (settings: Pointer<FormatSettings>) {
+    constructor(settings: Pointer<FormatSettings>) {
         // this.settings = settings;
-        this.settingsFn = typeof settings === "function" ? settings : (): FormatSettings => settings;
+        this.settingsFn =
+            typeof settings === "function"
+                ? settings
+                : (): FormatSettings => settings;
     }
 
     /**
@@ -110,21 +126,24 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain = (x: DecimalSource, gain: DecimalSource): string => gameFormatGain(x, gain, this.settings);
+    public gain = (x: DecimalSource, gain: DecimalSource): string =>
+        gameFormatGain(x, gain, this.settings);
 
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public time = (x: DecimalSource): string => gameFormat(x, { ...this.settings, time: true });
+    public time = (x: DecimalSource): string =>
+        gameFormat(x, { ...this.settings, time: true });
 
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public multi = (x: DecimalSource): string => gameFormat(x, { ...this.settings, multi: true });
+    public multi = (x: DecimalSource): string =>
+        gameFormat(x, { ...this.settings, multi: true });
 }
 
 /**
@@ -142,62 +161,77 @@ type FormatTimeType = "short" | "long";
 /**
  * A list of format options with their display names and values.
  */
-const formatOptions: FormatOption[] = ([
-    {
-        name: "Standard",
-        value: "standard",
-    },
-    {
-        name: "Scientific",
-        value: "scientific",
-    },
-    {
-        name: "Mixed Scientific (default)",
-        value: "mixed_sc",
-    },
-    {
-        name: "Old Scientific",
-        value: "old_sc",
-    },
-    {
-        name: "Engineering",
-        value: "eng",
-    },
-    {
-        name: "Infinity",
-        value: "inf",
-    },
-    {
-        name: "Omega",
-        value: "omega",
-    },
-    {
-        name: "Omega Short",
-        value: "omega_short",
-    },
-    {
-        name: "Elemental",
-        value: "elemental",
-    },
-    {
-        name: "Layer",
-        value: "layer",
-    },
-] as FormatOption[]).sort((a, b) => a.name.localeCompare(b.name));
+const formatOptions: FormatOption[] = (
+    [
+        {
+            name: "Standard",
+            value: "standard",
+        },
+        {
+            name: "Scientific",
+            value: "scientific",
+        },
+        {
+            name: "Mixed Scientific (default)",
+            value: "mixed_sc",
+        },
+        {
+            name: "Old Scientific",
+            value: "old_sc",
+        },
+        {
+            name: "Engineering",
+            value: "eng",
+        },
+        {
+            name: "Infinity",
+            value: "inf",
+        },
+        {
+            name: "Omega",
+            value: "omega",
+        },
+        {
+            name: "Omega Short",
+            value: "omega_short",
+        },
+        {
+            name: "Elemental",
+            value: "elemental",
+        },
+        {
+            name: "Layer",
+            value: "layer",
+        },
+    ] as FormatOption[]
+).sort((a, b) => a.name.localeCompare(b.name));
 
 /**
  * A list of format options with their display names and values for time.
  */
-const formatTimeOptions: FormatOption<FormatTimeType>[] = ([
-    {
-        name: "Short (default)",
-        value: "short",
-    },
-    {
-        name: "Long",
-        value: "long",
-    },
-] as FormatOption<FormatTimeType>[]).sort((a, b) => a.name.localeCompare(b.name));
+const formatTimeOptions: FormatOption<FormatTimeType>[] = (
+    [
+        {
+            name: "Short (default)",
+            value: "short",
+        },
+        {
+            name: "Long",
+            value: "long",
+        },
+    ] as FormatOption<FormatTimeType>[]
+).sort((a, b) => a.name.localeCompare(b.name));
 
-export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
-export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };
+export {
+    GameFormatClass,
+    formatOptions,
+    formatTimeOptions,
+    gameFormat,
+    gameFormatGain,
+};
+export type {
+    FormatGainSettings,
+    FormatSettings,
+    FormatTimeType,
+    FormatOption,
+};

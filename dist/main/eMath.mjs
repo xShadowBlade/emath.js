@@ -4910,9 +4910,17 @@ var Boost = class {
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(new BoostObject({ id, name, description, value, order }));
+        this.boostArray.push(
+          new BoostObject({ id, name, description, value, order })
+        );
       } else {
-        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, description, value, order });
+        this.boostArray[bCheck[1][0]] = new BoostObject({
+          id,
+          name,
+          description,
+          value,
+          order
+        });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
@@ -4948,7 +4956,9 @@ var Boost = class {
   calculate(base = this.baseEffect) {
     let output = new Decimal(base);
     let boosts = this.boostArray;
-    boosts = boosts.sort((a, b) => a.order - b.order);
+    boosts = boosts.sort(
+      (a, b) => a.order - b.order
+    );
     for (const boost of boosts) {
       output = boost.value(output);
     }
@@ -4980,10 +4990,14 @@ function mean(a, b, mode = "geometric") {
   }
 }
 function equalsTolerance(a, b, tolerance, config) {
-  config = Object.assign({}, {
-    verbose: false,
-    mode: "geometric"
-  }, config);
+  config = Object.assign(
+    {},
+    {
+      verbose: false,
+      mode: "geometric"
+    },
+    config
+  );
   a = new Decimal(a);
   b = new Decimal(b);
   tolerance = new Decimal(tolerance);
@@ -4996,7 +5010,9 @@ function equalsTolerance(a, b, tolerance, config) {
     diff = a.sub(b).abs();
     result = diff.lte(tolerance);
   }
-  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) console.log({ a, b, tolerance, config, diff, result });
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, config, diff, result });
+  }
   return result;
 }
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
@@ -5010,7 +5026,9 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   if (f(upperBound).lt(n)) {
-    console.warn("The function is not monotonically increasing. (f(n) < n)");
+    console.warn(
+      "The function is not monotonically increasing. (f(n) < n)"
+    );
     return {
       value: upperBound,
       lowerBound: upperBound,
@@ -5020,7 +5038,10 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   for (let i = 0; i < iterations; i++) {
     const mid = mean(lowerBound, upperBound, mode);
     const midValue = f(mid);
-    if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+    if (equalsTolerance(lowerBound, upperBound, tolerance, {
+      verbose: false,
+      mode: "geometric"
+    })) {
       break;
     }
     if (midValue.lt(n)) {
@@ -5058,7 +5079,10 @@ function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolera
     const x1 = a.add(intervalWidth.mul(i + 1));
     const oldSum = sum;
     sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
-    if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
+    if (equalsTolerance(oldSum, sum, tolerance, {
+      verbose: false,
+      mode: "geometric"
+    })) {
       break;
     }
   }
@@ -5103,19 +5127,33 @@ function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, itera
       out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
       return out;
     } else {
-      out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost2 : Decimal.dZero];
+      out = [
+        canAfford ? Decimal.dOne : Decimal.dZero,
+        canAfford ? cost2 : Decimal.dZero
+      ];
       return out;
     }
   }
   if (upgrade.costBulk) {
     const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
-    const out = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost2 : Decimal.dZero];
+    const out = [
+      canAfford ? amount : Decimal.dZero,
+      canAfford && !el ? cost2 : Decimal.dZero
+    ];
     return out;
   }
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = Decimal.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
+    const maxLevelAffordable2 = Decimal.min(
+      end,
+      inverseFunctionApprox(
+        costTargetFn,
+        value,
+        mode,
+        iterations
+      ).value.floor()
+    );
     const cost2 = Decimal.dZero;
     return [maxLevelAffordable2, cost2];
   }
@@ -5173,7 +5211,9 @@ var UpgradeStatic = class _UpgradeStatic {
    * @returns The current level of the upgrade.
    */
   get level() {
-    return ((this ?? { data: { level: Decimal.dOne } }).data ?? { level: Decimal.dOne }).level;
+    return ((this ?? { data: { level: Decimal.dOne } }).data ?? {
+      level: Decimal.dOne
+    }).level;
   }
   set level(n) {
     this.data.level = new Decimal(n);
@@ -5260,7 +5300,10 @@ function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) 
   }
   if (target.eq(1)) {
     const cost2 = item.cost(tier);
-    return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
+    return [
+      value.gte(cost2) ? Decimal.dOne : Decimal.dZero,
+      value.gte(cost2) ? cost2 : Decimal.dZero
+    ];
   }
   const maxLevelAffordable = value.div(item.cost(tier)).floor().min(target);
   const cost = item.cost(tier).mul(maxLevelAffordable);
@@ -5301,7 +5344,9 @@ var Item = class {
    * @returns The amount of the item that was bought.
    */
   get amount() {
-    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? { amount: Decimal.dOne }).amount;
+    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? {
+      amount: Decimal.dOne
+    }).amount;
   }
   set amount(n) {
     this.data.amount = new Decimal(n);
@@ -5420,14 +5465,12 @@ var CurrencyStatic = class {
         if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
       }
     }
-    ;
     if (resetObj.resetItemAmounts) {
       for (const item of Object.values(this.items)) {
         item.amount = new Decimal(item.defaultAmount);
         if (resetObj.runUpgradeEffect) this.runItemEffect(item);
       }
     }
-    ;
   }
   /**
    * The new currency value after applying the boost.
@@ -5496,13 +5539,17 @@ var CurrencyStatic = class {
     const allUpgradeIds = Object.keys(this.upgrades);
     if (id instanceof RegExp) {
       const regex = id;
-      const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
+      const matchedIds = allUpgradeIds.filter(
+        (upgrade) => regex.test(upgrade)
+      );
       return matchedIds.map((matchedId) => this.upgrades[matchedId]);
     }
     if (typeof id === "string") {
       id = [id];
     }
-    const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
+    const matchedUpgrades = allUpgradeIds.filter(
+      (upgrade) => id.includes(upgrade)
+    );
     return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
   }
   /**
@@ -5536,7 +5583,11 @@ var CurrencyStatic = class {
     const addedUpgradeList = [];
     for (const upgrade of upgrades) {
       this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id), () => this);
+      const addedUpgradeStatic = new UpgradeStatic(
+        upgrade,
+        () => this.pointerGetUpgrade(upgrade.id),
+        () => this
+      );
       if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
       this.upgrades[upgrade.id] = addedUpgradeStatic;
       addedUpgradeList.push(addedUpgradeStatic);
@@ -5600,7 +5651,14 @@ var CurrencyStatic = class {
     if (upgrade.maxLevel !== void 0) {
       target = Decimal.min(target, upgrade.maxLevel);
     }
-    return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
+    return calculateUpgrade(
+      this.value,
+      upgrade,
+      upgrade.level,
+      target,
+      mode,
+      iterations
+    );
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -5664,7 +5722,12 @@ var CurrencyStatic = class {
       console.warn(`Upgrade "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+    const [amount, cost] = this.calculateUpgrade(
+      id,
+      target,
+      mode,
+      iterations
+    );
     if (amount.lte(0)) {
       return false;
     }
@@ -5700,7 +5763,11 @@ var CurrencyStatic = class {
     if (!Array.isArray(items)) items = [items];
     for (const item of items) {
       this.pointerAddItem(item);
-      const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id), () => this);
+      const addedUpgradeStatic = new Item(
+        item,
+        () => this.pointerGetItem(item.id),
+        () => this
+      );
       if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
       this.items[item.id] = addedUpgradeStatic;
     }
@@ -5791,7 +5858,9 @@ var AttributeStatic = class {
    * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
    */
   update() {
-    console.warn("AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.");
+    console.warn(
+      "AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed."
+    );
     if (this.boost) {
       this.pointer.value = this.boost.calculate();
     }
@@ -5814,7 +5883,9 @@ var AttributeStatic = class {
    */
   set value(value) {
     if (this.boost) {
-      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+      throw new Error(
+        "Cannot set value of attributeStatic when boost is enabled."
+      );
     }
     this.pointer.value = value;
   }
@@ -5870,7 +5941,10 @@ var GridCell = class {
    * @returns The translated cell
    */
   translate(x = 0, y = 0) {
-    return Grid.getInstance(this.gridSymbol).getCell(this.x + x, this.y + y);
+    return Grid.getInstance(this.gridSymbol).getCell(
+      this.x + x,
+      this.y + y
+    );
   }
   /**
    * Gets the cell in a specific direction from the current cell.
@@ -5938,11 +6012,21 @@ var GridCell = class {
 };
 function validateCoordinates(x, y, isSize = true) {
   const message = isSize ? "Size" : "Coordinates";
-  if (typeof x !== "number" || typeof y !== "number") throw new RangeError(`${message} must be numbers: ${x}, ${y}`);
-  if (!Number.isInteger(x) || !Number.isInteger(y)) throw new RangeError(`${message} must be integers: ${x}, ${y}`);
-  if (x < 0 || y < 0) throw new RangeError(`${message} must be positive: ${x}, ${y}`);
-  if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError(`${message} must be finite: ${x}, ${y}`);
-  if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) throw new RangeError(`${message} must be safe integers: ${x}, ${y}`);
+  if (typeof x !== "number" || typeof y !== "number") {
+    throw new RangeError(`${message} must be numbers: ${x}, ${y}`);
+  }
+  if (!Number.isInteger(x) || !Number.isInteger(y)) {
+    throw new RangeError(`${message} must be integers: ${x}, ${y}`);
+  }
+  if (x < 0 || y < 0) {
+    throw new RangeError(`${message} must be positive: ${x}, ${y}`);
+  }
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    throw new RangeError(`${message} must be finite: ${x}, ${y}`);
+  }
+  if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) {
+    throw new RangeError(`${message} must be safe integers: ${x}, ${y}`);
+  }
 }
 var GridCellCollection = class _GridCellCollection extends Array {
   /**
@@ -5951,7 +6035,9 @@ var GridCellCollection = class _GridCellCollection extends Array {
    */
   constructor(cells) {
     cells = Array.isArray(cells) ? cells : [cells];
-    cells = cells.filter((cell) => cell !== void 0);
+    cells = cells.filter(
+      (cell) => cell !== void 0
+    );
     super(...cells);
     this.removeDuplicates();
   }
@@ -5984,7 +6070,9 @@ var GridCellCollection = class _GridCellCollection extends Array {
    * @returns - The cells in the specified direction.
    */
   direction(direction, distance, fill) {
-    return new _GridCellCollection(this.flatMap((cell) => cell.direction(direction, distance, fill)));
+    return new _GridCellCollection(
+      this.flatMap((cell) => cell.direction(direction, distance, fill))
+    );
   }
   /**
    * Gets the cells above the current cells. Can be chained.
@@ -6080,7 +6168,12 @@ var Grid = class _Grid {
     for (let y = 0; y < this.ySize; y++) {
       this.cells[y] = [];
       for (let x = 0; x < this.xSize; x++) {
-        this.cells[y][x] = new GridCell(x, y, starterProps, this.gridSymbol);
+        this.cells[y][x] = new GridCell(
+          x,
+          y,
+          starterProps,
+          this.gridSymbol
+        );
       }
     }
   }
@@ -6117,7 +6210,12 @@ var Grid = class _Grid {
         for (let y = oldYSize; y < this.ySize; y++) {
           this.cells[y] = [];
           for (let x = 0; x < oldXSize; x++) {
-            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+            this.cells[y][x] = new GridCell(
+              x,
+              y,
+              this.starterProps,
+              this.gridSymbol
+            );
           }
         }
       }
@@ -6132,7 +6230,12 @@ var Grid = class _Grid {
       if (this.xSize > oldXSize) {
         for (let y = 0; y < this.ySize; y++) {
           for (let x = oldXSize; x < this.xSize; x++) {
-            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
+            this.cells[y][x] = new GridCell(
+              x,
+              y,
+              this.starterProps,
+              this.gridSymbol
+            );
           }
         }
       }
@@ -6222,12 +6325,14 @@ var Grid = class _Grid {
     }
     const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
-      output.push(...new GridCellCollection([
-        this.getCell(x, y + i, overflow),
-        this.getCell(x + i, y, overflow),
-        this.getCell(x, y - i, overflow),
-        this.getCell(x - i, y, overflow)
-      ]));
+      output.push(
+        ...new GridCellCollection([
+          this.getCell(x, y + i, overflow),
+          this.getCell(x + i, y, overflow),
+          this.getCell(x, y - i, overflow),
+          this.getCell(x - i, y, overflow)
+        ])
+      );
     }
     return new GridCellCollection(output);
   }
@@ -6259,12 +6364,14 @@ var Grid = class _Grid {
     }
     const output = [this.getCell(x, y)];
     for (let i = 1; i <= distance; i++) {
-      output.push(...new GridCellCollection([
-        this.getCell(x - i, y + i, overflow),
-        this.getCell(x + i, y + i, overflow),
-        this.getCell(x + i, y - i, overflow),
-        this.getCell(x - i, y - i, overflow)
-      ]));
+      output.push(
+        ...new GridCellCollection([
+          this.getCell(x - i, y + i, overflow),
+          this.getCell(x + i, y + i, overflow),
+          this.getCell(x + i, y - i, overflow),
+          this.getCell(x - i, y - i, overflow)
+        ])
+      );
     }
     return new GridCellCollection(output);
   }
@@ -6285,16 +6392,18 @@ var Grid = class _Grid {
     }
     const output = [];
     for (let i = 1; i < distance * 2; i++) {
-      output.push(...new GridCellCollection([
-        // Get the top row
-        this.getCell(x - distance + i, y - distance, overflow),
-        // Get the right column
-        this.getCell(x + distance, y - distance + i, overflow),
-        // Get the bottom row
-        this.getCell(x + distance - i, y + distance, overflow),
-        // Get the left column
-        this.getCell(x - distance, y + distance - i, overflow)
-      ]));
+      output.push(
+        ...new GridCellCollection([
+          // Get the top row
+          this.getCell(x - distance + i, y - distance, overflow),
+          // Get the right column
+          this.getCell(x + distance, y - distance + i, overflow),
+          // Get the bottom row
+          this.getCell(x + distance - i, y + distance, overflow),
+          // Get the left column
+          this.getCell(x - distance, y + distance - i, overflow)
+        ])
+      );
     }
     output.push(...this.getDiagonal(x, y, distance, false, overflow));
     return new GridCellCollection(output);

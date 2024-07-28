@@ -54,7 +54,7 @@ interface ItemInit {
      * // An item that costs 10 times the level
      * (level) => level.mul(10);
      */
-    cost: ((level: Decimal) => Decimal);
+    cost: (level: Decimal) => Decimal;
     /**
      * The effect of the item. This runs when the item is bought, and instantly if `runEffectInstantly` is true.
      * @param tier - The tier of the item that was bought.

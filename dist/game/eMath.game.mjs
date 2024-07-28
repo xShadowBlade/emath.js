@@ -5643,9 +5643,17 @@ var Boost = class {
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(new BoostObject({ id, name, description, value, order }));
+        this.boostArray.push(
+          new BoostObject({ id, name, description, value, order })
+        );
       } else {
-        this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, description, value, order });
+        this.boostArray[bCheck[1][0]] = new BoostObject({
+          id,
+          name,
+          description,
+          value,
+          order
+        });
       }
     } else {
       arg1 = Array.isArray(arg1) ? arg1 : [arg1];
@@ -5681,7 +5689,9 @@ var Boost = class {
   calculate(base = this.baseEffect) {
     let output = new Decimal(base);
     let boosts = this.boostArray;
-    boosts = boosts.sort((a, b) => a.order - b.order);
+    boosts = boosts.sort(
+      (a, b) => a.order - b.order
+    );
     for (const boost of boosts) {
       output = boost.value(output);
     }
@@ -5713,10 +5723,14 @@ function mean(a, b, mode = "geometric") {
   }
 }
 function equalsTolerance(a, b, tolerance, config) {
-  config = Object.assign({}, {
-    verbose: false,
-    mode: "geometric"
-  }, config);
+  config = Object.assign(
+    {},
+    {
+      verbose: false,
+      mode: "geometric"
+    },
+    config
+  );
   a = new Decimal(a);
   b = new Decimal(b);
   tolerance = new Decimal(tolerance);
@@ -5729,7 +5743,9 @@ function equalsTolerance(a, b, tolerance, config) {
     diff = a.sub(b).abs();
     result = diff.lte(tolerance);
   }
-  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) console.log({ a, b, tolerance, config, diff, result });
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, config, diff, result });
+  }
   return result;
 }
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
@@ -5743,7 +5759,9 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   if (f(upperBound).lt(n)) {
-    console.warn("The function is not monotonically increasing. (f(n) < n)");
+    console.warn(
+      "The function is not monotonically increasing. (f(n) < n)"
+    );
     return {
       value: upperBound,
       lowerBound: upperBound,
@@ -5753,7 +5771,10 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   for (let i = 0; i < iterations; i++) {
     const mid = mean(lowerBound, upperBound, mode);
     const midValue = f(mid);
-    if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+    if (equalsTolerance(lowerBound, upperBound, tolerance, {
+      verbose: false,
+      mode: "geometric"
+    })) {
       break;
     }
     if (midValue.lt(n)) {
@@ -5791,7 +5812,10 @@ function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolera
     const x1 = a.add(intervalWidth.mul(i + 1));
     const oldSum = sum;
     sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
-    if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
+    if (equalsTolerance(oldSum, sum, tolerance, {
+      verbose: false,
+      mode: "geometric"
+    })) {
       break;
     }
   }
@@ -5826,19 +5850,33 @@ function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, itera
       out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
       return out;
     } else {
-      out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost2 : Decimal.dZero];
+      out = [
+        canAfford ? Decimal.dOne : Decimal.dZero,
+        canAfford ? cost2 : Decimal.dZero
+      ];
       return out;
     }
   }
   if (upgrade.costBulk) {
     const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
-    const out = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost2 : Decimal.dZero];
+    const out = [
+      canAfford ? amount : Decimal.dZero,
+      canAfford && !el ? cost2 : Decimal.dZero
+    ];
     return out;
   }
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = Decimal.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
+    const maxLevelAffordable2 = Decimal.min(
+      end,
+      inverseFunctionApprox(
+        costTargetFn,
+        value,
+        mode,
+        iterations
+      ).value.floor()
+    );
     const cost2 = Decimal.dZero;
     return [maxLevelAffordable2, cost2];
   }
@@ -5889,7 +5927,9 @@ var UpgradeStatic = class _UpgradeStatic {
    * @returns The current level of the upgrade.
    */
   get level() {
-    return ((this ?? { data: { level: Decimal.dOne } }).data ?? { level: Decimal.dOne }).level;
+    return ((this ?? { data: { level: Decimal.dOne } }).data ?? {
+      level: Decimal.dOne
+    }).level;
   }
   set level(n) {
     this.data.level = new Decimal(n);
@@ -5976,7 +6016,10 @@ function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) 
   }
   if (target.eq(1)) {
     const cost2 = item.cost(tier);
-    return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
+    return [
+      value.gte(cost2) ? Decimal.dOne : Decimal.dZero,
+      value.gte(cost2) ? cost2 : Decimal.dZero
+    ];
   }
   const maxLevelAffordable = value.div(item.cost(tier)).floor().min(target);
   const cost = item.cost(tier).mul(maxLevelAffordable);
@@ -6017,7 +6060,9 @@ var Item = class {
    * @returns The amount of the item that was bought.
    */
   get amount() {
-    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? { amount: Decimal.dOne }).amount;
+    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? {
+      amount: Decimal.dOne
+    }).amount;
   }
   set amount(n) {
     this.data.amount = new Decimal(n);
@@ -6134,14 +6179,12 @@ var CurrencyStatic = class {
         if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
       }
     }
-    ;
     if (resetObj.resetItemAmounts) {
       for (const item of Object.values(this.items)) {
         item.amount = new Decimal(item.defaultAmount);
         if (resetObj.runUpgradeEffect) this.runItemEffect(item);
       }
     }
-    ;
   }
   /**
    * The new currency value after applying the boost.
@@ -6210,13 +6253,17 @@ var CurrencyStatic = class {
     const allUpgradeIds = Object.keys(this.upgrades);
     if (id instanceof RegExp) {
       const regex = id;
-      const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
+      const matchedIds = allUpgradeIds.filter(
+        (upgrade) => regex.test(upgrade)
+      );
       return matchedIds.map((matchedId) => this.upgrades[matchedId]);
     }
     if (typeof id === "string") {
       id = [id];
     }
-    const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
+    const matchedUpgrades = allUpgradeIds.filter(
+      (upgrade) => id.includes(upgrade)
+    );
     return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
   }
   /**
@@ -6250,7 +6297,11 @@ var CurrencyStatic = class {
     const addedUpgradeList = [];
     for (const upgrade of upgrades) {
       this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(upgrade, () => this.pointerGetUpgrade(upgrade.id), () => this);
+      const addedUpgradeStatic = new UpgradeStatic(
+        upgrade,
+        () => this.pointerGetUpgrade(upgrade.id),
+        () => this
+      );
       if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
       this.upgrades[upgrade.id] = addedUpgradeStatic;
       addedUpgradeList.push(addedUpgradeStatic);
@@ -6314,7 +6365,14 @@ var CurrencyStatic = class {
     if (upgrade.maxLevel !== void 0) {
       target = Decimal.min(target, upgrade.maxLevel);
     }
-    return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
+    return calculateUpgrade(
+      this.value,
+      upgrade,
+      upgrade.level,
+      target,
+      mode,
+      iterations
+    );
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -6378,7 +6436,12 @@ var CurrencyStatic = class {
       console.warn(`Upgrade "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+    const [amount, cost] = this.calculateUpgrade(
+      id,
+      target,
+      mode,
+      iterations
+    );
     if (amount.lte(0)) {
       return false;
     }
@@ -6414,7 +6477,11 @@ var CurrencyStatic = class {
     if (!Array.isArray(items)) items = [items];
     for (const item of items) {
       this.pointerAddItem(item);
-      const addedUpgradeStatic = new Item(item, () => this.pointerGetItem(item.id), () => this);
+      const addedUpgradeStatic = new Item(
+        item,
+        () => this.pointerGetItem(item.id),
+        () => this
+      );
       if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
       this.items[item.id] = addedUpgradeStatic;
     }
@@ -6505,7 +6572,9 @@ var AttributeStatic = class {
    * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
    */
   update() {
-    console.warn("AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.");
+    console.warn(
+      "AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed."
+    );
     if (this.boost) {
       this.pointer.value = this.boost.calculate();
     }
@@ -6528,7 +6597,9 @@ var AttributeStatic = class {
    */
   set value(value) {
     if (this.boost) {
-      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
+      throw new Error(
+        "Cannot set value of attributeStatic when boost is enabled."
+      );
     }
     this.pointer.value = value;
   }
@@ -6557,12 +6628,18 @@ var ConfigManager = class {
         if (typeof obj[key] === "undefined") {
           obj[key] = template[key];
         } else if (typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
-          obj[key] = parseObject(obj[key], template[key]);
+          obj[key] = parseObject(
+            obj[key],
+            template[key]
+          );
         }
       }
       return obj;
     }
-    return parseObject(config, this.configOptionTemplate);
+    return parseObject(
+      config,
+      this.configOptionTemplate
+    );
   }
   /**
    * @returns The template to use for default values.
@@ -6624,7 +6701,9 @@ var KeyManager = class _KeyManager {
   }
   static {
     /** The configuration manager for the key manager */
-    this.configManager = new ConfigManager(keyManagerDefaultConfig);
+    this.configManager = new ConfigManager(
+      keyManagerDefaultConfig
+    );
   }
   /**
    * Changes the framerate of the key manager.
@@ -6698,7 +6777,12 @@ var KeyManager = class _KeyManager {
     return this.binds.find((current) => current.id === id);
   }
   addKey(nameOrKeysToAdd, key, fn) {
-    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ id: nameOrKeysToAdd, name: nameOrKeysToAdd, key: key ?? "", fn }] : nameOrKeysToAdd;
+    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? {
+      id: nameOrKeysToAdd,
+      name: nameOrKeysToAdd,
+      key: key ?? "",
+      fn
+    } : nameOrKeysToAdd;
     nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
     for (const keyBinding of nameOrKeysToAdd) {
       keyBinding.id = keyBinding.id ?? keyBinding.name;
@@ -6754,7 +6838,9 @@ var EventManager = class _EventManager {
   }
   static {
     /** The static config manager for the event manager */
-    this.configManager = new ConfigManager(eventManagerDefaultConfig);
+    this.configManager = new ConfigManager(
+      eventManagerDefaultConfig
+    );
   }
   /**
    * Adds a callback to an event.
@@ -6795,7 +6881,6 @@ var EventManager = class _EventManager {
               event.intervalLast = currentTime;
             }
           }
-          ;
           break;
         case "timeout" /* timeout */:
           {
@@ -6805,7 +6890,6 @@ var EventManager = class _EventManager {
               delete this.events[event.name];
             }
           }
-          ;
           break;
       }
     }
@@ -6834,13 +6918,11 @@ var EventManager = class _EventManager {
           {
             event.intervalLast -= dt;
           }
-          ;
           break;
         case "timeout" /* timeout */:
           {
             event.timeCreated -= dt;
           }
-          ;
           break;
       }
     }
@@ -6879,7 +6961,6 @@ var EventManager = class _EventManager {
             };
             return event;
           }
-          ;
           break;
         case "timeout":
         default: {
@@ -6961,7 +7042,9 @@ var DataManager = class {
    */
   setData(key, value) {
     if (typeof this.data[key] === "undefined" && this.normalData) {
-      console.warn("After initializing data, you should not add new properties to data.");
+      console.warn(
+        "After initializing data, you should not add new properties to data."
+      );
     }
     this.data[key] = value;
     const thisData = () => this.data;
@@ -6995,9 +7078,13 @@ var DataManager = class {
    * @returns A getter for the static data.
    */
   setStatic(key, value) {
-    console.warn("setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+    console.warn(
+      "setStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
+    );
     if (typeof this.static[key] === "undefined" && this.normalData) {
-      console.warn("After initializing data, you should not add new properties to staticData.");
+      console.warn(
+        "After initializing data, you should not add new properties to staticData."
+      );
     }
     this.static[key] = value;
     return this.static[key];
@@ -7009,7 +7096,9 @@ var DataManager = class {
    * @returns The static data for the given key.
    */
   getStatic(key) {
-    console.warn("getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+    console.warn(
+      "getStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
+    );
     return this.static[key];
   }
   /**
@@ -7031,10 +7120,12 @@ var DataManager = class {
   compileDataRaw(data = this.data) {
     this.gameRef.eventManager.dispatch("beforeCompileData");
     const gameDataString = instanceToPlain(data);
-    const hasedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+    const hasedData = (0, import_md5.default)(
+      `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`
+    );
     let version;
     try {
-      version = "9.3.0";
+      version = "9.4.0";
     } catch (error) {
       version = "9.3.0";
     }
@@ -7065,7 +7156,9 @@ var DataManager = class {
    * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
-  decompileData(data = window.localStorage.getItem(`${this.gameRef.config.name.id}-data`)) {
+  decompileData(data = window.localStorage.getItem(
+    `${this.gameRef.config.name.id}-data`
+  )) {
     if (!data) return null;
     let parsedData;
     try {
@@ -7073,7 +7166,10 @@ var DataManager = class {
       return parsedData;
     } catch (error) {
       if (error instanceof SyntaxError) {
-        console.error(`Failed to decompile data (corrupted) "${data}":`, error);
+        console.error(
+          `Failed to decompile data (corrupted) "${data}":`,
+          error
+        );
       } else {
         throw error;
       }
@@ -7088,10 +7184,14 @@ var DataManager = class {
   validateData(data) {
     const [saveMetadata, gameDataToValidate] = data;
     if (typeof saveMetadata === "string") {
-      return (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
+      return (0, import_md5.default)(
+        `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`
+      ) === saveMetadata;
     }
     const hashSave = saveMetadata.hash;
-    const hashCheck = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
+    const hashCheck = (0, import_md5.default)(
+      `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`
+    );
     return hashSave === hashCheck;
   }
   /**
@@ -7099,7 +7199,11 @@ var DataManager = class {
    * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
    */
   resetData(reload = false) {
-    if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+    if (!this.normalData) {
+      throw new Error(
+        "dataManager.resetData(): You must call init() before writing to data."
+      );
+    }
     this.data = this.normalData;
     this.saveData();
     if (reload) window.location.reload();
@@ -7111,9 +7215,18 @@ var DataManager = class {
    */
   saveData(dataToSave = this.compileData()) {
     this.gameRef.eventManager.dispatch("beforeSaveData");
-    if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
-    if (!window.localStorage) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
-    window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+    if (!dataToSave) {
+      throw new Error("dataManager.saveData(): Data to save is empty.");
+    }
+    if (!window.localStorage) {
+      throw new Error(
+        "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
+      );
+    }
+    window.localStorage.setItem(
+      `${this.gameRef.config.name.id}-data`,
+      dataToSave
+    );
     this.gameRef.eventManager.dispatch("saveData");
   }
   /**
@@ -7141,7 +7254,11 @@ var DataManager = class {
    * @returns The loaded data.
    */
   parseData(dataToParse = this.decompileData(), mergeData = true) {
-    if ((!this.normalData || !this.normalDataPlain) && mergeData) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
+    if ((!this.normalData || !this.normalDataPlain) && mergeData) {
+      throw new Error(
+        "dataManager.parseData(): You must call init() before writing to data."
+      );
+    }
     if (!dataToParse) return null;
     const [, loadedData] = dataToParse;
     function isPlainObject(obj) {
@@ -7150,7 +7267,12 @@ var DataManager = class {
     const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
     function deepMerge(sourcePlain, source, target) {
       if (!sourcePlain || !source || !target) {
-        console.warn("dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
+        console.warn(
+          "dataManager.deepMerge(): Missing arguments:",
+          sourcePlain,
+          source,
+          target
+        );
         return target ?? {};
       }
       const out = target;
@@ -7168,43 +7290,75 @@ var DataManager = class {
               targetCurrency.upgrades[upgrade.id] = upgrade;
             }
           }
-          targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
+          targetCurrency.upgrades = {
+            ...sourceCurrency.upgrades,
+            ...targetCurrency.upgrades
+          };
           out[key] = targetCurrency;
-          targetCurrency.items = { ...sourceCurrency.items, ...targetCurrency.items };
+          targetCurrency.items = {
+            ...sourceCurrency.items,
+            ...targetCurrency.items
+          };
         } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
-          out[key] = deepMerge(sourcePlain[key], source[key], target[key]);
+          out[key] = deepMerge(
+            sourcePlain[key],
+            source[key],
+            target[key]
+          );
         }
       }
       return out;
     }
     let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
-    const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
-    const ItemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
+    const upgradeDataProperties = Object.getOwnPropertyNames(
+      new UpgradeData({ id: "", level: Decimal.dZero })
+    );
+    const ItemDataProperties = Object.getOwnPropertyNames(
+      new ItemData({ id: "", amount: Decimal.dZero })
+    );
     function convertTemplateClass(templateClassToConvert, plain) {
-      const out = plainToInstance(templateClassToConvert, plain);
+      const out = plainToInstance(
+        templateClassToConvert,
+        plain
+      );
       if (out instanceof Currency) {
         for (const upgradeName in out.upgrades) {
           const upgrade = out.upgrades[upgradeName];
-          if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
+          if (!upgrade || !upgradeDataProperties.every(
+            (prop) => Object.getOwnPropertyNames(upgrade).includes(prop)
+          )) {
             delete out.upgrades[upgradeName];
             continue;
           }
-          out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
+          out.upgrades[upgradeName] = plainToInstance(
+            UpgradeData,
+            upgrade
+          );
         }
         for (const itemName in out.items) {
           const item = out.items[itemName];
-          if (!item || !ItemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
+          if (!item || !ItemDataProperties.every(
+            (prop) => Object.getOwnPropertyNames(item).includes(prop)
+          )) {
             delete out.items[itemName];
             continue;
           }
           out.items[itemName] = plainToInstance(ItemData, item);
         }
       }
-      if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
+      if (!out) {
+        throw new Error(
+          `Failed to convert ${templateClassToConvert.name} to class instance.`
+        );
+      }
       return out;
     }
     function plainToInstanceRecursive(normal, plain) {
-      if (!normal || !plain) throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
+      if (!normal || !plain) {
+        throw new Error(
+          "dataManager.plainToInstanceRecursive(): Missing arguments."
+        );
+      }
       const out = plain;
       for (const key in normal) {
         if (plain[key] === void 0) {
@@ -7214,14 +7368,23 @@ var DataManager = class {
         if (!isPlainObject(plain[key])) continue;
         const normalDataClass = normal[key].constructor;
         if (normalDataClass === Object) {
-          out[key] = plainToInstanceRecursive(normal[key], plain[key]);
+          out[key] = plainToInstanceRecursive(
+            normal[key],
+            plain[key]
+          );
           continue;
         }
-        out[key] = convertTemplateClass(normalDataClass, plain[key]);
+        out[key] = convertTemplateClass(
+          normalDataClass,
+          plain[key]
+        );
       }
       return out;
     }
-    loadedDataProcessed = plainToInstanceRecursive(this.normalData, loadedDataProcessed);
+    loadedDataProcessed = plainToInstanceRecursive(
+      this.normalData,
+      loadedDataProcessed
+    );
     return loadedDataProcessed;
   }
   /**
@@ -7232,7 +7395,10 @@ var DataManager = class {
   loadData(dataToLoad = this.decompileData()) {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad) return null;
-    const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
+    const isDataValid = this.validateData([
+      dataToLoad[0],
+      instanceToPlain(dataToLoad[1])
+    ]);
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData) return null;
     this.data = parsedData;
@@ -7268,7 +7434,9 @@ var GameCurrency = class extends CurrencyStatic {
    */
   constructor(currencyStaticParams, gamePointer, name) {
     if (typeof currencyStaticParams === "function") {
-      throw new Error("GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead.");
+      throw new Error(
+        "GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead."
+      );
     }
     super(...currencyStaticParams);
     this.game = gamePointer;
@@ -7302,7 +7470,9 @@ var GameAttribute = class extends AttributeStatic {
    */
   constructor(attributeStaticParams, gamePointer) {
     if (typeof attributeStaticParams === "function") {
-      throw new Error("GameAttribute constructor does not accept a function as the first parameter. Use the <Game>.addAttribute method instead.");
+      throw new Error(
+        "GameAttribute constructor does not accept a function as the first parameter. Use the <Game>.addAttribute method instead."
+      );
     }
     super(...attributeStaticParams);
     this.game = gamePointer;
@@ -7317,7 +7487,12 @@ var GameReset = class _GameReset {
    * @returns The newly created game reset.
    */
   static fromObject(object) {
-    return new _GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
+    return new _GameReset(
+      object.currenciesToReset,
+      object.extender,
+      object.onReset,
+      object.condition
+    );
   }
   /**
    * Creates a new instance of the game reset.
@@ -7328,7 +7503,8 @@ var GameReset = class _GameReset {
    */
   constructor(currenciesToReset, extender, onReset, condition) {
     this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
-    this.extender = Array.isArray(extender) ? extender : extender ? [extender] : [];
+    extender = extender ?? [];
+    this.extender = Array.isArray(extender) ? extender : [extender];
     this.onReset = onReset;
     this.condition = condition;
     this.id = Symbol();
@@ -7379,7 +7555,9 @@ var gameDefaultConfig = {
 var Game = class _Game {
   static {
     /** The static config manager for the game. */
-    this.configManager = new ConfigManager(gameDefaultConfig);
+    this.configManager = new ConfigManager(
+      gameDefaultConfig
+    );
   }
   /**
    * Creates a new instance of the game class.
@@ -7441,7 +7619,11 @@ var Game = class _Game {
       currency: new Currency()
     });
     const classInstance = new GameCurrency(
-      [() => this.dataManager.getData(name).currency, upgrades, items],
+      [
+        () => this.dataManager.getData(name).currency,
+        upgrades,
+        items
+      ],
       this,
       name
     );
@@ -7460,7 +7642,11 @@ var Game = class _Game {
   addAttribute(name, useBoost = true, initial = 0) {
     this.dataManager.setData(name, new Attribute(initial));
     const classInstance = new GameAttribute(
-      [this.dataManager.getData(name), useBoost, initial],
+      [
+        this.dataManager.getData(name),
+        useBoost,
+        initial
+      ],
       this
     );
     return classInstance;
@@ -7478,7 +7664,9 @@ var Game = class _Game {
    */
   // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
   addReset(...args) {
-    console.warn("Game.addReset is deprecated. Use the GameReset class instead.");
+    console.warn(
+      "Game.addReset is deprecated. Use the GameReset class instead."
+    );
     const reset = new GameReset(...args);
     return reset;
   }

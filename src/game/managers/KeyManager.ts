@@ -80,7 +80,9 @@ const keyManagerDefaultConfig: KeyManagerConfig = {
  * An array of possible keys.
  * @deprecated Incomplete and not used (also afaik arrow keys dont register)
  */
-const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 "
+    .split("")
+    .concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 
 /**
  * Game keys manager for handling key bindings and tracking pressed keys.
@@ -93,7 +95,9 @@ class KeyManager {
     private readonly config: KeyManagerConfig;
 
     /** The configuration manager for the key manager */
-    private static readonly configManager = new ConfigManager(keyManagerDefaultConfig);
+    private static readonly configManager = new ConfigManager(
+        keyManagerDefaultConfig,
+    );
 
     /** The tickers for the key manager */
     private readonly tickers: ((dt: number) => void)[];
@@ -108,7 +112,7 @@ class KeyManager {
      * Creates a new key manager.
      * @param config - The configuration for the key manager.
      */
-    constructor (config?: KeyManagerConfig) {
+    constructor(config?: KeyManagerConfig) {
         this.keysPressed = [];
         this.binds = [];
         this.tickers = [];
@@ -132,7 +136,11 @@ class KeyManager {
         this.tickers.push((dt) => {
             for (const bind of this.binds) {
                 // console.log(bind);
-                if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.id)) {
+                if (
+                    (typeof bind.onDownContinuous !== "undefined" ||
+                        typeof bind.fn !== "undefined") &&
+                    this.isPressing(bind.id)
+                ) {
                     bind.onDownContinuous?.(dt);
                     bind.fn?.(dt);
                 }
@@ -155,7 +163,7 @@ class KeyManager {
      * Changes the framerate of the key manager.
      * @param fps - The new framerate to use.
      */
-    public changeFps (fps: number): void {
+    public changeFps(fps: number): void {
         this.config.fps = fps;
         if (this.tickerInterval) {
             clearInterval(this.tickerInterval);
@@ -172,21 +180,21 @@ class KeyManager {
      * @param event - The event to add the key from.
      * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
      */
-    private logKey (event: KeyboardEvent, type: boolean): void {
+    private logKey(event: KeyboardEvent, type: boolean): void {
         const key = event.key;
         if (type && !this.keysPressed.includes(key)) {
             this.keysPressed.push(key);
         } else if (!type && this.keysPressed.includes(key)) {
             this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
         }
-    };
+    }
 
     /**
      * Manages onDown, onPress, and onUp events for all key bindings.
      * @param eventType - The type of event to call for.
      * @param keypress - The key that was pressed.
      */
-    private onAll (eventType: "down" | "press" | "up", keypress: string): void {
+    private onAll(eventType: "down" | "press" | "up", keypress: string): void {
         for (const bind of this.binds) {
             if (bind.key !== keypress) continue;
 
@@ -194,7 +202,8 @@ class KeyManager {
                 case "down":
                     bind.onDown?.();
                     break;
-                case "press": default:
+                case "press":
+                default:
                     bind.onPress?.();
                     break;
                 case "up":
@@ -209,7 +218,7 @@ class KeyManager {
      * @param id - The name of the key binding to check.
      * @returns True if the key binding is being pressed, otherwise false.
      */
-    private isPressing (id: string): boolean {
+    private isPressing(id: string): boolean {
         for (const current of this.binds) {
             if (current.id === id) {
                 return this.keysPressed.includes(current.key);
@@ -223,7 +232,7 @@ class KeyManager {
      * @param id - The id of the key binding to get.
      * @returns The key binding, if found.
      */
-    private getBind (id: string): KeyBinding | undefined {
+    private getBind(id: string): KeyBinding | undefined {
         return this.binds.find((current) => current.id === id);
     }
 
@@ -235,7 +244,7 @@ class KeyManager {
      * @param fn - The function executed when the binding is pressed
      * @example addKey("Move Up", "w", () => player.velocity.y += player.acceleration.y);
      */
-    public addKey (id: string, key: string, fn?: (dt: number) => void): void;
+    public addKey(id: string, key: string, fn?: (dt: number) => void): void;
     /**
      * Adds or updates multiple key bindings.
      * @param keysToAdd - An array of key binding objects.
@@ -249,10 +258,25 @@ class KeyManager {
      *     // Add more key bindings here...
      * ]);
      */
-    public addKey (keysToAdd: KeyBinding | KeyBinding[]): void;
-    public addKey (nameOrKeysToAdd: string | KeyBinding | KeyBinding[], key?: string, fn?: (dt: number) => void): void {
-        nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? [{ id: nameOrKeysToAdd, name: nameOrKeysToAdd, key: (key ?? ""), fn }] : nameOrKeysToAdd;
-        nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
+    public addKey(keysToAdd: KeyBinding | KeyBinding[]): void;
+    public addKey(
+        nameOrKeysToAdd: string | KeyBinding | KeyBinding[],
+        key?: string,
+        fn?: (dt: number) => void,
+    ): void {
+        nameOrKeysToAdd =
+            typeof nameOrKeysToAdd === "string"
+                ? {
+                    id: nameOrKeysToAdd,
+                    name: nameOrKeysToAdd,
+                    key: key ?? "",
+                    fn,
+                }
+                : nameOrKeysToAdd;
+
+        nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd)
+            ? nameOrKeysToAdd
+            : [nameOrKeysToAdd];
         for (const keyBinding of nameOrKeysToAdd) {
             // Backwards compatibility: In versions before 8.2.0, `name` was used as the id.
             // If `id` is not provided, use `name` as the id.
@@ -271,7 +295,7 @@ class KeyManager {
 
     /** @deprecated Use {@link addKey} instead. */
     public addKeys = this.addKey.bind(this);
-};
+}
 
 export type { KeyManagerConfig, KeyBinding };
 export { KeyManager, keys };

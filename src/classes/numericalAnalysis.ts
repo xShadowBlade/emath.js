@@ -61,7 +61,11 @@ type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @returns The mean of the two values.
  */
-function mean (a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric"): Decimal {
+function mean(
+    a: DecimalSource,
+    b: DecimalSource,
+    mode: MeanMode = "geometric",
+): Decimal {
     a = new Decimal(a);
     b = new Decimal(b);
 
@@ -109,12 +113,21 @@ interface EqualsToleranceConfig {
  * @param config - The configuration object.
  * @returns Whether the values are equal within the tolerance.
  */
-function equalsTolerance (a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EqualsToleranceConfig>): boolean {
+function equalsTolerance(
+    a: DecimalSource,
+    b: DecimalSource,
+    tolerance: DecimalSource,
+    config?: Partial<EqualsToleranceConfig>,
+): boolean {
     // Set the default values
-    config = Object.assign({}, {
-        verbose: false,
-        mode: "geometric",
-    } as EqualsToleranceConfig, config);
+    config = Object.assign(
+        {},
+        {
+            verbose: false,
+            mode: "geometric",
+        } as EqualsToleranceConfig,
+        config,
+    );
 
     // Convert the values to Decimal instances
     a = new Decimal(a);
@@ -133,7 +146,12 @@ function equalsTolerance (a: DecimalSource, b: DecimalSource, tolerance: Decimal
         result = diff.lte(tolerance);
     }
 
-    if (config.verbose === true || (config.verbose === "onlyOnFail" && !result)) console.log({ a, b, tolerance, config, diff, result });
+    if (
+        config.verbose === true ||
+        (config.verbose === "onlyOnFail" && !result)
+    ) {
+        console.log({ a, b, tolerance, config, diff, result });
+    }
 
     return result;
 }
@@ -151,7 +169,7 @@ function equalsTolerance (a: DecimalSource, b: DecimalSource, tolerance: Decimal
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-function inverseFunctionApprox (
+function inverseFunctionApprox(
     f: (x: Decimal) => Decimal,
     n: DecimalSource,
     mode: MeanMode = "geometric",
@@ -174,7 +192,9 @@ function inverseFunctionApprox (
 
     // If the function is not monotonically increasing, return the upper bound
     if (f(upperBound).lt(n)) {
-        console.warn("The function is not monotonically increasing. (f(n) < n)");
+        console.warn(
+            "The function is not monotonically increasing. (f(n) < n)",
+        );
         // console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
         return {
             value: upperBound,
@@ -193,7 +213,12 @@ function inverseFunctionApprox (
         // console.log({ lowerBound, upperBound, mid, midValue, n, i });
 
         // Stop the loop if the bounds are close enough
-        if (equalsTolerance(lowerBound, upperBound, tolerance, { verbose: false, mode: "geometric" })) {
+        if (
+            equalsTolerance(lowerBound, upperBound, tolerance, {
+                verbose: false,
+                mode: "geometric",
+            })
+        ) {
             // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
             break;
         }
@@ -226,9 +251,10 @@ function inverseFunctionApprox (
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}.
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumLoop (
+function calculateSumLoop(
     f: (n: Decimal) => Decimal,
-    b: DecimalSource, a: DecimalSource = 0,
+    b: DecimalSource,
+    a: DecimalSource = 0,
     epsilon: DecimalSource = DEFAULT_TOLERANCE,
 ): Decimal {
     // Initialize the values
@@ -260,7 +286,7 @@ function calculateSumLoop (
  * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
  * @returns The calculated sum of `f(n)`.
  */
-function calculateSumApprox (
+function calculateSumApprox(
     f: (n: Decimal) => Decimal,
     b: DecimalSource,
     a: DecimalSource = 0,
@@ -293,7 +319,12 @@ function calculateSumApprox (
         // });
 
         // Stop the loop if the sums dont change much
-        if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
+        if (
+            equalsTolerance(oldSum, sum, tolerance, {
+                verbose: false,
+                mode: "geometric",
+            })
+        ) {
             // console.log("sums close", { oldSum, sum, x0, x1, i, i2: iterations - i });
             break;
         }
@@ -380,7 +411,13 @@ function calculateSumApprox (
  * const sum = calculateSum(f, 10);
  * console.log(sum); // ~385
  */
-function calculateSum (f: (n: Decimal) => Decimal, b: DecimalSource, a: DecimalSource = 0, epsilon?: DecimalSource, iterations?: number): Decimal {
+function calculateSum(
+    f: (n: Decimal) => Decimal,
+    b: DecimalSource,
+    a: DecimalSource = 0,
+    epsilon?: DecimalSource,
+    iterations?: number,
+): Decimal {
     a = new Decimal(a);
     b = new Decimal(b);
     if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
@@ -403,7 +440,12 @@ function calculateSum (f: (n: Decimal) => Decimal, b: DecimalSource, a: DecimalS
  * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
-function roundingBase (x: DecimalSource, base: DecimalSource = 10, acc: DecimalSource = 0, max: DecimalSource = 1000): Decimal {
+function roundingBase(
+    x: DecimalSource,
+    base: DecimalSource = 10,
+    acc: DecimalSource = 0,
+    max: DecimalSource = 1000,
+): Decimal {
     x = new Decimal(x);
     // If the number is too large, don't round it
     if (x.gte(Decimal.pow(base, max))) return x;
@@ -418,5 +460,13 @@ function roundingBase (x: DecimalSource, base: DecimalSource = 10, acc: DecimalS
     return out;
 }
 
-export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS };
+export {
+    equalsTolerance,
+    inverseFunctionApprox,
+    calculateSumLoop,
+    calculateSumApprox,
+    calculateSum,
+    roundingBase,
+    DEFAULT_ITERATIONS,
+};
 export type { MeanMode, EqualsToleranceConfig };

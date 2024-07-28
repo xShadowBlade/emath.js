@@ -35,7 +35,7 @@ declare class Attribute {
  */
 declare class AttributeStatic<EnableBoost extends boolean = true> {
     /** The data for the attribute. */
-    protected readonly pointerFn: (() => Attribute);
+    protected readonly pointerFn: () => Attribute;
     /** @returns The data for the attribute. */
     get pointer(): Attribute;
     /** The initial value of the attribute. */

@@ -59,7 +59,10 @@ interface BoostsObjectInit {
  */
 class BoostObject implements BoostsObjectInit {
     // Assign the properties from the BoostsObjectInit interface
-    public id; name; value; order;
+    public id;
+    name;
+    value;
+    order;
 
     // TODO: Change the args of descriptionFn to be more specific
     public descriptionFn: (...args: any[]) => string;
@@ -68,14 +71,18 @@ class BoostObject implements BoostsObjectInit {
      * @returns The description of the boost.
      * @deprecated Use {@link description} instead
      */
-    public get desc (): string { return this.description; }
-    public get description (): string { return this.descriptionFn(); }
+    public get desc(): string {
+        return this.description;
+    }
+    public get description(): string {
+        return this.descriptionFn();
+    }
 
     /**
      * Constructs a new boost object.
      * @param init - The initialization object.
      */
-    constructor (init: BoostsObjectInit) {
+    constructor(init: BoostsObjectInit) {
         // Assign the properties from the BoostsObjectInit interface
         this.id = init.id;
         this.name = init.name ?? "";
@@ -83,7 +90,11 @@ class BoostObject implements BoostsObjectInit {
         this.order = init.order ?? 99;
 
         // Assign the description function
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
+        this.descriptionFn = init.description
+            ? typeof init.description === "function"
+                ? init.description
+                : (): string => init.description as string
+            : (): string => "";
     }
 }
 
@@ -103,8 +114,15 @@ class Boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor (baseEffect: DecimalSource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
-        boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
+    constructor(
+        baseEffect: DecimalSource = 1,
+        boosts?: BoostsObjectInit | BoostsObjectInit[],
+    ) {
+        boosts = boosts
+            ? Array.isArray(boosts)
+                ? boosts
+                : [boosts]
+            : undefined;
         this.baseEffect = new Decimal(baseEffect);
         this.boostArray = [];
         if (boosts) {
@@ -129,9 +147,15 @@ class Boost {
      * // Get all boosts with the ID "healthBoost" or "manaBoost"
      * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
-    public getBoosts (id: string | RegExp): BoostObject[];
-    public getBoosts (id: string | RegExp, index: boolean): [BoostObject[], number[]];
-    public getBoosts (id: string | RegExp, index?: boolean): BoostObject[] | [BoostObject[], number[]] {
+    public getBoosts(id: string | RegExp): BoostObject[];
+    public getBoosts(
+        id: string | RegExp,
+        index: boolean,
+    ): [BoostObject[], number[]];
+    public getBoosts(
+        id: string | RegExp,
+        index?: boolean,
+    ): BoostObject[] | [BoostObject[], number[]] {
         const boostList: BoostObject[] = [];
         const indexList: number[] = [];
         for (let i = 0; i < this.boostArray.length; i++) {
@@ -152,7 +176,7 @@ class Boost {
      * @param id - The ID of the boost to retrieve.
      * @returns The boost object if found, or null if not found.
      */
-    public getBoost (id: string): BoostObject | null {
+    public getBoost(id: string): BoostObject | null {
         return this.getBoosts(id)[0] ?? null;
     }
 
@@ -163,7 +187,7 @@ class Boost {
      * // Remove the boost with the ID "healthBoost"
      * boost.removeBoost("healthBoost");
      */
-    public removeBoost (id: string): void {
+    public removeBoost(id: string): void {
         for (let i = 0; i < this.boostArray.length; i++) {
             if (id === this.boostArray[i].id) {
                 this.boostArray.splice(i, 1);
@@ -184,7 +208,13 @@ class Boost {
      * // Set a boost that multiplies the input value by 2
      * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
      */
-    public setBoost (id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
+    public setBoost(
+        id: string,
+        name: string,
+        description: string,
+        value: (input: Decimal) => Decimal,
+        order?: number,
+    ): void;
     /**
      * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
@@ -197,8 +227,14 @@ class Boost {
      *     value: (input) => input.mul(2),
      * });
      */
-    public setBoost (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
-    public setBoost (arg1: string | (BoostsObjectInit | BoostsObjectInit[]), arg2?: string, arg3?: string, arg4?: (input: Decimal) => Decimal, arg5?: number): void {
+    public setBoost(boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
+    public setBoost(
+        arg1: string | (BoostsObjectInit | BoostsObjectInit[]),
+        arg2?: string,
+        arg3?: string,
+        arg4?: (input: Decimal) => Decimal,
+        arg5?: number,
+    ): void {
         // class-transformer bug where it doesn't recognize the overload
         if (!arg1) return;
 
@@ -214,9 +250,17 @@ class Boost {
             const bCheck = this.getBoosts(id, true);
 
             if (!bCheck[0][0]) {
-                this.boostArray.push(new BoostObject({ id, name, description, value, order }));
+                this.boostArray.push(
+                    new BoostObject({ id, name, description, value, order }),
+                );
             } else {
-                this.boostArray[bCheck[1][0]] = new BoostObject({ id, name, description, value, order });
+                this.boostArray[bCheck[1][0]] = new BoostObject({
+                    id,
+                    name,
+                    description,
+                    value,
+                    order,
+                });
             }
         } else {
             // Advanced set using boost object
@@ -245,7 +289,7 @@ class Boost {
      * // boostArray is now []
      * // baseEffect is still the same
      */
-    public clearBoosts (): void {
+    public clearBoosts(): void {
         this.boostArray.length = 0;
     }
 
@@ -257,12 +301,14 @@ class Boost {
      * // Calculate the effect of all boosts
      * const finalEffect = boost.calculate();
      */
-    public calculate (base: DecimalSource = this.baseEffect): Decimal {
+    public calculate(base: DecimalSource = this.baseEffect): Decimal {
         let output: Decimal = new Decimal(base);
         let boosts = this.boostArray;
 
         // Sort boosts by order from lowest to highest
-        boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);
+        boosts = boosts.sort(
+            (a: BoostObject, b: BoostObject) => a.order - b.order,
+        );
         for (const boost of boosts) {
             output = boost.value(output);
         }

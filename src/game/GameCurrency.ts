@@ -16,7 +16,12 @@ class GameCurrency<
     CurrencyName extends string = string,
     UpgradeInitArray extends Readonly<UpgradeInit>[] = [],
     ItemInitArray extends Readonly<ItemInit>[] = [],
-> extends CurrencyStatic<UpgradeInitArray, UpgradeInitArrayType<UpgradeInitArray>, ItemInitArray, ItemInitArrayType<ItemInitArray>> {
+> extends CurrencyStatic<
+    UpgradeInitArray,
+    UpgradeInitArrayType<UpgradeInitArray>,
+    ItemInitArray,
+    ItemInitArrayType<ItemInitArray>
+> {
     /**
      * A function that returns the data for the currency.
      * @deprecated Use {@link pointerFn} instead. This property is only here for backwards compatibility.
@@ -36,7 +41,7 @@ class GameCurrency<
      * @returns The data for the currency.
      * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
      */
-    get data (): Currency {
+    get data(): Currency {
         return this.pointer;
     }
 
@@ -44,7 +49,7 @@ class GameCurrency<
      * @returns The static data for the currency.
      * @deprecated Use this class as a static class as it now has all the properties of {@link CurrencyStatic}. This property is only here for backwards compatibility.
      */
-    get static (): this {
+    get static(): this {
         return this;
     }
 
@@ -57,10 +62,23 @@ class GameCurrency<
      * @param gamePointer A pointer to the game instance.
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
-    constructor (currencyStaticParams: ConstructorParameters<typeof CurrencyStatic<UpgradeInitArray, UpgradeInitArrayType<UpgradeInitArray>, ItemInitArray, ItemInitArrayType<ItemInitArray>>>, gamePointer: Game, name: CurrencyName) {
+    constructor(
+        currencyStaticParams: ConstructorParameters<
+            typeof CurrencyStatic<
+                UpgradeInitArray,
+                UpgradeInitArrayType<UpgradeInitArray>,
+                ItemInitArray,
+                ItemInitArrayType<ItemInitArray>
+            >
+        >,
+        gamePointer: Game,
+        name: CurrencyName,
+    ) {
         // "backwards compatibility" lol
         if (typeof currencyStaticParams === "function") {
-            throw new Error("GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead.");
+            throw new Error(
+                "GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead.",
+            );
         }
 
         // Call the parent constructor

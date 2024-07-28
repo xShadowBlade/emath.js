@@ -83,7 +83,7 @@ interface IntervalEvent extends TimerEvent {
 /**
  * The timeout event interface
  */
-type TimeoutEvent = TimerEvent
+type TimeoutEvent = TimerEvent;
 
 /**
  * The event manager configuration interface
@@ -145,23 +145,29 @@ interface EventManagerEventsWithComments {
  * Default event manager events.
  * For more information, see {@link EventManagerEventsWithComments}.
  */
-type EventManagerEvents = EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
+type EventManagerEvents =
+    EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
 
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  */
 class EventManager<Events extends string = string> {
     /** The static config manager for the event manager */
-    private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
+    private static readonly configManager = new ConfigManager(
+        eventManagerDefaultConfig,
+    );
 
     /** The timer events stored in the event manager */
-    private readonly events: Record<string, (IntervalEvent | TimeoutEvent)>;
+    private readonly events: Record<string, IntervalEvent | TimeoutEvent>;
 
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Record<Events | EventManagerEvents, CallbackEvent[] | undefined>;
+    private readonly callbackEvents: Record<
+        Events | EventManagerEvents,
+        CallbackEvent[] | undefined
+    >;
 
     /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;
@@ -176,7 +182,7 @@ class EventManager<Events extends string = string> {
      * These events will be added to the event manager's callback events, although you could omit this and add events manually
      * (though this is not recommended as you won't get type checking).
      */
-    constructor (config?: EventManagerConfig, events?: readonly Events[]) {
+    constructor(config?: EventManagerConfig, events?: readonly Events[]) {
         this.config = EventManager.configManager.parse(config);
         this.events = {};
 
@@ -204,7 +210,7 @@ class EventManager<Events extends string = string> {
      * @param event - The event to add the callback to.
      * @param callback - The callback to add to the event.
      */
-    public on (event: Events | EventManagerEvents, callback: () => void): void {
+    public on(event: Events | EventManagerEvents, callback: () => void): void {
         // If the event does not exist, create it.
         if (!this.callbackEvents[event]) {
             this.callbackEvents[event] = [];
@@ -218,7 +224,7 @@ class EventManager<Events extends string = string> {
      * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
      * @param event - The event to dispatch.
      */
-    public dispatch (event: Events | EventManagerEvents): void {
+    public dispatch(event: Events | EventManagerEvents): void {
         // If the event does not exist, return.
         if (!this.callbackEvents[event]) {
             return;
@@ -233,31 +239,41 @@ class EventManager<Events extends string = string> {
     /**
      * The function that is called every frame, executes all events.
      */
-    protected tickerFunction (): void {
+    protected tickerFunction(): void {
         const currentTime = Date.now();
         for (const event of Object.values(this.events)) {
             // const event = this.events[i];
 
             switch (event.type) {
-                case EventTypes.interval: {
-                // If interval
-                    if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
-                        const dt = currentTime - (event as IntervalEvent).intervalLast;
-                        event.callback(dt);
-                        (event as IntervalEvent).intervalLast = currentTime;
+                case EventTypes.interval:
+                    {
+                        // If interval
+                        if (
+                            currentTime -
+                                (event as IntervalEvent).intervalLast >=
+                            event.delay
+                        ) {
+                            const dt =
+                                currentTime -
+                                (event as IntervalEvent).intervalLast;
+                            event.callback(dt);
+                            (event as IntervalEvent).intervalLast = currentTime;
+                        }
                     }
-                }; break;
-                case EventTypes.timeout: {
-                    const dt = currentTime - event.timeCreated;
-                    // If timeout
-                    if (currentTime - event.timeCreated >= event.delay) {
-                        event.callback(dt);
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete this.events[event.name];
-                    // this.events.splice(i, 1);
-                    // i--;
+                    break;
+                case EventTypes.timeout:
+                    {
+                        const dt = currentTime - event.timeCreated;
+                        // If timeout
+                        if (currentTime - event.timeCreated >= event.delay) {
+                            event.callback(dt);
+                            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                            delete this.events[event.name];
+                            // this.events.splice(i, 1);
+                            // i--;
+                        }
                     }
-                }; break;
+                    break;
             }
         }
     }
@@ -266,7 +282,7 @@ class EventManager<Events extends string = string> {
      * Changes the framerate of the event manager.
      * @param fps - The new framerate to use.
      */
-    public changeFps (fps: number): void {
+    public changeFps(fps: number): void {
         this.config.fps = fps;
         if (this.tickerInterval) {
             clearInterval(this.tickerInterval);
@@ -280,17 +296,21 @@ class EventManager<Events extends string = string> {
      * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
      * @param dt - The time to warp by.
      */
-    public timeWarp (dt: number): void {
+    public timeWarp(dt: number): void {
         for (const event of Object.values(this.events)) {
             switch (event.type) {
-                case EventTypes.interval: {
-                    (event as IntervalEvent).intervalLast -= dt;
-                }; break;
-                case EventTypes.timeout: {
-                // ! might cause issues
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                    (event as TimeoutEvent).timeCreated -= dt;
-                }; break;
+                case EventTypes.interval:
+                    {
+                        (event as IntervalEvent).intervalLast -= dt;
+                    }
+                    break;
+                case EventTypes.timeout:
+                    {
+                        // ! might cause issues
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                        (event as TimeoutEvent).timeCreated -= dt;
+                    }
+                    break;
             }
         }
     }
@@ -314,26 +334,40 @@ class EventManager<Events extends string = string> {
      *   console.log("Timeout event executed.");
      * });
      */
-    public setEvent (name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void): void {
+    public setEvent(
+        name: string,
+        type: EventTypes | "interval" | "timeout",
+        delay: number | Decimal,
+        callbackFn: (dt: number) => void,
+    ): void {
         this.events[name] = ((): IntervalEvent | TimeoutEvent => {
             switch (type) {
-                case "interval": {
-                    const event: IntervalEvent = {
-                        name,
-                        type: type as EventTypes.interval,
-                        delay: typeof delay === "number" ? delay : delay.toNumber(),
-                        callback: callbackFn,
-                        timeCreated: Date.now(),
-                        intervalLast: Date.now(),
-                    };
-                    return event;
-                    // eslint-disable-next-line no-unreachable
-                }; break;
-                case "timeout": default: {
+                case "interval":
+                    {
+                        const event: IntervalEvent = {
+                            name,
+                            type: type as EventTypes.interval,
+                            delay:
+                                typeof delay === "number"
+                                    ? delay
+                                    : delay.toNumber(),
+                            callback: callbackFn,
+                            timeCreated: Date.now(),
+                            intervalLast: Date.now(),
+                        };
+                        return event;
+                        // eslint-disable-next-line no-unreachable
+                    }
+                    break;
+                case "timeout":
+                default: {
                     const event: TimeoutEvent = {
                         name,
                         type: type as EventTypes.timeout,
-                        delay: typeof delay === "number" ? delay : delay.toNumber(),
+                        delay:
+                            typeof delay === "number"
+                                ? delay
+                                : delay.toNumber(),
                         callback: callbackFn,
                         timeCreated: Date.now(),
                     };
@@ -342,7 +376,7 @@ class EventManager<Events extends string = string> {
                 }
             }
         })();
-    };
+    }
 
     /**
      * Adds a new event
@@ -358,11 +392,16 @@ class EventManager<Events extends string = string> {
      * @example
      * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
      */
-    public removeEvent (name: string): void {
+    public removeEvent(name: string): void {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.events[name];
     }
-};
+}
 
-export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event };
+export type {
+    EventManagerConfig,
+    IntervalEvent,
+    TimeoutEvent,
+    TimerEvent as Event,
+};
 export { EventManager, EventTypes };

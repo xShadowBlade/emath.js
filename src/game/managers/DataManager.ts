@@ -16,7 +16,12 @@ import { Decimal } from "../../E/e";
 // Save validation
 import md5 from "md5";
 
-import type { UnknownObject, ClassType, ConstructableObject, Pointer } from "../../common/types";
+import type {
+    UnknownObject,
+    ClassType,
+    ConstructableObject,
+    Pointer,
+} from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -87,7 +92,7 @@ class DataManager {
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      */
-    constructor (gameRef: Pointer<Game>) {
+    constructor(gameRef: Pointer<Game>) {
         this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
     }
 
@@ -96,7 +101,7 @@ class DataManager {
      * @param event - The event to call when the game data is loaded.
      * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
      */
-    public addEventOnLoad (event: () => void): void {
+    public addEventOnLoad(event: () => void): void {
         this.eventsOnLoad.push(event);
     }
 
@@ -115,30 +120,33 @@ class DataManager {
      * testData.value = 10; // Also sets the data
      * console.log(testData.value); // 10
      */
-    public setData<S extends string, T> (key: S, value: T):
-        // { [data in s]: t; }
-        {
-            value: T;
-            /** @deprecated Use the setter instead. */
-            setValue: (valueToSet: T) => void;
-        }
+    public setData<S extends string, T>(
+        key: S,
+        value: T,
+    ): // { [data in s]: t; }
     {
+        value: T;
+        /** @deprecated Use the setter instead. */
+        setValue: (valueToSet: T) => void;
+    } {
         if (typeof this.data[key] === "undefined" && this.normalData) {
-            console.warn("After initializing data, you should not add new properties to data.");
+            console.warn(
+                "After initializing data, you should not add new properties to data.",
+            );
         }
         this.data[key] = value;
         const thisData = (): UnknownObject => this.data;
 
         return {
-            get value (): T {
+            get value(): T {
                 // console.log("Getter called", key, thisData()[key]);
                 return thisData()[key] as T;
             },
-            set value (valueToSet: T) {
+            set value(valueToSet: T) {
                 // console.log("Setter called", key, valueToSet);
                 thisData()[key] = valueToSet;
             },
-            setValue (valueToSet: T): void {
+            setValue(valueToSet: T): void {
                 // console.log("Setter called", key, valueToSet);
                 thisData()[key] = valueToSet;
             },
@@ -151,7 +159,7 @@ class DataManager {
      * @param key - The key to get the data for.
      * @returns The data for the given key.
      */
-    public getData (key: string): unknown {
+    public getData(key: string): unknown {
         return this.data[key];
     }
 
@@ -163,11 +171,15 @@ class DataManager {
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
      */
-    public setStatic<t> (key: string, value: t): t {
-        console.warn("setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+    public setStatic<t>(key: string, value: t): t {
+        console.warn(
+            "setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
+        );
 
         if (typeof this.static[key] === "undefined" && this.normalData) {
-            console.warn("After initializing data, you should not add new properties to staticData.");
+            console.warn(
+                "After initializing data, you should not add new properties to staticData.",
+            );
         }
         this.static[key] = value;
         return this.static[key] as t;
@@ -179,8 +191,10 @@ class DataManager {
      * @param key - The key to get the static data for.
      * @returns The static data for the given key.
      */
-    public getStatic (key: string): unknown {
-        console.warn("getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.");
+    public getStatic(key: string): unknown {
+        console.warn(
+            "getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
+        );
 
         return this.static[key];
     }
@@ -192,7 +206,7 @@ class DataManager {
      * Note: This should only be called once, and after it is called, you should not add new properties to data.
      * @example dataManager.init(); // Call this after setting the initial data.
      */
-    public init (): void {
+    public init(): void {
         this.normalData = this.data;
         this.normalDataPlain = instanceToPlain(this.data);
     }
@@ -202,7 +216,7 @@ class DataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    public compileDataRaw (data = this.data): [SaveMetadata, object] {
+    public compileDataRaw(data = this.data): [SaveMetadata, object] {
         // Call the `beforeCompileData` event on the game eventManager
         this.gameRef.eventManager.dispatch("beforeCompileData");
 
@@ -210,7 +224,9 @@ class DataManager {
         const gameDataString = instanceToPlain(data);
 
         // Create a hash of the data
-        const hasedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+        const hasedData = md5(
+            `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`,
+        );
 
         // Get the version of the eMath library
         let version: string;
@@ -243,7 +259,7 @@ class DataManager {
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    public compileData (data = this.data): string {
+    public compileData(data = this.data): string {
         const dataRawString = JSON.stringify(this.compileDataRaw(data));
         return compressToBase64(dataRawString);
     }
@@ -253,7 +269,11 @@ class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData (data: string | null = window.localStorage.getItem(`${this.gameRef.config.name.id}-data`)): [SaveMetadata, UnknownObject] | null {
+    public decompileData(
+        data: string | null = window.localStorage.getItem(
+            `${this.gameRef.config.name.id}-data`,
+        ),
+    ): [SaveMetadata, UnknownObject] | null {
         // If the data is empty, return null
         if (!data) return null;
 
@@ -261,12 +281,18 @@ class DataManager {
 
         try {
             // Decompress the data
-            parsedData = JSON.parse(decompressFromBase64(data)) as [SaveMetadata, UnknownObject];
+            parsedData = JSON.parse(decompressFromBase64(data)) as [
+                SaveMetadata,
+                UnknownObject,
+            ];
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
             if (error instanceof SyntaxError) {
-                console.error(`Failed to decompile data (corrupted) "${data}":`, error);
+                console.error(
+                    `Failed to decompile data (corrupted) "${data}":`,
+                    error,
+                );
             } else {
                 throw error;
             }
@@ -279,17 +305,23 @@ class DataManager {
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
-    public validateData (data: [SaveMetadata, object]): boolean {
+    public validateData(data: [SaveMetadata, object]): boolean {
         const [saveMetadata, gameDataToValidate] = data;
 
         // Backwards compatibility: In versions before 8.x.x, data was of type [hash: string, data: object]. Now it's of type [SaveMetadata, data: object].
         if (typeof saveMetadata === "string") {
-            return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
+            return (
+                md5(
+                    `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`,
+                ) === saveMetadata
+            );
         }
 
         // Compare the hash of the data with the hash in the save file. If they don't match, the data has been tampered with.
         const hashSave = saveMetadata.hash;
-        const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
+        const hashCheck = md5(
+            `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`,
+        );
 
         return hashSave === hashCheck;
     }
@@ -298,9 +330,13 @@ class DataManager {
      * Resets the game data to its initial state and saves it.
      * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
      */
-    public resetData (reload = false): void {
+    public resetData(reload = false): void {
         // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
-        if (!this.normalData) throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+        if (!this.normalData) {
+            throw new Error(
+                "dataManager.resetData(): You must call init() before writing to data.",
+            );
+        }
 
         // Reset the data
         this.data = this.normalData;
@@ -310,35 +346,44 @@ class DataManager {
 
         // Reload the page if specified (this may help with some issues with saving data)
         if (reload) window.location.reload();
-    };
+    }
 
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you dont want to save to local storage, use {@link compileData} instead.
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
-    public saveData (dataToSave = this.compileData()): void {
+    public saveData(dataToSave = this.compileData()): void {
         // Call the `beforeSaveData` event on the game eventManager
         this.gameRef.eventManager.dispatch("beforeSaveData");
 
         // If the data is empty, throw
-        if (!dataToSave) throw new Error("dataManager.saveData(): Data to save is empty.");
+        if (!dataToSave) {
+            throw new Error("dataManager.saveData(): Data to save is empty.");
+        }
 
         // If local storage is not supported, throw
-        if (!(window.localStorage as unknown)) throw new Error("dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.");
+        if (!(window.localStorage as unknown)) {
+            throw new Error(
+                "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
+            );
+        }
 
         // Save the data to local storage
-        window.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+        window.localStorage.setItem(
+            `${this.gameRef.config.name.id}-data`,
+            dataToSave,
+        );
 
         // Call the `saveData` event on the game eventManager
         this.gameRef.eventManager.dispatch("saveData");
-    };
+    }
 
     /**
      * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
      * If you want to implement a custom data export, use {@link compileData} instead.
      */
-    public exportData (): void {
+    public exportData(): void {
         // Create the content
         const content = this.compileData();
 
@@ -355,7 +400,7 @@ class DataManager {
             downloadLink.click();
             document.body.removeChild(downloadLink);
         }
-    };
+    }
 
     /**
      * Loads game data and processes it.
@@ -364,9 +409,16 @@ class DataManager {
      * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    public parseData (dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
+    public parseData(
+        dataToParse = this.decompileData(),
+        mergeData = true,
+    ): UnknownObject | null {
         // If the normal data is not set, throw an error
-        if ((!this.normalData || !this.normalDataPlain) && mergeData) throw new Error("dataManager.parseData(): You must call init() before writing to data.");
+        if ((!this.normalData || !this.normalDataPlain) && mergeData) {
+            throw new Error(
+                "dataManager.parseData(): You must call init() before writing to data.",
+            );
+        }
 
         // If the data is empty, return null
         if (!dataToParse) return null;
@@ -378,11 +430,14 @@ class DataManager {
          * @param obj - The object to check.
          * @returns Whether the object is a plain object.
          */
-        function isPlainObject (obj: unknown): boolean {
+        function isPlainObject(obj: unknown): boolean {
             return typeof obj === "object" && obj?.constructor === Object;
         }
 
-        const objectHasOwnProperty = (obj: UnknownObject, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
+        const objectHasOwnProperty = (
+            obj: UnknownObject,
+            key: string,
+        ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 
         /**
          * Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
@@ -392,15 +447,27 @@ class DataManager {
          * @param target - The target object.
          * @returns The merged object.
          */
-        function deepMerge (sourcePlain: UnknownObject | null | undefined, source: UnknownObject | null | undefined, target: UnknownObject | null): UnknownObject {
+        function deepMerge(
+            sourcePlain: UnknownObject | null | undefined,
+            source: UnknownObject | null | undefined,
+            target: UnknownObject | null,
+        ): UnknownObject {
             if (!sourcePlain || !source || !target) {
-                console.warn("dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
+                console.warn(
+                    "dataManager.deepMerge(): Missing arguments:",
+                    sourcePlain,
+                    source,
+                    target,
+                );
                 return target ?? {};
             }
 
             const out = target;
             for (const key in sourcePlain) {
-                if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
+                if (
+                    objectHasOwnProperty(sourcePlain, key) &&
+                    !objectHasOwnProperty(target, key)
+                ) {
                     // If the property is missing from the target, add it
                     out[key] = sourcePlain[key];
                 }
@@ -416,30 +483,51 @@ class DataManager {
                         targetCurrency.upgrades = {};
                         for (const upgrade of upgrades) {
                             // ! warning: might not work
-                            targetCurrency.upgrades[(upgrade as UpgradeData).id] = (upgrade as UpgradeData);
+                            targetCurrency.upgrades[
+                                (upgrade as UpgradeData).id
+                            ] = upgrade as UpgradeData;
                         }
                     }
 
                     // Merge upgrades
-                    targetCurrency.upgrades = { ...sourceCurrency.upgrades, ...targetCurrency.upgrades };
+                    targetCurrency.upgrades = {
+                        ...sourceCurrency.upgrades,
+                        ...targetCurrency.upgrades,
+                    };
                     out[key] = targetCurrency;
 
                     // Merge items
-                    targetCurrency.items = { ...sourceCurrency.items, ...targetCurrency.items };
-                } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
+                    targetCurrency.items = {
+                        ...sourceCurrency.items,
+                        ...targetCurrency.items,
+                    };
+                } else if (
+                    isPlainObject(sourcePlain[key]) &&
+                    isPlainObject(target[key])
+                ) {
                     // Recursive
-                    out[key] = deepMerge((sourcePlain as Record<string, UnknownObject>)[key], (source as Record<string, UnknownObject>)[key], (target as Record<string, UnknownObject>)[key]);
+                    out[key] = deepMerge(
+                        (sourcePlain as Record<string, UnknownObject>)[key],
+                        (source as Record<string, UnknownObject>)[key],
+                        (target as Record<string, UnknownObject>)[key],
+                    );
                 }
             }
             return out;
         }
 
-        let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData); // TODO: Fix this
+        let loadedDataProcessed = !mergeData
+            ? loadedData
+            : deepMerge(this.normalDataPlain, this.normalData, loadedData); // TODO: Fix this
 
         // Convert plain object to class instance (recursive)
 
-        const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
-        const ItemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
+        const upgradeDataProperties = Object.getOwnPropertyNames(
+            new UpgradeData({ id: "", level: Decimal.dZero }),
+        );
+        const ItemDataProperties = Object.getOwnPropertyNames(
+            new ItemData({ id: "", amount: Decimal.dZero }),
+        );
 
         /**
          * Converts a plain object to a class instance.
@@ -447,31 +535,50 @@ class DataManager {
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function convertTemplateClass (templateClassToConvert: ClassType, plain: UnknownObject): ClassType {
+        function convertTemplateClass(
+            templateClassToConvert: ClassType,
+            plain: UnknownObject,
+        ): ClassType {
             // Convert the object
-            const out = plainToInstance(templateClassToConvert, plain) as ClassType;
+            const out = plainToInstance(
+                templateClassToConvert,
+                plain,
+            ) as ClassType;
 
             if (out instanceof Currency) {
                 // Special case for Currency.upgrades
                 for (const upgradeName in out.upgrades) {
-                    const upgrade = out.upgrades[upgradeName];
+                    const upgrade = out.upgrades[upgradeName] as
+                        | UpgradeData
+                        | undefined;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
+                    if (
+                        !upgrade ||
+                        !upgradeDataProperties.every((prop) =>
+                            Object.getOwnPropertyNames(upgrade).includes(prop),
+                        )
+                    ) {
                         // Delete the upgrade if it's invalid (extraneous properties, etc.)
                         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                         delete out.upgrades[upgradeName];
                         continue;
                     }
-                    out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
+                    out.upgrades[upgradeName] = plainToInstance(
+                        UpgradeData,
+                        upgrade,
+                    );
                 }
 
                 // Special case for Currency.items
                 for (const itemName in out.items) {
-                    const item = out.items[itemName];
+                    const item = out.items[itemName] as ItemData | undefined;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    if (!item || !ItemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
+                    if (
+                        !item ||
+                        !ItemDataProperties.every((prop) =>
+                            Object.getOwnPropertyNames(item).includes(prop),
+                        )
+                    ) {
                         // Delete the item if it's invalid (extraneous properties, etc.)
                         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                         delete out.items[itemName];
@@ -481,7 +588,11 @@ class DataManager {
                 }
             }
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (!out) throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
+            if (!out) {
+                throw new Error(
+                    `Failed to convert ${templateClassToConvert.name} to class instance.`,
+                );
+            }
             return out;
         }
 
@@ -491,8 +602,15 @@ class DataManager {
          * @param plain - The plain object to convert.
          * @returns The converted class instance.
          */
-        function plainToInstanceRecursive (normal: UnknownObject | null | undefined, plain?: UnknownObject | null | undefined): UnknownObject {
-            if (!normal || !plain) throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
+        function plainToInstanceRecursive(
+            normal: UnknownObject | null | undefined,
+            plain?: UnknownObject | null | undefined,
+        ): UnknownObject {
+            if (!normal || !plain) {
+                throw new Error(
+                    "dataManager.plainToInstanceRecursive(): Missing arguments.",
+                );
+            }
             const out = plain;
             for (const key in normal) {
                 if (plain[key] === undefined) {
@@ -505,22 +623,33 @@ class DataManager {
                 if (!isPlainObject(plain[key])) continue;
 
                 // Convert the object using the normal data
-                const normalDataClass = (normal[key] as ConstructableObject).constructor;
+                const normalDataClass = (normal[key] as ConstructableObject)
+                    .constructor;
 
                 // Check if the object is a plain object
                 if (normalDataClass === Object) {
                     // If the object doesn't match a template class, convert it recursively
-                    (out as Record<string, object>)[key] = plainToInstanceRecursive((normal as Record<string, UnknownObject>)[key], (plain as Record<string, UnknownObject>)[key]);
+                    (out as Record<string, object>)[key] =
+                        plainToInstanceRecursive(
+                            (normal as Record<string, UnknownObject>)[key],
+                            (plain as Record<string, UnknownObject>)[key],
+                        );
                     continue;
                 }
 
                 // console.log("Normal data class: ", normalDataClass);
-                out[key] = convertTemplateClass(normalDataClass, (plain as Record<string, UnknownObject>)[key]);
+                out[key] = convertTemplateClass(
+                    normalDataClass,
+                    (plain as Record<string, UnknownObject>)[key],
+                );
             }
             return out;
         }
 
-        loadedDataProcessed = plainToInstanceRecursive(this.normalData, loadedDataProcessed);
+        loadedDataProcessed = plainToInstanceRecursive(
+            this.normalData,
+            loadedDataProcessed,
+        );
         return loadedDataProcessed;
     }
 
@@ -529,13 +658,24 @@ class DataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData (dataToLoad: [SaveMetadata, UnknownObject] | null | string = this.decompileData()): null | boolean {
-        dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
+    public loadData(
+        dataToLoad:
+            | [SaveMetadata, UnknownObject]
+            | null
+            | string = this.decompileData(),
+    ): null | boolean {
+        dataToLoad =
+            typeof dataToLoad === "string"
+                ? this.decompileData(dataToLoad)
+                : dataToLoad;
 
         // If the data is empty, return null
         if (!dataToLoad) return null;
 
-        const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]); // TODO: dataToLoad somehow plainToInstance??
+        const isDataValid = this.validateData([
+            dataToLoad[0],
+            instanceToPlain(dataToLoad[1]),
+        ]); // TODO: dataToLoad somehow plainToInstance??
         const parsedData = this.parseData(dataToLoad);
 
         // If the data is empty, return null
@@ -553,7 +693,7 @@ class DataManager {
         this.gameRef.eventManager.dispatch("loadData");
 
         return isDataValid;
-    };
+    }
 }
 
 export { DataManager };

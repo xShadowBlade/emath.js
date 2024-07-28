@@ -16,7 +16,7 @@ import type { UpgradeInitArrayType } from "./Upgrade";
  * @param target - The target quantity to reach for the item. If not provided, it will buy the maximum amount of items possible (using target = Infinity).
  * @returns [amount, cost] - Returns the amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
-function calculateItem (
+function calculateItem(
     value: DecimalSource,
     item: Item,
     tier: DecimalSource = Decimal.dOne,
@@ -36,7 +36,10 @@ function calculateItem (
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
         const cost = item.cost(tier);
-        return [value.gte(cost) ? Decimal.dOne : Decimal.dZero, value.gte(cost) ? cost : Decimal.dZero];
+        return [
+            value.gte(cost) ? Decimal.dOne : Decimal.dZero,
+            value.gte(cost) ? cost : Decimal.dZero,
+        ];
     }
 
     // no need to do binary search just divide lol
@@ -79,7 +82,13 @@ interface ItemInit {
      * // Getter function
      * console.log(item.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
-    description?: ((level: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => string) | string;
+    description?:
+        | ((
+              level: Decimal,
+              itemContext: Item,
+              currencyContext: CurrencyStatic,
+          ) => string)
+        | string;
 
     /**
      * The cost of items at a certain level.
@@ -89,7 +98,7 @@ interface ItemInit {
      * // An item that costs 10 times the level
      * (level) => level.mul(10);
      */
-    cost: ((level: Decimal) => Decimal);
+    cost: (level: Decimal) => Decimal;
 
     /**
      * The effect of the item. This runs when the item is bought, and instantly if `runEffectInstantly` is true.
@@ -98,7 +107,12 @@ interface ItemInit {
      * @param itemContext - The item object that the effect is being run on.
      * @param currencyContext - The currency static class that the item is being run on.
      */
-    effect?: (tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
+    effect?: (
+        tier: Decimal,
+        amount: Decimal,
+        itemContext: Item,
+        currencyContext: CurrencyStatic,
+    ) => void;
 
     // Below are types that are automatically added
     /**
@@ -113,13 +127,17 @@ interface ItemInit {
  * Infers the id type of an item array. See {@link UpgradeInitArrayType}
  * @template I - The item array
  */
-type ItemInitArrayType<I extends Readonly<ItemInit>[]> = I[number]["id"] extends never ? string : I[number]["id"];
+type ItemInitArrayType<I extends Readonly<ItemInit>[]> =
+    I[number]["id"] extends never ? string : I[number]["id"];
 
 /**
  * Represents an item.
  */
 class Item implements ItemInit {
-    public id; name; cost; effect;
+    public id;
+    name;
+    cost;
+    effect;
 
     public defaultAmount = Decimal.dZero;
 
@@ -127,7 +145,7 @@ class Item implements ItemInit {
     private dataPointerFn: () => ItemData;
 
     /** @returns The data of the item. */
-    public get data (): ItemData {
+    public get data(): ItemData {
         return this.dataPointerFn();
     }
 
@@ -137,11 +155,12 @@ class Item implements ItemInit {
     /** The description of the item as a function. */
     private descriptionFn: Exclude<ItemInit["description"], string | undefined>;
 
-    public get description (): string {
+    public get description(): string {
         return this.descriptionFn(this.amount, this, this.currencyPointerFn());
     }
-    public set description (value: Exclude<ItemInit["description"], undefined>) {
-        this.descriptionFn = typeof value === "function" ? value : (): string => value;
+    public set description(value: Exclude<ItemInit["description"], undefined>) {
+        this.descriptionFn =
+            typeof value === "function" ? value : (): string => value;
     }
 
     /**
@@ -149,12 +168,16 @@ class Item implements ItemInit {
      * @deprecated This does not account for items that were bought on different tiers.
      * @returns The amount of the item that was bought.
      */
-    get amount (): Decimal {
+    get amount(): Decimal {
         // many fallbacks for some reason
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return ((this ?? { data: { amount: Decimal.dOne } }).data ?? { amount: Decimal.dOne }).amount;
+        return (
+            (this ?? { data: { amount: Decimal.dOne } }).data ?? {
+                amount: Decimal.dOne,
+            }
+        ).amount;
     }
-    set amount (n: DecimalSource) {
+    set amount(n: DecimalSource) {
         this.data.amount = new Decimal(n);
     }
 
@@ -164,19 +187,33 @@ class Item implements ItemInit {
      * @param dataPointer - The pointer to the data of the item.
      * @param currencyPointer - The pointer to the currency static class that the item is being run on.
      */
-    constructor (init: ItemInit, dataPointer: Pointer<ItemData>, currencyPointer: Pointer<CurrencyStatic>) {
-        const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
-        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): ItemData => data;
-        this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : (): CurrencyStatic => currencyPointer;
+    constructor(
+        init: ItemInit,
+        dataPointer: Pointer<ItemData>,
+        currencyPointer: Pointer<CurrencyStatic>,
+    ) {
+        const data =
+            typeof dataPointer === "function" ? dataPointer() : dataPointer;
+        this.dataPointerFn =
+            typeof dataPointer === "function"
+                ? dataPointer
+                : (): ItemData => data;
+        this.currencyPointerFn =
+            typeof currencyPointer === "function"
+                ? currencyPointer
+                : (): CurrencyStatic => currencyPointer;
 
         this.id = init.id;
         this.name = init.name ?? init.id;
         this.cost = init.cost;
         this.effect = init.effect;
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
+        this.descriptionFn = init.description
+            ? typeof init.description === "function"
+                ? init.description
+                : (): string => init.description as string
+            : (): string => "";
         this.defaultAmount = init.amount ?? Decimal.dZero;
-
-    };
+    }
 }
 
 /**
@@ -191,7 +228,7 @@ class ItemData implements IItemData {
     @Expose() public id: string;
     @Type(() => Decimal) public amount;
 
-    constructor (init: IItemData) {
+    constructor(init: IItemData) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
 

@@ -50,7 +50,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
     /** An array that represents items and their effects. */
     readonly items: Record<ItemIds, Item>;
     /** A function that returns the pointer of the data */
-    protected readonly pointerFn: (() => Currency);
+    protected readonly pointerFn: () => Currency;
     /** @returns The pointer of the data. */
     protected get pointer(): Currency;
     /** A boost object that affects the currency gain. */

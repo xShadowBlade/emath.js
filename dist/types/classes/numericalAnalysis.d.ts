@@ -122,5 +122,5 @@ declare function calculateSum(f: (n: Decimal) => Decimal, b: DecimalSource, a?: 
  * console.log(roundingBase(245, 2, 0, 10)); // 256
  */
 declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
-export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS };
+export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS, };
 export type { MeanMode, EqualsToleranceConfig };

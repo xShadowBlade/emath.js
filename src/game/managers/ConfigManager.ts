@@ -15,7 +15,7 @@ class ConfigManager<T extends UnknownObject | object> {
      * Constructs a new configuration manager.
      * @param configOptionTemplate - The template to use for default values.
      */
-    constructor (configOptionTemplate: T) {
+    constructor(configOptionTemplate: T) {
         this.configOptionTemplate = configOptionTemplate;
     }
 
@@ -24,7 +24,7 @@ class ConfigManager<T extends UnknownObject | object> {
      * @param config - The configuration object to parse.
      * @returns A new object with default values for any missing options.
      */
-    public parse (config?: UnknownObject | object): T {
+    public parse(config?: UnknownObject | object): T {
         if (typeof config === "undefined") {
             return this.configOptionTemplate;
         }
@@ -35,24 +35,38 @@ class ConfigManager<T extends UnknownObject | object> {
          * @param template - The template to use for default values.
          * @returns A new object with default values for any missing options.
          */
-        function parseObject (obj: UnknownObject, template: UnknownObject): UnknownObject {
+        function parseObject(
+            obj: UnknownObject,
+            template: UnknownObject,
+        ): UnknownObject {
             for (const key in template) {
                 if (typeof obj[key] === "undefined") {
                     obj[key] = template[key];
-                } else if (typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
-                    obj[key] = parseObject((obj as Record<string, UnknownObject>)[key], (template as Record<string, UnknownObject>)[key]);
+                } else if (
+                    typeof obj[key] === "object" &&
+                    typeof template[key] === "object" &&
+                    !Array.isArray(obj[key]) &&
+                    !Array.isArray(template[key])
+                ) {
+                    obj[key] = parseObject(
+                        (obj as Record<string, UnknownObject>)[key],
+                        (template as Record<string, UnknownObject>)[key],
+                    );
                 }
             }
             return obj;
         }
 
-        return parseObject((config as UnknownObject), (this.configOptionTemplate as UnknownObject)) as T;
+        return parseObject(
+            config as UnknownObject,
+            this.configOptionTemplate as UnknownObject,
+        ) as T;
     }
 
     /**
      * @returns The template to use for default values.
      */
-    get options (): T {
+    get options(): T {
         return this.configOptionTemplate;
     }
 }

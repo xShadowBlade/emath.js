@@ -179,5 +179,5 @@ declare class EventManager<Events extends string = string> {
      */
     removeEvent(name: string): void;
 }
-export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event };
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event, };
 export { EventManager, EventTypes };

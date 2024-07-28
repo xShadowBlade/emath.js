@@ -24,16 +24,16 @@ import type { ItemInit } from "../classes/Item";
  */
 interface GameConfigOptions {
     /** The mode to run the game in. Not used internally. */
-	mode?: "development" | "production";
+    mode?: "development" | "production";
     /** The name of the game. Not used internally. */
-	name: {
+    name: {
         /** The title of the game.  */
-		title?: string;
+        title?: string;
         /** The ID of the game. Used for naming saves. */
-		id: string;
+        id: string;
         /** The version of the game. Not used internally. */
         version?: string;
-	};
+    };
     /** The settings for the game. */
     settings?: {
         /** The framerate to use for the game and various managers. Defaults to `30` */
@@ -65,7 +65,9 @@ const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
  */
 class Game {
     /** The static config manager for the game. */
-    protected static readonly configManager = new ConfigManager(gameDefaultConfig);
+    protected static readonly configManager = new ConfigManager(
+        gameDefaultConfig,
+    );
 
     /** The config object */
     public readonly config: typeof Game.configManager.options;
@@ -97,7 +99,7 @@ class Game {
      *     // Additional options here
      * });
      */
-    constructor (config?: GameConfigOptions) {
+    constructor(config?: GameConfigOptions) {
         // Parse the config
         this.config = Game.configManager.parse(config);
 
@@ -122,7 +124,7 @@ class Game {
      * Initializes the game. Also initializes the data manager.
      * See {@link DataManager.init} for more information.
      */
-    public init (): void {
+    public init(): void {
         this.dataManager.init();
     }
 
@@ -130,7 +132,7 @@ class Game {
      * Changes the framerate of the game.
      * @param fps - The new framerate to use.
      */
-    public changeFps (fps: number): void {
+    public changeFps(fps: number): void {
         this.keyManager.changeFps(fps);
         this.eventManager.changeFps(fps);
     }
@@ -150,7 +152,11 @@ class Game {
      * currency.static.gain();
      * console.log(currency.value); // Decimal.dOne
      */
-    public addCurrency<N extends string, U extends Readonly<UpgradeInit>[] = [], I extends Readonly<ItemInit>[] = []> (
+    public addCurrency<
+        N extends string,
+        U extends Readonly<UpgradeInit>[] = [],
+        I extends Readonly<ItemInit>[] = [],
+    >(
         name: N,
         upgrades: U = [] as unknown as U,
         items: I = [] as unknown as I,
@@ -162,7 +168,13 @@ class Game {
 
         // Create the class instance
         const classInstance = new GameCurrency(
-            [(): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency, upgrades, items] as ConstructorParameters<typeof CurrencyStatic>,
+            [
+                (): Currency =>
+                    (this.dataManager.getData(name) as { currency: Currency })
+                        .currency,
+                upgrades,
+                items,
+            ] as ConstructorParameters<typeof CurrencyStatic>,
             this,
             name,
         );
@@ -180,11 +192,19 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute<B extends boolean = true> (name: string, useBoost: B = true as B, initial: DecimalSource = 0): GameAttribute<B> {
+    public addAttribute<B extends boolean = true>(
+        name: string,
+        useBoost: B = true as B,
+        initial: DecimalSource = 0,
+    ): GameAttribute<B> {
         this.dataManager.setData(name, new Attribute(initial));
 
         const classInstance = new GameAttribute(
-            [this.dataManager.getData(name) as Attribute, useBoost, initial] as ConstructorParameters<typeof AttributeStatic>,
+            [
+                this.dataManager.getData(name) as Attribute,
+                useBoost,
+                initial,
+            ] as ConstructorParameters<typeof AttributeStatic>,
             this,
         );
         return classInstance;
@@ -202,8 +222,12 @@ class Game {
      * @returns The newly created game reset object.
      */
     // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
-    public addReset (...args: ConstructorParameters<typeof GameReset>): GameReset {
-        console.warn("Game.addReset is deprecated. Use the GameReset class instead.");
+    public addReset(
+        ...args: ConstructorParameters<typeof GameReset>
+    ): GameReset {
+        console.warn(
+            "Game.addReset is deprecated. Use the GameReset class instead.",
+        );
 
         const reset = new GameReset(...args);
         return reset;
@@ -216,7 +240,9 @@ class Game {
      * @param object - The object to create the game reset from.
      * @returns The newly created game reset object.
      */
-    public addResetFromObject (object: Parameters<typeof GameReset.fromObject>[0]): GameReset {
+    public addResetFromObject(
+        object: Parameters<typeof GameReset.fromObject>[0],
+    ): GameReset {
         return GameReset.fromObject(object);
     }
 }

@@ -6,7 +6,11 @@ import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
-import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
+import {
+    MeanMode,
+    inverseFunctionApprox,
+    calculateSum,
+} from "./numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";
 
 /**
@@ -24,7 +28,7 @@ import type { CurrencyStatic } from "./Currency";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
-function calculateUpgrade (
+function calculateUpgrade(
     value: DecimalSource,
     upgrade: UpgradeStatic,
     start?: DecimalSource,
@@ -81,7 +85,10 @@ function calculateUpgrade (
             // upgrade.setCached("el", start, cost);
             return out;
         } else {
-            out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost : Decimal.dZero];
+            out = [
+                canAfford ? Decimal.dOne : Decimal.dZero,
+                canAfford ? cost : Decimal.dZero,
+            ];
 
             // Set the cache
             // upgrade.setCached("sum", start, end, cost);
@@ -94,7 +101,10 @@ function calculateUpgrade (
         // console.log("costBulk");
         const [amount, cost] = upgrade.costBulk(value, upgrade.level, target);
         const canAfford = value.gte(cost);
-        const out: [Decimal, Decimal] = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost : Decimal.dZero];
+        const out: [Decimal, Decimal] = [
+            canAfford ? amount : Decimal.dZero,
+            canAfford && !el ? cost : Decimal.dZero,
+        ];
 
         // Set the cache
 
@@ -111,8 +121,17 @@ function calculateUpgrade (
     // Special case for endless upgrades
     if (el) {
         // console.log("el");
-        const costTargetFn = (level: Decimal): Decimal => upgrade.cost(level.add(start));
-        const maxLevelAffordable = Decimal.min(end, inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor());
+        const costTargetFn = (level: Decimal): Decimal =>
+            upgrade.cost(level.add(start));
+        const maxLevelAffordable = Decimal.min(
+            end,
+            inverseFunctionApprox(
+                costTargetFn,
+                value,
+                mode,
+                iterations,
+            ).value.floor(),
+        );
         // const cost = upgrade.cost(maxLevelAffordable);
         const cost = Decimal.dZero;
 
@@ -128,12 +147,16 @@ function calculateUpgrade (
         value,
         mode,
         iterations,
-    ).value.floor()
+    )
+        .value.floor()
         .min(start.add(target).sub(1));
     const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
 
     // console.log({ maxLevelAffordable, cost });
-    const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
+    const maxLevelAffordableActual = maxLevelAffordable
+        .sub(start)
+        .add(1)
+        .max(0);
 
     // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
     // Set the cache
@@ -174,7 +197,13 @@ interface UpgradeInit {
      * // Getter property
      * console.log(upgrade.description); // "This upgrade is at level 1"
      */
-    description?: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => string) | string;
+    description?:
+        | ((
+              level: Decimal,
+              upgradeContext: UpgradeStatic,
+              currencyContext: CurrencyStatic,
+          ) => string)
+        | string;
 
     /**
      * The cost of upgrades at a certain level.
@@ -201,7 +230,11 @@ interface UpgradeInit {
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal];
+    costBulk?: (
+        currencyValue: Decimal,
+        level: Decimal,
+        target: Decimal,
+    ) => [amount: Decimal, cost: Decimal];
 
     /**
      * The maximum level of the upgrade.
@@ -215,7 +248,11 @@ interface UpgradeInit {
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    effect?: (level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
+    effect?: (
+        level: Decimal,
+        upgradeContext: UpgradeStatic,
+        currencyContext: CurrencyStatic,
+    ) => void;
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
@@ -230,7 +267,7 @@ interface UpgradeInit {
      * Automatically set to `1` if not provided.
      */
     level?: Decimal;
-};
+}
 
 /**
  * Infers the id type of an upgrade array
@@ -249,7 +286,8 @@ interface UpgradeInit {
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends Readonly<UpgradeInit>[]> = U[number]["id"] extends never ? string : U[number]["id"];
+type UpgradeInitArrayType<U extends Readonly<UpgradeInit>[]> =
+    U[number]["id"] extends never ? string : U[number]["id"];
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`
@@ -277,7 +315,7 @@ type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
  * @param n - The decimal number to convert.
  * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
  */
-function decimalToJSONString (n: DecimalSource): DecimalJSONString {
+function decimalToJSONString(n: DecimalSource): DecimalJSONString {
     n = new Decimal(n);
     return `${n.sign}/${n.mag}/${n.layer}`;
 }
@@ -289,7 +327,10 @@ function decimalToJSONString (n: DecimalSource): DecimalJSONString {
  * @param end - The ending level or quantity to reach for the upgrade.
  * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
  */
-function upgradeToCacheNameSum (start: DecimalSource, end: DecimalSource): UpgradeCachedSumName {
+function upgradeToCacheNameSum(
+    start: DecimalSource,
+    end: DecimalSource,
+): UpgradeCachedSumName {
     // return `${upgrade.id}/sum/${start.toString()}/${end.toString()}/${cost.toString()}` as UpgradeCachedSumName;
     return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
 }
@@ -300,7 +341,7 @@ function upgradeToCacheNameSum (start: DecimalSource, end: DecimalSource): Upgra
  * @param level - The level of the upgrade.
  * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
  */
-function upgradeToCacheNameEL (level: DecimalSource): UpgradeCachedELName {
+function upgradeToCacheNameEL(level: DecimalSource): UpgradeCachedELName {
     // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
     return `el/${decimalToJSONString(level)}`;
 }
@@ -344,7 +385,7 @@ class UpgradeData implements IUpgradeData {
      * Constructs a new upgrade object with an initial level of 1 (or the provided level)
      * @param init - The upgrade object to initialize.
      */
-    constructor (init: IUpgradeData) {
+    constructor(init: IUpgradeData) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
 
@@ -367,7 +408,14 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
  * Represents the backend for an upgrade.
  */
 class UpgradeStatic implements IUpgradeStatic {
-    public id; name; cost; costBulk; maxLevel; effect; el?; defaultLevel;
+    public id;
+    name;
+    cost;
+    costBulk;
+    maxLevel;
+    effect;
+    el?;
+    defaultLevel;
 
     /** The default size of the cache. Should be one less than a power of 2. */
     public static cacheSize = 15;
@@ -376,13 +424,16 @@ class UpgradeStatic implements IUpgradeStatic {
      * The cache to store the values of certain upgrade levels.
      * @deprecated Unfinished
      */
-    public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
+    public cache: LRUCache<
+        UpgradeCachedELName | UpgradeCachedSumName,
+        UpgradeCached
+    >;
 
     /** @returns The data of the upgrade. */
     private dataPointerFn: () => UpgradeData;
 
     /** @returns The data of the upgrade. */
-    public get data (): UpgradeData {
+    public get data(): UpgradeData {
         return this.dataPointerFn();
     }
 
@@ -390,25 +441,34 @@ class UpgradeStatic implements IUpgradeStatic {
     protected currencyPointerFn: () => CurrencyStatic;
 
     /** The description of the upgrade as a function. */
-    private descriptionFn: Exclude<UpgradeInit["description"], string | undefined>;
+    private descriptionFn: Exclude<
+        UpgradeInit["description"],
+        string | undefined
+    >;
 
-    public get description (): string {
+    public get description(): string {
         return this.descriptionFn(this.level, this, this.currencyPointerFn());
     }
-    public set description (value: Exclude<UpgradeInit["description"], undefined>) {
-        this.descriptionFn = typeof value === "function" ? value : (): string => value;
+    public set description(
+        value: Exclude<UpgradeInit["description"], undefined>,
+    ) {
+        this.descriptionFn =
+            typeof value === "function" ? value : (): string => value;
     }
 
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
      */
-    get level (): Decimal {
+    get level(): Decimal {
         // many fallbacks for some reason
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return ((this ?? { data: { level: Decimal.dOne } }).data ?? { level: Decimal.dOne }).level;
+        return (
+            (this ?? { data: { level: Decimal.dOne } }).data ?? {
+                level: Decimal.dOne,
+            }
+        ).level;
     }
-    set level (n: DecimalSource) {
+    set level(n: DecimalSource) {
         this.data.level = new Decimal(n);
     }
 
@@ -419,15 +479,31 @@ class UpgradeStatic implements IUpgradeStatic {
      * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
      * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
      */
-    constructor (init: UpgradeInit, dataPointer: Pointer<UpgradeData>, currencyPointer: Pointer<CurrencyStatic>, cacheSize?: number) {
-        const data = (typeof dataPointer === "function" ? dataPointer() : dataPointer);
-        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
-        this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : (): CurrencyStatic => currencyPointer;
+    constructor(
+        init: UpgradeInit,
+        dataPointer: Pointer<UpgradeData>,
+        currencyPointer: Pointer<CurrencyStatic>,
+        cacheSize?: number,
+    ) {
+        const data =
+            typeof dataPointer === "function" ? dataPointer() : dataPointer;
+        this.dataPointerFn =
+            typeof dataPointer === "function"
+                ? dataPointer
+                : (): UpgradeData => data;
+        this.currencyPointerFn =
+            typeof currencyPointer === "function"
+                ? currencyPointer
+                : (): CurrencyStatic => currencyPointer;
 
         this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
-        this.descriptionFn = init.description ? (typeof init.description === "function" ? init.description : (): string => init.description as string) : (): string => "";
+        this.descriptionFn = init.description
+            ? typeof init.description === "function"
+                ? init.description
+                : (): string => init.description as string
+            : (): string => "";
         this.cost = init.cost;
         this.costBulk = init.costBulk;
         this.maxLevel = init.maxLevel;
@@ -488,5 +564,10 @@ class UpgradeStatic implements IUpgradeStatic {
 
 export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
 export { UpgradeData, UpgradeStatic, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
+export type {
+    DecimalJSONString,
+    UpgradeCachedELName,
+    UpgradeCachedSumName,
+    UpgradeCached,
+};
 export { decimalToJSONString, upgradeToCacheNameEL };

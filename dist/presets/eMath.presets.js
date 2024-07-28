@@ -4858,18 +4858,27 @@ Decimal.formats = formats;
 
 // src/presets/GameFormats.ts
 function gameFormat(value, settings) {
-  settings = Object.assign({
-    formatType: "mixed_sc",
-    acc: 2,
-    max: 9
-  }, settings);
+  settings = Object.assign(
+    {
+      formatType: "mixed_sc",
+      acc: 2,
+      max: 9
+    },
+    settings
+  );
   const { formatType, acc, max, time, multi, formatTimeType } = settings;
   if (time) {
     switch (formatTimeType) {
       case "short":
         return Decimal.formats.formatTime(value, acc, formatType);
       case "long":
-        return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
+        return Decimal.formats.formatTimeLong(
+          value,
+          true,
+          0,
+          max,
+          formatType
+        );
     }
   }
   if (multi) {

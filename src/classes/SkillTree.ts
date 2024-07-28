@@ -6,12 +6,29 @@ import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
 // import { calculateUpgrade } from "./currency";
 import type { CurrencyStatic } from "./Currency";
-import type { IUpgradeStatic } from "./Upgrade";
+import type { UpgradeInit } from "./Upgrade";
 
-interface SkillInit extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
-    cost: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => Decimal];
-    costBulk?: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => [cost: Decimal, amount: Decimal]];
-    required: SkillInit[];
+/**
+ * Represents a skill tree node.
+ * WIP
+ */
+interface SkillInit
+    extends Omit<
+        UpgradeInit,
+        "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"
+    > {
+    cost: [
+        currency: CurrencyStatic,
+        cost: (level: Decimal, context: SkillInit) => Decimal,
+    ];
+    costBulk?: [
+        currency: CurrencyStatic,
+        cost: (
+            level: Decimal,
+            context: SkillInit,
+        ) => [cost: Decimal, amount: Decimal],
+    ];
+    required?: SkillInit[];
     effect?: (level: Decimal, context: SkillInit) => void;
 }
 
@@ -20,7 +37,13 @@ interface SkillInit extends Omit<IUpgradeStatic, "costBulk" | "effect" | "cost" 
  * WIP
  */
 class SkillNode implements SkillInit {
-    public id; name; description; cost; required; maxLevel; effect;
+    public id;
+    name;
+    description;
+    cost;
+    required;
+    maxLevel;
+    effect;
 
     /**
      * Represents a skill tree node.
@@ -31,8 +54,9 @@ class SkillNode implements SkillInit {
      * @param effect - The effect of the skill tree node.
      * @param maxLevel - The maximum level of the skill tree node. Defaults to 1.
      * @param required - The IDs of the required skill tree nodes.
+     * @param skill
      */
-    constructor (
+    constructor(
         // id: string,
         // name: string,
         // cost: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => Decimal],
@@ -41,16 +65,17 @@ class SkillNode implements SkillInit {
         // maxLevel?: DecimalSource,
         // required?: SkillInit[],
         skill: SkillInit,
-    )
-    {
+    ) {
         // Assign the values
         this.id = skill.id;
         this.name = skill.name ?? skill.id;
         this.description = skill.description ?? "";
-        this.cost = skill.cost ?? (() => Decimal.dZero);
+        this.cost = skill.cost;
         this.effect = skill.effect;
         this.required = skill.required ?? [];
-        this.maxLevel = skill.maxLevel ? new Decimal(skill.maxLevel) : Decimal.dZero;
+        this.maxLevel = skill.maxLevel
+            ? new Decimal(skill.maxLevel)
+            : Decimal.dZero;
     }
 
     // /**
@@ -65,6 +90,7 @@ class SkillNode implements SkillInit {
 
 /**
  * Represents a skill tree.
+ * WIP
  */
 class SkillTree {
     public skills: SkillInit[];
@@ -73,21 +99,24 @@ class SkillTree {
      * Represents a skill tree.
      * @param skills - The skills in the skill tree.
      */
-    constructor (skills: (SkillInit | SkillNode)[]) {
-        this.skills = skills.map(skillNodeMember => {
-            if (skillNodeMember instanceof SkillNode) {
-                return skillNodeMember;
-            } else {
-                return SkillNode.fromSkill(skillNodeMember);
-            }
-        });
+    constructor(skills: (SkillInit | SkillNode)[]) {
+        // this.skills = skills.map((skillNodeMember) => {
+        //     if (skillNodeMember instanceof SkillNode) {
+        //         return skillNodeMember;
+        //     } else {
+        //         return SkillNode.fromSkill(skillNodeMember);
+        //     }
+        // });
+
+        // TODO: Fix this
+        this.skills = skills;
     }
 
     /**
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    public addSkill (skillNodeMember: (SkillInit | SkillNode)[]): void {
+    public addSkill(skillNodeMember: (SkillInit | SkillNode)[]): void {
         if (Array.isArray(skillNodeMember)) {
             this.skills.push(...skillNodeMember);
         } else {
