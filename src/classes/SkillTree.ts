@@ -2,6 +2,7 @@
  * @file Skill tree class
  * Work in progress
  */
+import { Expose, Type } from "class-transformer";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
 // import { calculateUpgrade } from "./currency";
@@ -9,18 +10,33 @@ import type { CurrencyStatic } from "./Currency";
 import type { UpgradeInit } from "./Upgrade";
 
 /**
- * Represents a skill tree node.
- * WIP
+ * The requirements for a skill tree node. Can be a {@link SkillNode} or an object with a skill and a level that is required.
+ */
+interface RequiredSkill {
+    skill: SkillNode;
+    level: DecimalSource;
+}
+
+/**
+ * The interface for initializing a skill tree node.
  */
 interface SkillInit
     extends Omit<
         UpgradeInit,
         "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"
     > {
+    /**
+     * The cost of the skill tree node.
+     * [currency, cost] - The currency and cost of the skill tree node.
+     */
     cost: [
         currency: CurrencyStatic,
         cost: (level: Decimal, context: SkillInit) => Decimal,
     ];
+
+    /**
+     * A function that returns the cost of buying multiple levels of the skill.
+     */
     costBulk?: [
         currency: CurrencyStatic,
         cost: (
@@ -28,8 +44,36 @@ interface SkillInit
             context: SkillInit,
         ) => [cost: Decimal, amount: Decimal],
     ];
-    required?: SkillInit[];
-    effect?: (level: Decimal, context: SkillInit) => void;
+
+    /**
+     * The skill nodes that are required to unlock this skill node.
+     * See {@link RequiredSkill} for more information.
+     * Can also be a function that takes the skill tree context and returns the required skills.
+     */
+    required?:
+        | (SkillNode | RequiredSkill)[]
+        | ((skillTreeContext: SkillTree) => (SkillNode | RequiredSkill)[]);
+
+    /**
+     * The effect of the skill tree node.
+     * @param level - The level of the skill tree node.
+     * @param context - The skill tree node.
+     */
+    effect?: (level: Decimal, context: SkillNode) => void;
+}
+
+class SkillNodeData {
+    @Expose()
+    public id: string;
+
+    @Expose()
+    @Type(() => Decimal)
+    public level: Decimal;
+
+    constructor(id: string, level: DecimalSource = Decimal.dZero) {
+        this.id = id;
+        this.level = new Decimal(level);
+    }
 }
 
 /**
@@ -46,25 +90,25 @@ class SkillNode implements SkillInit {
     effect;
 
     /**
+     * @returns The data of the skill node.
+     */
+    private data: () => SkillNodeData;
+
+    /**
+     * @returns The level of the skill node.
+     */
+    public get level(): Decimal {
+        return this.data().level;
+    }
+
+    /**
      * Represents a skill tree node.
-     * @param id - The ID of the skill tree node.
-     * @param name - The name of the skill tree node. Defaults to the id.
-     * @param cost - The cost of the skill tree node. Defaults to 0.
-     * @param description - The description of the skill tree node.
-     * @param effect - The effect of the skill tree node.
-     * @param maxLevel - The maximum level of the skill tree node. Defaults to 1.
-     * @param required - The IDs of the required skill tree nodes.
-     * @param skill
+     * @param skill - The skill tree node to initialize.
+     * @param data
      */
     constructor(
-        // id: string,
-        // name: string,
-        // cost: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => Decimal],
-        // description?: string,
-        // effect?: (level: Decimal, context: SkillInit) => void,
-        // maxLevel?: DecimalSource,
-        // required?: SkillInit[],
         skill: SkillInit,
+        data: SkillNodeData = new SkillNodeData(skill.id, skill.level),
     ) {
         // Assign the values
         this.id = skill.id;
@@ -76,54 +120,110 @@ class SkillNode implements SkillInit {
         this.maxLevel = skill.maxLevel
             ? new Decimal(skill.maxLevel)
             : Decimal.dZero;
-    }
 
-    // /**
-    //  * Converts a skill to a skill tree node.
-    //  * @param skillObj - The skill to convert to a skill tree node.
-    //  * @returns The skill tree node.
-    //  */
-    // public static fromSkill (skillObj: SkillInit): SkillNode {
-    //     return new SkillNode(skillObj.id, skillObj.name, skillObj.cost, skillObj.description, skillObj.effect, skillObj.maxLevel, skillObj.required);
-    // }
+        // Create the data function
+        this.data = (): SkillNodeData => data;
+    }
+}
+
+class SkillTreeData {
+    @Type(() => SkillNode)
+    @Expose()
+    public skills: Record<string, SkillNode>;
+
+    constructor(skills: Record<string, SkillNode>) {
+        this.skills = skills;
+    }
 }
 
 /**
- * Represents a skill tree.
+ * A skill tree.
  * WIP
  */
 class SkillTree {
-    public skills: SkillInit[];
+    /**
+     * The skills in the skill tree.
+     */
+    public readonly skills: Record<string, SkillNode>;
 
     /**
-     * Represents a skill tree.
+     * Creates a new skill tree.
      * @param skills - The skills in the skill tree.
      */
-    constructor(skills: (SkillInit | SkillNode)[]) {
-        // this.skills = skills.map((skillNodeMember) => {
-        //     if (skillNodeMember instanceof SkillNode) {
-        //         return skillNodeMember;
-        //     } else {
-        //         return SkillNode.fromSkill(skillNodeMember);
-        //     }
-        // });
+    constructor(skills: (SkillInit | SkillNode)[] | (SkillInit | SkillNode)) {
+        // If the skills are not an array, make them an array.
+        skills = Array.isArray(skills) ? skills : [skills];
 
-        // TODO: Fix this
-        this.skills = skills;
+        this.skills = {};
+        this.addSkill(skills);
     }
 
     /**
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    public addSkill(skillNodeMember: (SkillInit | SkillNode)[]): void {
-        if (Array.isArray(skillNodeMember)) {
-            this.skills.push(...skillNodeMember);
-        } else {
-            this.skills.push(skillNodeMember);
+    public addSkill(
+        skillNodeMember: (SkillInit | SkillNode)[] | (SkillInit | SkillNode),
+    ): void {
+        // If the skills are not an array, make them an array.
+        skillNodeMember = Array.isArray(skillNodeMember)
+            ? skillNodeMember
+            : [skillNodeMember];
+
+        // For each skill in the init array, if it is not a skill node, create a new skill node and add it to the skill tree.
+        skillNodeMember.forEach((skillNode) => {
+            if (skillNode instanceof SkillNode) {
+                this.skills[skillNode.id] = skillNode;
+            } else {
+                this.skills[skillNode.id] = new SkillNode(skillNode);
+            }
+        });
+    }
+
+    /**
+     * Gets a skill from the skill tree.
+     * @param id - The id of the skill to get.
+     * @returns The skill node.
+     */
+    public getSkill(id: string): SkillNode {
+        return this.skills[id];
+    }
+
+    /**
+     * Checks if a skill is unlocked.
+     * @param id - The id of the skill to check.
+     * @returns If the skill is unlocked.
+     */
+    public isSkillUnlocked(id: string): boolean {
+        const skillToCheck = this.getSkill(id);
+
+        // If there are no required skills, the skill is unlocked
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!skillToCheck.required || skillToCheck.required.length === 0) {
+            return true;
         }
+
+        // If the required skills are a function, call it
+        const requiredSkills =
+            typeof skillToCheck.required === "function"
+                ? skillToCheck.required(this)
+                : skillToCheck.required;
+
+        // Check if all the required skills are unlocked
+        return requiredSkills.every((requiredSkill) => {
+            // If the required skill is a skill node with extra levels, check if the level is high enough
+            if ("skill" in requiredSkill) {
+                return (
+                    requiredSkill.skill.level.gte(requiredSkill.level) &&
+                    this.isSkillUnlocked(requiredSkill.skill.id)
+                );
+            }
+
+            // If the required skill is just a skill node, check if it is unlocked
+            return this.isSkillUnlocked(requiredSkill.id);
+        });
     }
 }
 
-export type { SkillInit as ISkill };
+export type { SkillInit };
 export { SkillNode, SkillTree };
