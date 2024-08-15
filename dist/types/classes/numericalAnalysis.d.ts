@@ -62,13 +62,15 @@ declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: 
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
+ * @param upperBound - The upper bound to start the search from. Defaults to `n`.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number): {
+declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number, lowerBound?: DecimalSource, upperBound?: DecimalSource): {
     value: Decimal;
     lowerBound: Decimal;
     upperBound: Decimal;

@@ -163,6 +163,8 @@ function equalsTolerance(
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
+ * @param upperBound - The upper bound to start the search from. Defaults to `n`.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
  * @example
  * const f = (x) => x.pow(2);
@@ -175,11 +177,17 @@ function inverseFunctionApprox(
     mode: MeanMode = "geometric",
     iterations = DEFAULT_ITERATIONS,
     tolerance = DEFAULT_TOLERANCE,
+    lowerBound: DecimalSource = 1,
+    upperBound?: DecimalSource,
 ): { value: Decimal; lowerBound: Decimal; upperBound: Decimal } {
     // Set the initial bounds
-    let lowerBound = Decimal.dOne;
-    // let upperBound = new Decimal(n);
-    let upperBound = new Decimal(n);
+    lowerBound = new Decimal(lowerBound);
+    upperBound = new Decimal(upperBound ?? n);
+
+    // Reorder the bounds if they are in the wrong order
+    if (lowerBound.gt(upperBound)) {
+        [lowerBound, upperBound] = [upperBound, lowerBound];
+    }
 
     // If the function evaluates to 0, return 0
     if (f(upperBound).eq(0)) {
@@ -189,6 +197,22 @@ function inverseFunctionApprox(
             upperBound: Decimal.dZero,
         };
     }
+
+    // If the interval does not contain the value, warn and return the upper bound
+    // (Note: This assumes the function is monotonically increasing)
+    // if (f(lowerBound).gt(n)) {
+    //     console.warn(
+    //         "The interval does not contain the value. (f(lowerBound) > n)",
+    //         lowerBound,
+    //         upperBound,
+    //     );
+    //     // console.log({ lowerBound, upperBound, iterations, n, f: f(lowerBound)});
+    //     return {
+    //         value: upperBound,
+    //         lowerBound: upperBound,
+    //         upperBound: upperBound,
+    //     };
+    // }
 
     // If the function is not monotonically increasing, return the upper bound
     if (f(upperBound).lt(n)) {

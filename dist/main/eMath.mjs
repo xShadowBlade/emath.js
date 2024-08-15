@@ -5015,9 +5015,12 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
-  let lowerBound = Decimal.dOne;
-  let upperBound = new Decimal(n);
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound) {
+  lowerBound = new Decimal(lowerBound);
+  upperBound = new Decimal(upperBound ?? n);
+  if (lowerBound.gt(upperBound)) {
+    [lowerBound, upperBound] = [upperBound, lowerBound];
+  }
   if (f(upperBound).eq(0)) {
     return {
       value: Decimal.dZero,
