@@ -64,7 +64,7 @@ declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: 
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
  * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
  * @param upperBound - The upper bound to start the search from. Defaults to `n`.
- * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
@@ -82,7 +82,7 @@ declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSou
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}.
- * @returns The calculated sum of `f(n)`.
+ * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 declare function calculateSumLoop(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, epsilon?: DecimalSource): Decimal;
 /**
@@ -93,7 +93,7 @@ declare function calculateSumLoop(f: (n: Decimal) => Decimal, b: DecimalSource, 
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
- * @returns The calculated sum of `f(n)`.
+ * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number, tolerance?: DecimalSource): Decimal;
 /**
@@ -103,7 +103,7 @@ declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}. Only used if `b - a` is greater than {@link DEFAULT_ITERATIONS}.
- * @returns - The calculated sum of `f(n)`.
+ * @returns - The calculated sum of `f(n)`, as a {@link Decimal}.
  * @example
  * const f = (x) => x.pow(2);
  * const sum = calculateSum(f, 10);
@@ -111,17 +111,17 @@ declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource
  */
 declare function calculateSum(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, epsilon?: DecimalSource, iterations?: number): Decimal;
 /**
- * Function to round a number to the nearest power of a specified base. Warning: Experimental, not tested on negative numbers / parameters.
+ * Function to round a number to the nearest power of a specified base.
  * @param x - The number to round.
- * @param base - The power base to round to.
- * @param acc - The accuracy / significant figures to round to.
- * @param max - The maximum power to round to.
- * @returns - The rounded number.
+ * @param base - The power base to round to. Defaults to `10`. Must be greater than `1` (can be fractional, although not recommended).
+ * @param acc - The accuracy / significant figures to round to. Defaults to `0`. Must be greater than `1`.
+ * @param max - The maximum power to round to. Defaults to `1000`. If x > base^max, x is returned.
+ * @returns - The rounded number, as a {@link Decimal}. If parameters are invalid, returns {@link Decimal.dNaN}.
  * @example
- * console.log(roundingBase(123456789, 10, 0, 10)); // 100000000
- * console.log(roundingBase(123456789, 10, 1, 10)); // 120000000
- * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
- * console.log(roundingBase(245, 2, 0, 10)); // 256
+ * roundingBase(123456789, 10); // 100000000
+ * roundingBase(123456789, 10, 1); // 120000000
+ * roundingBase(123456789, 10, 2); // 123000000
+ * roundingBase(245, 2); // 256
  */
 declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
 export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS, };

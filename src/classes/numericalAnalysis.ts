@@ -45,21 +45,12 @@ const DEFAULT_TOLERANCE = 0.001;
  */
 type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
 
-// idk why im doing this bc i am too lazy to write 1 | 2 | 3
-
-// type MeanMode = MeanModeTuple[number] | PopStart<ArrayOfLength<AddOne<MeanModeTuple["length"]>>>[number];
-// type MeanModeTuple = ["arithmetic", "geometric", "harmonic"];
-
-// type ArrayOfLength<T extends number, U extends number[] = []> = U["length"] extends T ? U : ArrayOfLength<T, [...U, U["length"]]>;
-// type AddOne<T extends number> = [0, ...ArrayOfLength<T>]["length"];
-// type PopStart<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
-
 /**
  * Calculates the mean of two values using a specified method.
  * @param a - The first value.
  * @param b - The second value.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @returns The mean of the two values.
+ * @returns The mean of the two values, as a {@link Decimal}.
  */
 function mean(
     a: DecimalSource,
@@ -165,7 +156,7 @@ function equalsTolerance(
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
  * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
  * @param upperBound - The upper bound to start the search from. Defaults to `n`.
- * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`.
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
@@ -273,7 +264,7 @@ function inverseFunctionApprox(
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}.
- * @returns The calculated sum of `f(n)`.
+ * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 function calculateSumLoop(
     f: (n: Decimal) => Decimal,
@@ -308,7 +299,7 @@ function calculateSumLoop(
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
- * @returns The calculated sum of `f(n)`.
+ * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 function calculateSumApprox(
     f: (n: Decimal) => Decimal,
@@ -429,7 +420,7 @@ function calculateSumApprox(
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param epsilon - The maximum error tolerance, geometrically. Defaults to {@link DEFAULT_TOLERANCE}. Only used if `b - a` is less than or equal to {@link DEFAULT_ITERATIONS}.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}. Only used if `b - a` is greater than {@link DEFAULT_ITERATIONS}.
- * @returns - The calculated sum of `f(n)`.
+ * @returns - The calculated sum of `f(n)`, as a {@link Decimal}.
  * @example
  * const f = (x) => x.pow(2);
  * const sum = calculateSum(f, 10);
@@ -452,17 +443,17 @@ function calculateSum(
 }
 
 /**
- * Function to round a number to the nearest power of a specified base. Warning: Experimental, not tested on negative numbers / parameters.
+ * Function to round a number to the nearest power of a specified base.
  * @param x - The number to round.
- * @param base - The power base to round to.
- * @param acc - The accuracy / significant figures to round to.
- * @param max - The maximum power to round to.
- * @returns - The rounded number.
+ * @param base - The power base to round to. Defaults to `10`. Must be greater than `1` (can be fractional, although not recommended).
+ * @param acc - The accuracy / significant figures to round to. Defaults to `0`. Must be greater than `1`.
+ * @param max - The maximum power to round to. Defaults to `1000`. If x > base^max, x is returned.
+ * @returns - The rounded number, as a {@link Decimal}. If parameters are invalid, returns {@link Decimal.dNaN}.
  * @example
- * console.log(roundingBase(123456789, 10, 0, 10)); // 100000000
- * console.log(roundingBase(123456789, 10, 1, 10)); // 120000000
- * console.log(roundingBase(123456789, 10, 2, 10)); // 123000000
- * console.log(roundingBase(245, 2, 0, 10)); // 256
+ * roundingBase(123456789, 10); // 100000000
+ * roundingBase(123456789, 10, 1); // 120000000
+ * roundingBase(123456789, 10, 2); // 123000000
+ * roundingBase(245, 2); // 256
  */
 function roundingBase(
     x: DecimalSource,
@@ -470,17 +461,40 @@ function roundingBase(
     acc: DecimalSource = 0,
     max: DecimalSource = 1000,
 ): Decimal {
+    // Normalize the inputs
     x = new Decimal(x);
+    base = new Decimal(base);
+    acc = new Decimal(acc);
+    max = new Decimal(max);
+
+    // If base or acc is less than 1, return NaN
+    if (base.lt(1) || acc.lt(1)) return Decimal.dNaN;
+
+    // If the number is negative, round it as positive and then add the sign back
+    const xSign = x.sign as -1 | 0 | 1;
+    x = x.abs();
+
     // If the number is too large, don't round it
     if (x.gte(Decimal.pow(base, max))) return x;
 
-    /** The power of the number, rounded. acc^power = x */
+    /**
+     * The power of the number, rounded. acc^power = x.
+     * It is the highest power of the base that is less than x.
+     * For example, if x = 123 and base = 10, power = 2.
+     */
     const powerN = Decimal.floor(Decimal.log(x, base));
 
+    // First, divide the number by the base^powerN. This will give us a number between 1 and base, which we can round.
+    // Example: 123 / 10^2 = 1.23
     let out = x.div(Decimal.pow(base, powerN));
+
+    // Round the number to the accuracy
+    // Example, with an accuracy of 1: 1.23 -> 1.2
     out = out.mul(Decimal.pow(base, acc)).round();
     out = out.div(Decimal.pow(base, acc));
-    out = out.mul(Decimal.pow(base, powerN));
+
+    // Multiply the number by the base^powerN and add the sign back
+    out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
     return out;
 }
 

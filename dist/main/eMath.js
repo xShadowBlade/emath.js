@@ -5167,12 +5167,18 @@ function calculateSum(f, b, a = 0, epsilon, iterations) {
 }
 function roundingBase(x, base = 10, acc = 0, max = 1e3) {
   x = new Decimal(x);
+  base = new Decimal(base);
+  acc = new Decimal(acc);
+  max = new Decimal(max);
+  if (base.lt(1) || acc.lt(1)) return Decimal.dNaN;
+  const xSign = x.sign;
+  x = x.abs();
   if (x.gte(Decimal.pow(base, max))) return x;
   const powerN = Decimal.floor(Decimal.log(x, base));
   let out = x.div(Decimal.pow(base, powerN));
   out = out.mul(Decimal.pow(base, acc)).round();
   out = out.div(Decimal.pow(base, acc));
-  out = out.mul(Decimal.pow(base, powerN));
+  out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
   return out;
 }
 
