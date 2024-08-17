@@ -23,7 +23,7 @@ type Decimal = DecimalType;
 type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf" | "alphabet";
 /** A list of names for the standard notation */
 declare const ST_NAMES: string[][][];
-declare const FormatTypeList: FormatType[];
+declare const formatTypeList: FormatType[];
 /**
  * Generates a format function for the Decimal library.
  * @param Decimal - The Decimal constructor to use.
@@ -305,4 +305,4 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
     };
 };
 export type { FormatType };
-export { decimalFormatGenerator, ST_NAMES, FormatTypeList };
+export { decimalFormatGenerator, ST_NAMES, formatTypeList as FormatTypeList };

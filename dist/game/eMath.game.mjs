@@ -56,7 +56,9 @@ var require_lz_string = __commonJS({
             return keyStrBase64.charAt(a);
           });
           switch (res.length % 4) {
+            // To produce valid Base64
             default:
+            // When could this happen ?
             case 0:
               return res;
             case 1:
@@ -880,7 +882,9 @@ function decimalFormatGenerator(Decimal2) {
       format(value) {
         value = new Decimal2(value);
         const step = Decimal2.floor(value.div(1e3));
-        const omegaAmount = Decimal2.floor(step.div(FORMATS2.omega.config.greek.length));
+        const omegaAmount = Decimal2.floor(
+          step.div(FORMATS2.omega.config.greek.length)
+        );
         let lastLetter = FORMATS2.omega.config.greek[step.toNumber() % FORMATS2.omega.config.greek.length] + toSubscript(value.toNumber() % 1e3);
         const beyondGreekArrayBounds = FORMATS2.omega.config.greek[step.toNumber() % FORMATS2.omega.config.greek.length] === void 0;
         if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
@@ -921,7 +925,9 @@ function decimalFormatGenerator(Decimal2) {
       format(value) {
         value = new Decimal2(value);
         const step = Decimal2.floor(value.div(1e3));
-        const omegaAmount = Decimal2.floor(step.div(FORMATS2.omega_short.config.greek.length));
+        const omegaAmount = Decimal2.floor(
+          step.div(FORMATS2.omega_short.config.greek.length)
+        );
         let lastLetter = FORMATS2.omega_short.config.greek[step.toNumber() % FORMATS2.omega_short.config.greek.length] + toSubscript(value.toNumber() % 1e3);
         const beyondGreekArrayBounds = FORMATS2.omega_short.config.greek[step.toNumber() % FORMATS2.omega_short.config.greek.length] === void 0;
         if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
@@ -947,6 +953,7 @@ function decimalFormatGenerator(Decimal2) {
     elemental: {
       config: {
         /** The list of elements */
+        /* eslint-disable prettier/prettier */
         element_lists: [
           ["H"],
           ["He", "Li", "Be", "B", "C", "N", "O", "F"],
@@ -1061,6 +1068,7 @@ function decimalFormatGenerator(Decimal2) {
           ],
           ["Og"]
         ]
+        /* eslint-enable prettier/prettier */
       },
       getOffset(group) {
         if (group == 1) return 1;
@@ -1092,11 +1100,20 @@ function decimalFormatGenerator(Decimal2) {
       getAbbreviationAndValue(x) {
         const abbreviationListUnfloored = x.log(118).toNumber();
         const abbreviationListIndex = Math.floor(abbreviationListUnfloored) + 1;
-        const abbreviationLength = FORMATS2.elemental.abbreviationLength(abbreviationListIndex);
+        const abbreviationLength = FORMATS2.elemental.abbreviationLength(
+          abbreviationListIndex
+        );
         const abbreviationProgress = abbreviationListUnfloored - abbreviationListIndex + 1;
-        const abbreviationIndex = Math.floor(abbreviationProgress * abbreviationLength);
-        const abbreviation = FORMATS2.elemental.getAbbreviation(abbreviationListIndex, abbreviationProgress);
-        const value = new Decimal2(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
+        const abbreviationIndex = Math.floor(
+          abbreviationProgress * abbreviationLength
+        );
+        const abbreviation = FORMATS2.elemental.getAbbreviation(
+          abbreviationListIndex,
+          abbreviationProgress
+        );
+        const value = new Decimal2(118).pow(
+          abbreviationListIndex + abbreviationIndex / abbreviationLength - 1
+        );
         return [abbreviation, value];
       },
       formatElementalPart(abbreviation, n) {
@@ -1106,7 +1123,12 @@ function decimalFormatGenerator(Decimal2) {
         return `${n.toString()} ${abbreviation}`;
       },
       format(value, acc = 2) {
-        if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4))))) return "e" + FORMATS2.elemental.format(value.log10(), acc);
+        if (value.gt(
+          new Decimal2(118).pow(
+            new Decimal2(118).pow(new Decimal2(118).pow(4))
+          )
+        ))
+          return "e" + FORMATS2.elemental.format(value.log10(), acc);
         let log = value.log(118);
         const slog = log.log(118);
         const sslog = slog.log(118).toNumber();
@@ -1119,7 +1141,12 @@ function decimalFormatGenerator(Decimal2) {
           parts.unshift([abbreviation, n]);
         }
         if (parts.length >= max) {
-          return parts.map((x) => FORMATS2.elemental.formatElementalPart(x[0], x[1])).join(" + ");
+          return parts.map(
+            (x) => (
+              // @ts-expect-error - x has both string and decimal for some reason
+              FORMATS2.elemental.formatElementalPart(x[0], x[1])
+            )
+          ).join(" + ");
         }
         const formattedMantissa = new Decimal2(118).pow(log).toFixed(parts.length === 1 ? 3 : acc);
         if (parts.length === 0) {
@@ -1181,7 +1208,9 @@ function decimalFormatGenerator(Decimal2) {
             return (slog.gte(1e9) ? "" : Decimal2.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS2.eng.format(slog.floor(), 0);
           }
           const m = ex.div(new Decimal2(1e3).pow(e.div(3).floor()));
-          return (e.log10().gte(9) ? "" : m.toFixed(new Decimal2(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS2.eng.format(e.div(3).floor().mul(3), 0);
+          return (e.log10().gte(9) ? "" : m.toFixed(
+            new Decimal2(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber()
+          )) + "e" + FORMATS2.eng.format(e.div(3).floor().mul(3), 0);
         }
       }
     },
@@ -1206,12 +1235,25 @@ function decimalFormatGenerator(Decimal2) {
     },
     /** Layer format */
     layer: {
-      layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
+      layers: [
+        "infinity",
+        "eternity",
+        "reality",
+        "equality",
+        "affinity",
+        "celerity",
+        "identity",
+        "vitality",
+        "immunity",
+        "atrocity"
+      ],
       format(ex, acc = 2, max) {
         ex = new Decimal2(ex);
         const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
         if (layer.lte(0)) return format(ex, acc, max, "sc");
-        ex = Decimal2.dTen.pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
+        ex = Decimal2.dTen.pow(
+          ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0)
+        );
         const meta = layer.div(10).floor();
         const layer_id = layer.toNumber() % 10 - 1;
         return format(ex, Math.max(4, acc), max, "sc") + " " + (meta.gte(1) ? "meta" + (meta.gte(2) ? "^" + format(meta, 0, max, "sc") : "") + "-" : "") + (isNaN(layer_id) ? "nanity" : FORMATS2.layer.layers[layer_id]);
@@ -1257,8 +1299,10 @@ function decimalFormatGenerator(Decimal2) {
           meta++;
         }
         if (meta == 0) return format(ex, acc, max, "sc");
-        if (ex.gte(3)) return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
-        if (ex.gte(2)) return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
+        if (ex.gte(3))
+          return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
+        if (ex.gte(2))
+          return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
         return symbols2[meta] + symbols[meta] + "-" + format(inf.pow(ex.sub(1)), acc, max, "sc");
       }
     },
@@ -1303,7 +1347,10 @@ function decimalFormatGenerator(Decimal2) {
         } else {
           const trunc = numLetters.sub(abbStart).add(1);
           const truncExponent = exponent.div(Decimal2.pow(alphabetLength + 1, trunc.sub(1))).floor();
-          const truncLetters = convertToLetters(truncExponent, new Decimal2(abbStart));
+          const truncLetters = convertToLetters(
+            truncExponent,
+            new Decimal2(abbStart)
+          );
           letters = `${truncLetters}(${trunc.gt("1e9") ? trunc.format() : trunc.format(0)})`;
         }
         return letters;
@@ -1325,7 +1372,12 @@ function decimalFormatGenerator(Decimal2) {
         ex = new Decimal2(ex);
         start = new Decimal2(start).div(1e3);
         if (ex.lt(start.mul(1e3))) return format(ex, acc, max, type);
-        const letters = FORMATS2.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
+        const letters = FORMATS2.alphabet.getAbbreviation(
+          ex,
+          start,
+          startDouble,
+          abbStart
+        );
         const mantissa = ex.div(Decimal2.pow(1e3, ex.log(1e3).floor()));
         const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
         return `${!isAbbreviation ? mantissa.toFixed(acc) + " " : ""}${letters}`;
@@ -1339,7 +1391,9 @@ function decimalFormatGenerator(Decimal2) {
     return value.toFixed(0).split("").map((x) => x === "-" ? "\u208B" : SUBSCRIPT_NUMBERS[parseInt(x, 10)]).join("");
   }
   function toSuperscript(value) {
-    return value.toFixed(0).split("").map((x) => x === "-" ? "\u208B" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)]).join("");
+    return value.toFixed(0).split("").map(
+      (x) => x === "-" ? "\u208B" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)]
+    ).join("");
   }
   function formatST(ex, acc = 2, max = 9, type = "st") {
     return format(ex, acc, max, type);
@@ -1357,7 +1411,9 @@ function decimalFormatGenerator(Decimal2) {
       case "scientific": {
         if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
           const e2 = ex.log10().ceil();
-          const m = ex.div(e2.eq(-1) ? new Decimal2(0.1) : Decimal2.dTen.pow(e2));
+          const m = ex.div(
+            e2.eq(-1) ? new Decimal2(0.1) : Decimal2.dTen.pow(e2)
+          );
           const be = e2.mul(-1).max(1).log10().gte(9);
           return neg + (be ? "" : m.toFixed(2)) + "e" + format(e2, 0, max, "mixed_sc");
         } else if (e.lt(max)) {
@@ -1377,13 +1433,16 @@ function decimalFormatGenerator(Decimal2) {
       case "standard": {
         let e3 = ex.log(1e3).floor();
         if (e3.lt(1)) {
-          return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
+          return neg + ex.toFixed(
+            Math.max(Math.min(acc - e.toNumber(), acc), 0)
+          );
         }
         const e3_mul = e3.mul(3);
         const ee = e3.log10().floor();
         if (ee.gte(3e3)) return "e" + format(e, acc, max, "st");
         let final = "";
-        if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+        if (e3.lt(4))
+          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
         else {
           let ee3 = Math.floor(e3.log(1e3).toNumber());
           if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
@@ -1393,8 +1452,10 @@ function decimalFormatGenerator(Decimal2) {
             const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
             if (mod1000 > 0) {
               if (mod1000 == 1 && !ee3) final = "U";
-              if (ee3) final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1) final = FORMATS2.standard.tier1(mod1000) + final;
+              if (ee3)
+                final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
+              if (mod1000 > 1)
+                final = FORMATS2.standard.tier1(mod1000) + final;
             }
             e3 = div1000;
             ee3++;
@@ -1405,7 +1466,8 @@ function decimalFormatGenerator(Decimal2) {
         return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
       }
       default:
-        if (!FORMATS2[type]) console.error(`Invalid format type "`, type, `"`);
+        if (!FORMATS2[type])
+          console.error(`Invalid format type "`, type, `"`);
         return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
@@ -1423,9 +1485,12 @@ function decimalFormatGenerator(Decimal2) {
   }
   function formatTime(ex, acc = 2, type = "s") {
     ex = new Decimal2(ex);
-    if (ex.gte(86400)) return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
-    if (ex.gte(3600) || type == "d") return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
-    if (ex.gte(60) || type == "h") return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
+    if (ex.gte(86400))
+      return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
+    if (ex.gte(3600) || type == "d")
+      return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
+    if (ex.gte(60) || type == "h")
+      return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
     return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
   }
   function formatTimeLong(ex, ms = false, acc = 0, max = 9, type = "mixed_sc") {
@@ -5763,7 +5828,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   }
   if (f(upperBound).lt(n)) {
     console.warn(
-      "The function is not monotonically increasing. (f(n) < n)"
+      "eMath.js: The function is not monotonically increasing. (f(n) < n)"
     );
     return {
       value: upperBound,
@@ -5841,7 +5906,7 @@ function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, itera
   end = new Decimal(end);
   const target = end.sub(start);
   if (target.lt(0)) {
-    console.warn("calculateUpgrade: Invalid target: ", target);
+    console.warn("eMath.js: Invalid target for calculateItem: ", target);
     return [Decimal.dZero, Decimal.dZero];
   }
   el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
@@ -6014,7 +6079,7 @@ function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) 
   tier = new Decimal(tier);
   target = new Decimal(target);
   if (target.lt(0)) {
-    console.warn("calculateItem: Invalid target: ", target);
+    console.warn("eMath.js: Invalid target for calculateItem: ", target);
     return [Decimal.dZero, Decimal.dZero];
   }
   if (target.eq(1)) {
@@ -6302,6 +6367,7 @@ var CurrencyStatic = class {
       this.pointerAddUpgrade(upgrade);
       const addedUpgradeStatic = new UpgradeStatic(
         upgrade,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         () => this.pointerGetUpgrade(upgrade.id),
         () => this
       );
@@ -6361,7 +6427,7 @@ var CurrencyStatic = class {
   calculateUpgrade(id, target = Infinity, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
-      console.warn(`Upgrade "${id}" not found.`);
+      console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return [Decimal.dZero, Decimal.dZero];
     }
     target = upgrade.level.add(target);
@@ -6392,7 +6458,7 @@ var CurrencyStatic = class {
   getNextCost(id, target = 1, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
-      console.warn(`Upgrade "${id}" not found.`);
+      console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
     }
     const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
@@ -6415,7 +6481,7 @@ var CurrencyStatic = class {
   getNextCostMax(id, target = 1, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
-      console.warn(`Upgrade "${id}" not found.`);
+      console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
     }
     const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
@@ -6436,7 +6502,7 @@ var CurrencyStatic = class {
   buyUpgrade(id, target, mode, iterations) {
     const upgrade = this.getUpgrade(id);
     if (upgrade === null) {
-      console.warn(`Upgrade "${id}" not found.`);
+      console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return false;
     }
     const [amount, cost] = this.calculateUpgrade(
@@ -6482,6 +6548,7 @@ var CurrencyStatic = class {
       this.pointerAddItem(item);
       const addedUpgradeStatic = new Item(
         item,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         () => this.pointerGetItem(item.id),
         () => this
       );
@@ -6508,7 +6575,7 @@ var CurrencyStatic = class {
   calculateItem(id, tier, target) {
     const item = this.getItem(id);
     if (item === null) {
-      console.warn(`Item "${id}" not found.`);
+      console.warn(`eMath.js: Item "${id}" not found.`);
       return [Decimal.dZero, Decimal.dZero];
     }
     return calculateItem(this.value, item, tier, target);
@@ -6523,7 +6590,7 @@ var CurrencyStatic = class {
   buyItem(id, tier, target) {
     const item = this.getItem(id);
     if (item === null) {
-      console.warn(`Item "${id}" not found.`);
+      console.warn(`eMath.js: Item "${id}" not found.`);
       return false;
     }
     const [amount, cost] = this.calculateItem(id, tier, target);
@@ -6576,7 +6643,7 @@ var AttributeStatic = class {
    */
   update() {
     console.warn(
-      "AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed."
+      "eMath.js: AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed."
     );
     if (this.boost) {
       this.pointer.value = this.boost.calculate();
@@ -7046,7 +7113,7 @@ var DataManager = class {
   setData(key, value) {
     if (typeof this.data[key] === "undefined" && this.normalData) {
       console.warn(
-        "After initializing data, you should not add new properties to data."
+        "eMath.js: After initializing data, you should not add new properties to data."
       );
     }
     this.data[key] = value;
@@ -7082,11 +7149,11 @@ var DataManager = class {
    */
   setStatic(key, value) {
     console.warn(
-      "setStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
+      "eMath.js: setStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
     );
     if (typeof this.static[key] === "undefined" && this.normalData) {
       console.warn(
-        "After initializing data, you should not add new properties to staticData."
+        "eMath.js: After initializing data, you should not add new properties to staticData."
       );
     }
     this.static[key] = value;
@@ -7100,7 +7167,7 @@ var DataManager = class {
    */
   getStatic(key) {
     console.warn(
-      "getStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
+      "eMath.js: Static data is basically useless and should not be used. Use variables in local scope instead."
     );
     return this.static[key];
   }
@@ -7271,7 +7338,7 @@ var DataManager = class {
     function deepMerge(sourcePlain, source, target) {
       if (!sourcePlain || !source || !target) {
         console.warn(
-          "dataManager.deepMerge(): Missing arguments:",
+          "eMath.js: dataManager.deepMerge(): Missing arguments:",
           sourcePlain,
           source,
           target
@@ -7316,7 +7383,7 @@ var DataManager = class {
     const upgradeDataProperties = Object.getOwnPropertyNames(
       new UpgradeData({ id: "", level: Decimal.dZero })
     );
-    const ItemDataProperties = Object.getOwnPropertyNames(
+    const itemDataProperties = Object.getOwnPropertyNames(
       new ItemData({ id: "", amount: Decimal.dZero })
     );
     function convertTemplateClass(templateClassToConvert, plain) {
@@ -7340,7 +7407,7 @@ var DataManager = class {
         }
         for (const itemName in out.items) {
           const item = out.items[itemName];
-          if (!item || !ItemDataProperties.every(
+          if (!item || !itemDataProperties.every(
             (prop) => Object.getOwnPropertyNames(item).includes(prop)
           )) {
             delete out.items[itemName];
@@ -7365,7 +7432,9 @@ var DataManager = class {
       const out = plain;
       for (const key in normal) {
         if (plain[key] === void 0) {
-          console.warn(`Missing property "${key}" in loaded data.`);
+          console.warn(
+            `eMath.js: Missing property "${key}" in loaded data.`
+          );
           continue;
         }
         if (!isPlainObject(plain[key])) continue;
@@ -7668,7 +7737,7 @@ var Game = class _Game {
   // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
   addReset(...args) {
     console.warn(
-      "Game.addReset is deprecated. Use the GameReset class instead."
+      "eMath.js: Game.addReset is deprecated. Use the GameReset class instead."
     );
     const reset = new GameReset(...args);
     return reset;

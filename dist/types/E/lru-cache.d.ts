@@ -7,14 +7,14 @@
  * @template V The type of the value.
  */
 declare class LRUCache<K, V> {
+    /** The maximum size of the cache. */
+    readonly maxSize: number;
     /** The map of keys to ListNodes. */
     private map;
     /** The first node in the list. */
     private first;
     /** The last node in the list. */
     private last;
-    /** The maximum size of the cache. */
-    readonly maxSize: number;
     /**
      * Constructs a new instance of the LRUCache class.
      * @param maxSize The maximum size for this cache. We recommend setting this

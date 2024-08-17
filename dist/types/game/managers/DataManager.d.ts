@@ -109,7 +109,7 @@ declare class DataManager {
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
      */
-    setStatic<t>(key: string, value: t): t;
+    setStatic<T>(key: string, value: T): T;
     /**
      * Gets the static data for the given key.
      * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
