@@ -208,7 +208,7 @@ function inverseFunctionApprox(
     // If the function is not monotonically increasing, return the upper bound
     if (f(upperBound).lt(n)) {
         console.warn(
-            "The function is not monotonically increasing. (f(n) < n)",
+            "eMath.js: The function is not monotonically increasing. (f(n) < n)",
         );
         // console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
         return {

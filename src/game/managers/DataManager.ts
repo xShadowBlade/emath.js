@@ -131,7 +131,7 @@ class DataManager {
     } {
         if (typeof this.data[key] === "undefined" && this.normalData) {
             console.warn(
-                "After initializing data, you should not add new properties to data.",
+                "eMath.js: After initializing data, you should not add new properties to data.",
             );
         }
         this.data[key] = value;
@@ -171,18 +171,18 @@ class DataManager {
      * @param value - The value to set the static data to.
      * @returns A getter for the static data.
      */
-    public setStatic<t>(key: string, value: t): t {
+    public setStatic<T>(key: string, value: T): T {
         console.warn(
-            "setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
+            "eMath.js: setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
         );
 
         if (typeof this.static[key] === "undefined" && this.normalData) {
             console.warn(
-                "After initializing data, you should not add new properties to staticData.",
+                "eMath.js: After initializing data, you should not add new properties to staticData.",
             );
         }
         this.static[key] = value;
-        return this.static[key] as t;
+        return this.static[key] as T;
     }
 
     /**
@@ -193,7 +193,7 @@ class DataManager {
      */
     public getStatic(key: string): unknown {
         console.warn(
-            "getStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
+            "eMath.js: Static data is basically useless and should not be used. Use variables in local scope instead.",
         );
 
         return this.static[key];
@@ -454,7 +454,7 @@ class DataManager {
         ): UnknownObject {
             if (!sourcePlain || !source || !target) {
                 console.warn(
-                    "dataManager.deepMerge(): Missing arguments:",
+                    "eMath.js: dataManager.deepMerge(): Missing arguments:",
                     sourcePlain,
                     source,
                     target,
@@ -525,7 +525,7 @@ class DataManager {
         const upgradeDataProperties = Object.getOwnPropertyNames(
             new UpgradeData({ id: "", level: Decimal.dZero }),
         );
-        const ItemDataProperties = Object.getOwnPropertyNames(
+        const itemDataProperties = Object.getOwnPropertyNames(
             new ItemData({ id: "", amount: Decimal.dZero }),
         );
 
@@ -575,7 +575,7 @@ class DataManager {
 
                     if (
                         !item ||
-                        !ItemDataProperties.every((prop) =>
+                        !itemDataProperties.every((prop) =>
                             Object.getOwnPropertyNames(item).includes(prop),
                         )
                     ) {
@@ -615,7 +615,9 @@ class DataManager {
             for (const key in normal) {
                 if (plain[key] === undefined) {
                     // Should not happen
-                    console.warn(`Missing property "${key}" in loaded data.`);
+                    console.warn(
+                        `eMath.js: Missing property "${key}" in loaded data.`,
+                    );
                     continue;
                 }
 

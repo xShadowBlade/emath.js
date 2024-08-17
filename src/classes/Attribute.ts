@@ -91,7 +91,7 @@ class AttributeStatic<EnableBoost extends boolean = true> {
      */
     public update(): void {
         console.warn(
-            "AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.",
+            "eMath.js: AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed.",
         );
         if (this.boost) {
             this.pointer.value = this.boost.calculate();

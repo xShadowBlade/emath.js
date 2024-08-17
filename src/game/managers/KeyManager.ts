@@ -267,11 +267,11 @@ class KeyManager {
         nameOrKeysToAdd =
             typeof nameOrKeysToAdd === "string"
                 ? {
-                    id: nameOrKeysToAdd,
-                    name: nameOrKeysToAdd,
-                    key: key ?? "",
-                    fn,
-                }
+                      id: nameOrKeysToAdd,
+                      name: nameOrKeysToAdd,
+                      key: key ?? "",
+                      fn,
+                  }
                 : nameOrKeysToAdd;
 
         nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd)

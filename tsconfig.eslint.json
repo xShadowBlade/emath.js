@@ -8,5 +8,10 @@
         "test/tests/**/*.test.ts",
         "test/tests/**/*.ts",
         "examples/src/**/*.ts"
-    ]
+    ],
+    "exclude": [
+        "node_modules",
+		"src/E/e.ts",
+        "src/E/format.ts",
+    ],
 }

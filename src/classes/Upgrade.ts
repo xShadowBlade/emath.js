@@ -48,7 +48,7 @@ function calculateUpgrade(
 
     // Special case: If target is less than 1, just return 0
     if (target.lt(0)) {
-        console.warn("calculateUpgrade: Invalid target: ", target);
+        console.warn("eMath.js: Invalid target for calculateItem: ", target);
         return [Decimal.dZero, Decimal.dZero];
     }
 

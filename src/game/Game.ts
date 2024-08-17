@@ -226,7 +226,7 @@ class Game {
         ...args: ConstructorParameters<typeof GameReset>
     ): GameReset {
         console.warn(
-            "Game.addReset is deprecated. Use the GameReset class instead.",
+            "eMath.js: Game.addReset is deprecated. Use the GameReset class instead.",
         );
 
         const reset = new GameReset(...args);

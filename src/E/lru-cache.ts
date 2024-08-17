@@ -8,6 +8,9 @@
  * @template V The type of the value.
  */
 class LRUCache<K, V> {
+    /** The maximum size of the cache. */
+    public readonly maxSize: number;
+
     /** The map of keys to ListNodes. */
     private map = new Map<K, ListNode<K, V>>();
     // Invariant: Exactly one of the below is true before and after calling a
@@ -22,9 +25,6 @@ class LRUCache<K, V> {
     /** The last node in the list. */
     private last: ListNode<K, V> | undefined = undefined;
 
-    /** The maximum size of the cache. */
-    public readonly maxSize: number;
-
     /**
      * Constructs a new instance of the LRUCache class.
      * @param maxSize The maximum size for this cache. We recommend setting this
@@ -34,14 +34,14 @@ class LRUCache<K, V> {
      * two, as a .set() call could temporarily set the size of the map to be
      * maxSize + 1.
      */
-    constructor (maxSize: number) {
-	    this.maxSize = maxSize;
+    constructor(maxSize: number) {
+        this.maxSize = maxSize;
     }
 
     /**
      * @returns The size of the cache
      */
-    public get size (): number {
+    public get size(): number {
         return this.map.size;
     }
 
@@ -51,7 +51,7 @@ class LRUCache<K, V> {
      * @param key The key to get.
      * @returns The cached value, or undefined if key is not in the cache.
      */
-    public get (key: K): V | undefined {
+    public get(key: K): V | undefined {
         const node = this.map.get(key);
         if (node === undefined) {
             return undefined;
@@ -101,7 +101,7 @@ class LRUCache<K, V> {
      * @param value The value of the entry.
      * @throws Error, if the map already contains the key.
      */
-    public set (key: K, value: V): void {
+    public set(key: K, value: V): void {
         // Ensure that this.maxSize >= 1.
         if (this.maxSize < 1) {
             return;
@@ -159,7 +159,7 @@ class ListNode<K, V> {
      * @param key - The key of the node.
      * @param value - The value of the node.
      */
-    constructor (key: K, value: V) {
+    constructor(key: K, value: V) {
         this.key = key;
         this.value = value;
     }

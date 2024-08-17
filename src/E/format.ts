@@ -25,7 +25,20 @@ import type { Decimal as DecimalType, DecimalSource } from "./e";
 
 type Decimal = DecimalType;
 
-type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf" | "alphabet";
+type FormatType =
+    | "st"
+    | "sc"
+    | "scientific"
+    | "omega"
+    | "omega_short"
+    | "elemental"
+    | "old_sc"
+    | "eng"
+    | "mixed_sc"
+    | "layer"
+    | "standard"
+    | "inf"
+    | "alphabet";
 
 /** A list of names for the standard notation */
 const ST_NAMES = [
@@ -44,7 +57,21 @@ const ST_NAMES = [
     ],
 ];
 
-const FormatTypeList: FormatType[] = ["st", "sc", "scientific", "omega", "omega_short", "elemental", "old_sc", "eng", "mixed_sc", "layer", "standard", "inf", "alphabet"];
+const formatTypeList: FormatType[] = [
+    "st",
+    "sc",
+    "scientific",
+    "omega",
+    "omega_short",
+    "elemental",
+    "old_sc",
+    "eng",
+    "mixed_sc",
+    "layer",
+    "standard",
+    "inf",
+    "alphabet",
+];
 
 /**
  * Generates a format function for the Decimal library.
@@ -52,7 +79,7 @@ const FormatTypeList: FormatType[] = ["st", "sc", "scientific", "omega", "omega_
  * @returns - The format function.
  */
 // eslint-disable-next-line no-shadow, @typescript-eslint/explicit-function-return-type
-function decimalFormatGenerator (Decimal: typeof DecimalType) {
+function decimalFormatGenerator(Decimal: typeof DecimalType) {
     /** A list of formats */
     const FORMATS = {
         /** Omega format */
@@ -66,13 +93,24 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param value - The value to format
              * @returns - The formatted value
              */
-            format (value: DecimalSource): string {
+            format(value: DecimalSource): string {
                 value = new Decimal(value);
                 const step = Decimal.floor(value.div(1000));
-                const omegaAmount = Decimal.floor(step.div(FORMATS.omega.config.greek.length));
-                let lastLetter = FORMATS.omega.config.greek[step.toNumber() % FORMATS.omega.config.greek.length] + toSubscript(value.toNumber() % 1000);
-                const beyondGreekArrayBounds = FORMATS.omega.config.greek[step.toNumber() % FORMATS.omega.config.greek.length] === undefined;
-                if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
+                const omegaAmount = Decimal.floor(
+                    step.div(FORMATS.omega.config.greek.length),
+                );
+                let lastLetter =
+                    FORMATS.omega.config.greek[
+                        step.toNumber() % FORMATS.omega.config.greek.length
+                    ] + toSubscript(value.toNumber() % 1000);
+                const beyondGreekArrayBounds =
+                    FORMATS.omega.config.greek[
+                        step.toNumber() % FORMATS.omega.config.greek.length
+                    ] === undefined;
+                if (
+                    beyondGreekArrayBounds ||
+                    step.toNumber() > Number.MAX_SAFE_INTEGER
+                ) {
                     lastLetter = "ω";
                 }
                 const omegaOrder = Decimal.log(value, 8000).toNumber();
@@ -92,9 +130,10 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                     return `ω(${FORMATS.omega.format(omegaAmount)})`;
                 }
                 const val = Decimal.pow(8000, omegaOrder % 1);
-                const orderStr = omegaOrder < 100
-                    ? Math.floor(omegaOrder).toFixed(0)
-                    : FORMATS.omega.format(Decimal.floor(omegaOrder));
+                const orderStr =
+                    omegaOrder < 100
+                        ? Math.floor(omegaOrder).toFixed(0)
+                        : FORMATS.omega.format(Decimal.floor(omegaOrder));
                 return `ω[${orderStr}](${FORMATS.omega.format(val)})`;
             },
         },
@@ -109,13 +148,26 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param value - The value to format
              * @returns - The formatted value
              */
-            format (value: DecimalSource): string {
+            format(value: DecimalSource): string {
                 value = new Decimal(value);
                 const step = Decimal.floor(value.div(1000));
-                const omegaAmount = Decimal.floor(step.div(FORMATS.omega_short.config.greek.length));
-                let lastLetter = FORMATS.omega_short.config.greek[step.toNumber() % FORMATS.omega_short.config.greek.length] + toSubscript(value.toNumber() % 1000);
-                const beyondGreekArrayBounds = FORMATS.omega_short.config.greek[step.toNumber() % FORMATS.omega_short.config.greek.length] === undefined;
-                if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
+                const omegaAmount = Decimal.floor(
+                    step.div(FORMATS.omega_short.config.greek.length),
+                );
+                let lastLetter =
+                    FORMATS.omega_short.config.greek[
+                        step.toNumber() %
+                            FORMATS.omega_short.config.greek.length
+                    ] + toSubscript(value.toNumber() % 1000);
+                const beyondGreekArrayBounds =
+                    FORMATS.omega_short.config.greek[
+                        step.toNumber() %
+                            FORMATS.omega_short.config.greek.length
+                    ] === undefined;
+                if (
+                    beyondGreekArrayBounds ||
+                    step.toNumber() > Number.MAX_SAFE_INTEGER
+                ) {
                     lastLetter = "ω";
                 }
                 const omegaOrder = Decimal.log(value, 8000).toNumber();
@@ -131,15 +183,17 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                     return `ω(${omegaAmount.toFixed(0)})^${lastLetter}`;
                 }
                 const val = Decimal.pow(8000, omegaOrder % 1);
-                const orderStr = omegaOrder < 100
-                    ? Math.floor(omegaOrder).toFixed(0)
-                    : FORMATS.omega_short.format(Decimal.floor(omegaOrder));
+                const orderStr =
+                    omegaOrder < 100
+                        ? Math.floor(omegaOrder).toFixed(0)
+                        : FORMATS.omega_short.format(Decimal.floor(omegaOrder));
                 return `ω[${orderStr}](${FORMATS.omega_short.format(val)})`;
             },
         },
         elemental: {
             config: {
                 /** The list of elements */
+                /* eslint-disable prettier/prettier */
                 element_lists: [["H"],
                     ["He", "Li", "Be", "B", "C", "N", "O", "F"],
                     ["Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl"],
@@ -164,23 +218,28 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                         "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts",
                     ],
                     ["Og"]],
+                /* eslint-enable prettier/prettier */
             },
-            getOffset (group: number): number {
+            getOffset(group: number): number {
                 if (group == 1) return 1;
                 const n = Math.floor(group / 2);
-                let r = 2 * n * (n + 1) * (2 * n + 1) / 3 - 2;
+                let r = (2 * n * (n + 1) * (2 * n + 1)) / 3 - 2;
                 if (group % 2 == 1) r += 2 * Math.pow(n + 1, 2);
                 return r;
             },
-            getAbbreviation (group: number, progress: number): string {
+            getAbbreviation(group: number, progress: number): string {
                 const length = FORMATS.elemental.abbreviationLength(group);
                 const elemRel = Math.floor(length * progress);
 
                 const elem = elemRel + FORMATS.elemental.getOffset(group);
 
-                return elem > 118 ? FORMATS.elemental.beyondOg(elem) : FORMATS.elemental.config.element_lists[group - 1][elemRel];
+                return elem > 118
+                    ? FORMATS.elemental.beyondOg(elem)
+                    : FORMATS.elemental.config.element_lists[group - 1][
+                          elemRel
+                      ];
             },
-            beyondOg (x: number): string {
+            beyondOg(x: number): string {
                 const log = Math.floor(Math.log10(x));
                 const list = ["n", "u", "b", "t", "q", "p", "h", "s", "o", "e"];
                 let r = "";
@@ -191,27 +250,49 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 }
                 return r;
             },
-            abbreviationLength (group: number): number {
-                return group == 1 ? 1 : Math.pow(Math.floor(group / 2) + 1, 2) * 2;
+            abbreviationLength(group: number): number {
+                return group == 1
+                    ? 1
+                    : Math.pow(Math.floor(group / 2) + 1, 2) * 2;
             },
-            getAbbreviationAndValue (x: Decimal): [string, Decimal] {
+            getAbbreviationAndValue(x: Decimal): [string, Decimal] {
                 const abbreviationListUnfloored = x.log(118).toNumber();
-                const abbreviationListIndex = Math.floor(abbreviationListUnfloored) + 1;
-                const abbreviationLength = FORMATS.elemental.abbreviationLength(abbreviationListIndex);
-                const abbreviationProgress = abbreviationListUnfloored - abbreviationListIndex + 1;
-                const abbreviationIndex = Math.floor(abbreviationProgress * abbreviationLength);
-                const abbreviation = FORMATS.elemental.getAbbreviation(abbreviationListIndex, abbreviationProgress);
-                const value = new Decimal(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
+                const abbreviationListIndex =
+                    Math.floor(abbreviationListUnfloored) + 1;
+                const abbreviationLength = FORMATS.elemental.abbreviationLength(
+                    abbreviationListIndex,
+                );
+                const abbreviationProgress =
+                    abbreviationListUnfloored - abbreviationListIndex + 1;
+                const abbreviationIndex = Math.floor(
+                    abbreviationProgress * abbreviationLength,
+                );
+                const abbreviation = FORMATS.elemental.getAbbreviation(
+                    abbreviationListIndex,
+                    abbreviationProgress,
+                );
+                const value = new Decimal(118).pow(
+                    abbreviationListIndex +
+                        abbreviationIndex / abbreviationLength -
+                        1,
+                );
                 return [abbreviation, value];
             },
-            formatElementalPart (abbreviation: string, n: Decimal): string {
+            formatElementalPart(abbreviation: string, n: Decimal): string {
                 if (n.eq(1)) {
                     return abbreviation;
                 }
                 return `${n.toString()} ${abbreviation}`;
             },
-            format (value: Decimal, acc = 2): string {
-                if (value.gt(new Decimal(118).pow(new Decimal(118).pow(new Decimal(118).pow(4))))) return "e" + FORMATS.elemental.format(value.log10(), acc);
+            format(value: Decimal, acc = 2): string {
+                if (
+                    value.gt(
+                        new Decimal(118).pow(
+                            new Decimal(118).pow(new Decimal(118).pow(4)),
+                        ),
+                    )
+                )
+                    return "e" + FORMATS.elemental.format(value.log10(), acc);
 
                 let log = value.log(118);
                 const slog = log.log(118);
@@ -219,16 +300,23 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 const max = Math.max(4 - sslog * 2, 1);
                 const parts = [];
                 while (log.gte(1) && parts.length < max) {
-                    const [abbreviation, value2] = FORMATS.elemental.getAbbreviationAndValue(log);
+                    const [abbreviation, value2] =
+                        FORMATS.elemental.getAbbreviationAndValue(log);
                     const n = log.div(value2).floor();
                     log = log.sub(n.mul(value2));
                     parts.unshift([abbreviation, n]);
                 }
                 if (parts.length >= max) {
-                    // @ts-expect-error - x has both string and decimal for some reason
-                    return parts.map((x) => FORMATS.elemental.formatElementalPart(x[0], x[1])).join(" + ");
+                    return parts
+                        .map((x) =>
+                            // @ts-expect-error - x has both string and decimal for some reason
+                            FORMATS.elemental.formatElementalPart(x[0], x[1]),
+                        )
+                        .join(" + ");
                 }
-                const formattedMantissa = new Decimal(118).pow(log).toFixed(parts.length === 1 ? 3 : acc);
+                const formattedMantissa = new Decimal(118)
+                    .pow(log)
+                    .toFixed(parts.length === 1 ? 3 : acc);
                 if (parts.length === 0) {
                     return formattedMantissa;
                 }
@@ -248,21 +336,36 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param acc - The accuracy
              * @returns - The formatted value
              */
-            format (ex: DecimalSource, acc: number): string {
+            format(ex: DecimalSource, acc: number): string {
                 ex = new Decimal(ex);
                 const e = ex.log10().floor();
                 if (e.lt(9)) {
                     if (e.lt(3)) {
                         return ex.toFixed(acc);
                     }
-                    return ex.floor().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+                    return ex
+                        .floor()
+                        .toString()
+                        .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.old_sc.format(slog.floor(), 0);
+                        return (
+                            (slog.gte(1e9)
+                                ? ""
+                                : Decimal.dTen
+                                      .pow(slog.sub(slog.floor()))
+                                      .toFixed(4)) +
+                            "F" +
+                            FORMATS.old_sc.format(slog.floor(), 0)
+                        );
                     }
                     const m = ex.div(Decimal.dTen.pow(e));
-                    return (e.log10().gte(9) ? "" : m.toFixed(4)) + "e" + FORMATS.old_sc.format(e, 0);
+                    return (
+                        (e.log10().gte(9) ? "" : m.toFixed(4)) +
+                        "e" +
+                        FORMATS.old_sc.format(e, 0)
+                    );
                 }
             },
         },
@@ -276,22 +379,43 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @example
              * console.log(FORMATS.eng.format(1e20, 2)); // 100.00e18
              */
-            format (ex: DecimalSource, acc = 2): string {
+            format(ex: DecimalSource, acc = 2): string {
                 ex = new Decimal(ex);
                 const e = ex.log10().floor();
                 if (e.lt(9)) {
                     if (e.lt(3)) {
                         return ex.toFixed(acc);
                     }
-                    return ex.floor().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+                    return ex
+                        .floor()
+                        .toString()
+                        .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS.eng.format(slog.floor(), 0);
+                        return (
+                            (slog.gte(1e9)
+                                ? ""
+                                : Decimal.dTen
+                                      .pow(slog.sub(slog.floor()))
+                                      .toFixed(4)) +
+                            "F" +
+                            FORMATS.eng.format(slog.floor(), 0)
+                        );
                     }
                     const m = ex.div(new Decimal(1000).pow(e.div(3).floor()));
 
-                    return (e.log10().gte(9) ? "" : m.toFixed(new Decimal(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS.eng.format(e.div(3).floor().mul(3), 0);
+                    return (
+                        (e.log10().gte(9)
+                            ? ""
+                            : m.toFixed(
+                                  new Decimal(4)
+                                      .sub(e.sub(e.div(3).floor().mul(3)))
+                                      .toNumber(),
+                              )) +
+                        "e" +
+                        FORMATS.eng.format(e.div(3).floor().mul(3), 0)
+                    );
                 }
             },
         },
@@ -307,7 +431,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * console.log(FORMATS.mixed_sc.format(1e20, 2, 9)); // 100.00 Qt
              * console.log(FORMATS.mixed_sc.format(1e400, 2, 303)); // 1.00e400
              */
-            format (ex: DecimalSource, acc?: number, max = 9): string {
+            format(ex: DecimalSource, acc?: number, max = 9): string {
                 ex = new Decimal(ex);
                 const e = ex.log10().floor();
                 if (e.lt(303) && e.gte(max)) return format(ex, acc, max, "st");
@@ -316,15 +440,50 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         },
         /** Layer format */
         layer: {
-            layers: ["infinity", "eternity", "reality", "equality", "affinity", "celerity", "identity", "vitality", "immunity", "atrocity"],
-            format (ex: DecimalSource, acc = 2, max?: number): string {
+            layers: [
+                "infinity",
+                "eternity",
+                "reality",
+                "equality",
+                "affinity",
+                "celerity",
+                "identity",
+                "vitality",
+                "immunity",
+                "atrocity",
+            ],
+            format(ex: DecimalSource, acc = 2, max?: number): string {
                 ex = new Decimal(ex);
-                const layer = ex.max(1).log10().max(1).log(INFINITY_NUM.log10()).floor();
+                const layer = ex
+                    .max(1)
+                    .log10()
+                    .max(1)
+                    .log(INFINITY_NUM.log10())
+                    .floor();
                 if (layer.lte(0)) return format(ex, acc, max, "sc");
-                ex = Decimal.dTen.pow(ex.max(1).log10().div(INFINITY_NUM.log10().pow(layer)).sub(layer.gte(1) ? 1 : 0));
+                ex = Decimal.dTen.pow(
+                    ex
+                        .max(1)
+                        .log10()
+                        .div(INFINITY_NUM.log10().pow(layer))
+                        .sub(layer.gte(1) ? 1 : 0),
+                );
                 const meta = layer.div(10).floor();
-                const layer_id = layer.toNumber() % 10 - 1;
-                return format(ex, Math.max(4, acc), max, "sc") + " " + (meta.gte(1) ? "meta" + (meta.gte(2) ? "^" + format(meta, 0, max, "sc") : "") + "-" : "") + (isNaN(layer_id) ? "nanity" : FORMATS.layer.layers[layer_id]);
+                const layer_id = (layer.toNumber() % 10) - 1;
+                return (
+                    format(ex, Math.max(4, acc), max, "sc") +
+                    " " +
+                    (meta.gte(1)
+                        ? "meta" +
+                          (meta.gte(2)
+                              ? "^" + format(meta, 0, max, "sc")
+                              : "") +
+                          "-"
+                        : "") +
+                    (isNaN(layer_id)
+                        ? "nanity"
+                        : FORMATS.layer.layers[layer_id])
+                );
             },
         },
         /** Standard (letter abbv) format */
@@ -334,17 +493,19 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param x - The number to get the letter abbreviation for
              * @returns - The letter abbreviation
              */
-            tier1 (x: number): string {
-                return ST_NAMES[0][0][x % 10] +
-                ST_NAMES[0][1][Math.floor(x / 10) % 10] +
-                ST_NAMES[0][2][Math.floor(x / 100)];
+            tier1(x: number): string {
+                return (
+                    ST_NAMES[0][0][x % 10] +
+                    ST_NAMES[0][1][Math.floor(x / 10) % 10] +
+                    ST_NAMES[0][2][Math.floor(x / 100)]
+                );
             },
             /**
              * Gets the tier 2 letter abbreviation for a number (e.g. 1 -> Mi) (1e3000+)
              * @param x - The number to get the letter abbreviation for
              * @returns - The letter abbreviation
              */
-            tier2 (x: number): string {
+            tier2(x: number): string {
                 const o = x % 10;
                 const t = Math.floor(x / 10) % 10;
                 const h = Math.floor(x / 100) % 10;
@@ -360,7 +521,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         },
         /** Infinity format */
         inf: {
-            format (ex: DecimalSource, acc?: number, max?: number): string {
+            format(ex: DecimalSource, acc?: number, max?: number): string {
                 ex = new Decimal(ex);
                 let meta = 0;
                 const inf = new Decimal(Number.MAX_VALUE);
@@ -372,9 +533,27 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 }
 
                 if (meta == 0) return format(ex, acc, max, "sc");
-                if (ex.gte(3)) return symbols2[meta] + symbols[meta] + "ω^" + format(ex.sub(1), acc, max, "sc");
-                if (ex.gte(2)) return symbols2[meta] + "ω" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
-                return symbols2[meta] + symbols[meta] + "-" + format(inf.pow(ex.sub(1)), acc, max, "sc");
+                if (ex.gte(3))
+                    return (
+                        symbols2[meta] +
+                        symbols[meta] +
+                        "ω^" +
+                        format(ex.sub(1), acc, max, "sc")
+                    );
+                if (ex.gte(2))
+                    return (
+                        symbols2[meta] +
+                        "ω" +
+                        symbols[meta] +
+                        "-" +
+                        format(inf.pow(ex.sub(2)), acc, max, "sc")
+                    );
+                return (
+                    symbols2[meta] +
+                    symbols[meta] +
+                    "-" +
+                    format(inf.pow(ex.sub(1)), acc, max, "sc")
+                );
             },
         },
         // Add more formats here
@@ -392,7 +571,12 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param abbStart - The starting value for abbreviations
              * @returns - The abbreviation
              */
-            getAbbreviation (ex: DecimalSource, start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart = 9): string {
+            getAbbreviation(
+                ex: DecimalSource,
+                start: DecimalSource = new Decimal(1e15),
+                startDouble = false,
+                abbStart = 9,
+            ): string {
                 // there were so many off by one errors in this function
 
                 ex = new Decimal(ex);
@@ -405,15 +589,24 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 const alphabetLength = alphabet.length;
                 const exponent = ex.log(1e3).sub(start.log(1e3)).floor();
 
-                const numLetters = exponent.add(1).log(alphabetLength + 1).ceil();
+                const numLetters = exponent
+                    .add(1)
+                    .log(alphabetLength + 1)
+                    .ceil();
 
                 let letters = "";
 
-                const convertToLetters = (num: Decimal, length: Decimal): string => {
+                const convertToLetters = (
+                    num: Decimal,
+                    length: Decimal,
+                ): string => {
                     let remaining = num;
                     let out = "";
                     for (let i = 0; i < length.toNumber(); i++) {
-                        const letter = remaining.sub(1).mod(alphabetLength).toNumber();
+                        const letter = remaining
+                            .sub(1)
+                            .mod(alphabetLength)
+                            .toNumber();
                         // letters.unshift(alphabet[letter]);
                         // console.log({ letter, remaining, out });
                         if (letter < 0 || letter >= alphabetLength) {
@@ -428,7 +621,10 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                             return "ω";
                         }
                         out = alphabet[letter] + out;
-                        remaining = remaining.sub(1).div(alphabetLength).floor();
+                        remaining = remaining
+                            .sub(1)
+                            .div(alphabetLength)
+                            .floor();
                     }
                     return out;
                 };
@@ -440,8 +636,13 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                     // TODO
                     // throw new Error("Not implemented");
                     const trunc = numLetters.sub(abbStart).add(1);
-                    const truncExponent = exponent.div(Decimal.pow(alphabetLength + 1, trunc.sub(1))).floor();
-                    const truncLetters = convertToLetters(truncExponent, new Decimal(abbStart));
+                    const truncExponent = exponent
+                        .div(Decimal.pow(alphabetLength + 1, trunc.sub(1)))
+                        .floor();
+                    const truncLetters = convertToLetters(
+                        truncExponent,
+                        new Decimal(abbStart),
+                    );
                     letters = `${truncLetters}(${trunc.gt("1e9") ? trunc.format() : trunc.format(0)})`;
                 }
 
@@ -462,19 +663,32 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
              * @param abbStart - The starting value for abbreviations. Defaults to 9.
              * @returns - The formatted value
              */
-            format (ex: DecimalSource, acc = 2, max = 9, type: FormatType = "mixed_sc", start: DecimalSource = new Decimal(1e15), startDouble = false, abbStart?: number): string {
+            format(
+                ex: DecimalSource,
+                acc = 2,
+                max = 9,
+                type: FormatType = "mixed_sc",
+                start: DecimalSource = new Decimal(1e15),
+                startDouble = false,
+                abbStart?: number,
+            ): string {
                 ex = new Decimal(ex);
                 start = new Decimal(start).div(1e3);
 
                 // If the value is less than the starting value, return the standard format
                 if (ex.lt(start.mul(1e3))) return format(ex, acc, max, type);
 
-                const letters = FORMATS.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
+                const letters = FORMATS.alphabet.getAbbreviation(
+                    ex,
+                    start,
+                    startDouble,
+                    abbStart,
+                );
                 const mantissa = ex.div(Decimal.pow(1e3, ex.log(1e3).floor()));
 
                 // console.log({ mantissa, exponent, letters, numLetters });
                 const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
-                return `${(!isAbbreviation ? (mantissa.toFixed(acc) + " ") : "")}${letters}`;
+                return `${!isAbbreviation ? mantissa.toFixed(acc) + " " : ""}${letters}`;
             },
         },
     };
@@ -490,9 +704,11 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param value - The value to convert
      * @returns - The value in subscript
      */
-    function toSubscript (value: number): string {
-        return value.toFixed(0).split("")
-            .map((x) => x === "-" ? "₋" : SUBSCRIPT_NUMBERS[parseInt(x, 10)])
+    function toSubscript(value: number): string {
+        return value
+            .toFixed(0)
+            .split("")
+            .map((x) => (x === "-" ? "₋" : SUBSCRIPT_NUMBERS[parseInt(x, 10)]))
             .join("");
     }
 
@@ -501,9 +717,13 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param value - The value to convert
      * @returns - The value in superscript
      */
-    function toSuperscript (value: number): string {
-        return value.toFixed(0).split("")
-            .map((x) => x === "-" ? "₋" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)])
+    function toSuperscript(value: number): string {
+        return value
+            .toFixed(0)
+            .split("")
+            .map((x) =>
+                x === "-" ? "₋" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)],
+            )
             .join("");
     }
 
@@ -512,7 +732,14 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * Format the value into standard (letter abbv) format
      * @deprecated Use {@link format} instead (with the type "st")
      */
-    function formatST (ex: DecimalSource, acc = 2, max = 9, type: "sc" | "st" | FormatType = "st"): string { return format(ex, acc, max, type); }
+    function formatST(
+        ex: DecimalSource,
+        acc = 2,
+        max = 9,
+        type: "sc" | "st" | FormatType = "st",
+    ): string {
+        return format(ex, acc, max, type);
+    }
 
     /**
      * Format the value into a specific format type
@@ -522,7 +749,12 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param type - The type of format to use (default "mixed_sc")
      * @returns - The formatted value
      */
-    function format (ex: DecimalSource, acc = 2, max = 9, type: FormatType = "mixed_sc"): string {
+    function format(
+        ex: DecimalSource,
+        acc = 2,
+        max = 9,
+        type: FormatType = "mixed_sc",
+    ): string {
         ex = new Decimal(ex);
         const neg = ex.lt(0) ? "-" : "";
         if (ex.mag == Infinity) return neg + "Infinity";
@@ -535,27 +767,60 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
             case "scientific": {
                 if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
                     const e2 = ex.log10().ceil();
-                    const m = ex.div(e2.eq(-1) ? new Decimal(0.1) : Decimal.dTen.pow(e2));
+                    const m = ex.div(
+                        e2.eq(-1) ? new Decimal(0.1) : Decimal.dTen.pow(e2),
+                    );
                     const be = e2.mul(-1).max(1).log10().gte(9);
-                    return neg + (be ? "" : m.toFixed(2)) + "e" + format(e2, 0, max, "mixed_sc");
+                    return (
+                        neg +
+                        (be ? "" : m.toFixed(2)) +
+                        "e" +
+                        format(e2, 0, max, "mixed_sc")
+                    );
                 } else if (e.lt(max)) {
                     const a = Math.max(Math.min(acc - e.toNumber(), acc), 0);
-                    return neg + (a > 0 ? ex.toFixed(a) : ex.toFixed(a).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+                    return (
+                        neg +
+                        (a > 0
+                            ? ex.toFixed(a)
+                            : ex
+                                  .toFixed(a)
+                                  .toString()
+                                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"))
+                    );
                 } else {
                     if (ex.gte("eeee10")) {
                         const slog = ex.slog();
-                        return (slog.gte(1e9) ? "" : Decimal.dTen.pow(slog.sub(slog.floor())).toFixed(2)) + "F" + format(slog.floor(), 0);
+                        return (
+                            (slog.gte(1e9)
+                                ? ""
+                                : Decimal.dTen
+                                      .pow(slog.sub(slog.floor()))
+                                      .toFixed(2)) +
+                            "F" +
+                            format(slog.floor(), 0)
+                        );
                     }
                     const m = ex.div(Decimal.dTen.pow(e));
                     const be = e.log10().gte(9);
-                    return neg + (be ? "" : m.toFixed(2)) + "e" + format(e, 0, max, "mixed_sc");
+                    return (
+                        neg +
+                        (be ? "" : m.toFixed(2)) +
+                        "e" +
+                        format(e, 0, max, "mixed_sc")
+                    );
                 }
             }
             case "st":
             case "standard": {
                 let e3 = ex.log(1e3).floor();
                 if (e3.lt(1)) {
-                    return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
+                    return (
+                        neg +
+                        ex.toFixed(
+                            Math.max(Math.min(acc - e.toNumber(), acc), 0),
+                        )
+                    );
                 }
 
                 const e3_mul = e3.mul(3);
@@ -563,18 +828,26 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 if (ee.gte(3000)) return "e" + format(e, acc, max, "st");
 
                 let final = "";
-                if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+                if (e3.lt(4))
+                    final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
                 else {
                     let ee3 = Math.floor(e3.log(1e3).toNumber());
                     if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
                     e3 = e3.sub(1).div(Decimal.dTen.pow(ee3 * 3));
                     while (e3.gt(0)) {
                         const div1000 = e3.div(1e3).floor();
-                        const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
+                        const mod1000 = e3
+                            .sub(div1000.mul(1e3))
+                            .floor()
+                            .toNumber();
                         if (mod1000 > 0) {
                             if (mod1000 == 1 && !ee3) final = "U";
-                            if (ee3) final = FORMATS.standard.tier2(ee3) + (final ? "-" + final : "");
-                            if (mod1000 > 1) final = FORMATS.standard.tier1(mod1000) + final;
+                            if (ee3)
+                                final =
+                                    FORMATS.standard.tier2(ee3) +
+                                    (final ? "-" + final : "");
+                            if (mod1000 > 1)
+                                final = FORMATS.standard.tier1(mod1000) + final;
                         }
                         e3 = div1000;
                         ee3++;
@@ -582,12 +855,18 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
                 }
 
                 const m = ex.div(Decimal.dTen.pow(e3_mul));
-                const fixedAmt = acc === 2 ? Decimal.dTwo.sub(e.sub(e3_mul)).add(1).toNumber() : acc;
-                return neg + (ee.gte(10) ? "" : (m.toFixed(fixedAmt)) + " ") + final;
+                const fixedAmt =
+                    acc === 2
+                        ? Decimal.dTwo.sub(e.sub(e3_mul)).add(1).toNumber()
+                        : acc;
+                return (
+                    neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final
+                );
             }
             default:
-            // Other formats
-                if (!FORMATS[type]) console.error(`Invalid format type "`, type, `"`);
+                // Other formats
+                if (!FORMATS[type])
+                    console.error(`Invalid format type "`, type, `"`);
                 return neg + FORMATS[type].format(ex, acc, max);
         }
     }
@@ -604,7 +883,13 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * console.log(formatGain(1e20, 1e10)); // (+1.00e10/sec)
      * console.log(formatGain(1e200, 1e210)); // (+10.00 OoMs/sec)
      */
-    function formatGain (amt: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string {
+    function formatGain(
+        amt: DecimalSource,
+        gain: DecimalSource,
+        type: FormatType = "mixed_sc",
+        acc?: number,
+        max?: number,
+    ): string {
         amt = new Decimal(amt);
         gain = new Decimal(gain);
         const next = amt.add(gain);
@@ -613,8 +898,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         if (ooms.gte(10) && amt.gte(1e100)) {
             ooms = ooms.log10().mul(20);
             rate = "(+" + format(ooms, acc, max, type) + " OoMs/sec)";
-        }
-        else rate = "(+" + format(gain, acc, max, type) + "/sec)";
+        } else rate = "(+" + format(gain, acc, max, type) + "/sec)";
         return rate;
     }
 
@@ -625,12 +909,31 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param type - The type
      * @returns - The formatted time
      */
-    function formatTime (ex: DecimalSource, acc = 2, type = "s"): string {
+    function formatTime(ex: DecimalSource, acc = 2, type = "s"): string {
         ex = new Decimal(ex);
-        if (ex.gte(86400)) return format(ex.div(86400).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(86400), acc, "d");
-        if (ex.gte(3600) || type == "d") return (ex.div(3600).gte(10) || type != "d" ? "" : "0") + format(ex.div(3600).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(3600), acc, "h");
-        if (ex.gte(60) || type == "h") return (ex.div(60).gte(10) || type != "h" ? "" : "0") + format(ex.div(60).floor(), 0, 12, "sc") + ":" + formatTime(ex.mod(60), acc, "m");
-        return (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc");
+        if (ex.gte(86400))
+            return (
+                format(ex.div(86400).floor(), 0, 12, "sc") +
+                ":" +
+                formatTime(ex.mod(86400), acc, "d")
+            );
+        if (ex.gte(3600) || type == "d")
+            return (
+                (ex.div(3600).gte(10) || type != "d" ? "" : "0") +
+                format(ex.div(3600).floor(), 0, 12, "sc") +
+                ":" +
+                formatTime(ex.mod(3600), acc, "h")
+            );
+        if (ex.gte(60) || type == "h")
+            return (
+                (ex.div(60).gte(10) || type != "h" ? "" : "0") +
+                format(ex.div(60).floor(), 0, 12, "sc") +
+                ":" +
+                formatTime(ex.mod(60), acc, "m")
+            );
+        return (
+            (ex.gte(10) || type != "m" ? "" : "0") + format(ex, acc, 12, "sc")
+        );
     }
 
     /**
@@ -642,8 +945,15 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param type - The type
      * @returns - The formatted time
      */
-    function formatTimeLong (ex: DecimalSource, ms = false, acc = 0, max = 9, type: FormatType = "mixed_sc"): string {
-        const formatFn = (exf: DecimalSource): string => format(exf, acc, max, type);
+    function formatTimeLong(
+        ex: DecimalSource,
+        ms = false,
+        acc = 0,
+        max = 9,
+        type: FormatType = "mixed_sc",
+    ): string {
+        const formatFn = (exf: DecimalSource): string =>
+            format(exf, acc, max, type);
         ex = new Decimal(ex);
         const mls = ex.mul(1000).mod(1000).floor();
         const sec = ex.mod(60).floor();
@@ -657,7 +967,9 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         const minStr = min.eq(1) ? " minute" : " minutes";
         const secStr = sec.eq(1) ? " second" : " seconds";
         const mlsStr = mls.eq(1) ? " millisecond" : " milliseconds";
-        return `${year.gt(0) ? formatFn(year) + yearStr + ", " : ""}${day.gt(0) ? formatFn(day) + dayStr + ", " : ""}${hour.gt(0) ? formatFn(hour) + hourStr + ", " : ""}${min.gt(0) ? formatFn(min) + minStr + ", " : ""}${sec.gt(0) ? formatFn(sec) + secStr + "," : ""}${ms && mls.gt(0) ? " " + formatFn(mls) + mlsStr : ""}`.replace(/,([^,]*)$/, "$1").trim();
+        return `${year.gt(0) ? formatFn(year) + yearStr + ", " : ""}${day.gt(0) ? formatFn(day) + dayStr + ", " : ""}${hour.gt(0) ? formatFn(hour) + hourStr + ", " : ""}${min.gt(0) ? formatFn(min) + minStr + ", " : ""}${sec.gt(0) ? formatFn(sec) + secStr + "," : ""}${ms && mls.gt(0) ? " " + formatFn(mls) + mlsStr : ""}`
+            .replace(/,([^,]*)$/, "$1")
+            .trim();
     }
 
     /**
@@ -665,7 +977,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param ex - The value to format
      * @returns - The formatted reduction
      */
-    function formatReduction (ex: DecimalSource): string {
+    function formatReduction(ex: DecimalSource): string {
         ex = new Decimal(ex);
         return format(Decimal.dOne.sub(ex).mul(100)) + "%";
     }
@@ -675,7 +987,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param ex - The value to format
      * @returns - The formatted percent
      */
-    function formatPercent (ex: DecimalSource): string {
+    function formatPercent(ex: DecimalSource): string {
         ex = new Decimal(ex);
         return format(ex.mul(100)) + "%";
     }
@@ -686,7 +998,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param acc - The accuracy
      * @returns - The formatted multiplier
      */
-    function formatMult (ex: DecimalSource, acc = 2): string {
+    function formatMult(ex: DecimalSource, acc = 2): string {
         ex = new Decimal(ex);
         return ex.gte(1) ? "×" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
     }
@@ -698,8 +1010,14 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param base - The base
      * @returns - The value after being exponentiated
      */
-    function expMult (a: DecimalSource, b: DecimalSource, base = 10): DecimalType {
-        return Decimal.gte(a, 10) ? Decimal.pow(base, Decimal.log(a, base).pow(b)) : new Decimal(a);
+    function expMult(
+        a: DecimalSource,
+        b: DecimalSource,
+        base = 10,
+    ): DecimalType {
+        return Decimal.gte(a, 10)
+            ? Decimal.pow(base, Decimal.log(a, base).pow(b))
+            : new Decimal(a);
     }
 
     /**
@@ -717,7 +1035,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * metric(1234, 2); // Returns "1.23"
      * metric(1234, 3); // Returns "Kilo"
      */
-    function metric (num: DecimalSource, type: 0 | 1 | 2 | 3 = 0): string {
+    function metric(num: DecimalSource, type: 0 | 1 | 2 | 3 = 0): string {
         num = new Decimal(num);
         interface IAbb {
             name: string;
@@ -776,7 +1094,11 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
         ]);
         // console.log("ev", abb);
         let output = "";
-        const abbNum = num.lte(0) ? 0 : Decimal.min(Decimal.log(num, 1000).sub(1), abb.length - 1).floor().toNumber();
+        const abbNum = num.lte(0)
+            ? 0
+            : Decimal.min(Decimal.log(num, 1000).sub(1), abb.length - 1)
+                  .floor()
+                  .toNumber();
         const abbMax = abb[abbNum];
         if (abbNum === 0) {
             switch (type) {
@@ -814,7 +1136,7 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
      * @param c2 - Whether to include /c^2
      * @returns The formatted value
      */
-    function ev (num: DecimalSource, c2 = false): string {
+    function ev(num: DecimalSource, c2 = false): string {
         return `${metric(num, 2)} ${metric(num, 1)}eV${c2 ? "/c^2" : ""}`;
     }
 
@@ -842,4 +1164,4 @@ function decimalFormatGenerator (Decimal: typeof DecimalType) {
 }
 
 export type { FormatType };
-export { decimalFormatGenerator, ST_NAMES, FormatTypeList };
+export { decimalFormatGenerator, ST_NAMES, formatTypeList as FormatTypeList };

@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable */
 /**
  * @file Declares the Decimal class from break_eternity.js (https://github.com/Patashu/break_eternity.js)
  */

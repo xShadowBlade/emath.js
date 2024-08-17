@@ -368,6 +368,7 @@ class CurrencyStatic<
             // Create the upgrade object
             const addedUpgradeStatic = new UpgradeStatic(
                 upgrade,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 () => this.pointerGetUpgrade(upgrade.id)!,
                 () => this as CurrencyStatic,
             );
@@ -455,7 +456,7 @@ class CurrencyStatic<
 
         // If the upgrade doesn't exist, return [0, 0]
         if (upgrade === null) {
-            console.warn(`Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id}" not found.`);
             return [Decimal.dZero, Decimal.dZero];
         }
 
@@ -500,7 +501,7 @@ class CurrencyStatic<
 
         // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
-            console.warn(`Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id}" not found.`);
             return Decimal.dZero;
         }
 
@@ -536,7 +537,7 @@ class CurrencyStatic<
 
         // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
-            console.warn(`Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id}" not found.`);
             return Decimal.dZero;
         }
 
@@ -572,7 +573,7 @@ class CurrencyStatic<
 
         // If the upgrade doesn't exist, return false
         if (upgrade === null) {
-            console.warn(`Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id}" not found.`);
             return false;
         }
 
@@ -639,9 +640,9 @@ class CurrencyStatic<
             this.pointerAddItem(item);
 
             // Create the upgrade object
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const addedUpgradeStatic = new Item(
                 item,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 () => this.pointerGetItem(item.id)!,
                 () => this as CurrencyStatic,
             );
@@ -685,7 +686,7 @@ class CurrencyStatic<
 
         // If the item doesn't exist, return [0, 0]
         if (item === null) {
-            console.warn(`Item "${id}" not found.`);
+            console.warn(`eMath.js: Item "${id}" not found.`);
             return [Decimal.dZero, Decimal.dZero];
         }
 
@@ -709,7 +710,7 @@ class CurrencyStatic<
 
         // If the item doesn't exist, return false
         if (item === null) {
-            console.warn(`Item "${id}" not found.`);
+            console.warn(`eMath.js: Item "${id}" not found.`);
             return false;
         }
 

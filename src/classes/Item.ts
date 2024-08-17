@@ -29,7 +29,7 @@ function calculateItem(
 
     // Special case: If target is less than 1, just return 0
     if (target.lt(0)) {
-        console.warn("calculateItem: Invalid target: ", target);
+        console.warn("eMath.js: Invalid target for calculateItem: ", target);
         return [Decimal.dZero, Decimal.dZero];
     }
 
@@ -170,7 +170,6 @@ class Item implements ItemInit {
      */
     get amount(): Decimal {
         // many fallbacks for some reason
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return (
             (this ?? { data: { amount: Decimal.dOne } }).data ?? {
                 amount: Decimal.dOne,
