@@ -46,7 +46,7 @@ The `ResetLayer` class is a class that represents a game reset. It is used to re
 
 The `ResetLayer` class can be created by using the `<Game>.addReset` method. The `addReset` method takes a `GameCurrency` or an array of `GameCurrency` as the first parameter and an optional `GameReset` or an array of `GameReset` as the second parameter. The first parameter is the currency or currencies to reset, and the second parameter is the extender for the game reset.
 
-```js title="resetLayer.js"
+```js title="resetLayer.js" showLineNumbers
 import { myGame } from "./game.js";
 import { myCurrency } from "./currency.js";
 

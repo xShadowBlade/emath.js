@@ -12,7 +12,7 @@ The `EventManager` class is a manager that handles events and executes them at t
 
 The `EventManager` class is used by default in the game instance, and can be accessed using `<Game>.eventManager`.
 
-```js title="eventManager.js"
+```js title="eventManager.js" showLineNumbers
 import { myGame } from "./game.js";
 
 const eventManager = myGame.eventManager;

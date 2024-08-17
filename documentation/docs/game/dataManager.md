@@ -12,7 +12,7 @@ The `DataManager` class is a manager that stores and manages data for the game. 
 
 The `DataManager` class is used by default in the game instance, and can be accessed using `<Game>.dataManager`.
 
-```js title="dataManager.js"
+```js title="dataManager.js" showLineNumbers
 import { myGame } from "./game.js";
 
 const dataManager = myGame.dataManager;

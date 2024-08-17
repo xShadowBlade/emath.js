@@ -12,7 +12,7 @@ The `ConfigManager` class is a manager that handles configuration objects. It is
 
 To create and manage configuration objects, do
 
-```js title="configManager.js"
+```js title="configManager.js" showLineNumbers
 import { ConfigManager } from "emath.js/game";
 
 // Define a template for the configuration object

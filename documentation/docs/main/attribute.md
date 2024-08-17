@@ -12,7 +12,7 @@ The `Attribute` class represents an attribute that can be affected by boosts. It
 
 To create an attribute, use the `AttributeStatic` class:
 
-```js title="attribute.js"
+```js title="attribute.js" showLineNumbers
 import { AttributeStatic } from "emath.js";
 
 // Create a new attribute with an initial value of 100

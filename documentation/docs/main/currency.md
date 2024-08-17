@@ -16,7 +16,7 @@ To create a currency, do either of the following:
 
 1. Using `Game` class (recommended)
 
-    ```js title="currency.js"
+    ```js title="currency.js" showLineNumbers
     import { myGame } from "./game.js";
 
     // 1 parameter - `name` is required. It must be unique,
@@ -32,7 +32,7 @@ To create a currency, do either of the following:
 
 2. Using without `Game` class
 
-    ```js title="currency.js"
+    ```js title="currency.js" showLineNumbers
     import { CurrencyStatic } from "emath.js";
 
     const myCurrency = new CurrencyStatic();

@@ -13,7 +13,7 @@ The game class is the main export of this library. It contains classes and metho
 
 To make a `Game`, do the following:
 
-```js title="game.js"
+```js title="game.js" showLineNumbers
 import { Game } from "emath.js/Game";
 
 // Create a game with settings (optional)
@@ -32,7 +32,7 @@ export { myGame };
 
 There are various managers/methods. Here are some examples:
 
-```js title="gameExamples.js"
+```js title="gameExamples.js" showLineNumbers
 import { myGame } from "./game.js";
 
 // See <GameCurrency>

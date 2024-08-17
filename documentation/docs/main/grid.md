@@ -12,7 +12,7 @@ The `Grid` class is a class that represents a grid with cells. It is typically u
 
 To create and manage a grid, do the following:
 
-```js title="grid.js"
+```js title="grid.js" showLineNumbers
 import { Grid } from "emath.js";
 
 // Create a grid with a size of 10x10, and initialize with properties

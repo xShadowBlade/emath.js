@@ -22,7 +22,7 @@ import { inverseFunctionApprox, calculateSum, roundingBase } from "emath.js";
 
 The `inverseFunctionApprox` function approximates the inverse of a function at `n`.
 
-```js title="inverseFunctionApprox.js"
+```js title="inverseFunctionApprox.js" showLineNumbers
 const f = (x) => x.pow(2);
 const inverse = inverseFunctionApprox(f, 16);
 console.log(inverse.value); // ~4
@@ -32,7 +32,7 @@ console.log(inverse.value); // ~4
 
 The `calculateSum` function calculates the sum of `f(n)` from `a` to `b`.
 
-```js title="calculateSum.js"
+```js title="calculateSum.js" showLineNumbers
 const f = (x) => x.pow(2);
 const sum = calculateSum(f, 10);
 console.log(sum); // ~385
@@ -42,7 +42,7 @@ console.log(sum); // ~385
 
 The `roundingBase` function rounds a number to the nearest power of a specified base.
 
-```js title="roundingBase.js"
+```js title="roundingBase.js" showLineNumbers
 console.log(roundingBase(123456789, 10, 0, 10)); // 120000000
 console.log(roundingBase(123456789, 10, 1, 10)); // 123000000
 console.log(roundingBase(123456789, 10, 2, 10)); // 123460000

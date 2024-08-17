@@ -5,6 +5,9 @@ sidebar_label: Usage
 sidebar_position: 3
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 ---
 
 After you have installed it via [npm](./install#install-via-npm) or [HTML CDN](./install#include-using-cdn), use as the following:
@@ -16,7 +19,9 @@ There are also corresponding typescript versions of those packages (`emath.js/ts
 
 Here is an example usage:
 
-```js title="index.js"
+<Tabs groupId="jsOrTs" defaultValue="js" values={[{label: 'JavaScript', value: 'js'}, {label: 'TypeScript', value: 'ts'}]}>
+    <TabItem value="js">
+```js title="index.js" showLineNumbers
 import { Decimal } from "emath.js";
 import { Game } from "emath.js/game";
 
@@ -81,6 +86,74 @@ coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
     console.log("Auto Saved!");
 });
 ```
+    </TabItem>
+    <TabItem value="ts">
+```ts title="index.ts" showLineNumbers
+import { Decimal } from "emath.js";
+// For better type checking with upgrade names, you can import `UpgradeInit` from `emath.js`
+import type { UpgradeInit } from "emath.js";
+import { Game } from "emath.js/game";
+
+// Initialize game
+const coinGame = new Game();
+
+// Create a new currency with upgrades
+const coins = coinGame.addCurrency("coins", [
+    {
+        id: "upg1Coins", // Unique ID
+        cost: (level): Decimal => level.mul(10), // Cost of 10 times the level
+        maxLevel: new Decimal(1000),
+        effect: (level, upgradeContext, currencyContext) => {
+            // `currencyContext` is the context of the currency (coins in this case)
+
+            // Access the `boost` object to add a boost
+            currencyContext.boost.setBoost({
+                id: "boostUpg1Coins", // Unique ID of the boost
+                // Effect of the boost, which is additive, 11 times the level of the upgrade
+                value: n => n.plus(level.mul(11)).sub(1),
+            });
+        },
+    },
+    // Add more upgrades here ...
+] as const satisfies UpgradeInit[]); // Type assertion for better type checking
+
+// Initialize / Load game
+coinGame.init();
+coinGame.dataManager.loadData();
+
+// Gain coins
+coins.gain();
+
+// Buy (max) upgrades
+coins.buyUpgrade("upg1Coins");
+
+// Hotkeys
+coinGame.keyManager.addKey([
+    {
+        id: "gainCoins",
+        name: "Gain Coins",
+        key: "g",
+        onDownContinuous: (): void => coins.gain(),
+    },
+    {
+        id: "buyUpgrades",
+        name: "Buy Upgrades",
+        key: "b",
+        onDownContinuous: (): void => coins.buyUpgrade("upg1Coins"),
+    },
+]);
+
+// Saving and Loading
+window.addEventListener("beforeunload", () => {
+    coinGame.dataManager.saveData();
+});
+coinGame.eventManager.setEvent("autoSave", "interval", 30000, () => {
+    coinGame.dataManager.saveData();
+    console.log("Auto Saved!");
+});
+```
+    </TabItem>
+</Tabs>
 
 ### HTML Usage
 
@@ -92,7 +165,7 @@ The package exports a variable ``eMath`` and sets it to the window, so you don't
 
 This will set the `eMath` variable to the `window` object. You can then use it as follows:
 
-```js title="index.js"
+```js title="index.js" showLineNumbers
 const { Decimal, Currency, Game } = eMath;
 
 // rest of code here ...

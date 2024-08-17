@@ -12,7 +12,7 @@ The `KeyManager` class is a manager that handles key bindings and tracks pressed
 
 The `KeyManager` class is used by default in the game instance, and can be accessed using `<Game>.keyManager`.
 
-```js title="keyManager.js"
+```js title="keyManager.js" showLineNumbers
 import { myGame } from "./game.js";
 
 const keyManager = myGame.keyManager;

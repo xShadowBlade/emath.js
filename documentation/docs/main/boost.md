@@ -14,7 +14,7 @@ You probably do not need to use this class on its own often, as it is created by
 
 To create and add boosts, do
 
-```js title="boost.js"
+```js title="boost.js" showLineNumbers
 import { Boost } from "emath.js";
 
 const myBoost = new Boost(); // With param `baseEffect`, defaults to 1
