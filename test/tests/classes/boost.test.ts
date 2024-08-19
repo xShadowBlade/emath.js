@@ -21,9 +21,27 @@ describe("Boost", () => {
         });
 
         it("should create a boost with specified base effect and boosts", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
-            const b3: BoostsObjectInit = { id: "b3", name: "Boost 3", description: "Description 3", value: (x) => x.add(4), order: 3 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
+            const b3: BoostsObjectInit = {
+                id: "b3",
+                name: "Boost 3",
+                description: "Description 3",
+                value: (x) => x.add(4),
+                order: 3,
+            };
             testBoost = new Boost(10, [b1, b2, b3]);
             assert(testBoost.baseEffect.equals(Decimal.dTen));
             assert.equal(testBoost.boostArray.length, 3);
@@ -35,8 +53,20 @@ describe("Boost", () => {
 
     describe("getBoosts", () => {
         it("should return an array of boost objects with the given ID", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             const boosts = testBoost.getBoosts("b2");
             assert.equal(boosts.length, 1);
@@ -48,8 +78,20 @@ describe("Boost", () => {
         });
 
         it("should return an array of boost objects with the given ID and their indexes", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             const [boosts, indexes] = testBoost.getBoosts("b2", true);
             assert.equal(boosts.length, 1);
@@ -63,8 +105,20 @@ describe("Boost", () => {
         });
 
         it("should return an empty array if no boosts with the given ID are found", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             const boosts = testBoost.getBoosts("nonexistent");
             assert.equal(boosts.length, 0);
@@ -73,8 +127,20 @@ describe("Boost", () => {
 
     describe("getBoost", () => {
         it("should return the boost object with the given ID", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             const boost = testBoost.getBoost("b2");
             assert.equal(boost?.id, "b2");
@@ -85,8 +151,20 @@ describe("Boost", () => {
         });
 
         it("should return null if no boost with the given ID is found", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             const boost = testBoost.getBoost("nonexistent");
             assert.equal(boost, null);
@@ -95,8 +173,20 @@ describe("Boost", () => {
 
     describe("removeBoost", () => {
         it("should remove the boost with the given ID", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             testBoost.removeBoost("b1");
             assert.equal(testBoost.boostArray.length, 1);
@@ -104,8 +194,20 @@ describe("Boost", () => {
         });
 
         it("should not remove any boosts if no boost with the given ID is found", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost = new Boost(10, [b1, b2]);
             testBoost.removeBoost("nonexistent");
             assert.equal(testBoost.boostArray.length, 2);
@@ -114,29 +216,70 @@ describe("Boost", () => {
 
     describe("setBoost", () => {
         it("should add a new boost if it doesn't exist", () => {
-            testBoost.setBoost("b1", "Boost 1", "Description 1", (x) => x.add(2), 1);
+            testBoost.setBoost(
+                "b1",
+                "Boost 1",
+                "Description 1",
+                (x) => x.add(2),
+                1,
+            );
             assert.equal(testBoost.boostArray.length, 1);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1");
             assert.equal(testBoost.boostArray[0].description, "Description 1");
-            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(Decimal.dTwo));
+            assert(
+                testBoost.boostArray[0]
+                    .value(Decimal.dZero)
+                    .equals(Decimal.dTwo),
+            );
             assert.equal(testBoost.boostArray[0].order, 1);
         });
 
         it("should update an existing boost if it exists", () => {
-            testBoost.setBoost("b1", "Boost 1", "Description 1", (x) => x.add(2), 1);
-            testBoost.setBoost("b1", "Boost 1 Updated", "Description 1 Updated", (x) => x.add(3), 2);
+            testBoost.setBoost(
+                "b1",
+                "Boost 1",
+                "Description 1",
+                (x) => x.add(2),
+                1,
+            );
+            testBoost.setBoost(
+                "b1",
+                "Boost 1 Updated",
+                "Description 1 Updated",
+                (x) => x.add(3),
+                2,
+            );
             assert.equal(testBoost.boostArray.length, 1);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
-            assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
-            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(new Decimal(3)));
+            assert.equal(
+                testBoost.boostArray[0].description,
+                "Description 1 Updated",
+            );
+            assert(
+                testBoost.boostArray[0]
+                    .value(Decimal.dZero)
+                    .equals(new Decimal(3)),
+            );
             assert.equal(testBoost.boostArray[0].order, 2);
         });
 
         it("should add new boosts if they don't exist", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
             testBoost.setBoost([b1, b2]);
             assert.equal(testBoost.boostArray.length, 2);
             assert.equal(testBoost.boostArray[0].id, "b1");
@@ -144,15 +287,40 @@ describe("Boost", () => {
         });
 
         it("should update existing boosts if they exist", () => {
-            const b1: BoostsObjectInit = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 1 };
-            const b2: BoostsObjectInit = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.add(3), order: 2 };
-            const b3: BoostsObjectInit = { id: "b1", name: "Boost 1 Updated", description: "Description 1 Updated", value: (x) => x.add(4), order: 3 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 1,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.add(3),
+                order: 2,
+            };
+            const b3: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1 Updated",
+                description: "Description 1 Updated",
+                value: (x) => x.add(4),
+                order: 3,
+            };
             testBoost.setBoost([b1, b2, b3]);
             assert.equal(testBoost.boostArray.length, 2);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
-            assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
-            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(new Decimal(4)));
+            assert.equal(
+                testBoost.boostArray[0].description,
+                "Description 1 Updated",
+            );
+            assert(
+                testBoost.boostArray[0]
+                    .value(Decimal.dZero)
+                    .equals(new Decimal(4)),
+            );
             assert.equal(testBoost.boostArray[0].order, 3);
             assert.equal(testBoost.boostArray[1].id, "b2");
         });
@@ -165,9 +333,27 @@ describe("Boost", () => {
         });
 
         it("should apply boosts in order of increasing order", () => {
-            const b1 = { id: "b1", name: "Boost 1", description: "Description 1", value: (x) => x.add(2), order: 2 };
-            const b2 = { id: "b2", name: "Boost 2", description: "Description 2", value: (x) => x.mul(3), order: 1 };
-            const b3 = { id: "b3", name: "Boost 3", description: "Description 3", value: (x) => x.pow(2), order: 3 };
+            const b1: BoostsObjectInit = {
+                id: "b1",
+                name: "Boost 1",
+                description: "Description 1",
+                value: (x) => x.add(2),
+                order: 2,
+            };
+            const b2: BoostsObjectInit = {
+                id: "b2",
+                name: "Boost 2",
+                description: "Description 2",
+                value: (x) => x.mul(3),
+                order: 1,
+            };
+            const b3: BoostsObjectInit = {
+                id: "b3",
+                name: "Boost 3",
+                description: "Description 3",
+                value: (x) => x.pow(2),
+                order: 3,
+            };
             testBoost = new Boost(1, [b1, b2, b3]);
             const result = testBoost.calculate();
             // assert(result.eq(25));

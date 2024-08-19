@@ -75,9 +75,7 @@ var require_lz_string = __commonJS({
             return keyStrBase64.charAt(a);
           });
           switch (res.length % 4) {
-            // To produce valid Base64
             default:
-            // When could this happen ?
             case 0:
               return res;
             case 1:
@@ -7229,7 +7227,7 @@ var DataManager = class {
     );
     let version;
     try {
-      version = "9.4.0";
+      version = "9.5.0";
     } catch (error) {
       version = "9.3.0";
     }

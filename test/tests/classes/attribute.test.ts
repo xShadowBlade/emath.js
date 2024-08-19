@@ -36,7 +36,11 @@ describe("AttributeStatic", () => {
 
         it("should create an attribute static with specified initial value and boost enabled", () => {
             const initialValue = new Decimal(100);
-            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+            const attributeStatic = new AttributeStatic(
+                undefined,
+                true,
+                initialValue,
+            );
             assert(attributeStatic.value.equals(initialValue));
             assert.isNotNull(attributeStatic.boost);
         });
@@ -45,13 +49,21 @@ describe("AttributeStatic", () => {
     describe("value", () => {
         it("should return the value of the attribute static", () => {
             const initialValue = new Decimal(100);
-            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+            const attributeStatic = new AttributeStatic(
+                undefined,
+                true,
+                initialValue,
+            );
             assert(attributeStatic.value.equals(initialValue));
         });
 
         it("should update the value when the boost is updated", () => {
             const initialValue = new Decimal(100);
-            const attributeStatic = new AttributeStatic(undefined, true, initialValue);
+            const attributeStatic = new AttributeStatic(
+                undefined,
+                true,
+                initialValue,
+            );
 
             // Set boost
             attributeStatic.boost.setBoost({
