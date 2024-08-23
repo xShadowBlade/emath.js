@@ -57,6 +57,8 @@ declare class DataManager {
     private static;
     /** A reference to the game instance. */
     private readonly gameRef;
+    /** The local storage object. */
+    private readonly localStorage;
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
@@ -66,8 +68,9 @@ declare class DataManager {
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
+     * @param localStorage - The local storage object. Defaults to `window.localStorage`.
      */
-    constructor(gameRef: Pointer<Game>);
+    constructor(gameRef: Pointer<Game>, localStorage?: Storage);
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.

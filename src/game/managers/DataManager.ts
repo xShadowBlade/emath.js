@@ -81,6 +81,9 @@ class DataManager {
     /** A reference to the game instance. */
     private readonly gameRef: Game;
 
+    /** The local storage object. */
+    private readonly localStorage: Storage = window.localStorage;
+
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
@@ -91,9 +94,16 @@ class DataManager {
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
+     * @param localStorage - The local storage object. Defaults to `window.localStorage`.
      */
-    constructor(gameRef: Pointer<Game>) {
+    constructor(
+        gameRef: Pointer<Game>,
+        localStorage: Storage = window.localStorage,
+    ) {
         this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+
+        // Set the local storage object
+        this.localStorage = localStorage;
     }
 
     /**
@@ -270,7 +280,7 @@ class DataManager {
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
     public decompileData(
-        data: string | null = window.localStorage.getItem(
+        data: string | null = this.localStorage.getItem(
             `${this.gameRef.config.name.id}-data`,
         ),
     ): [SaveMetadata, UnknownObject] | null {
@@ -363,14 +373,14 @@ class DataManager {
         }
 
         // If local storage is not supported, throw
-        if (!(window.localStorage as unknown)) {
+        if (!(this.localStorage as unknown)) {
             throw new Error(
                 "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
             );
         }
 
         // Save the data to local storage
-        window.localStorage.setItem(
+        this.localStorage.setItem(
             `${this.gameRef.config.name.id}-data`,
             dataToSave,
         );

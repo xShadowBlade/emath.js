@@ -7065,8 +7065,9 @@ var DataManager = class {
   /**
    * Creates a new instance of the game class.
    * @param gameRef - A function that returns the game instance.
+   * @param localStorage - The local storage object. Defaults to `window.localStorage`.
    */
-  constructor(gameRef) {
+  constructor(gameRef, localStorage = window.localStorage) {
     /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
@@ -7077,6 +7078,8 @@ var DataManager = class {
      * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
      */
     this.static = {};
+    /** The local storage object. */
+    this.localStorage = window.localStorage;
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
@@ -7084,6 +7087,7 @@ var DataManager = class {
      */
     this.eventsOnLoad = [];
     this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+    this.localStorage = localStorage;
   }
   /**
    * Adds an event to call when the game data is loaded.
@@ -7224,7 +7228,7 @@ var DataManager = class {
    * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
-  decompileData(data = window.localStorage.getItem(
+  decompileData(data = this.localStorage.getItem(
     `${this.gameRef.config.name.id}-data`
   )) {
     if (!data) return null;
@@ -7286,12 +7290,12 @@ var DataManager = class {
     if (!dataToSave) {
       throw new Error("dataManager.saveData(): Data to save is empty.");
     }
-    if (!window.localStorage) {
+    if (!this.localStorage) {
       throw new Error(
         "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
       );
     }
-    window.localStorage.setItem(
+    this.localStorage.setItem(
       `${this.gameRef.config.name.id}-data`,
       dataToSave
     );
