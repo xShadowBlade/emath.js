@@ -6,7 +6,19 @@ import eMathMain from "../hookMain";
 import * as eMathGame from "./index";
 declare const eMath: {
     Game: typeof eMathGame.Game;
-    gameDefaultConfig: eMathGame.RequiredDeep<eMathGame.GameConfigOptions>;
+    gameDefaultConfig: {
+        readonly mode: "production";
+        readonly name: {
+            readonly title: "";
+            readonly id: "";
+            readonly version: "0.0.0";
+        };
+        readonly settings: {
+            readonly framerate: 30;
+        };
+        readonly initIntervalBasedManagers: true;
+        readonly localStorage: undefined;
+    };
     GameCurrency: typeof eMathGame.GameCurrency;
     GameAttribute: typeof eMathGame.GameAttribute;
     GameReset: typeof eMathGame.GameReset;

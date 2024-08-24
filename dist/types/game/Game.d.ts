@@ -14,20 +14,33 @@ import type { UpgradeInit } from "../classes/Upgrade";
 import type { ItemInit } from "../classes/Item";
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
+ * See {@link gameDefaultConfig} for the default configuration.
  */
 interface GameConfigOptions {
-    /** The mode to run the game in. Not used internally. */
+    /**
+     * The mode to run the game in. Not used internally.
+     */
     mode?: "development" | "production";
-    /** The name of the game. Not used internally. */
+    /**
+     * The name of the game. Not used internally.
+     */
     name: {
-        /** The title of the game.  */
+        /**
+         * The title of the game.
+         */
         title?: string;
-        /** The ID of the game. Used for naming saves. */
+        /**
+         * The ID of the game. Used for naming saves.
+         */
         id: string;
-        /** The version of the game. Not used internally. */
+        /**
+         * The version of the game. Not used internally.
+         */
         version?: string;
     };
-    /** The settings for the game. */
+    /**
+     * The settings for the game.
+     */
     settings?: {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
@@ -37,11 +50,31 @@ interface GameConfigOptions {
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
      */
     initIntervalBasedManagers?: boolean;
+    /**
+     * The storage to use for the game.
+     * If you want to use a different storage, you can specify it here.
+     * @default window.localStorage
+     */
+    localStorage: Storage | undefined;
 }
-/** The default configuration for the game. */
-declare const gameDefaultConfig: RequiredDeep<GameConfigOptions>;
 /**
- * Represents a game instance.
+ * The default configuration for the game
+ */
+declare const gameDefaultConfig: {
+    readonly mode: "production";
+    readonly name: {
+        readonly title: "";
+        readonly id: "";
+        readonly version: "0.0.0";
+    };
+    readonly settings: {
+        readonly framerate: 30;
+    };
+    readonly initIntervalBasedManagers: true;
+    readonly localStorage: undefined;
+};
+/**
+ * A game instance.
  */
 declare class Game {
     /** The static config manager for the game. */
@@ -54,9 +87,9 @@ declare class Game {
      */
     readonly dataManager: DataManager;
     /** The key manager for the game. */
-    keyManager: KeyManager;
+    readonly keyManager: KeyManager;
     /** The event manager for the game. */
-    eventManager: EventManager;
+    readonly eventManager: EventManager;
     /** The tickers for the game. */
     protected readonly tickers: ((dt: number) => void)[];
     /**
@@ -114,10 +147,6 @@ declare class Game {
      * @deprecated Use the class {@link GameReset} instead.
      * This method is a wrapper for the class and does not provide any additional functionality.
      * @param args - The arguments for the game reset. See {@link GameReset} for more information.
-     * @param currenciesToReset The currencies to reset.
-     * @param extender The extender for the game reset.
-     * @param onReset Function to run during reset.
-     * @param condition A condition that must be met for the reset to occur.
      * @returns The newly created game reset object.
      */
     addReset(...args: ConstructorParameters<typeof GameReset>): GameReset;

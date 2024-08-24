@@ -56,7 +56,9 @@ var require_lz_string = __commonJS({
             return keyStrBase64.charAt(a);
           });
           switch (res.length % 4) {
+            // To produce valid Base64
             default:
+            // When could this happen ?
             case 0:
               return res;
             case 1:
@@ -7067,7 +7069,7 @@ var DataManager = class {
    * @param gameRef - A function that returns the game instance.
    * @param localStorage - The local storage object. Defaults to `window.localStorage`.
    */
-  constructor(gameRef, localStorage = window.localStorage) {
+  constructor(gameRef, localStorage) {
     /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
@@ -7078,8 +7080,6 @@ var DataManager = class {
      * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
      */
     this.static = {};
-    /** The local storage object. */
-    this.localStorage = window.localStorage;
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
@@ -7087,7 +7087,15 @@ var DataManager = class {
      */
     this.eventsOnLoad = [];
     this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
-    this.localStorage = localStorage;
+    this.localStorage = localStorage ?? (() => {
+      if (typeof window === "undefined") {
+        console.warn(
+          "eMath.js: Local storage is not supported. Methods that rely on local storage will not work. You can use compileData() and decompileData() instead to implement a custom save system."
+        );
+        return null;
+      }
+      return window.localStorage;
+    })();
   }
   /**
    * Adds an event to call when the game data is loaded.
@@ -7228,9 +7236,18 @@ var DataManager = class {
    * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
-  decompileData(data = this.localStorage.getItem(
-    `${this.gameRef.config.name.id}-data`
-  )) {
+  decompileData(data) {
+    if (!data && this.localStorage) {
+      data = this.localStorage.getItem(
+        `${this.gameRef.config.name.id}-data`
+      );
+    }
+    if (!data && !this.localStorage) {
+      console.warn(
+        "eMath.js: Local storage is not supported. Methods that rely on local storage will not work: decompileData() requires the data to be passed as an argument."
+      );
+      return null;
+    }
     if (!data) return null;
     let parsedData;
     try {
@@ -7624,14 +7641,13 @@ var gameDefaultConfig = {
   settings: {
     framerate: 30
   },
-  initIntervalBasedManagers: true
+  initIntervalBasedManagers: true,
+  localStorage: void 0
 };
 var Game = class _Game {
   static {
     /** The static config manager for the game. */
-    this.configManager = new ConfigManager(
-      gameDefaultConfig
-    );
+    this.configManager = new ConfigManager(gameDefaultConfig);
   }
   /**
    * Creates a new instance of the game class.
@@ -7647,7 +7663,10 @@ var Game = class _Game {
    */
   constructor(config) {
     this.config = _Game.configManager.parse(config);
-    this.dataManager = new DataManager(this);
+    this.dataManager = new DataManager(
+      this,
+      this.config.localStorage
+    );
     this.keyManager = new KeyManager({
       autoAddInterval: this.config.initIntervalBasedManagers,
       fps: this.config.settings.framerate
@@ -7730,10 +7749,6 @@ var Game = class _Game {
    * @deprecated Use the class {@link GameReset} instead.
    * This method is a wrapper for the class and does not provide any additional functionality.
    * @param args - The arguments for the game reset. See {@link GameReset} for more information.
-   * @param currenciesToReset The currencies to reset.
-   * @param extender The extender for the game reset.
-   * @param onReset Function to run during reset.
-   * @param condition A condition that must be met for the reset to occur.
    * @returns The newly created game reset object.
    */
   // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
@@ -7752,6 +7767,9 @@ var Game = class _Game {
    * @returns The newly created game reset object.
    */
   addResetFromObject(object) {
+    console.warn(
+      "eMath.js: Game.addResetFromObject is deprecated. Use the GameReset.fromObject static method instead."
+    );
     return GameReset.fromObject(object);
   }
 };

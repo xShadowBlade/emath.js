@@ -21,33 +21,60 @@ import type { ItemInit } from "../classes/Item";
 
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
+ * See {@link gameDefaultConfig} for the default configuration.
  */
 interface GameConfigOptions {
-    /** The mode to run the game in. Not used internally. */
+    /**
+     * The mode to run the game in. Not used internally.
+     */
     mode?: "development" | "production";
-    /** The name of the game. Not used internally. */
+
+    /**
+     * The name of the game. Not used internally.
+     */
     name: {
-        /** The title of the game.  */
+        /**
+         * The title of the game.
+         */
         title?: string;
-        /** The ID of the game. Used for naming saves. */
+
+        /**
+         * The ID of the game. Used for naming saves.
+         */
         id: string;
-        /** The version of the game. Not used internally. */
+
+        /**
+         * The version of the game. Not used internally.
+         */
         version?: string;
     };
-    /** The settings for the game. */
+
+    /**
+     * The settings for the game.
+     */
     settings?: {
         /** The framerate to use for the game and various managers. Defaults to `30` */
         framerate?: number;
     };
+
     /**
      * Whether or not to automatically initialize the interval-based managers.
      * Warning: If you set this to `false`, you will need to manually call `keyManager.init()` and `eventManager.init()` to initialize them.
      */
     initIntervalBasedManagers?: boolean;
+
+    /**
+     * The storage to use for the game.
+     * If you want to use a different storage, you can specify it here.
+     * @default window.localStorage
+     */
+    localStorage: Storage | undefined;
 }
 
-/** The default configuration for the game. */
-const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
+/**
+ * The default configuration for the game
+ */
+const gameDefaultConfig = {
     mode: "production",
     name: {
         title: "",
@@ -58,16 +85,17 @@ const gameDefaultConfig: RequiredDeep<GameConfigOptions> = {
         framerate: 30,
     },
     initIntervalBasedManagers: true,
-};
+    localStorage: undefined,
+} as const satisfies RequiredDeep<GameConfigOptions>;
 
 /**
- * Represents a game instance.
+ * A game instance.
  */
 class Game {
     /** The static config manager for the game. */
-    protected static readonly configManager = new ConfigManager(
-        gameDefaultConfig,
-    );
+    protected static readonly configManager = new ConfigManager<
+        RequiredDeep<GameConfigOptions>
+    >(gameDefaultConfig);
 
     /** The config object */
     public readonly config: typeof Game.configManager.options;
@@ -79,10 +107,10 @@ class Game {
     public readonly dataManager: DataManager;
 
     /** The key manager for the game. */
-    public keyManager: KeyManager;
+    public readonly keyManager: KeyManager;
 
     /** The event manager for the game. */
-    public eventManager: EventManager;
+    public readonly eventManager: EventManager;
 
     /** The tickers for the game. */
     protected readonly tickers: ((dt: number) => void)[];
@@ -105,7 +133,10 @@ class Game {
 
         // Init managers
         // Init separately to allow for manual initialization
-        this.dataManager = new DataManager(this);
+        this.dataManager = new DataManager(
+            this,
+            this.config.localStorage as Storage | undefined,
+        );
 
         this.keyManager = new KeyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
@@ -135,6 +166,10 @@ class Game {
     public changeFps(fps: number): void {
         this.keyManager.changeFps(fps);
         this.eventManager.changeFps(fps);
+    }
+
+    public clearTickers(): void {
+
     }
 
     /**
@@ -215,10 +250,6 @@ class Game {
      * @deprecated Use the class {@link GameReset} instead.
      * This method is a wrapper for the class and does not provide any additional functionality.
      * @param args - The arguments for the game reset. See {@link GameReset} for more information.
-     * @param currenciesToReset The currencies to reset.
-     * @param extender The extender for the game reset.
-     * @param onReset Function to run during reset.
-     * @param condition A condition that must be met for the reset to occur.
      * @returns The newly created game reset object.
      */
     // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
@@ -243,6 +274,10 @@ class Game {
     public addResetFromObject(
         object: Parameters<typeof GameReset.fromObject>[0],
     ): GameReset {
+        console.warn(
+            "eMath.js: Game.addResetFromObject is deprecated. Use the GameReset.fromObject static method instead.",
+        );
+
         return GameReset.fromObject(object);
     }
 }

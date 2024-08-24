@@ -82,7 +82,7 @@ class DataManager {
     private readonly gameRef: Game;
 
     /** The local storage object. */
-    private readonly localStorage: Storage = window.localStorage;
+    private readonly localStorage: Storage | null;
 
     /**
      * A queue of functions to call when the game data is loaded.
@@ -96,14 +96,21 @@ class DataManager {
      * @param gameRef - A function that returns the game instance.
      * @param localStorage - The local storage object. Defaults to `window.localStorage`.
      */
-    constructor(
-        gameRef: Pointer<Game>,
-        localStorage: Storage = window.localStorage,
-    ) {
+    constructor(gameRef: Pointer<Game>, localStorage?: Storage) {
         this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
 
         // Set the local storage object
-        this.localStorage = localStorage;
+        this.localStorage =
+            localStorage ??
+            ((): Storage | null => {
+                if (typeof window === "undefined") {
+                    console.warn(
+                        "eMath.js: Local storage is not supported. Methods that rely on local storage will not work. You can use compileData() and decompileData() instead to implement a custom save system.",
+                    );
+                    return null;
+                }
+                return window.localStorage;
+            })();
     }
 
     /**
@@ -280,10 +287,22 @@ class DataManager {
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
     public decompileData(
-        data: string | null = this.localStorage.getItem(
-            `${this.gameRef.config.name.id}-data`,
-        ),
+        data?: string | null,
     ): [SaveMetadata, UnknownObject] | null {
+        if (!data && this.localStorage) {
+            // Get the data from local storage
+            data = this.localStorage.getItem(
+                `${this.gameRef.config.name.id}-data`,
+            );
+        }
+
+        if (!data && !this.localStorage) {
+            console.warn(
+                "eMath.js: Local storage is not supported. Methods that rely on local storage will not work: decompileData() requires the data to be passed as an argument.",
+            );
+            return null;
+        }
+
         // If the data is empty, return null
         if (!data) return null;
 
@@ -373,7 +392,7 @@ class DataManager {
         }
 
         // If local storage is not supported, throw
-        if (!(this.localStorage as unknown)) {
+        if (!this.localStorage) {
             throw new Error(
                 "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
             );
