@@ -275,7 +275,7 @@ class CurrencyStatic<
         ? UpgradeStatic
         : UpgradeStatic | null {
         // // @ts-expect-error - This is a hack to get the type to work
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         return this.upgrades[id] ?? null;
     }
 
@@ -664,7 +664,7 @@ class CurrencyStatic<
         id: T,
     ): IsPrimitiveString<ItemIds> extends false ? Item : Item | null {
         // // @ts-expect-error - This is a hack to get the type to work
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         return this.items[id] ?? null;
     }
 

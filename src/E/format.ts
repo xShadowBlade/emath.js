@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /**
  * @file Declares a generator function for formats for the Decimal library.
  * Adapted from MrRedShark77's Incremental Mass Rewritten (https://github.com/MrRedShark77/incremental-mass-rewritten)
@@ -78,7 +77,7 @@ const formatTypeList: FormatType[] = [
  * @param Decimal - The Decimal constructor to use.
  * @returns - The format function.
  */
-// eslint-disable-next-line no-shadow, @typescript-eslint/explicit-function-return-type
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/naming-convention
 function decimalFormatGenerator(Decimal: typeof DecimalType) {
     /** A list of formats */
     const FORMATS = {
@@ -138,6 +137,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
             },
         },
         /** Short omega format */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         omega_short: {
             config: {
                 greek: "βζλψΣΘΨω",
@@ -194,6 +194,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
             config: {
                 /** The list of elements */
                 /* eslint-disable prettier/prettier */
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 element_lists: [["H"],
                     ["He", "Li", "Be", "B", "C", "N", "O", "F"],
                     ["Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl"],
@@ -329,6 +330,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
             },
         },
         /** Old scientific format */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         old_sc: {
             /**
              * Format the value into old scientific format
@@ -420,6 +422,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
             },
         },
         /** Mixed scientific format */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         mixed_sc: {
             /**
              * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -469,6 +472,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
                         .sub(layer.gte(1) ? 1 : 0),
                 );
                 const meta = layer.div(10).floor();
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 const layer_id = (layer.toNumber() % 10) - 1;
                 return (
                     format(ex, Math.max(4, acc), max, "sc") +
@@ -823,6 +827,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
                     );
                 }
 
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 const e3_mul = e3.mul(3);
                 const ee = e3.log10().floor();
                 if (ee.gte(3000)) return "e" + format(e, acc, max, "st");
@@ -1158,6 +1163,7 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
     };
 
     return {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         FORMATS,
         formats,
     };

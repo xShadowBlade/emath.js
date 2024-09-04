@@ -260,6 +260,7 @@ function decimalFormatGenerator(Decimal2) {
       }
     },
     /** Short omega format */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     omega_short: {
       config: {
         greek: "\u03B2\u03B6\u03BB\u03C8\u03A3\u0398\u03A8\u03C9",
@@ -302,6 +303,7 @@ function decimalFormatGenerator(Decimal2) {
       config: {
         /** The list of elements */
         /* eslint-disable prettier/prettier */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         element_lists: [
           ["H"],
           ["He", "Li", "Be", "B", "C", "N", "O", "F"],
@@ -507,6 +509,7 @@ function decimalFormatGenerator(Decimal2) {
       }
     },
     /** Old scientific format */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     old_sc: {
       /**
        * Format the value into old scientific format
@@ -563,6 +566,7 @@ function decimalFormatGenerator(Decimal2) {
       }
     },
     /** Mixed scientific format */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     mixed_sc: {
       /**
        * Format the value into mixed scientific format (standard or scientific depending on the value)
@@ -977,6 +981,7 @@ function decimalFormatGenerator(Decimal2) {
     ev
   };
   return {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     FORMATS: FORMATS2,
     formats: formats2
   };

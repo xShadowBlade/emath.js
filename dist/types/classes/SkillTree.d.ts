@@ -69,7 +69,7 @@ declare class SkillNode implements SkillInit {
     /**
      * Represents a skill tree node.
      * @param skill - The skill tree node to initialize.
-     * @param data
+     * @param data - The data of the skill tree node.
      */
     constructor(skill: SkillInit, data?: SkillNodeData);
 }

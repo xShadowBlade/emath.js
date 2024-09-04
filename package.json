@@ -2,6 +2,16 @@
     "name": "emath.js",
     "version": "9.5.0",
     "description": "A library for incremental games based on break_eternity.js",
+    "homepage": "https://github.com/xShadowBlade/emath.js#readme",
+    "bugs": {
+        "url": "https://github.com/xShadowBlade/emath.js/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/xShadowBlade/emath.js.git"
+    },
+    "license": "MIT",
+    "author": "xShadowBlade",
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
@@ -30,48 +40,38 @@
     },
     "scripts": {
         "build": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\"",
+        "build-and-build-and-test": "concurrently \"node bin/build/build.js\" \"cd test && npm run build && cd ..\" && cd test && npm run test && cd ..",
         "build-and-doc": "concurrently \"tsc --emitDeclarationOnly -outdir dist/types\" \"node bin/build/build.js\" \"typedoc --options typedoc.json\"",
+        "build-and-test": "node bin/build/build.js && cd test && npm run test && cd ..",
         "build:main": "node bin/build/build.js",
         "build:types": "tsc --emitDeclarationOnly -outdir dist/types",
         "doc": "typedoc --options typedoc.json",
         "lint": "eslint src/**/*.ts",
         "lint:fix": "eslint --fix src/**/*.ts",
-        "test": "cd test && npm run test && cd ..",
-        "build-and-test": "node bin/build/build.js && cd test && npm run test && cd ..",
-        "build-and-build-and-test": "concurrently \"node bin/build/build.js\" \"cd test && npm run build && cd ..\" && cd test && npm run test && cd .."
+        "test": "cd test && npm run test && cd .."
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/xShadowBlade/emath.js.git"
+    "dependencies": {
+        "class-transformer": "^0.5.1",
+        "reflect-metadata": "^0.2.2"
     },
-    "author": "xShadowBlade",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/xShadowBlade/emath.js/issues"
-    },
-    "homepage": "https://github.com/xShadowBlade/emath.js#readme",
     "devDependencies": {
+        "@eslint/js": "^9.9.1",
+        "@types/eslint__js": "^8.42.3",
         "@types/md5": "^2.3.5",
         "@types/node": "^22.0.0",
-        "@typescript-eslint/eslint-plugin": "^7.18.0",
-        "@typescript-eslint/parser": "^7.18.0",
         "break_eternity.js": "^2.0.0",
         "concurrently": "^8.2.2",
         "esbuild": "^0.23.1",
         "esbuild-plugin-replace": "^1.4.0",
-        "eslint": "^8.57.0",
+        "eslint": "^9.9.1",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-jsdoc": "^50.2.2",
         "eslint-plugin-prettier": "^5.2.1",
         "lz-string": "^1.5.0",
         "md5": "^2.3.0",
         "prettier": "^3.3.3",
-        "prettier-eslint": "^16.3.0",
         "typedoc": "^0.26.5",
-        "typescript": "^5.5.4"
-    },
-    "dependencies": {
-        "class-transformer": "^0.5.1",
-        "reflect-metadata": "^0.2.2"
+        "typescript": "^5.5.4",
+        "typescript-eslint": "^8.4.0"
     }
 }

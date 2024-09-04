@@ -104,7 +104,7 @@ class SkillNode implements SkillInit {
     /**
      * Represents a skill tree node.
      * @param skill - The skill tree node to initialize.
-     * @param data
+     * @param data - The data of the skill tree node.
      */
     constructor(
         skill: SkillInit,
@@ -198,7 +198,7 @@ class SkillTree {
         const skillToCheck = this.getSkill(id);
 
         // If there are no required skills, the skill is unlocked
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (!skillToCheck.required || skillToCheck.required.length === 0) {
             return true;
         }

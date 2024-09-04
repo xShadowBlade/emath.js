@@ -228,7 +228,6 @@ class ItemData implements IItemData {
     @Type(() => Decimal) public amount;
 
     constructor(init: IItemData) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
 
         this.id = init.id;

@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable */
 /**
  * @file Declares the Decimal class from break_eternity.js (https://github.com/Patashu/break_eternity.js)
@@ -26,14 +21,14 @@
 
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-this-alias */
-/* eslint-disable @typescript-eslint/no-loss-of-precision */
+ 
+ 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable max-statements-per-line */
-/* eslint-disable no-shadow */
+ 
+ 
 /* eslint-disable no-loss-of-precision */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-lonely-if */
+ 
+ 
 import { Exclude, Expose } from "class-transformer";
 import { LRUCache } from "./lru-cache";
 
@@ -233,12 +228,12 @@ const FC_NN = function FC_NN (sign: number, layer: number, mag: number) {
     return Decimal.fromComponents_noNormalize(sign, layer, mag);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const ME = function ME (mantissa: number, exponent: number) {
     return Decimal.fromMantissaExponent(mantissa, exponent);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const ME_NN = function ME_NN (mantissa: number, exponent: number) {
     return Decimal.fromMantissaExponent_noNormalize(mantissa, exponent);
 };

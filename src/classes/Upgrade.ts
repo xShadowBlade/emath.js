@@ -386,7 +386,6 @@ class UpgradeData implements IUpgradeData {
      * @param init - The upgrade object to initialize.
      */
     constructor(init: IUpgradeData) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         init = init ?? {}; // class-transformer bug
 
         this.id = init.id;

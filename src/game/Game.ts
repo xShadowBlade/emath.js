@@ -168,9 +168,10 @@ class Game {
         this.eventManager.changeFps(fps);
     }
 
-    public clearTickers(): void {
+    // TODO: Implement clearTickers
+    // public clearTickers(): void {
 
-    }
+    // }
 
     /**
      * Adds a new currency section to the game. {@link GameCurrency} is the class.

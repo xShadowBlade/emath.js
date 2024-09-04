@@ -609,7 +609,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
         }
 
         // If the cell is undefined, return undefined
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (!out) return undefined as never;
 
         return out;
