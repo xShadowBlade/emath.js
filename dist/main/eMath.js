@@ -1738,25 +1738,31 @@ var Decimal = class {
     return D(value).reciprocate();
   }
   /**
-   * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
-  static mod(value, other) {
-    return D(value).mod(other);
+  static mod(value, other, floored = false) {
+    return D(value).mod(other, floored);
   }
   /**
-   * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
-  static modulo(value, other) {
-    return D(value).modulo(other);
+  static modulo(value, other, floored = false) {
+    return D(value).modulo(other, floored);
   }
   /**
-   * Returns the remainder of 'value' divided by 'other': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
-  static modular(value, other) {
-    return D(value).modular(other);
+  static modular(value, other, floored = false) {
+    return D(value).modular(other, floored);
   }
   /**
    * Returns 1 if 'value' > 'other', returns -1 if 'value' < 'other', returns 0 if 'value' == 'other'.
@@ -2205,6 +2211,31 @@ var Decimal = class {
    */
   static pentate(value, height = 2, payload = FC_NN(1, 0, 1), linear = false) {
     return D(value).pentate(height, payload, linear);
+  }
+  /**
+   * Penta-logarithm, one of pentation's inverses, tells you what height you'd have to pentate 'base' to to get 'value'.
+   * 
+   * Grows incredibly slowly. For bases above 2, you won't be seeing a result greater than 5 out of this function.
+   * 
+   * Accepts a number of iterations (default is 100), and use binary search to, after making an initial guess, hone in on the true value, assuming pentation as the ground truth.
+   * 
+   * Tetration for non-integer heights does not have a single agreed-upon definition,
+   * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+   * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+   * Analytic approximation is not currently supported for bases > 10.
+   * 
+   * For non-whole pentation heights, the linear approximation of pentation is always used, as there is no defined analytic approximation of pentation.
+   */
+  static penta_log(value, base = 10, linear = false) {
+    return D(value).penta_log(base, 100, linear);
+  }
+  /**
+   * Penta-root, one of pentation's inverses - what number, pentated to height 'degree', equals 'value'?
+   * 
+   * Only works with the linear approximation of tetration, as starting with analytic and then switching to linear would result in inconsistent behavior for super-roots.
+   */
+  static linear_penta_root(value, degree) {
+    return D(value).linear_penta_root(degree);
   }
   /**
    * The sine function, one of the main two trigonometric functions. Behaves periodically with period 2*pi.
@@ -2697,6 +2728,12 @@ var Decimal = class {
         } else {
           this.layer = parseFloat(layerstring);
           this.mag = parseFloat(newparts[1].substr(i + 1));
+          if (this.layer < 0 || this.layer % 1 != 0) {
+            const result = Decimal.tetrate(10, this.layer, this.mag, linearhyper4);
+            this.sign = result.sign;
+            this.layer = result.layer;
+            this.mag = result.mag;
+          }
           this.normalize();
           if (Decimal.fromStringCache.maxSize >= 1) {
             Decimal.fromStringCache.set(originalValue, Decimal.fromDecimal(this));
@@ -3193,12 +3230,20 @@ var Decimal = class {
   }
   /**
    * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
   // Taken from OmegaNum.js, with a couple touch-ups
-  mod(value) {
-    const decimal = D(value).abs();
-    if (decimal.eq(Decimal.dZero)) return FC_NN(0, 0, 0);
+  mod(value, floored = false) {
+    const vd = D(value);
+    const decimal = vd.abs();
+    if (this.eq(Decimal.dZero) || decimal.eq(Decimal.dZero)) return FC_NN(0, 0, 0);
+    if (floored) {
+      let absmod = this.abs().mod(decimal);
+      if (this.sign == -1 != (vd.sign == -1)) absmod = vd.abs().sub(absmod);
+      return absmod.mul(vd.sign);
+    }
     const num_this = this.toNumber();
     const num_decimal = decimal.toNumber();
     if (isFinite(num_this) && isFinite(num_decimal) && num_this != 0 && num_decimal != 0) {
@@ -3215,17 +3260,21 @@ var Decimal = class {
   }
   /**
    * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
-  modulo(value) {
-    return this.mod(value);
+  modulo(value, floored = false) {
+    return this.mod(value, floored);
   }
   /**
-   * Returns the remainder of this / value: for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
-   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%).
+   * Returns the remainder of 'this' divided by 'value': for example, 5 mod 2 = 1, because the remainder of 5 / 2 is 1.
+   * Uses the "truncated division" modulo, which is the same as JavaScript's native modulo operator (%)...
+   * unless 'floored' is true, in which case it uses the "floored" modulo, which is closer to how modulo works in number theory.
+   * These two forms of modulo are the same when only positive numbers are involved, but differ in how they work with negative numbers.
    */
-  modular(value) {
-    return this.mod(value);
+  modular(value, floored = false) {
+    return this.mod(value, floored);
   }
   /**
    * Returns 1 if 'this' > 'value', returns -1 if 'this' < 'value', returns 0 if 'this' == 'value'.
@@ -4566,43 +4615,404 @@ var Decimal = class {
     }
   }
   /**
+   * This function takes a Decimal => Decimal function as its argument (or DecimalSource => Decimal, that's fine too),
+   * and it returns a DecimalSource => Decimal function that's an inverse of the first one, which uses binary search to find its target.
+   * The resulting function will call the original many times, so it may be noticably slower than the original.
+   * 
+   * This function is only intended to be used on continuous, strictly increasing (or, using the decreasing parameter, strictly decreasing) functions.
+   * Its resulting function may output erroneous results if the original function was not strictly increasing.
+   * If the function is increasing but not strictly increasing, the inverse will, in ranges where the original function is constant, try to return the value closest to 0 out of the multiple correct values.
+   * If the function is not continuous, the inverse should return the correct answer in cases where the given value is returned by some input to the original function, but it will return an erroneous result otherwise (the correct result would be to return NaN, but checking to ensure continuity is not implemented)
+   * 
+   * @param func The Decimal => Decimal function to create an inverse function of.
+   * @param decreasing This parameter is false by default. If this parameter is true, the original function should be strictly decreasing instead of strictly increasing.
+   * @param iterations The amount of iterations that the inverse function runs before it gives up and returns whatever value it's found thus far. Default is 120, which should be enough to always be as precise as floating point allows.
+   * @param minX The original function is assumed to have this value as the lowest value in its domain. Is Decimal.dLayerMax.neg() by default, which means all negative finite values are allowed but infinity is not.
+   * @param maxX The original function is assumed to have this value as the highest value in its domain. Is Decimal.dLayerMax by default, which means all positive finite values are allowed but infinity is not.
+   * @param minY If the input to the inverse function is below this value, the inverse function assumes the input is not in the range and returns NaN. Is Decimal.dLayerMax.neg() by default, which means all negative finite values are allowed but infinity is not.
+   * @param maxY If the input to the inverse function is above this value, the inverse function assumes the input is not in the range and returns NaN. Is Decimal.dLayerMax by default, which means all positive finite values are allowed but infinity is not.
+   */
+  static increasingInverse(func, decreasing = false, iterations = 120, minX = Decimal.dLayerMax.neg(), maxX = Decimal.dLayerMax, minY = Decimal.dLayerMax.neg(), maxY = Decimal.dLayerMax) {
+    return function(value) {
+      value = new Decimal(value);
+      minX = new Decimal(minX);
+      maxX = new Decimal(maxX);
+      minY = new Decimal(minY);
+      maxY = new Decimal(maxY);
+      if (value.isNan() || maxX.lt(minX) || value.lt(minY) || value.gt(maxY)) return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+      let rangeApply = function(value2) {
+        return new Decimal(value2);
+      };
+      let currentCheck = true;
+      if (maxX.lt(0)) currentCheck = false;
+      else if (minX.gt(0)) currentCheck = true;
+      else {
+        let valCheck = func(Decimal.dZero);
+        if (valCheck.eq(value)) return FC_NN(0, 0, 0);
+        currentCheck = value.gt(valCheck);
+        if (decreasing) currentCheck = !currentCheck;
+      }
+      let positive = currentCheck;
+      let reciprocal;
+      if (currentCheck) {
+        if (maxX.lt(FIRST_NEG_LAYER)) currentCheck = true;
+        else if (minX.gt(FIRST_NEG_LAYER)) currentCheck = false;
+        else {
+          let valCheck = func(new Decimal(FIRST_NEG_LAYER));
+          currentCheck = value.lt(valCheck);
+          if (decreasing) currentCheck = !currentCheck;
+        }
+        if (currentCheck) {
+          reciprocal = true;
+          let limit = Decimal.pow(10, EXP_LIMIT).recip();
+          if (maxX.lt(limit)) currentCheck = false;
+          else if (minX.gt(limit)) currentCheck = true;
+          else {
+            let valCheck = func(new Decimal(limit));
+            currentCheck = value.gt(valCheck);
+            if (decreasing) currentCheck = !currentCheck;
+          }
+          if (currentCheck) rangeApply = function(value2) {
+            return Decimal.pow(10, value2).recip();
+          };
+          else {
+            let limit2 = Decimal.tetrate(10, EXP_LIMIT);
+            if (maxX.lt(limit2)) currentCheck = false;
+            else if (minX.gt(limit2)) currentCheck = true;
+            else {
+              let valCheck = func(new Decimal(limit2));
+              currentCheck = value.gt(valCheck);
+              if (decreasing) currentCheck = !currentCheck;
+            }
+            if (currentCheck) rangeApply = function(value2) {
+              return Decimal.tetrate(10, new Decimal(value2).toNumber()).recip();
+            };
+            else rangeApply = function(value2) {
+              return new Decimal(value2).gt(Math.log10(Number.MAX_VALUE)) ? Decimal.dZero : Decimal.tetrate(10, Decimal.pow(10, value2).toNumber()).recip();
+            };
+          }
+        } else {
+          reciprocal = false;
+          if (maxX.lt(EXP_LIMIT)) currentCheck = true;
+          else if (minX.gt(EXP_LIMIT)) currentCheck = false;
+          else {
+            let valCheck = func(new Decimal(EXP_LIMIT));
+            currentCheck = value.lt(valCheck);
+            if (decreasing) currentCheck = !currentCheck;
+          }
+          if (currentCheck) rangeApply = function(value2) {
+            return new Decimal(value2);
+          };
+          else {
+            let limit = Decimal.pow(10, EXP_LIMIT);
+            if (maxX.lt(limit)) currentCheck = true;
+            else if (minX.gt(limit)) currentCheck = false;
+            else {
+              let valCheck = func(new Decimal(limit));
+              currentCheck = value.lt(valCheck);
+              if (decreasing) currentCheck = !currentCheck;
+            }
+            if (currentCheck) rangeApply = function(value2) {
+              return Decimal.pow(10, value2);
+            };
+            else {
+              let limit2 = Decimal.tetrate(10, EXP_LIMIT);
+              if (maxX.lt(limit2)) currentCheck = true;
+              else if (minX.gt(limit2)) currentCheck = false;
+              else {
+                let valCheck = func(new Decimal(limit2));
+                currentCheck = value.lt(valCheck);
+                if (decreasing) currentCheck = !currentCheck;
+              }
+              if (currentCheck) rangeApply = function(value2) {
+                return Decimal.tetrate(10, new Decimal(value2).toNumber());
+              };
+              else rangeApply = function(value2) {
+                return new Decimal(value2).gt(Math.log10(Number.MAX_VALUE)) ? Decimal.dInf : Decimal.tetrate(10, Decimal.pow(10, value2).toNumber());
+              };
+            }
+          }
+        }
+      } else {
+        reciprocal = true;
+        if (maxX.lt(-FIRST_NEG_LAYER)) currentCheck = false;
+        else if (minX.gt(-FIRST_NEG_LAYER)) currentCheck = true;
+        else {
+          let valCheck = func(new Decimal(-FIRST_NEG_LAYER));
+          currentCheck = value.gt(valCheck);
+          if (decreasing) currentCheck = !currentCheck;
+        }
+        if (currentCheck) {
+          let limit = Decimal.pow(10, EXP_LIMIT).recip().neg();
+          if (maxX.lt(limit)) currentCheck = true;
+          else if (minX.gt(limit)) currentCheck = false;
+          else {
+            let valCheck = func(new Decimal(limit));
+            currentCheck = value.lt(valCheck);
+            if (decreasing) currentCheck = !currentCheck;
+          }
+          if (currentCheck) rangeApply = function(value2) {
+            return Decimal.pow(10, value2).recip().neg();
+          };
+          else {
+            let limit2 = Decimal.tetrate(10, EXP_LIMIT).neg();
+            if (maxX.lt(limit2)) currentCheck = true;
+            else if (minX.gt(limit2)) currentCheck = false;
+            else {
+              let valCheck = func(new Decimal(limit2));
+              currentCheck = value.lt(valCheck);
+              if (decreasing) currentCheck = !currentCheck;
+            }
+            if (currentCheck) rangeApply = function(value2) {
+              return Decimal.tetrate(10, new Decimal(value2).toNumber()).recip().neg();
+            };
+            else rangeApply = function(value2) {
+              return new Decimal(value2).gt(Math.log10(Number.MAX_VALUE)) ? Decimal.dZero : Decimal.tetrate(10, Decimal.pow(10, value2).toNumber()).recip().neg();
+            };
+          }
+        } else {
+          reciprocal = false;
+          if (maxX.lt(-EXP_LIMIT)) currentCheck = false;
+          else if (minX.gt(-EXP_LIMIT)) currentCheck = true;
+          else {
+            let valCheck = func(new Decimal(-EXP_LIMIT));
+            currentCheck = value.gt(valCheck);
+            if (decreasing) currentCheck = !currentCheck;
+          }
+          if (currentCheck) rangeApply = function(value2) {
+            return Decimal.neg(value2);
+          };
+          else {
+            let limit = Decimal.pow(10, EXP_LIMIT).neg();
+            if (maxX.lt(limit)) currentCheck = false;
+            else if (minX.gt(limit)) currentCheck = true;
+            else {
+              let valCheck = func(new Decimal(limit));
+              currentCheck = value.gt(valCheck);
+              if (decreasing) currentCheck = !currentCheck;
+            }
+            if (currentCheck) rangeApply = function(value2) {
+              return Decimal.pow(10, value2).neg();
+            };
+            else {
+              let limit2 = Decimal.tetrate(10, EXP_LIMIT).neg();
+              if (maxX.lt(limit2)) currentCheck = false;
+              else if (minX.gt(limit2)) currentCheck = true;
+              else {
+                let valCheck = func(new Decimal(limit2));
+                currentCheck = value.gt(valCheck);
+                if (decreasing) currentCheck = !currentCheck;
+              }
+              if (currentCheck) rangeApply = function(value2) {
+                return Decimal.tetrate(10, new Decimal(value2).toNumber()).neg();
+              };
+              else rangeApply = function(value2) {
+                return new Decimal(value2).gt(Math.log10(Number.MAX_VALUE)) ? Decimal.dNegInf : Decimal.tetrate(10, Decimal.pow(10, value2).toNumber()).neg();
+              };
+            }
+          }
+        }
+      }
+      let searchIncreasing = positive != reciprocal != decreasing;
+      let comparative = searchIncreasing ? function(a, b) {
+        return Decimal.gt(a, b);
+      } : function(a, b) {
+        return Decimal.lt(a, b);
+      };
+      let step_size = 1e-3;
+      let has_changed_directions_once = false;
+      let previously_rose = false;
+      let result = 1;
+      let appliedResult = Decimal.dOne;
+      let oldresult = 0;
+      let critical = false;
+      for (var i = 1; i < iterations; ++i) {
+        critical = false;
+        oldresult = result;
+        appliedResult = rangeApply(result);
+        if (appliedResult.gt(maxX)) {
+          appliedResult = maxX;
+          critical = true;
+        }
+        if (appliedResult.lt(minX)) {
+          appliedResult = minX;
+          critical = true;
+        }
+        let new_decimal = func(appliedResult);
+        if (new_decimal.eq(value) && !critical) {
+          break;
+        }
+        let currently_rose = comparative(new_decimal, value);
+        if (i > 1) {
+          if (previously_rose != currently_rose) {
+            has_changed_directions_once = true;
+          }
+        }
+        previously_rose = currently_rose;
+        if (has_changed_directions_once) {
+          step_size /= 2;
+        } else {
+          step_size *= 2;
+        }
+        if (currently_rose != searchIncreasing && appliedResult.eq(maxX) || currently_rose == searchIncreasing && appliedResult.eq(minX)) return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        step_size = Math.abs(step_size) * (currently_rose ? -1 : 1);
+        result += step_size;
+        if (step_size === 0 || oldresult == result) {
+          break;
+        }
+      }
+      return rangeApply(result);
+    };
+  }
+  /**
    * Pentation/pentate: The result of tetrating 'height' times in a row. An absurdly strong operator - Decimal.pentate(2, 4.28) and Decimal.pentate(10, 2.37) are already too huge for break_eternity.js!
    * https://en.wikipedia.org/wiki/Pentation
-   *
+   * 
    * Tetration for non-integer heights does not have a single agreed-upon definition,
    * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
    * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
    * Analytic approximation is not currently supported for bases > 10.
-   *
+   * 
    * For non-whole pentation heights, the linear approximation of pentation is always used, as there is no defined analytic approximation of pentation.
    */
   pentate(height = 2, payload = FC_NN(1, 0, 1), linear = false) {
     payload = new Decimal(payload);
     const oldheight = height;
-    height = Math.trunc(height);
+    height = Math.floor(height);
     const fracheight = oldheight - height;
+    let prevpayload = Decimal.dZero;
+    let prevtwopayload = Decimal.dZero;
     if (fracheight !== 0) {
       if (payload.eq(Decimal.dOne)) {
         ++height;
         payload = Decimal.fromNumber(fracheight);
       } else {
-        if (this.eq(10)) {
-          payload = payload.layeradd10(fracheight, linear);
-        } else {
-          payload = payload.layeradd(fracheight, this, linear);
+        return this.pentate(payload.penta_log(this, void 0, linear).plus(oldheight).toNumber(), 1, linear);
+      }
+    }
+    if (height > 0) {
+      for (let i = 0; i < height; ) {
+        prevtwopayload = prevpayload;
+        prevpayload = payload;
+        payload = this.tetrate(payload.toNumber(), Decimal.dOne, linear);
+        ++i;
+        if (this.gt(0) && this.lte(1) && payload.gt(0) && payload.lte(1)) return this.tetrate(height - i, payload, linear);
+        if (payload.eq(prevpayload) || payload.eq(prevtwopayload) && i % 2 == height % 2) return payload.normalize();
+        if (!isFinite(payload.layer) || !isFinite(payload.mag)) {
+          return payload.normalize();
+        }
+        if (i > 1e4) {
+          return payload;
+        }
+      }
+    } else {
+      for (let i = 0; i < -height; ++i) {
+        prevpayload = payload;
+        payload = payload.slog(this, void 0, linear);
+        if (payload.eq(prevpayload)) return payload.normalize();
+        if (!isFinite(payload.layer) || !isFinite(payload.mag)) {
+          return payload.normalize();
+        }
+        if (i > 100) {
+          return payload;
         }
       }
     }
-    for (let i = 0; i < height; ++i) {
-      payload = this.tetrate(payload.toNumber(), Decimal.dOne, linear);
-      if (!isFinite(payload.layer) || !isFinite(payload.mag)) {
-        return payload.normalize();
+    return payload;
+  }
+  /**
+   * Penta-logarithm, one of pentation's inverses, tells you what height you'd have to pentate 'base' to to get 'this'.
+   * 
+   * Grows incredibly slowly. For bases above 2, you won't be seeing a result greater than 5 out of this function.
+   * 
+   * Accepts a number of iterations (default is 100), and use binary search to, after making an initial guess, hone in on the true value, assuming pentation as the ground truth.
+   * 
+   * Tetration for non-integer heights does not have a single agreed-upon definition,
+   * so this library uses an analytic approximation for bases <= 10, but it reverts to the linear approximation for bases > 10.
+   * If you want to use the linear approximation even for bases <= 10, set the linear parameter to true.
+   * Analytic approximation is not currently supported for bases > 10.
+   * 
+   * For non-whole pentation heights, the linear approximation of pentation is always used, as there is no defined analytic approximation of pentation.
+   */
+  // INCREDIBLY slow on numbers <= -1. Probably don't call it on those.
+  // If you're here looking to port penta_log to OmegaNum, ExpantaNum, or something similar, then know that this implementation isn't sufficient for that purpose. The pentation functions here run loops without shortcuts, because in break_eternity the numbers don't get large enough to need those shortcuts.
+  penta_log(base = 10, iterations = 100, linear = false) {
+    base = new Decimal(base);
+    if (base.lte(1)) return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    if (this.eq(1)) return FC_NN(0, 0, 0);
+    if (this.eq(Decimal.dInf)) return FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    let value = new Decimal(1);
+    let result = 0;
+    let step_size = 1;
+    if (this.lt(-1)) {
+      if (this.lte(-2)) return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+      let limitcheck = base.tetrate(this.toNumber(), 1, linear);
+      if (this.eq(limitcheck)) return FC_NN(-1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+      if (this.gt(limitcheck)) return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    }
+    if (this.gt(1)) {
+      while (value.lt(this)) {
+        result++;
+        value = Decimal.tetrate(base, value.toNumber(), 1, linear);
+        if (result > 1e3) {
+          return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        }
       }
-      if (i > 10) {
-        return payload;
+    } else {
+      while (value.gt(this)) {
+        result--;
+        value = Decimal.slog(value, base, linear);
+        if (result > 100) {
+          return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+        }
       }
     }
-    return payload;
+    for (var i = 1; i < iterations; ++i) {
+      let new_decimal = base.pentate(result, Decimal.dOne, linear);
+      if (new_decimal.eq(this)) break;
+      let currently_rose = new_decimal.gt(this);
+      step_size = Math.abs(step_size) * (currently_rose ? -1 : 1);
+      result += step_size;
+      step_size /= 2;
+      if (step_size === 0) {
+        break;
+      }
+    }
+    return Decimal.fromNumber(result);
+  }
+  /**
+   * Penta-root, one of pentation's inverses - what number, pentated to height 'degree', equals 'this'?
+   * 
+   * Only works with the linear approximation of tetration, as starting with analytic and then switching to linear would result in inconsistent behavior for super-roots.
+   */
+  linear_penta_root(degree) {
+    if (degree == 1) {
+      return this;
+    }
+    if (degree < 0) {
+      return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    }
+    if (this.eq(Decimal.dInf)) {
+      return FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    }
+    if (!this.isFinite()) {
+      return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    }
+    if (degree > 0 && degree < 1) {
+      return this.root(degree);
+    }
+    if (this.eq(1)) {
+      return FC_NN(1, 0, 1);
+    }
+    if (this.lt(0)) {
+      return FC_NN(Number.NaN, Number.NaN, Number.NaN);
+    }
+    if (this.lt(1)) {
+      return this.linear_sroot(degree);
+    }
+    return Decimal.increasingInverse(function(value) {
+      return Decimal.pentate(value, degree, 1, true);
+    })(this);
   }
   // trig functions!
   /**
@@ -4941,16 +5351,64 @@ var Decimal = class {
     return new Decimal(Math.random()).lt(rng);
   }
 };
+/**
+ * Represents the number 0.
+ */
 Decimal.dZero = FC_NN(0, 0, 0);
+/**
+ * Represents the number 1.
+ */
 Decimal.dOne = FC_NN(1, 0, 1);
+/**
+ * Represents the number -1.
+ */
 Decimal.dNegOne = FC_NN(-1, 0, 1);
+/**
+ * Represents the number 2.
+ */
 Decimal.dTwo = FC_NN(1, 0, 2);
+/**
+ * Represents the number 10.
+ */
 Decimal.dTen = FC_NN(1, 0, 10);
+/**
+ * Represents a NaN (Not A Number) value.
+ */
 Decimal.dNaN = FC_NN(Number.NaN, Number.NaN, Number.NaN);
+/**
+ * Represents positive infinity.
+ */
 Decimal.dInf = FC_NN(1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+/**
+ * Represents negative infinity.
+ */
 Decimal.dNegInf = FC_NN(-1, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+/**
+ * Represents the largest value a JavaScript number can have, which is approximately 1.79 * 10^308.
+ */
 Decimal.dNumberMax = FC(1, 0, Number.MAX_VALUE);
+/**
+ * Represents the smallest value a JavaScript number can have, which is approximately 5 * 10^-324.
+ */
 Decimal.dNumberMin = FC(1, 0, Number.MIN_VALUE);
+/**
+ * Represents the largest Decimal where adding 1 to the layer is a safe operation
+ * (Decimals larger than this are too big for pow/exp/log to affect, but tetrate/iteratedlog/slog can still affect them).
+ * Approximately 10^^(9.007 * 10^15).
+ */
+Decimal.dLayerSafeMax = FC(1, Number.MAX_SAFE_INTEGER, EXP_LIMIT - 1);
+/**
+ * Represents the smallest Decimal where adding 1 to the layer is a safe operation. Approximately 1 / (10^^(9.007 * 10^15)).
+ */
+Decimal.dLayerSafeMin = FC(1, Number.MAX_SAFE_INTEGER, -(EXP_LIMIT - 1));
+/**
+ * Represents the largest finite value a Decimal can represent. Approximately 10^^(1.79 * 10^308).
+ */
+Decimal.dLayerMax = FC(1, Number.MAX_VALUE, EXP_LIMIT - 1);
+/**
+ * Represents the smallest non-zero value a Decimal can represent. Approximately 1 / (10^^(1.79 * 10^308)).
+ */
+Decimal.dLayerMin = FC(1, Number.MAX_VALUE, -(EXP_LIMIT - 1));
 Decimal.fromStringCache = new LRUCache(DEFAULT_FROM_STRING_CACHE_SIZE);
 __decorateClass([
   (0, import_class_transformer.Expose)()

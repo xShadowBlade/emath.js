@@ -57,6 +57,7 @@ interface EqualsToleranceConfig {
 declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EqualsToleranceConfig>): boolean;
 /**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
+ * @deprecated Use {@link Decimal.increasingInverse} instead.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
  * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
