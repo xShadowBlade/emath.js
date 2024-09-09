@@ -4,11 +4,12 @@
  */
 import "reflect-metadata";
 import type { Game } from "../Game";
+import { eMathMetadata } from "../../metadata";
 import type { UnknownObject, Pointer } from "../../common/types";
 /**
  * Interface for the metadata of a save file.
  */
-interface SaveMetadata {
+type SaveMetadata = typeof eMathMetadata & {
     /** The hash of the game data (Default hash is MD5) Used to check for tampering. */
     hash: string;
     /** Metadata about the game. */
@@ -20,12 +21,7 @@ interface SaveMetadata {
         /** The version of the game. */
         version: string;
     };
-    /** Metadata about the eMath library. */
-    emath: {
-        /** The version of the eMath library. */
-        version: string;
-    };
-}
+};
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  *
@@ -155,6 +151,7 @@ declare class DataManager {
     /**
      * Resets the game data to its initial state and saves it.
      * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
+     * (Reloading may help with some issues with saving data)
      */
     resetData(reload?: boolean): void;
     /**

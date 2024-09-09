@@ -68,6 +68,7 @@ __export(src_exports, {
   calculateSumLoop: () => calculateSumLoop,
   calculateUpgrade: () => calculateUpgrade,
   decimalToJSONString: () => decimalToJSONString,
+  eMathMetadata: () => eMathMetadata,
   equalsTolerance: () => equalsTolerance,
   formats: () => formats,
   inverseFunctionApprox: () => inverseFunctionApprox,
@@ -76,6 +77,32 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 var import_reflect_metadata5 = require("reflect-metadata");
+
+// src/metadata.ts
+var eMathMetadata = {
+  /**
+   * The version of the library
+   * @example "9.5.0"
+   */
+  version: (() => {
+    try {
+      return "9.5.0";
+    } catch (error) {
+      return "9.5.0";
+    }
+  })(),
+  /**
+   * The data about the Break Eternity library
+   */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  "break_eternity.js": {
+    /**
+     * The version of the Break Eternity library
+     * @example "2.1.0"
+     */
+    version: "2.1.0"
+  }
+};
 
 // src/E/lru-cache.ts
 var LRUCache = class {

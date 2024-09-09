@@ -7559,7 +7559,148 @@ var EventManager = class _EventManager {
 var import_reflect_metadata5 = require("reflect-metadata");
 var import_class_transformer6 = require("class-transformer");
 var import_lz_string = __toESM(require_lz_string());
+
+// src/metadata.ts
+var eMathMetadata = {
+  /**
+   * The version of the library
+   * @example "9.5.0"
+   */
+  version: (() => {
+    try {
+      return "9.5.0";
+    } catch (error) {
+      return "9.5.0";
+    }
+  })(),
+  /**
+   * The data about the Break Eternity library
+   */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  "break_eternity.js": {
+    /**
+     * The version of the Break Eternity library
+     * @example "2.1.0"
+     */
+    version: "2.1.0"
+  }
+};
+
+// src/game/managers/DataManager.ts
 var import_md5 = __toESM(require_md5());
+function isPlainObject(obj) {
+  return typeof obj === "object" && obj?.constructor === Object;
+}
+var objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+function deepMerge(sourcePlain, source, target) {
+  if (!sourcePlain || !source || !target) {
+    console.warn(
+      "eMath.js: dataManager.deepMerge(): Missing arguments:",
+      sourcePlain,
+      source,
+      target
+    );
+    return target ?? {};
+  }
+  const out = target;
+  for (const key in sourcePlain) {
+    if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
+      out[key] = sourcePlain[key];
+    }
+    if (source[key] instanceof Currency) {
+      const sourceCurrency = sourcePlain[key];
+      const targetCurrency = target[key];
+      if (Array.isArray(targetCurrency.upgrades)) {
+        const upgrades = targetCurrency.upgrades;
+        targetCurrency.upgrades = {};
+        for (const upgrade of upgrades) {
+          targetCurrency.upgrades[upgrade.id] = upgrade;
+        }
+      }
+      targetCurrency.upgrades = {
+        ...sourceCurrency.upgrades,
+        ...targetCurrency.upgrades
+      };
+      out[key] = targetCurrency;
+      targetCurrency.items = {
+        ...sourceCurrency.items,
+        ...targetCurrency.items
+      };
+    } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
+      out[key] = deepMerge(
+        sourcePlain[key],
+        source[key],
+        target[key]
+      );
+    }
+  }
+  return out;
+}
+var upgradeDataProperties = Object.getOwnPropertyNames(
+  new UpgradeData({ id: "", level: Decimal.dZero })
+);
+var itemDataProperties = Object.getOwnPropertyNames(
+  new ItemData({ id: "", amount: Decimal.dZero })
+);
+function convertTemplateClass(templateClassToConvert, plain) {
+  const out = (0, import_class_transformer6.plainToInstance)(templateClassToConvert, plain);
+  if (out instanceof Currency) {
+    for (const upgradeName in out.upgrades) {
+      const upgrade = out.upgrades[upgradeName];
+      if (!upgrade || !upgradeDataProperties.every(
+        (prop) => Object.getOwnPropertyNames(upgrade).includes(prop)
+      )) {
+        delete out.upgrades[upgradeName];
+        continue;
+      }
+      out.upgrades[upgradeName] = (0, import_class_transformer6.plainToInstance)(UpgradeData, upgrade);
+    }
+    for (const itemName in out.items) {
+      const item = out.items[itemName];
+      if (!item || !itemDataProperties.every(
+        (prop) => Object.getOwnPropertyNames(item).includes(prop)
+      )) {
+        delete out.items[itemName];
+        continue;
+      }
+      out.items[itemName] = (0, import_class_transformer6.plainToInstance)(ItemData, item);
+    }
+  }
+  if (!out) {
+    throw new Error(
+      `Failed to convert ${templateClassToConvert.name} to class instance.`
+    );
+  }
+  return out;
+}
+function plainToInstanceRecursive(normal, plain) {
+  if (!normal || !plain) {
+    throw new Error(
+      "dataManager.plainToInstanceRecursive(): Missing arguments."
+    );
+  }
+  const out = plain;
+  for (const key in normal) {
+    if (plain[key] === void 0) {
+      console.warn(`eMath.js: Missing property "${key}" in loaded data.`);
+      continue;
+    }
+    if (!isPlainObject(plain[key])) continue;
+    const normalDataClass = normal[key].constructor;
+    if (normalDataClass === Object) {
+      out[key] = plainToInstanceRecursive(
+        normal[key],
+        plain[key]
+      );
+      continue;
+    }
+    out[key] = convertTemplateClass(
+      normalDataClass,
+      plain[key]
+    );
+  }
+  return out;
+}
 var DataManager = class {
   /**
    * Creates a new instance of the game class.
@@ -7700,12 +7841,6 @@ var DataManager = class {
     const hasedData = (0, import_md5.default)(
       `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`
     );
-    let version;
-    try {
-      version = "9.5.0";
-    } catch (error) {
-      version = "9.3.0";
-    }
     const saveMetadata = {
       hash: hasedData,
       game: {
@@ -7713,9 +7848,7 @@ var DataManager = class {
         id: this.gameRef.config.name.id,
         version: this.gameRef.config.name.version
       },
-      emath: {
-        version
-      }
+      ...eMathMetadata
     };
     return [saveMetadata, gameDataString];
   }
@@ -7734,16 +7867,16 @@ var DataManager = class {
    * @returns The decompiled object, or null if the data is empty or invalid.
    */
   decompileData(data) {
-    if (!data && this.localStorage) {
+    if (!data) {
+      if (!this.localStorage) {
+        console.warn(
+          "eMath.js: Local storage is not supported. Methods that rely on local storage will not work: decompileData() requires the data to be passed as an argument."
+        );
+        return null;
+      }
       data = this.localStorage.getItem(
         `${this.gameRef.config.name.id}-data`
       );
-    }
-    if (!data && !this.localStorage) {
-      console.warn(
-        "eMath.js: Local storage is not supported. Methods that rely on local storage will not work: decompileData() requires the data to be passed as an argument."
-      );
-      return null;
     }
     if (!data) return null;
     let parsedData;
@@ -7783,6 +7916,7 @@ var DataManager = class {
   /**
    * Resets the game data to its initial state and saves it.
    * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
+   * (Reloading may help with some issues with saving data)
    */
   resetData(reload = false) {
     if (!this.normalData) {
@@ -7820,6 +7954,12 @@ var DataManager = class {
    * If you want to implement a custom data export, use {@link compileData} instead.
    */
   exportData() {
+    if (typeof document === "undefined") {
+      console.warn(
+        "eMath.js: exportData(): Document is not defined. You can use compileData() instead to implement a custom save system."
+      );
+      return;
+    }
     const content = this.compileData();
     if (prompt("Download save data?:", content) != null) {
       const blob = new Blob([content], { type: "text/plain" });
@@ -7847,133 +7987,8 @@ var DataManager = class {
     }
     if (!dataToParse) return null;
     const [, loadedData] = dataToParse;
-    function isPlainObject(obj) {
-      return typeof obj === "object" && obj?.constructor === Object;
-    }
-    const objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-    function deepMerge(sourcePlain, source, target) {
-      if (!sourcePlain || !source || !target) {
-        console.warn(
-          "eMath.js: dataManager.deepMerge(): Missing arguments:",
-          sourcePlain,
-          source,
-          target
-        );
-        return target ?? {};
-      }
-      const out = target;
-      for (const key in sourcePlain) {
-        if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
-          out[key] = sourcePlain[key];
-        }
-        if (source[key] instanceof Currency) {
-          const sourceCurrency = sourcePlain[key];
-          const targetCurrency = target[key];
-          if (Array.isArray(targetCurrency.upgrades)) {
-            const upgrades = targetCurrency.upgrades;
-            targetCurrency.upgrades = {};
-            for (const upgrade of upgrades) {
-              targetCurrency.upgrades[upgrade.id] = upgrade;
-            }
-          }
-          targetCurrency.upgrades = {
-            ...sourceCurrency.upgrades,
-            ...targetCurrency.upgrades
-          };
-          out[key] = targetCurrency;
-          targetCurrency.items = {
-            ...sourceCurrency.items,
-            ...targetCurrency.items
-          };
-        } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
-          out[key] = deepMerge(
-            sourcePlain[key],
-            source[key],
-            target[key]
-          );
-        }
-      }
-      return out;
-    }
-    let loadedDataProcessed = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
-    const upgradeDataProperties = Object.getOwnPropertyNames(
-      new UpgradeData({ id: "", level: Decimal.dZero })
-    );
-    const itemDataProperties = Object.getOwnPropertyNames(
-      new ItemData({ id: "", amount: Decimal.dZero })
-    );
-    function convertTemplateClass(templateClassToConvert, plain) {
-      const out = (0, import_class_transformer6.plainToInstance)(
-        templateClassToConvert,
-        plain
-      );
-      if (out instanceof Currency) {
-        for (const upgradeName in out.upgrades) {
-          const upgrade = out.upgrades[upgradeName];
-          if (!upgrade || !upgradeDataProperties.every(
-            (prop) => Object.getOwnPropertyNames(upgrade).includes(prop)
-          )) {
-            delete out.upgrades[upgradeName];
-            continue;
-          }
-          out.upgrades[upgradeName] = (0, import_class_transformer6.plainToInstance)(
-            UpgradeData,
-            upgrade
-          );
-        }
-        for (const itemName in out.items) {
-          const item = out.items[itemName];
-          if (!item || !itemDataProperties.every(
-            (prop) => Object.getOwnPropertyNames(item).includes(prop)
-          )) {
-            delete out.items[itemName];
-            continue;
-          }
-          out.items[itemName] = (0, import_class_transformer6.plainToInstance)(ItemData, item);
-        }
-      }
-      if (!out) {
-        throw new Error(
-          `Failed to convert ${templateClassToConvert.name} to class instance.`
-        );
-      }
-      return out;
-    }
-    function plainToInstanceRecursive(normal, plain) {
-      if (!normal || !plain) {
-        throw new Error(
-          "dataManager.plainToInstanceRecursive(): Missing arguments."
-        );
-      }
-      const out = plain;
-      for (const key in normal) {
-        if (plain[key] === void 0) {
-          console.warn(
-            `eMath.js: Missing property "${key}" in loaded data.`
-          );
-          continue;
-        }
-        if (!isPlainObject(plain[key])) continue;
-        const normalDataClass = normal[key].constructor;
-        if (normalDataClass === Object) {
-          out[key] = plainToInstanceRecursive(
-            normal[key],
-            plain[key]
-          );
-          continue;
-        }
-        out[key] = convertTemplateClass(
-          normalDataClass,
-          plain[key]
-        );
-      }
-      return out;
-    }
-    loadedDataProcessed = plainToInstanceRecursive(
-      this.normalData,
-      loadedDataProcessed
-    );
-    return loadedDataProcessed;
+    const loadedDataMerged = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
+    return plainToInstanceRecursive(this.normalData, loadedDataMerged);
   }
   /**
    * Loads game data and processes it.

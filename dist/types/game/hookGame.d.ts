@@ -28,6 +28,12 @@ declare const eMath: {
     EventTypes: typeof eMathGame.EventTypes;
     DataManager: typeof eMathGame.DataManager;
     ConfigManager: typeof eMathGame.ConfigManager;
+    eMathMetadata: {
+        version: string;
+        "break_eternity.js": {
+            version: string;
+        };
+    };
     LRUCache: typeof eMathMain.LRUCache;
     ListNode: typeof eMathMain.ListNode;
     formats: {
