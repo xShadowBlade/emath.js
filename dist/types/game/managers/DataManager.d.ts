@@ -156,7 +156,7 @@ declare class DataManager {
     resetData(reload?: boolean): void;
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
-     * If you dont want to save to local storage, use {@link compileData} instead.
+     * If you don't want to save to local storage, use {@link compileData} instead.
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
     saveData(dataToSave?: string): void;

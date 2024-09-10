@@ -3,7 +3,6 @@
  */
 
 import { ConfigManager } from "./ConfigManager";
-// import type { Application } from "pixi.js";
 
 /**
  * The key binding interface.
@@ -65,20 +64,16 @@ interface KeyManagerConfig {
      * Defaults to `30`.
      */
     fps?: number;
-
-    /** The PIXI application to use for the interval, if you want to use it instead of an interval. */
-    // pixiApp?: Application;
 }
 
 const keyManagerDefaultConfig: KeyManagerConfig = {
     autoAddInterval: true,
     fps: 30,
-    // pixiApp: undefined,
 };
 
 /**
  * An array of possible keys.
- * @deprecated Incomplete and not used (also afaik arrow keys dont register)
+ * @deprecated Incomplete and not used (also afaik arrow keys don't register)
  */
 const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 "
     .split("")

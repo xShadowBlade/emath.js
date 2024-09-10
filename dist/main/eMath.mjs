@@ -5980,7 +5980,7 @@ var CurrencyStatic = class {
     this.pointer.value = value;
   }
   /**
-   * Constructs a new currnecy
+   * Constructs a new currency
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param upgrades - An array of upgrade objects.
    * @param items - An array of item objects.
@@ -6049,7 +6049,7 @@ var CurrencyStatic = class {
   }
   /**
    * The new currency value after applying the boost.
-   * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+   * @param dt - Delta time / multiplier in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
    * @returns What was gained, NOT the new value.
    * @example
    * // Gain a random number between 1 and 10, and return the amount gained.
@@ -6403,7 +6403,7 @@ import { Type as Type4 } from "class-transformer";
 var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
-   * @param initial - The inital value of the attribute.
+   * @param initial - The initial value of the attribute.
    */
   constructor(initial = 0) {
     this.value = new Decimal(initial);
@@ -6875,7 +6875,7 @@ var Grid = class _Grid {
     this.cells[y][x] = value;
   }
   /**
-   * Gets an array containing all cells orthagonally adjacent to a specific cell.
+   * Gets an array containing all cells orthogonally adjacent to a specific cell.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    * @param distance - The distance to check. Defaults to `1`.

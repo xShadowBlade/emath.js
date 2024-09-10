@@ -19,7 +19,7 @@ class Attribute {
 
     /**
      * Constructs a static attribute with an initial effect.
-     * @param initial - The inital value of the attribute.
+     * @param initial - The initial value of the attribute.
      */
     constructor(initial: DecimalSource = 0) {
         this.value = new Decimal(initial);

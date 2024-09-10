@@ -55,7 +55,7 @@ interface BoostsObjectInit {
 }
 
 /**
- * Represents an indiviual boost object.
+ * Represents an individual boost object.
  */
 class BoostObject implements BoostsObjectInit {
     // Assign the properties from the BoostsObjectInit interface

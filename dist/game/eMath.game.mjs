@@ -6650,7 +6650,7 @@ var CurrencyStatic = class {
     this.pointer.value = value;
   }
   /**
-   * Constructs a new currnecy
+   * Constructs a new currency
    * @param pointer - A function or reference that returns the pointer of the data / frontend.
    * @param upgrades - An array of upgrade objects.
    * @param items - An array of item objects.
@@ -6719,7 +6719,7 @@ var CurrencyStatic = class {
   }
   /**
    * The new currency value after applying the boost.
-   * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+   * @param dt - Delta time / multiplier in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
    * @returns What was gained, NOT the new value.
    * @example
    * // Gain a random number between 1 and 10, and return the amount gained.
@@ -7073,7 +7073,7 @@ import { Type as Type4 } from "class-transformer";
 var Attribute = class {
   /**
    * Constructs a static attribute with an initial effect.
-   * @param initial - The inital value of the attribute.
+   * @param initial - The initial value of the attribute.
    */
   constructor(initial = 0) {
     this.value = new Decimal(initial);
@@ -7186,7 +7186,6 @@ var ConfigManager = class {
 var keyManagerDefaultConfig = {
   autoAddInterval: true,
   fps: 30
-  // pixiApp: undefined,
 };
 var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 var KeyManager = class _KeyManager {
@@ -7804,11 +7803,11 @@ var DataManager = class {
   compileDataRaw(data = this.data) {
     this.gameRef.eventManager.dispatch("beforeCompileData");
     const gameDataString = instanceToPlain(data);
-    const hasedData = (0, import_md5.default)(
+    const hashedData = (0, import_md5.default)(
       `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`
     );
     const saveMetadata = {
-      hash: hasedData,
+      hash: hashedData,
       game: {
         title: this.gameRef.config.name.title,
         id: this.gameRef.config.name.id,
@@ -7896,7 +7895,7 @@ var DataManager = class {
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
-   * If you dont want to save to local storage, use {@link compileData} instead.
+   * If you don't want to save to local storage, use {@link compileData} instead.
    * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
    */
   saveData(dataToSave = this.compileData()) {

@@ -3,14 +3,12 @@
  */
 import type { Decimal } from "../../E/e";
 import { ConfigManager } from "./ConfigManager";
-// import type { Application } from "pixi.js";
 import type { DataManager } from "./DataManager";
 
 /**
  * The type of event
  * @deprecated The use of this enum is discouraged.
  */
-// eslint-disable-next-line no-shadow
 enum EventTypes {
     interval = "interval",
     timeout = "timeout",
@@ -307,7 +305,6 @@ class EventManager<Events extends string = string> {
                 case EventTypes.timeout:
                     {
                         // ! might cause issues
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                         (event as TimeoutEvent).timeCreated -= dt;
                     }
                     break;
@@ -356,7 +353,6 @@ class EventManager<Events extends string = string> {
                             intervalLast: Date.now(),
                         };
                         return event;
-                        // eslint-disable-next-line no-unreachable
                     }
                     break;
                 case "timeout":

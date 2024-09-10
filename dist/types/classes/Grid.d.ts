@@ -258,7 +258,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
     /** @deprecated Use {@link setCell} instead. */
     set: (x: number, y: number, value: GridCell<PropertiesType>) => void;
     /**
-     * Gets an array containing all cells orthagonally adjacent to a specific cell.
+     * Gets an array containing all cells orthogonally adjacent to a specific cell.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param distance - The distance to check. Defaults to `1`.

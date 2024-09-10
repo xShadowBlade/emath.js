@@ -35,9 +35,9 @@ declare class Currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template UpgradeInitArray - The inital upgrades
+ * @template UpgradeInitArray - The initial upgrades
  * @template UpgradeIds - An string union that represents the names of the upgrades.
- * @template ItemInitArray - The inital items
+ * @template ItemInitArray - The initial items
  * @template ItemIds - An string union that represents the names of the items.
  * @example
  * const currency = new CurrencyStatic();
@@ -67,7 +67,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
     get value(): Decimal;
     set value(value: Decimal);
     /**
-     * Constructs a new currnecy
+     * Constructs a new currency
      * @param pointer - A function or reference that returns the pointer of the data / frontend.
      * @param upgrades - An array of upgrade objects.
      * @param items - An array of item objects.
@@ -106,7 +106,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
     reset(reset?: Partial<CurrencyStaticResetOptions>): void;
     /**
      * The new currency value after applying the boost.
-     * @param dt - Deltatime / multipler in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+     * @param dt - Delta time / multiplier in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
      * @returns What was gained, NOT the new value.
      * @example
      * // Gain a random number between 1 and 10, and return the amount gained.

@@ -47,7 +47,7 @@ interface BoostsObjectInit {
     order?: number;
 }
 /**
- * Represents an indiviual boost object.
+ * Represents an individual boost object.
  */
 declare class BoostObject implements BoostsObjectInit {
     id: string;

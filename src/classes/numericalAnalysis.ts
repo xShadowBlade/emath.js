@@ -6,13 +6,13 @@ import { Decimal } from "../E/e";
 
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
- * Can be overriden by passing a custom amount of iterations.
+ * Can be overridden by passing a custom amount of iterations.
  *
  * Notes:
  * - The higher the amount of iterations, the more accurate the result will be, but the longer it will take to calculate.
  * - Time complexity is O(n) where n is the amount of iterations, scaling with the complexity of the function.
  *
- * Behold the extermely inaccurate benchmarking results:
+ * Behold the extremely inaccurate benchmarking results:
  * - At 10 or less iterations, the time it takes to calculate is almost instant.
  * - At 25 iterations, the time it takes to calculate is ~1 ms and is accurate to a margin of error of ~1e-3.
  * - At 35 iterations, the time it takes to calculate is ~2 ms and is accurate to a margin of error of ~1e-5.
@@ -26,7 +26,7 @@ const DEFAULT_ITERATIONS = 30;
 
 /**
  * The default tolerance to compare the values with.
- * Can be overriden by passing a custom tolerance.
+ * Can be overridden by passing a custom tolerance.
  *
  * Used by:
  * - {@link equalsTolerance}
@@ -284,7 +284,7 @@ function calculateSumLoop(
 
         sum = sum.add(value);
 
-        // If the difference/quotent between the inital sum and the new sum is less than epsilon, break
+        // If the difference/quotient between the initial sum and the new sum is less than epsilon, break
         const diff = initSum.div(sum);
         if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
     }
@@ -334,7 +334,7 @@ function calculateSumApprox(
         //     i,
         // });
 
-        // Stop the loop if the sums dont change much
+        // Stop the loop if the sums don't change much
         if (
             equalsTolerance(oldSum, sum, tolerance, {
                 verbose: false,
@@ -404,7 +404,7 @@ function calculateSumApprox(
 //             i,
 //         });
 
-//         // Stop the loop if the sums dont change much
+//         // Stop the loop if the sums don't change much
 //         if (equalsTolerance(oldSum, sum, tolerance, { verbose: false, mode: "geometric" })) {
 //             console.log("sums close", { oldSum, sum, mid, i });
 //             break;

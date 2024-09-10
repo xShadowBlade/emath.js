@@ -442,13 +442,13 @@ class DataManager {
         const gameDataString = instanceToPlain(data);
 
         // Create a hash of the data
-        const hasedData = md5(
+        const hashedData = md5(
             `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`,
         );
 
         // Create the metadata for the save file
         const saveMetadata: SaveMetadata = {
-            hash: hasedData,
+            hash: hashedData,
             game: {
                 title: this.gameRef.config.name.title,
                 id: this.gameRef.config.name.id,
@@ -572,7 +572,7 @@ class DataManager {
 
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
-     * If you dont want to save to local storage, use {@link compileData} instead.
+     * If you don't want to save to local storage, use {@link compileData} instead.
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
      */
     public saveData(dataToSave = this.compileData()): void {

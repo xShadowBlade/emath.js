@@ -56,7 +56,7 @@ interface KeyManagerConfig {
 }
 /**
  * An array of possible keys.
- * @deprecated Incomplete and not used (also afaik arrow keys dont register)
+ * @deprecated Incomplete and not used (also afaik arrow keys don't register)
  */
 declare const keys: string[];
 /**
