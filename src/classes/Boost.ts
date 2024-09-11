@@ -114,15 +114,8 @@ class Boost {
      * @param baseEffect - The base effect value to which boosts are applied.
      * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(
-        baseEffect: DecimalSource = 1,
-        boosts?: BoostsObjectInit | BoostsObjectInit[],
-    ) {
-        boosts = boosts
-            ? Array.isArray(boosts)
-                ? boosts
-                : [boosts]
-            : undefined;
+    constructor(baseEffect: DecimalSource = 1, boosts?: BoostsObjectInit | BoostsObjectInit[]) {
+        boosts = boosts ? (Array.isArray(boosts) ? boosts : [boosts]) : undefined;
         this.baseEffect = new Decimal(baseEffect);
         this.boostArray = [];
         if (boosts) {
@@ -148,14 +141,8 @@ class Boost {
      * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
      */
     public getBoosts(id: string | RegExp): BoostObject[];
-    public getBoosts(
-        id: string | RegExp,
-        index: boolean,
-    ): [BoostObject[], number[]];
-    public getBoosts(
-        id: string | RegExp,
-        index?: boolean,
-    ): BoostObject[] | [BoostObject[], number[]] {
+    public getBoosts(id: string | RegExp, index: boolean): [BoostObject[], number[]];
+    public getBoosts(id: string | RegExp, index?: boolean): BoostObject[] | [BoostObject[], number[]] {
         const boostList: BoostObject[] = [];
         const indexList: number[] = [];
         for (let i = 0; i < this.boostArray.length; i++) {
@@ -250,9 +237,7 @@ class Boost {
             const bCheck = this.getBoosts(id, true);
 
             if (!bCheck[0][0]) {
-                this.boostArray.push(
-                    new BoostObject({ id, name, description, value, order }),
-                );
+                this.boostArray.push(new BoostObject({ id, name, description, value, order }));
             } else {
                 this.boostArray[bCheck[1][0]] = new BoostObject({
                     id,
@@ -306,9 +291,7 @@ class Boost {
         let boosts = this.boostArray;
 
         // Sort boosts by order from lowest to highest
-        boosts = boosts.sort(
-            (a: BoostObject, b: BoostObject) => a.order - b.order,
-        );
+        boosts = boosts.sort((a: BoostObject, b: BoostObject) => a.order - b.order);
         for (const boost of boosts) {
             output = boost.value(output);
         }

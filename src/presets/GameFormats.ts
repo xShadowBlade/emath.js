@@ -56,13 +56,7 @@ function gameFormat(value: DecimalSource, settings: FormatSettings): string {
             case "short":
                 return Decimal.formats.formatTime(value, acc, formatType);
             case "long":
-                return Decimal.formats.formatTimeLong(
-                    value,
-                    true,
-                    0,
-                    max,
-                    formatType,
-                );
+                return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
         }
     }
 
@@ -81,11 +75,7 @@ function gameFormat(value: DecimalSource, settings: FormatSettings): string {
  * @param settings - The settings for formatting the gain.
  * @returns The formatted gain as a string.
  */
-function gameFormatGain(
-    value: DecimalSource,
-    gain: DecimalSource,
-    settings: FormatGainSettings,
-): string {
+function gameFormatGain(value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string {
     // return gameFormat(value, props.settings);
     const { formatType, acc, max } = settings;
     return Decimal.formatGain(value, gain, formatType, acc, max);
@@ -107,10 +97,7 @@ class GameFormatClass {
     }
     constructor(settings: Pointer<FormatSettings>) {
         // this.settings = settings;
-        this.settingsFn =
-            typeof settings === "function"
-                ? settings
-                : (): FormatSettings => settings;
+        this.settingsFn = typeof settings === "function" ? settings : (): FormatSettings => settings;
     }
 
     /**
@@ -126,24 +113,21 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain = (x: DecimalSource, gain: DecimalSource): string =>
-        gameFormatGain(x, gain, this.settings);
+    public gain = (x: DecimalSource, gain: DecimalSource): string => gameFormatGain(x, gain, this.settings);
 
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public time = (x: DecimalSource): string =>
-        gameFormat(x, { ...this.settings, time: true });
+    public time = (x: DecimalSource): string => gameFormat(x, { ...this.settings, time: true });
 
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public multi = (x: DecimalSource): string =>
-        gameFormat(x, { ...this.settings, multi: true });
+    public multi = (x: DecimalSource): string => gameFormat(x, { ...this.settings, multi: true });
 }
 
 /**
@@ -222,16 +206,5 @@ const formatTimeOptions: FormatOption<FormatTimeType>[] = (
     ] as FormatOption<FormatTimeType>[]
 ).sort((a, b) => a.name.localeCompare(b.name));
 
-export {
-    GameFormatClass,
-    formatOptions,
-    formatTimeOptions,
-    gameFormat,
-    gameFormatGain,
-};
-export type {
-    FormatGainSettings,
-    FormatSettings,
-    FormatTimeType,
-    FormatOption,
-};
+export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };

@@ -36,10 +36,7 @@ function calculateItem(
     // Special case: If target is 1, just check it manually
     if (target.eq(1)) {
         const cost = item.cost(tier);
-        return [
-            value.gte(cost) ? Decimal.dOne : Decimal.dZero,
-            value.gte(cost) ? cost : Decimal.dZero,
-        ];
+        return [value.gte(cost) ? Decimal.dOne : Decimal.dZero, value.gte(cost) ? cost : Decimal.dZero];
     }
 
     // no need to do binary search just divide lol
@@ -82,13 +79,7 @@ interface ItemInit {
      * // Getter function
      * console.log(item.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
-    description?:
-        | ((
-              level: Decimal,
-              itemContext: Item,
-              currencyContext: CurrencyStatic,
-          ) => string)
-        | string;
+    description?: ((level: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => string) | string;
 
     /**
      * The cost of items at a certain level.
@@ -107,12 +98,7 @@ interface ItemInit {
      * @param itemContext - The item object that the effect is being run on.
      * @param currencyContext - The currency static class that the item is being run on.
      */
-    effect?: (
-        tier: Decimal,
-        amount: Decimal,
-        itemContext: Item,
-        currencyContext: CurrencyStatic,
-    ) => void;
+    effect?: (tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
 
     // Below are types that are automatically added
     /**
@@ -127,8 +113,7 @@ interface ItemInit {
  * Infers the id type of an item array. See {@link UpgradeInitArrayType}
  * @template I - The item array
  */
-type ItemInitArrayType<I extends Readonly<ItemInit>[]> =
-    I[number]["id"] extends never ? string : I[number]["id"];
+type ItemInitArrayType<I extends Readonly<ItemInit>[]> = I[number]["id"] extends never ? string : I[number]["id"];
 
 /**
  * Represents an item.
@@ -159,8 +144,7 @@ class Item implements ItemInit {
         return this.descriptionFn(this.amount, this, this.currencyPointerFn());
     }
     public set description(value: Exclude<ItemInit["description"], undefined>) {
-        this.descriptionFn =
-            typeof value === "function" ? value : (): string => value;
+        this.descriptionFn = typeof value === "function" ? value : (): string => value;
     }
 
     /**
@@ -186,21 +170,11 @@ class Item implements ItemInit {
      * @param dataPointer - The pointer to the data of the item.
      * @param currencyPointer - The pointer to the currency static class that the item is being run on.
      */
-    constructor(
-        init: ItemInit,
-        dataPointer: Pointer<ItemData>,
-        currencyPointer: Pointer<CurrencyStatic>,
-    ) {
-        const data =
-            typeof dataPointer === "function" ? dataPointer() : dataPointer;
-        this.dataPointerFn =
-            typeof dataPointer === "function"
-                ? dataPointer
-                : (): ItemData => data;
+    constructor(init: ItemInit, dataPointer: Pointer<ItemData>, currencyPointer: Pointer<CurrencyStatic>) {
+        const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): ItemData => data;
         this.currencyPointerFn =
-            typeof currencyPointer === "function"
-                ? currencyPointer
-                : (): CurrencyStatic => currencyPointer;
+            typeof currencyPointer === "function" ? currencyPointer : (): CurrencyStatic => currencyPointer;
 
         this.id = init.id;
         this.name = init.name ?? init.id;

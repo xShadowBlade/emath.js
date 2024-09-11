@@ -3,10 +3,7 @@
  */
 import type { GameCurrency } from "./GameCurrency";
 
-type GameResetFromObject = Pick<
-    Partial<GameReset>,
-    "currenciesToReset" | "extender" | "onReset" | "condition"
-> & {
+type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
     currenciesToReset: GameCurrency | GameCurrency[];
     extender?: GameReset | GameReset[];
 };
@@ -21,12 +18,7 @@ class GameReset {
      * @returns The newly created game reset.
      */
     public static fromObject(object: GameResetFromObject): GameReset {
-        return new GameReset(
-            object.currenciesToReset,
-            object.extender,
-            object.onReset,
-            object.condition,
-        );
+        return new GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
     }
 
     /** The unique identifier for the game reset to prevent infinite loops. */
@@ -62,9 +54,7 @@ class GameReset {
         onReset?: typeof GameReset.prototype.onReset,
         condition?: typeof GameReset.prototype.condition,
     ) {
-        this.currenciesToReset = Array.isArray(currenciesToReset)
-            ? currenciesToReset
-            : [currenciesToReset];
+        this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
 
         extender = extender ?? [];
         this.extender = Array.isArray(extender) ? extender : [extender];
@@ -79,17 +69,11 @@ class GameReset {
      * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
      * @param cached The set of cached symbols to prevent infinite loops.
      */
-    public reset(
-        force = false,
-        forceExtenders = true,
-        cached = new Set<symbol>(),
-    ): void {
+    public reset(force = false, forceExtenders = true, cached = new Set<symbol>()): void {
         // If there is a condition and it is not met, then return
         if (
             force ||
-            ((typeof this.condition === "function"
-                ? !this.condition(this)
-                : !this.condition) &&
+            ((typeof this.condition === "function" ? !this.condition(this) : !this.condition) &&
                 typeof this.condition !== "undefined")
         ) {
             return;

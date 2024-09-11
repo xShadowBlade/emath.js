@@ -15,9 +15,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = ((): typeof E => {
     let shownWarning = false;
     const out = (x?: DecimalSource): Decimal => {
         if (!shownWarning) {
-            console.warn(
-                "eMath.js: The E function is deprecated. Use the Decimal class directly.",
-            );
+            console.warn("eMath.js: The E function is deprecated. Use the Decimal class directly.");
             shownWarning = true;
         }
         return new Decimal(x);
@@ -31,8 +29,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = ((): typeof E => {
         // Assign the rest
         .forEach((prop) => {
             // @ts-expect-error - Assignment to a read-only property
-            (out as typeof E)[prop as keyof typeof Decimal] =
-                Decimal[prop as keyof typeof Decimal];
+            (out as typeof E)[prop as keyof typeof Decimal] = Decimal[prop as keyof typeof Decimal];
         });
 
     return out as typeof E;

@@ -244,5 +244,5 @@ declare class UpgradeStatic implements IUpgradeStatic {
 }
 export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
 export { UpgradeData, UpgradeStatic, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached, };
+export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
 export { decimalToJSONString, upgradeToCacheNameEL };

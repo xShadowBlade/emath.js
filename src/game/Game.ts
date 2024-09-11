@@ -93,9 +93,7 @@ const gameDefaultConfig = {
  */
 class Game {
     /** The static config manager for the game. */
-    protected static readonly configManager = new ConfigManager<
-        RequiredDeep<GameConfigOptions>
-    >(gameDefaultConfig);
+    protected static readonly configManager = new ConfigManager<RequiredDeep<GameConfigOptions>>(gameDefaultConfig);
 
     /** The config object */
     public readonly config: typeof Game.configManager.options;
@@ -133,10 +131,7 @@ class Game {
 
         // Init managers
         // Init separately to allow for manual initialization
-        this.dataManager = new DataManager(
-            this,
-            this.config.localStorage as Storage | undefined,
-        );
+        this.dataManager = new DataManager(this, this.config.localStorage as Storage | undefined);
 
         this.keyManager = new KeyManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
@@ -188,11 +183,7 @@ class Game {
      * currency.static.gain();
      * console.log(currency.value); // Decimal.dOne
      */
-    public addCurrency<
-        N extends string,
-        U extends Readonly<UpgradeInit>[] = [],
-        I extends Readonly<ItemInit>[] = [],
-    >(
+    public addCurrency<N extends string, U extends Readonly<UpgradeInit>[] = [], I extends Readonly<ItemInit>[] = []>(
         name: N,
         upgrades: U = [] as unknown as U,
         items: I = [] as unknown as I,
@@ -205,9 +196,7 @@ class Game {
         // Create the class instance
         const classInstance = new GameCurrency(
             [
-                (): Currency =>
-                    (this.dataManager.getData(name) as { currency: Currency })
-                        .currency,
+                (): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency,
                 upgrades,
                 items,
             ] as ConstructorParameters<typeof CurrencyStatic>,
@@ -236,11 +225,9 @@ class Game {
         this.dataManager.setData(name, new Attribute(initial));
 
         const classInstance = new GameAttribute(
-            [
-                this.dataManager.getData(name) as Attribute,
-                useBoost,
-                initial,
-            ] as ConstructorParameters<typeof AttributeStatic>,
+            [this.dataManager.getData(name) as Attribute, useBoost, initial] as ConstructorParameters<
+                typeof AttributeStatic
+            >,
             this,
         );
         return classInstance;
@@ -254,12 +241,8 @@ class Game {
      * @returns The newly created game reset object.
      */
     // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
-    public addReset(
-        ...args: ConstructorParameters<typeof GameReset>
-    ): GameReset {
-        console.warn(
-            "eMath.js: Game.addReset is deprecated. Use the GameReset class instead.",
-        );
+    public addReset(...args: ConstructorParameters<typeof GameReset>): GameReset {
+        console.warn("eMath.js: Game.addReset is deprecated. Use the GameReset class instead.");
 
         const reset = new GameReset(...args);
         return reset;
@@ -272,9 +255,7 @@ class Game {
      * @param object - The object to create the game reset from.
      * @returns The newly created game reset object.
      */
-    public addResetFromObject(
-        object: Parameters<typeof GameReset.fromObject>[0],
-    ): GameReset {
+    public addResetFromObject(object: Parameters<typeof GameReset.fromObject>[0]): GameReset {
         console.warn(
             "eMath.js: Game.addResetFromObject is deprecated. Use the GameReset.fromObject static method instead.",
         );

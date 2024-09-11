@@ -97,5 +97,5 @@ declare const formatOptions: FormatOption[];
  * A list of format options with their display names and values for time.
  */
 declare const formatTimeOptions: FormatOption<FormatTimeType>[];
-export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain, };
-export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption, };
+export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };

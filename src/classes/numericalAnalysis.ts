@@ -52,11 +52,7 @@ type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @returns The mean of the two values, as a {@link Decimal}.
  */
-function mean(
-    a: DecimalSource,
-    b: DecimalSource,
-    mode: MeanMode = "geometric",
-): Decimal {
+function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric"): Decimal {
     a = new Decimal(a);
     b = new Decimal(b);
 
@@ -137,10 +133,7 @@ function equalsTolerance(
         result = diff.lte(tolerance);
     }
 
-    if (
-        config.verbose === true ||
-        (config.verbose === "onlyOnFail" && !result)
-    ) {
+    if (config.verbose === true || (config.verbose === "onlyOnFail" && !result)) {
         console.log({ a, b, tolerance, config, diff, result });
     }
 
@@ -208,9 +201,7 @@ function inverseFunctionApprox(
 
     // If the function is not monotonically increasing, return the upper bound
     if (f(upperBound).lt(n)) {
-        console.warn(
-            "eMath.js: The function is not monotonically increasing. (f(n) < n)",
-        );
+        console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
         // console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
         return {
             value: upperBound,

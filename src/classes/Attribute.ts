@@ -65,23 +65,16 @@ class AttributeStatic<EnableBoost extends boolean = true> {
      * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
      * @param initial - The initial value of the attribute. Defaults to 0.
      */
-    constructor(
-        pointer?: Pointer<Attribute>,
-        useBoost: EnableBoost = true as EnableBoost,
-        initial: DecimalSource = 0,
-    ) {
+    constructor(pointer?: Pointer<Attribute>, useBoost: EnableBoost = true as EnableBoost, initial: DecimalSource = 0) {
         // Assign the initial value
         this.initial = new Decimal(initial);
 
         // Set the pointer and pointer function
         pointer ??= new Attribute(this.initial);
-        this.pointerFn =
-            typeof pointer === "function" ? pointer : (): Attribute => pointer;
+        this.pointerFn = typeof pointer === "function" ? pointer : (): Attribute => pointer;
 
         // Create the boost if enabled
-        this.boost = (
-            useBoost ? new Boost(this.initial) : null
-        ) as typeof this.boost;
+        this.boost = (useBoost ? new Boost(this.initial) : null) as typeof this.boost;
     }
 
     /**
@@ -117,9 +110,7 @@ class AttributeStatic<EnableBoost extends boolean = true> {
      */
     public set value(value: Decimal) {
         if (this.boost) {
-            throw new Error(
-                "Cannot set value of attributeStatic when boost is enabled.",
-            );
+            throw new Error("Cannot set value of attributeStatic when boost is enabled.");
         }
         this.pointer.value = value;
     }

@@ -14,10 +14,7 @@
  * type Test2 = IsPrimitiveString<"asdf">; // false
  * type Test3 = IsPrimitiveString<number>; // false
  */
-type IsPrimitiveString<T> =
-    "random string that no one should ever get randomly" & T extends ""
-        ? false
-        : true;
+type IsPrimitiveString<T> = "random string that no one should ever get randomly" & T extends "" ? false : true;
 
 /**
  * Converts a readonly type to a mutable type.
@@ -43,11 +40,4 @@ type ConstructableObject = object & { constructor: ClassType };
  */
 type Pointer<T> = (() => T) | T;
 
-export type {
-    IsPrimitiveString,
-    Mutable,
-    ClassType,
-    UnknownObject,
-    ConstructableObject,
-    Pointer,
-};
+export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer };

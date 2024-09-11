@@ -5,7 +5,7 @@
     "endOfLine": "auto",
     "jsxBracketSameLine": false,
     "jsxSingleQuote": false,
-    "printWidth": 80,
+    "printWidth": 120,
     "proseWrap": "preserve",
     "semi": true,
     "singleQuote": false,

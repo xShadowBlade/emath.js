@@ -10,9 +10,7 @@ import type { Game } from "./Game";
  * To use, destruct the `data` and `static` properties from the class.
  * @template EnableBoost - Indicates whether the boost is enabled. Defaults to true.
  */
-class GameAttribute<
-    EnableBoost extends boolean = true,
-> extends AttributeStatic<EnableBoost> {
+class GameAttribute<EnableBoost extends boolean = true> extends AttributeStatic<EnableBoost> {
     /**
      * @returns The data for the attribute.
      * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
@@ -37,12 +35,7 @@ class GameAttribute<
      * @param attributeStaticParams - The parameters for the attribute static class.
      * @param gamePointer A pointer to the game instance.
      */
-    constructor(
-        attributeStaticParams: ConstructorParameters<
-            typeof AttributeStatic<EnableBoost>
-        >,
-        gamePointer?: Game,
-    ) {
+    constructor(attributeStaticParams: ConstructorParameters<typeof AttributeStatic<EnableBoost>>, gamePointer?: Game) {
         // "backwards compatibility" lol
         if (typeof attributeStaticParams === "function") {
             throw new Error(

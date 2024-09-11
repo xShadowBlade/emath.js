@@ -17,10 +17,7 @@ interface SkillInit extends Omit<UpgradeInit, "costBulk" | "effect" | "cost" | "
      * The cost of the skill tree node.
      * [currency, cost] - The currency and cost of the skill tree node.
      */
-    cost: [
-        currency: CurrencyStatic,
-        cost: (level: Decimal, context: SkillInit) => Decimal
-    ];
+    cost: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => Decimal];
     /**
      * A function that returns the cost of buying multiple levels of the skill.
      */

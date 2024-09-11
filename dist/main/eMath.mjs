@@ -191,9 +191,7 @@ function decimalFormatGenerator(Decimal2) {
       format(value) {
         value = new Decimal2(value);
         const step = Decimal2.floor(value.div(1e3));
-        const omegaAmount = Decimal2.floor(
-          step.div(FORMATS2.omega.config.greek.length)
-        );
+        const omegaAmount = Decimal2.floor(step.div(FORMATS2.omega.config.greek.length));
         let lastLetter = FORMATS2.omega.config.greek[step.toNumber() % FORMATS2.omega.config.greek.length] + toSubscript(value.toNumber() % 1e3);
         const beyondGreekArrayBounds = FORMATS2.omega.config.greek[step.toNumber() % FORMATS2.omega.config.greek.length] === void 0;
         if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
@@ -235,9 +233,7 @@ function decimalFormatGenerator(Decimal2) {
       format(value) {
         value = new Decimal2(value);
         const step = Decimal2.floor(value.div(1e3));
-        const omegaAmount = Decimal2.floor(
-          step.div(FORMATS2.omega_short.config.greek.length)
-        );
+        const omegaAmount = Decimal2.floor(step.div(FORMATS2.omega_short.config.greek.length));
         let lastLetter = FORMATS2.omega_short.config.greek[step.toNumber() % FORMATS2.omega_short.config.greek.length] + toSubscript(value.toNumber() % 1e3);
         const beyondGreekArrayBounds = FORMATS2.omega_short.config.greek[step.toNumber() % FORMATS2.omega_short.config.greek.length] === void 0;
         if (beyondGreekArrayBounds || step.toNumber() > Number.MAX_SAFE_INTEGER) {
@@ -411,20 +407,11 @@ function decimalFormatGenerator(Decimal2) {
       getAbbreviationAndValue(x) {
         const abbreviationListUnfloored = x.log(118).toNumber();
         const abbreviationListIndex = Math.floor(abbreviationListUnfloored) + 1;
-        const abbreviationLength = FORMATS2.elemental.abbreviationLength(
-          abbreviationListIndex
-        );
+        const abbreviationLength = FORMATS2.elemental.abbreviationLength(abbreviationListIndex);
         const abbreviationProgress = abbreviationListUnfloored - abbreviationListIndex + 1;
-        const abbreviationIndex = Math.floor(
-          abbreviationProgress * abbreviationLength
-        );
-        const abbreviation = FORMATS2.elemental.getAbbreviation(
-          abbreviationListIndex,
-          abbreviationProgress
-        );
-        const value = new Decimal2(118).pow(
-          abbreviationListIndex + abbreviationIndex / abbreviationLength - 1
-        );
+        const abbreviationIndex = Math.floor(abbreviationProgress * abbreviationLength);
+        const abbreviation = FORMATS2.elemental.getAbbreviation(abbreviationListIndex, abbreviationProgress);
+        const value = new Decimal2(118).pow(abbreviationListIndex + abbreviationIndex / abbreviationLength - 1);
         return [abbreviation, value];
       },
       formatElementalPart(abbreviation, n) {
@@ -434,11 +421,7 @@ function decimalFormatGenerator(Decimal2) {
         return `${n.toString()} ${abbreviation}`;
       },
       format(value, acc = 2) {
-        if (value.gt(
-          new Decimal2(118).pow(
-            new Decimal2(118).pow(new Decimal2(118).pow(4))
-          )
-        ))
+        if (value.gt(new Decimal2(118).pow(new Decimal2(118).pow(new Decimal2(118).pow(4)))))
           return "e" + FORMATS2.elemental.format(value.log10(), acc);
         let log = value.log(118);
         const slog = log.log(118);
@@ -520,9 +503,7 @@ function decimalFormatGenerator(Decimal2) {
             return (slog.gte(1e9) ? "" : Decimal2.dTen.pow(slog.sub(slog.floor())).toFixed(4)) + "F" + FORMATS2.eng.format(slog.floor(), 0);
           }
           const m = ex.div(new Decimal2(1e3).pow(e.div(3).floor()));
-          return (e.log10().gte(9) ? "" : m.toFixed(
-            new Decimal2(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber()
-          )) + "e" + FORMATS2.eng.format(e.div(3).floor().mul(3), 0);
+          return (e.log10().gte(9) ? "" : m.toFixed(new Decimal2(4).sub(e.sub(e.div(3).floor().mul(3))).toNumber())) + "e" + FORMATS2.eng.format(e.div(3).floor().mul(3), 0);
         }
       }
     },
@@ -612,8 +593,7 @@ function decimalFormatGenerator(Decimal2) {
           meta++;
         }
         if (meta == 0) return format(ex, acc, max, "sc");
-        if (ex.gte(3))
-          return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
+        if (ex.gte(3)) return symbols2[meta] + symbols[meta] + "\u03C9^" + format(ex.sub(1), acc, max, "sc");
         if (ex.gte(2))
           return symbols2[meta] + "\u03C9" + symbols[meta] + "-" + format(inf.pow(ex.sub(2)), acc, max, "sc");
         return symbols2[meta] + symbols[meta] + "-" + format(inf.pow(ex.sub(1)), acc, max, "sc");
@@ -660,10 +640,7 @@ function decimalFormatGenerator(Decimal2) {
         } else {
           const trunc = numLetters.sub(abbStart).add(1);
           const truncExponent = exponent.div(Decimal2.pow(alphabetLength + 1, trunc.sub(1))).floor();
-          const truncLetters = convertToLetters(
-            truncExponent,
-            new Decimal2(abbStart)
-          );
+          const truncLetters = convertToLetters(truncExponent, new Decimal2(abbStart));
           letters = `${truncLetters}(${trunc.gt("1e9") ? trunc.format() : trunc.format(0)})`;
         }
         return letters;
@@ -685,12 +662,7 @@ function decimalFormatGenerator(Decimal2) {
         ex = new Decimal2(ex);
         start = new Decimal2(start).div(1e3);
         if (ex.lt(start.mul(1e3))) return format(ex, acc, max, type);
-        const letters = FORMATS2.alphabet.getAbbreviation(
-          ex,
-          start,
-          startDouble,
-          abbStart
-        );
+        const letters = FORMATS2.alphabet.getAbbreviation(ex, start, startDouble, abbStart);
         const mantissa = ex.div(Decimal2.pow(1e3, ex.log(1e3).floor()));
         const isAbbreviation = letters.length > (abbStart ?? 9) + 2;
         return `${!isAbbreviation ? mantissa.toFixed(acc) + " " : ""}${letters}`;
@@ -704,9 +676,7 @@ function decimalFormatGenerator(Decimal2) {
     return value.toFixed(0).split("").map((x) => x === "-" ? "\u208B" : SUBSCRIPT_NUMBERS[parseInt(x, 10)]).join("");
   }
   function toSuperscript(value) {
-    return value.toFixed(0).split("").map(
-      (x) => x === "-" ? "\u208B" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)]
-    ).join("");
+    return value.toFixed(0).split("").map((x) => x === "-" ? "\u208B" : SUPERSCRIPT_NUMBERS[parseInt(x, 10)]).join("");
   }
   function formatST(ex, acc = 2, max = 9, type = "st") {
     return format(ex, acc, max, type);
@@ -724,9 +694,7 @@ function decimalFormatGenerator(Decimal2) {
       case "scientific": {
         if (ex.log10().lt(Math.min(-acc, 0)) && acc > 1) {
           const e2 = ex.log10().ceil();
-          const m = ex.div(
-            e2.eq(-1) ? new Decimal2(0.1) : Decimal2.dTen.pow(e2)
-          );
+          const m = ex.div(e2.eq(-1) ? new Decimal2(0.1) : Decimal2.dTen.pow(e2));
           const be = e2.mul(-1).max(1).log10().gte(9);
           return neg + (be ? "" : m.toFixed(2)) + "e" + format(e2, 0, max, "mixed_sc");
         } else if (e.lt(max)) {
@@ -746,16 +714,13 @@ function decimalFormatGenerator(Decimal2) {
       case "standard": {
         let e3 = ex.log(1e3).floor();
         if (e3.lt(1)) {
-          return neg + ex.toFixed(
-            Math.max(Math.min(acc - e.toNumber(), acc), 0)
-          );
+          return neg + ex.toFixed(Math.max(Math.min(acc - e.toNumber(), acc), 0));
         }
         const e3_mul = e3.mul(3);
         const ee = e3.log10().floor();
         if (ee.gte(3e3)) return "e" + format(e, acc, max, "st");
         let final = "";
-        if (e3.lt(4))
-          final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
+        if (e3.lt(4)) final = ["", "K", "M", "B"][Math.round(e3.toNumber())];
         else {
           let ee3 = Math.floor(e3.log(1e3).toNumber());
           if (ee3 < 100) ee3 = Math.max(ee3 - 1, 0);
@@ -765,10 +730,8 @@ function decimalFormatGenerator(Decimal2) {
             const mod1000 = e3.sub(div1000.mul(1e3)).floor().toNumber();
             if (mod1000 > 0) {
               if (mod1000 == 1 && !ee3) final = "U";
-              if (ee3)
-                final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
-              if (mod1000 > 1)
-                final = FORMATS2.standard.tier1(mod1000) + final;
+              if (ee3) final = FORMATS2.standard.tier2(ee3) + (final ? "-" + final : "");
+              if (mod1000 > 1) final = FORMATS2.standard.tier1(mod1000) + final;
             }
             e3 = div1000;
             ee3++;
@@ -779,8 +742,7 @@ function decimalFormatGenerator(Decimal2) {
         return neg + (ee.gte(10) ? "" : m.toFixed(fixedAmt) + " ") + final;
       }
       default:
-        if (!FORMATS2[type])
-          console.error(`Invalid format type "`, type, `"`);
+        if (!FORMATS2[type]) console.error(`Invalid format type "`, type, `"`);
         return neg + FORMATS2[type].format(ex, acc, max);
     }
   }
@@ -5476,9 +5438,7 @@ var Boost = class {
       const order = arg5;
       const bCheck = this.getBoosts(id, true);
       if (!bCheck[0][0]) {
-        this.boostArray.push(
-          new BoostObject({ id, name, description, value, order })
-        );
+        this.boostArray.push(new BoostObject({ id, name, description, value, order }));
       } else {
         this.boostArray[bCheck[1][0]] = new BoostObject({
           id,
@@ -5522,9 +5482,7 @@ var Boost = class {
   calculate(base = this.baseEffect) {
     let output = new Decimal(base);
     let boosts = this.boostArray;
-    boosts = boosts.sort(
-      (a, b) => a.order - b.order
-    );
+    boosts = boosts.sort((a, b) => a.order - b.order);
     for (const boost of boosts) {
       output = boost.value(output);
     }
@@ -5595,9 +5553,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   if (f(upperBound).lt(n)) {
-    console.warn(
-      "eMath.js: The function is not monotonically increasing. (f(n) < n)"
-    );
+    console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
     return {
       value: upperBound,
       lowerBound: upperBound,
@@ -5702,32 +5658,21 @@ function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, itera
       out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
       return out;
     } else {
-      out = [
-        canAfford ? Decimal.dOne : Decimal.dZero,
-        canAfford ? cost2 : Decimal.dZero
-      ];
+      out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost2 : Decimal.dZero];
       return out;
     }
   }
   if (upgrade.costBulk) {
     const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
     const canAfford = value.gte(cost2);
-    const out = [
-      canAfford ? amount : Decimal.dZero,
-      canAfford && !el ? cost2 : Decimal.dZero
-    ];
+    const out = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost2 : Decimal.dZero];
     return out;
   }
   if (el) {
     const costTargetFn = (level) => upgrade.cost(level.add(start));
     const maxLevelAffordable2 = Decimal.min(
       end,
-      inverseFunctionApprox(
-        costTargetFn,
-        value,
-        mode,
-        iterations
-      ).value.floor()
+      inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor()
     );
     const cost2 = Decimal.dZero;
     return [maxLevelAffordable2, cost2];
@@ -5875,10 +5820,7 @@ function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) 
   }
   if (target.eq(1)) {
     const cost2 = item.cost(tier);
-    return [
-      value.gte(cost2) ? Decimal.dOne : Decimal.dZero,
-      value.gte(cost2) ? cost2 : Decimal.dZero
-    ];
+    return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
   }
   const maxLevelAffordable = value.div(item.cost(tier)).floor().min(target);
   const cost = item.cost(tier).mul(maxLevelAffordable);
@@ -6114,17 +6056,13 @@ var CurrencyStatic = class {
     const allUpgradeIds = Object.keys(this.upgrades);
     if (id instanceof RegExp) {
       const regex = id;
-      const matchedIds = allUpgradeIds.filter(
-        (upgrade) => regex.test(upgrade)
-      );
+      const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
       return matchedIds.map((matchedId) => this.upgrades[matchedId]);
     }
     if (typeof id === "string") {
       id = [id];
     }
-    const matchedUpgrades = allUpgradeIds.filter(
-      (upgrade) => id.includes(upgrade)
-    );
+    const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
     return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
   }
   /**
@@ -6227,14 +6165,7 @@ var CurrencyStatic = class {
     if (upgrade.maxLevel !== void 0) {
       target = Decimal.min(target, upgrade.maxLevel);
     }
-    return calculateUpgrade(
-      this.value,
-      upgrade,
-      upgrade.level,
-      target,
-      mode,
-      iterations
-    );
+    return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -6298,12 +6229,7 @@ var CurrencyStatic = class {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateUpgrade(
-      id,
-      target,
-      mode,
-      iterations
-    );
+    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
     if (amount.lte(0)) {
       return false;
     }
@@ -6460,9 +6386,7 @@ var AttributeStatic = class {
    */
   set value(value) {
     if (this.boost) {
-      throw new Error(
-        "Cannot set value of attributeStatic when boost is enabled."
-      );
+      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
     }
     this.pointer.value = value;
   }
@@ -6518,10 +6442,7 @@ var GridCell = class {
    * @returns The translated cell
    */
   translate(x = 0, y = 0) {
-    return Grid.getInstance(this.gridSymbol).getCell(
-      this.x + x,
-      this.y + y
-    );
+    return Grid.getInstance(this.gridSymbol).getCell(this.x + x, this.y + y);
   }
   /**
    * Gets the cell in a specific direction from the current cell.
@@ -6612,9 +6533,7 @@ var GridCellCollection = class _GridCellCollection extends Array {
    */
   constructor(cells) {
     cells = Array.isArray(cells) ? cells : [cells];
-    cells = cells.filter(
-      (cell) => cell !== void 0
-    );
+    cells = cells.filter((cell) => cell !== void 0);
     super(...cells);
     this.removeDuplicates();
   }
@@ -6647,9 +6566,7 @@ var GridCellCollection = class _GridCellCollection extends Array {
    * @returns - The cells in the specified direction.
    */
   direction(direction, distance, fill) {
-    return new _GridCellCollection(
-      this.flatMap((cell) => cell.direction(direction, distance, fill))
-    );
+    return new _GridCellCollection(this.flatMap((cell) => cell.direction(direction, distance, fill)));
   }
   /**
    * Gets the cells above the current cells. Can be chained.
@@ -6745,12 +6662,7 @@ var Grid = class _Grid {
     for (let y = 0; y < this.ySize; y++) {
       this.cells[y] = [];
       for (let x = 0; x < this.xSize; x++) {
-        this.cells[y][x] = new GridCell(
-          x,
-          y,
-          starterProps,
-          this.gridSymbol
-        );
+        this.cells[y][x] = new GridCell(x, y, starterProps, this.gridSymbol);
       }
     }
   }
@@ -6787,12 +6699,7 @@ var Grid = class _Grid {
         for (let y = oldYSize; y < this.ySize; y++) {
           this.cells[y] = [];
           for (let x = 0; x < oldXSize; x++) {
-            this.cells[y][x] = new GridCell(
-              x,
-              y,
-              this.starterProps,
-              this.gridSymbol
-            );
+            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
           }
         }
       }
@@ -6807,12 +6714,7 @@ var Grid = class _Grid {
       if (this.xSize > oldXSize) {
         for (let y = 0; y < this.ySize; y++) {
           for (let x = oldXSize; x < this.xSize; x++) {
-            this.cells[y][x] = new GridCell(
-              x,
-              y,
-              this.starterProps,
-              this.gridSymbol
-            );
+            this.cells[y][x] = new GridCell(x, y, this.starterProps, this.gridSymbol);
           }
         }
       }
@@ -7023,9 +6925,7 @@ var E = (() => {
   let shownWarning = false;
   const out = (x) => {
     if (!shownWarning) {
-      console.warn(
-        "eMath.js: The E function is deprecated. Use the Decimal class directly."
-      );
+      console.warn("eMath.js: The E function is deprecated. Use the Decimal class directly.");
       shownWarning = true;
     }
     return new Decimal(x);

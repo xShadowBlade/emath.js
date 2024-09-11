@@ -20,29 +20,19 @@ interface RequiredSkill {
 /**
  * The interface for initializing a skill tree node.
  */
-interface SkillInit
-    extends Omit<
-        UpgradeInit,
-        "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"
-    > {
+interface SkillInit extends Omit<UpgradeInit, "costBulk" | "effect" | "cost" | "descriptionFn" | "defaultLevel"> {
     /**
      * The cost of the skill tree node.
      * [currency, cost] - The currency and cost of the skill tree node.
      */
-    cost: [
-        currency: CurrencyStatic,
-        cost: (level: Decimal, context: SkillInit) => Decimal,
-    ];
+    cost: [currency: CurrencyStatic, cost: (level: Decimal, context: SkillInit) => Decimal];
 
     /**
      * A function that returns the cost of buying multiple levels of the skill.
      */
     costBulk?: [
         currency: CurrencyStatic,
-        cost: (
-            level: Decimal,
-            context: SkillInit,
-        ) => [cost: Decimal, amount: Decimal],
+        cost: (level: Decimal, context: SkillInit) => [cost: Decimal, amount: Decimal],
     ];
 
     /**
@@ -50,9 +40,7 @@ interface SkillInit
      * See {@link RequiredSkill} for more information.
      * Can also be a function that takes the skill tree context and returns the required skills.
      */
-    required?:
-        | (SkillNode | RequiredSkill)[]
-        | ((skillTreeContext: SkillTree) => (SkillNode | RequiredSkill)[]);
+    required?: (SkillNode | RequiredSkill)[] | ((skillTreeContext: SkillTree) => (SkillNode | RequiredSkill)[]);
 
     /**
      * The effect of the skill tree node.
@@ -106,10 +94,7 @@ class SkillNode implements SkillInit {
      * @param skill - The skill tree node to initialize.
      * @param data - The data of the skill tree node.
      */
-    constructor(
-        skill: SkillInit,
-        data: SkillNodeData = new SkillNodeData(skill.id, skill.level),
-    ) {
+    constructor(skill: SkillInit, data: SkillNodeData = new SkillNodeData(skill.id, skill.level)) {
         // Assign the values
         this.id = skill.id;
         this.name = skill.name ?? skill.id;
@@ -117,9 +102,7 @@ class SkillNode implements SkillInit {
         this.cost = skill.cost;
         this.effect = skill.effect;
         this.required = skill.required ?? [];
-        this.maxLevel = skill.maxLevel
-            ? new Decimal(skill.maxLevel)
-            : Decimal.dZero;
+        this.maxLevel = skill.maxLevel ? new Decimal(skill.maxLevel) : Decimal.dZero;
 
         // Create the data function
         this.data = (): SkillNodeData => data;
@@ -162,13 +145,9 @@ class SkillTree {
      * Adds a skill to the skill tree.
      * @param skillNodeMember - The skill to add to the skill tree.
      */
-    public addSkill(
-        skillNodeMember: (SkillInit | SkillNode)[] | (SkillInit | SkillNode),
-    ): void {
+    public addSkill(skillNodeMember: (SkillInit | SkillNode)[] | (SkillInit | SkillNode)): void {
         // If the skills are not an array, make them an array.
-        skillNodeMember = Array.isArray(skillNodeMember)
-            ? skillNodeMember
-            : [skillNodeMember];
+        skillNodeMember = Array.isArray(skillNodeMember) ? skillNodeMember : [skillNodeMember];
 
         // For each skill in the init array, if it is not a skill node, create a new skill node and add it to the skill tree.
         skillNodeMember.forEach((skillNode) => {
@@ -205,17 +184,14 @@ class SkillTree {
 
         // If the required skills are a function, call it
         const requiredSkills =
-            typeof skillToCheck.required === "function"
-                ? skillToCheck.required(this)
-                : skillToCheck.required;
+            typeof skillToCheck.required === "function" ? skillToCheck.required(this) : skillToCheck.required;
 
         // Check if all the required skills are unlocked
         return requiredSkills.every((requiredSkill) => {
             // If the required skill is a skill node with extra levels, check if the level is high enough
             if ("skill" in requiredSkill) {
                 return (
-                    requiredSkill.skill.level.gte(requiredSkill.level) &&
-                    this.isSkillUnlocked(requiredSkill.skill.id)
+                    requiredSkill.skill.level.gte(requiredSkill.level) && this.isSkillUnlocked(requiredSkill.skill.id)
                 );
             }
 
