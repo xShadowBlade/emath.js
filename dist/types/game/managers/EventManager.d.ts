@@ -1,40 +1,77 @@
 /**
  * @file Declares classes for managing the event loop
  */
+import type { PickOptional } from "../../common/types";
 import type { Decimal } from "../../E/e";
 /**
- * The type of event
- * @deprecated The use of this enum is discouraged.
+ * The type of event.
+ * The use of this enum is discouraged.
  */
 declare enum EventTypes {
     interval = "interval",
     timeout = "timeout"
 }
 /**
+ * The event interface.
+ * @deprecated Use {@link TimerEvent} instead. This is only here for backwards compatibility.
+ */
+type Event = TimerEvent;
+/**
+ * The interface used for initializing an event.
+ * See {@link EventManager.setEvent}.
+ */
+type EventInit = PickOptional<Omit<TimerEvent, "timeCreated" | "intervalLast">, "type" | "delay">;
+/**
  * The event interface
  */
 interface TimerEvent {
     /**
-     * The name of the event
+     * The name / identifier of the event
      */
     name: string;
     /**
      * The type of the event
+     * @default "timeout"
      */
     type: EventTypes;
     /**
      * The delay before the event triggers
+     * @default 0
      */
     delay: number;
     /**
      * The callback function to execute when the event triggers
      * @param dt - The time since the last execution of the event in milliseconds
+     * For timeout events, this will be the time since the event was created.
+     * For interval events, this will be the time since the last execution of the event (based on the frame rate).
      */
     callback: (dt: number) => void;
     /**
-     * The time the event was created, as a Unix timestamp
+     * The time the event was created, as a Unix timestamp/
+     * Created automatically when the event is added to the event manager.
      */
     timeCreated: number;
+    /**
+     * The last time the event was executed
+     * Only used for interval events, but is still defined for all events.
+     * Created automatically when the event is added to the event manager.
+     */
+    intervalLast: number;
+}
+/**
+ * The callback event interface
+ */
+interface CallbackEvent {
+    /**
+     * The type/event of the callback. Used when it is dispatched.
+     *
+     * (Should have been named `on` or `event` but it is `type` for consistency with other event types)
+     */
+    type: string;
+    /**
+     * The callback function to execute when the event triggers
+     */
+    callback: () => void;
 }
 /**
  * The interval event interface
@@ -74,25 +111,25 @@ interface EventManagerEventsWithComments {
     /**
      * The event that is called before data is compiled ({@link DataManager.compileData}).
      */
-    beforeCompileData: "beforeCompileData";
+    beforeCompileData: true;
     /**
      * The event that is called before data is saved ({@link DataManager.saveData}).
      */
-    beforeSaveData: "beforeSaveData";
+    beforeSaveData: true;
     /**
      * The event that is called when (after) data is saved ({@link DataManager.saveData}).
      */
-    saveData: "saveData";
+    saveData: true;
     /**
      * The event that is called when (after) data is loaded ({@link DataManager.loadData}).
      */
-    loadData: "loadData";
+    loadData: true;
 }
 /**
  * Default event manager events.
  * For more information, see {@link EventManagerEventsWithComments}.
  */
-type EventManagerEvents = EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
+type EventManagerEvents = keyof EventManagerEventsWithComments & string;
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  */
@@ -133,7 +170,7 @@ declare class EventManager<Events extends string = string> {
     /**
      * The function that is called every frame, executes all events.
      */
-    protected tickerFunction(): void;
+    private tickerFunction;
     /**
      * Changes the framerate of the event manager.
      * @param fps - The new framerate to use.
@@ -164,12 +201,16 @@ declare class EventManager<Events extends string = string> {
      * });
      */
     setEvent(name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void): void;
+    setEvent(event: EventInit): void;
     /**
-     * Adds a new event
+     * Adds a new event.
+     * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
      * @deprecated Use {@link EventManager.setEvent} instead.
-     * @alias eventManager.setEvent
      */
-    addEvent: (name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void) => void;
+    addEvent: {
+        (name: string, type: EventTypes | "interval" | "timeout", delay: number | Decimal, callbackFn: (dt: number) => void): void;
+        (event: EventInit): void;
+    };
     /**
      * Removes a timer event from the event manager.
      * Does not remove callback events.
@@ -179,5 +220,5 @@ declare class EventManager<Events extends string = string> {
      */
     removeEvent(name: string): void;
 }
-export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event, };
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent, Event, EventInit, CallbackEvent, EventManagerEvents, };
 export { EventManager, EventTypes };

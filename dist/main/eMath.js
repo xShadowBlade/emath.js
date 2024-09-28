@@ -86,7 +86,7 @@ var eMathMetadata = {
    */
   version: (() => {
     try {
-      return "9.5.0";
+      return "9.6.0";
     } catch (error) {
       return "9.5.0";
     }

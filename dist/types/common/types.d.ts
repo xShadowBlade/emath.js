@@ -34,4 +34,14 @@ type ConstructableObject = object & {
  * @template T - The type of the value to point to.
  */
 type Pointer<T> = (() => T) | T;
-export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer };
+/**
+ * Picks a subset of properties from a type and makes them optional.
+ * @template T - The type to pick properties from.
+ * @template K - The keys of the properties to pick.
+ * @example
+ * type Test = PickOptional<{ a: number; b: string; c: boolean }, "a" | "b">; // { a?: number; b?: string; c: boolean; }
+ */
+type PickOptional<T, K extends keyof T> = {
+    [P in K]?: T[P];
+} & Omit<T, K>;
+export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer, PickOptional };

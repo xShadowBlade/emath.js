@@ -7127,10 +7127,7 @@ var ConfigManager = class {
       }
       return obj;
     }
-    return parseObject(
-      config,
-      this.configOptionTemplate
-    );
+    return parseObject(config, this.configOptionTemplate);
   }
   /**
    * @returns The template to use for default values.
@@ -7191,9 +7188,7 @@ var KeyManager = class _KeyManager {
   }
   static {
     /** The configuration manager for the key manager */
-    this.configManager = new ConfigManager(
-      keyManagerDefaultConfig
-    );
+    this.configManager = new ConfigManager(keyManagerDefaultConfig);
   }
   /**
    * Changes the framerate of the key manager.
@@ -7306,9 +7301,9 @@ var EventManager = class _EventManager {
    */
   constructor(config, events) {
     /**
-     * Adds a new event
+     * Adds a new event.
+     * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
      * @deprecated Use {@link EventManager.setEvent} instead.
-     * @alias eventManager.setEvent
      */
     this.addEvent = this.setEvent.bind(this);
     this.config = _EventManager.configManager.parse(config);
@@ -7328,9 +7323,7 @@ var EventManager = class _EventManager {
   }
   static {
     /** The static config manager for the event manager */
-    this.configManager = new ConfigManager(
-      eventManagerDefaultConfig
-    );
+    this.configManager = new ConfigManager(eventManagerDefaultConfig);
   }
   /**
    * Adds a callback to an event.
@@ -7363,6 +7356,7 @@ var EventManager = class _EventManager {
     const currentTime = Date.now();
     for (const event of Object.values(this.events)) {
       switch (event.type) {
+        // prettier-ignore
         case "interval" /* interval */:
           {
             if (currentTime - event.intervalLast >= event.delay) {
@@ -7372,10 +7366,11 @@ var EventManager = class _EventManager {
             }
           }
           break;
+        // prettier-ignore
         case "timeout" /* timeout */:
           {
-            const dt = currentTime - event.timeCreated;
             if (currentTime - event.timeCreated >= event.delay) {
+              const dt = currentTime - event.timeCreated;
               event.callback(dt);
               delete this.events[event.name];
             }
@@ -7405,66 +7400,37 @@ var EventManager = class _EventManager {
     for (const event of Object.values(this.events)) {
       switch (event.type) {
         case "interval" /* interval */:
-          {
-            event.intervalLast -= dt;
-          }
+          event.intervalLast -= dt;
           break;
         case "timeout" /* timeout */:
-          {
-            event.timeCreated -= dt;
-          }
+          event.timeCreated -= dt;
           break;
       }
     }
   }
-  /**
-   * Adds a new event or changes an existing event to the event system.
-   * If you want to add a callback event, use {@link EventManager.on} instead.
-   * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
-   * @param type - The type of the event, either "interval" or "timeout".
-   * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
-   * @param callbackFn - The callback function to execute when the event triggers.
-   * @example
-   * const myEventManger = new eventManager();
-   * // Add an interval event that executes every 2 seconds.
-   * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
-   *    console.log("Interval event executed.");
-   * });
-   *
-   * // Add a timeout event that executes after 5 seconds.
-   * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
-   *   console.log("Timeout event executed.");
-   * });
-   */
-  setEvent(name, type, delay, callbackFn) {
-    this.events[name] = (() => {
-      switch (type) {
-        case "interval":
-          {
-            const event = {
-              name,
-              type,
-              delay: typeof delay === "number" ? delay : delay.toNumber(),
-              callback: callbackFn,
-              timeCreated: Date.now(),
-              intervalLast: Date.now()
-            };
-            return event;
-          }
-          break;
-        case "timeout":
-        default: {
-          const event = {
-            name,
-            type,
-            delay: typeof delay === "number" ? delay : delay.toNumber(),
-            callback: callbackFn,
-            timeCreated: Date.now()
-          };
-          return event;
-        }
-      }
-    })();
+  setEvent(nameOrEvent, type, delay, callbackFn) {
+    const isEventInit = typeof nameOrEvent !== "string";
+    const eventToAdd = {
+      // Default values
+      // name: Symbol(),
+      type: "timeout" /* timeout */,
+      delay: 0,
+      // callback: () => {},
+      // If the event is being initialized with an object, spread the object.
+      // Otherwise, assign the values from the arguments.
+      // prettier-ignore
+      ...isEventInit ? nameOrEvent : {
+        name: nameOrEvent,
+        type,
+        delay,
+        callback: callbackFn
+      },
+      // Assign the default values.
+      timeCreated: Date.now(),
+      // If the event is an interval event, set the last interval time to now.
+      intervalLast: type === "interval" ? Date.now() : 0
+    };
+    this.events[eventToAdd.name] = eventToAdd;
   }
   /**
    * Removes a timer event from the event manager.
@@ -7491,7 +7457,7 @@ var eMathMetadata = {
    */
   version: (() => {
     try {
-      return "9.5.0";
+      return "9.6.0";
     } catch (error) {
       return "9.5.0";
     }
@@ -7517,12 +7483,7 @@ function isPlainObject(obj) {
 var objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 function deepMerge(sourcePlain, source, target) {
   if (!sourcePlain || !source || !target) {
-    console.warn(
-      "eMath.js: dataManager.deepMerge(): Missing arguments:",
-      sourcePlain,
-      source,
-      target
-    );
+    console.warn("eMath.js: dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
     return target ?? {};
   }
   const out = target;
@@ -7559,20 +7520,14 @@ function deepMerge(sourcePlain, source, target) {
   }
   return out;
 }
-var upgradeDataProperties = Object.getOwnPropertyNames(
-  new UpgradeData({ id: "", level: Decimal.dZero })
-);
-var itemDataProperties = Object.getOwnPropertyNames(
-  new ItemData({ id: "", amount: Decimal.dZero })
-);
+var upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
+var itemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
 function convertTemplateClass(templateClassToConvert, plain) {
   const out = (0, import_class_transformer6.plainToInstance)(templateClassToConvert, plain);
   if (out instanceof Currency) {
     for (const upgradeName in out.upgrades) {
       const upgrade = out.upgrades[upgradeName];
-      if (!upgrade || !upgradeDataProperties.every(
-        (prop) => Object.getOwnPropertyNames(upgrade).includes(prop)
-      )) {
+      if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
         delete out.upgrades[upgradeName];
         continue;
       }
@@ -7580,9 +7535,7 @@ function convertTemplateClass(templateClassToConvert, plain) {
     }
     for (const itemName in out.items) {
       const item = out.items[itemName];
-      if (!item || !itemDataProperties.every(
-        (prop) => Object.getOwnPropertyNames(item).includes(prop)
-      )) {
+      if (!item || !itemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
         delete out.items[itemName];
         continue;
       }
@@ -7590,17 +7543,13 @@ function convertTemplateClass(templateClassToConvert, plain) {
     }
   }
   if (!out) {
-    throw new Error(
-      `Failed to convert ${templateClassToConvert.name} to class instance.`
-    );
+    throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
   }
   return out;
 }
 function plainToInstanceRecursive(normal, plain) {
   if (!normal || !plain) {
-    throw new Error(
-      "dataManager.plainToInstanceRecursive(): Missing arguments."
-    );
+    throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
   }
   const out = plain;
   for (const key in normal) {
@@ -7617,10 +7566,7 @@ function plainToInstanceRecursive(normal, plain) {
       );
       continue;
     }
-    out[key] = convertTemplateClass(
-      normalDataClass,
-      plain[key]
-    );
+    out[key] = convertTemplateClass(normalDataClass, plain[key]);
   }
   return out;
 }
@@ -7683,9 +7629,7 @@ var DataManager = class {
    */
   setData(key, value) {
     if (typeof this.data[key] === "undefined" && this.normalData) {
-      console.warn(
-        "eMath.js: After initializing data, you should not add new properties to data."
-      );
+      console.warn("eMath.js: After initializing data, you should not add new properties to data.");
     }
     this.data[key] = value;
     const thisData = () => this.data;
@@ -7723,9 +7667,7 @@ var DataManager = class {
       "eMath.js: setStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
     );
     if (typeof this.static[key] === "undefined" && this.normalData) {
-      console.warn(
-        "eMath.js: After initializing data, you should not add new properties to staticData."
-      );
+      console.warn("eMath.js: After initializing data, you should not add new properties to staticData.");
     }
     this.static[key] = value;
     return this.static[key];
@@ -7761,9 +7703,7 @@ var DataManager = class {
   compileDataRaw(data = this.data) {
     this.gameRef.eventManager.dispatch("beforeCompileData");
     const gameDataString = (0, import_class_transformer6.instanceToPlain)(data);
-    const hashedData = (0, import_md5.default)(
-      `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`
-    );
+    const hashedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
     const saveMetadata = {
       hash: hashedData,
       game: {
@@ -7797,9 +7737,7 @@ var DataManager = class {
         );
         return null;
       }
-      data = this.localStorage.getItem(
-        `${this.gameRef.config.name.id}-data`
-      );
+      data = this.localStorage.getItem(`${this.gameRef.config.name.id}-data`);
     }
     if (!data) return null;
     let parsedData;
@@ -7808,10 +7746,7 @@ var DataManager = class {
       return parsedData;
     } catch (error) {
       if (error instanceof SyntaxError) {
-        console.error(
-          `Failed to decompile data (corrupted) "${data}":`,
-          error
-        );
+        console.error(`Failed to decompile data (corrupted) "${data}":`, error);
       } else {
         throw error;
       }
@@ -7826,14 +7761,10 @@ var DataManager = class {
   validateData(data) {
     const [saveMetadata, gameDataToValidate] = data;
     if (typeof saveMetadata === "string") {
-      return (0, import_md5.default)(
-        `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`
-      ) === saveMetadata;
+      return (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
     }
     const hashSave = saveMetadata.hash;
-    const hashCheck = (0, import_md5.default)(
-      `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`
-    );
+    const hashCheck = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
     return hashSave === hashCheck;
   }
   /**
@@ -7843,9 +7774,7 @@ var DataManager = class {
    */
   resetData(reload = false) {
     if (!this.normalData) {
-      throw new Error(
-        "dataManager.resetData(): You must call init() before writing to data."
-      );
+      throw new Error("dataManager.resetData(): You must call init() before writing to data.");
     }
     this.data = this.normalData;
     this.saveData();
@@ -7866,10 +7795,7 @@ var DataManager = class {
         "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
       );
     }
-    this.localStorage.setItem(
-      `${this.gameRef.config.name.id}-data`,
-      dataToSave
-    );
+    this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
     this.gameRef.eventManager.dispatch("saveData");
   }
   /**
@@ -7904,9 +7830,7 @@ var DataManager = class {
    */
   parseData(dataToParse = this.decompileData(), mergeData = true) {
     if ((!this.normalData || !this.normalDataPlain) && mergeData) {
-      throw new Error(
-        "dataManager.parseData(): You must call init() before writing to data."
-      );
+      throw new Error("dataManager.parseData(): You must call init() before writing to data.");
     }
     if (!dataToParse) return null;
     const [, loadedData] = dataToParse;
@@ -7921,10 +7845,7 @@ var DataManager = class {
   loadData(dataToLoad = this.decompileData()) {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad) return null;
-    const isDataValid = this.validateData([
-      dataToLoad[0],
-      (0, import_class_transformer6.instanceToPlain)(dataToLoad[1])
-    ]);
+    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer6.instanceToPlain)(dataToLoad[1])]);
     const parsedData = this.parseData(dataToLoad);
     if (!parsedData) return null;
     this.data = parsedData;

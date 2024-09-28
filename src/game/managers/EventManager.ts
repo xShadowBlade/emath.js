@@ -1,13 +1,15 @@
 /**
  * @file Declares classes for managing the event loop
  */
+import type { PickOptional } from "../../common/types";
 import type { Decimal } from "../../E/e";
 import { ConfigManager } from "./ConfigManager";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { DataManager } from "./DataManager";
 
 /**
- * The type of event
- * @deprecated The use of this enum is discouraged.
+ * The type of event.
+ * The use of this enum is discouraged.
  */
 enum EventTypes {
     interval = "interval",
@@ -21,34 +23,52 @@ enum EventTypes {
 type Event = TimerEvent;
 
 /**
+ * The interface used for initializing an event.
+ * See {@link EventManager.setEvent}.
+ */
+type EventInit = PickOptional<Omit<TimerEvent, "timeCreated" | "intervalLast">, "type" | "delay">;
+
+/**
  * The event interface
  */
 interface TimerEvent {
     /**
-     * The name of the event
+     * The name / identifier of the event
      */
     name: string;
 
     /**
      * The type of the event
+     * @default "timeout"
      */
     type: EventTypes;
 
     /**
      * The delay before the event triggers
+     * @default 0
      */
     delay: number;
 
     /**
      * The callback function to execute when the event triggers
      * @param dt - The time since the last execution of the event in milliseconds
+     * For timeout events, this will be the time since the event was created.
+     * For interval events, this will be the time since the last execution of the event (based on the frame rate).
      */
     callback: (dt: number) => void;
 
     /**
-     * The time the event was created, as a Unix timestamp
+     * The time the event was created, as a Unix timestamp/
+     * Created automatically when the event is added to the event manager.
      */
     timeCreated: number;
+
+    /**
+     * The last time the event was executed
+     * Only used for interval events, but is still defined for all events.
+     * Created automatically when the event is added to the event manager.
+     */
+    intervalLast: number;
 }
 
 /**
@@ -121,29 +141,29 @@ interface EventManagerEventsWithComments {
     /**
      * The event that is called before data is compiled ({@link DataManager.compileData}).
      */
-    beforeCompileData: "beforeCompileData";
+    beforeCompileData: true;
 
     /**
      * The event that is called before data is saved ({@link DataManager.saveData}).
      */
-    beforeSaveData: "beforeSaveData";
+    beforeSaveData: true;
 
     /**
      * The event that is called when (after) data is saved ({@link DataManager.saveData}).
      */
-    saveData: "saveData";
+    saveData: true;
 
     /**
      * The event that is called when (after) data is loaded ({@link DataManager.loadData}).
      */
-    loadData: "loadData";
+    loadData: true;
 }
 
 /**
  * Default event manager events.
  * For more information, see {@link EventManagerEventsWithComments}.
  */
-type EventManagerEvents = EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
+type EventManagerEvents = keyof EventManagerEventsWithComments & string;
 
 /**
  * The event manager class, used to manage events and execute them at the correct time.
@@ -231,35 +251,49 @@ class EventManager<Events extends string = string> {
     /**
      * The function that is called every frame, executes all events.
      */
-    protected tickerFunction(): void {
+    private tickerFunction(): void {
+        /**
+         * The current time in milliseconds.
+         * Used to calculate the time since the last execution of the event,
+         * and to check if the event should trigger.
+         */
         const currentTime = Date.now();
-        for (const event of Object.values(this.events)) {
-            // const event = this.events[i];
 
+        // Iterate through all events and execute them if they should trigger.
+        for (const event of Object.values(this.events)) {
             switch (event.type) {
-                case EventTypes.interval:
-                    {
-                        // If interval
-                        if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
-                            const dt = currentTime - (event as IntervalEvent).intervalLast;
-                            event.callback(dt);
-                            (event as IntervalEvent).intervalLast = currentTime;
-                        }
+                // prettier-ignore
+                case EventTypes.interval: {
+                    // Check if the time since the last execution of the event is greater than the delay.
+                    if (currentTime - event.intervalLast >= event.delay) {
+                        // Calculate the time since the last execution of the event.
+                        const dt = currentTime - event.intervalLast;
+
+                        // Execute the event callback.
+                        event.callback(dt);
+
+                        // Update the last execution time of the event.
+                        event.intervalLast = currentTime;
                     }
-                    break;
-                case EventTypes.timeout:
-                    {
+                }
+                break;
+
+                // prettier-ignore
+                case EventTypes.timeout: {
+                    // Check if the time since the event was created is greater than the delay.
+                    if (currentTime - event.timeCreated >= event.delay) {
+                        // Calculate the time since the last execution of the event.
                         const dt = currentTime - event.timeCreated;
-                        // If timeout
-                        if (currentTime - event.timeCreated >= event.delay) {
-                            event.callback(dt);
-                            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                            delete this.events[event.name];
-                            // this.events.splice(i, 1);
-                            // i--;
-                        }
+
+                        // Execute the event callback.
+                        event.callback(dt);
+
+                        // Remove the event from the event manager.
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        delete this.events[event.name];
                     }
-                    break;
+                }
+                break;
             }
         }
     }
@@ -269,9 +303,13 @@ class EventManager<Events extends string = string> {
      * @param fps - The new framerate to use.
      */
     public changeFps(fps: number): void {
+        // Change the framerate in the config.
         this.config.fps = fps;
+
+        // Clear the old interval and create a new one with the new framerate.
         if (this.tickerInterval) {
             clearInterval(this.tickerInterval);
+
             this.tickerInterval = setInterval(() => {
                 this.tickerFunction();
             }, 1000 / fps);
@@ -283,18 +321,19 @@ class EventManager<Events extends string = string> {
      * @param dt - The time to warp by.
      */
     public timeWarp(dt: number): void {
+        // Iterate through all events and warp the time.
         for (const event of Object.values(this.events)) {
             switch (event.type) {
                 case EventTypes.interval:
-                    {
-                        (event as IntervalEvent).intervalLast -= dt;
-                    }
+                    // If interval event, subtract the time warped from the last interval time.
+                    // This will cause the event to trigger as if the time has passed.
+                    event.intervalLast -= dt;
                     break;
+
                 case EventTypes.timeout:
-                    {
-                        // ! might cause issues
-                        (event as TimeoutEvent).timeCreated -= dt;
-                    }
+                    // If timeout event, subtract the time warped from the time created.
+                    // ! might cause issues
+                    event.timeCreated -= dt;
                     break;
             }
         }
@@ -324,42 +363,51 @@ class EventManager<Events extends string = string> {
         type: EventTypes | "interval" | "timeout",
         delay: number | Decimal,
         callbackFn: (dt: number) => void,
-    ): void {
-        this.events[name] = ((): IntervalEvent | TimeoutEvent => {
-            switch (type) {
-                case "interval":
-                    {
-                        const event: IntervalEvent = {
-                            name,
-                            type: type as EventTypes.interval,
-                            delay: typeof delay === "number" ? delay : delay.toNumber(),
-                            callback: callbackFn,
-                            timeCreated: Date.now(),
-                            intervalLast: Date.now(),
-                        };
-                        return event;
-                    }
-                    break;
-                case "timeout":
-                default: {
-                    const event: TimeoutEvent = {
-                        name,
-                        type: type as EventTypes.timeout,
-                        delay: typeof delay === "number" ? delay : delay.toNumber(),
-                        callback: callbackFn,
-                        timeCreated: Date.now(),
-                    };
+    ): void;
+    public setEvent(event: EventInit): void;
 
-                    return event;
-                }
-            }
-        })();
+    public setEvent(
+        nameOrEvent: string | EventInit,
+        type?: EventTypes | "interval" | "timeout",
+        delay?: number | Decimal,
+        callbackFn?: (dt: number) => void,
+    ): void {
+        /**
+         * - `true` if the event is being initialized with an object.
+         */
+        const isEventInit = typeof nameOrEvent !== "string";
+
+        const eventToAdd: IntervalEvent | TimeoutEvent = {
+            // Default values
+            // name: Symbol(),
+            type: EventTypes.timeout,
+            delay: 0,
+            // callback: () => {},
+
+            // If the event is being initialized with an object, spread the object.
+            // Otherwise, assign the values from the arguments.
+            // prettier-ignore
+            ...(isEventInit ? nameOrEvent : {
+                name: nameOrEvent as string,
+                type: type as EventTypes,
+                delay : delay as number,
+                callback: callbackFn as (dt: number) => void,
+            } as EventInit),
+
+            // Assign the default values.
+            timeCreated: Date.now(),
+
+            // If the event is an interval event, set the last interval time to now.
+            intervalLast: type === "interval" ? Date.now() : 0,
+        };
+
+        this.events[eventToAdd.name] = eventToAdd;
     }
 
     /**
-     * Adds a new event
+     * Adds a new event.
+     * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
      * @deprecated Use {@link EventManager.setEvent} instead.
-     * @alias eventManager.setEvent
      */
     public addEvent = this.setEvent.bind(this);
 
@@ -376,5 +424,14 @@ class EventManager<Events extends string = string> {
     }
 }
 
-export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event };
+export type {
+    EventManagerConfig,
+    IntervalEvent,
+    TimeoutEvent,
+    TimerEvent,
+    Event,
+    EventInit,
+    CallbackEvent,
+    EventManagerEvents,
+};
 export { EventManager, EventTypes };
