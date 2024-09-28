@@ -18,12 +18,7 @@ import { Decimal } from "../../E/e";
 // Save validation
 import md5 from "md5";
 
-import type {
-    UnknownObject,
-    ClassType,
-    ConstructableObject,
-    Pointer,
-} from "../../common/types";
+import type { UnknownObject, ClassType, ConstructableObject, Pointer } from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -68,21 +63,13 @@ function deepMerge(
     target: UnknownObject | null,
 ): UnknownObject {
     if (!sourcePlain || !source || !target) {
-        console.warn(
-            "eMath.js: dataManager.deepMerge(): Missing arguments:",
-            sourcePlain,
-            source,
-            target,
-        );
+        console.warn("eMath.js: dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
         return target ?? {};
     }
 
     const out = target;
     for (const key in sourcePlain) {
-        if (
-            objectHasOwnProperty(sourcePlain, key) &&
-            !objectHasOwnProperty(target, key)
-        ) {
+        if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
             // If the property is missing from the target, add it
             out[key] = sourcePlain[key];
         }
@@ -98,8 +85,7 @@ function deepMerge(
                 targetCurrency.upgrades = {};
                 for (const upgrade of upgrades) {
                     // ! warning: might not work
-                    targetCurrency.upgrades[(upgrade as UpgradeData).id] =
-                        upgrade as UpgradeData;
+                    targetCurrency.upgrades[(upgrade as UpgradeData).id] = upgrade as UpgradeData;
                 }
             }
 
@@ -115,10 +101,7 @@ function deepMerge(
                 ...sourceCurrency.items,
                 ...targetCurrency.items,
             };
-        } else if (
-            isPlainObject(sourcePlain[key]) &&
-            isPlainObject(target[key])
-        ) {
+        } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
             // Recursive
             out[key] = deepMerge(
                 (sourcePlain as Record<string, UnknownObject>)[key],
@@ -131,12 +114,8 @@ function deepMerge(
 }
 
 // Special cases for Currency.upgrades and Currency.items
-const upgradeDataProperties = Object.getOwnPropertyNames(
-    new UpgradeData({ id: "", level: Decimal.dZero }),
-);
-const itemDataProperties = Object.getOwnPropertyNames(
-    new ItemData({ id: "", amount: Decimal.dZero }),
-);
+const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
+const itemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
 
 /**
  * Converts a plain object to a class instance.
@@ -144,25 +123,18 @@ const itemDataProperties = Object.getOwnPropertyNames(
  * @param plain - The plain object to convert.
  * @returns The converted class instance.
  */
-function convertTemplateClass(
-    templateClassToConvert: ClassType,
-    plain: UnknownObject,
-): ClassType {
+function convertTemplateClass(templateClassToConvert: ClassType, plain: UnknownObject): ClassType {
     // Convert the object
     const out = plainToInstance(templateClassToConvert, plain) as ClassType;
 
     if (out instanceof Currency) {
         // Special case for Currency.upgrades
         for (const upgradeName in out.upgrades) {
-            const upgrade = out.upgrades[upgradeName] as
-                | UpgradeData
-                | undefined;
+            const upgrade = out.upgrades[upgradeName] as UpgradeData | undefined;
 
             if (
                 !upgrade ||
-                !upgradeDataProperties.every((prop) =>
-                    Object.getOwnPropertyNames(upgrade).includes(prop),
-                )
+                !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))
             ) {
                 // Delete the upgrade if it's invalid (extraneous properties, etc.)
                 // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -176,12 +148,7 @@ function convertTemplateClass(
         for (const itemName in out.items) {
             const item = out.items[itemName] as ItemData | undefined;
 
-            if (
-                !item ||
-                !itemDataProperties.every((prop) =>
-                    Object.getOwnPropertyNames(item).includes(prop),
-                )
-            ) {
+            if (!item || !itemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
                 // Delete the item if it's invalid (extraneous properties, etc.)
                 // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete out.items[itemName];
@@ -191,9 +158,7 @@ function convertTemplateClass(
         }
     }
     if (!out) {
-        throw new Error(
-            `Failed to convert ${templateClassToConvert.name} to class instance.`,
-        );
+        throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
     }
     return out;
 }
@@ -209,9 +174,7 @@ function plainToInstanceRecursive(
     plain?: UnknownObject | null | undefined,
 ): UnknownObject {
     if (!normal || !plain) {
-        throw new Error(
-            "dataManager.plainToInstanceRecursive(): Missing arguments.",
-        );
+        throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
     }
     const out = plain;
     for (const key in normal) {
@@ -225,8 +188,7 @@ function plainToInstanceRecursive(
         if (!isPlainObject(plain[key])) continue;
 
         // Convert the object using the normal data
-        const normalDataClass = (normal[key] as ConstructableObject)
-            .constructor;
+        const normalDataClass = (normal[key] as ConstructableObject).constructor;
 
         // Check if the object is a plain object
         if (normalDataClass === Object) {
@@ -239,10 +201,7 @@ function plainToInstanceRecursive(
         }
 
         // console.log("Normal data class: ", normalDataClass);
-        out[key] = convertTemplateClass(
-            normalDataClass,
-            (plain as Record<string, UnknownObject>)[key],
-        );
+        out[key] = convertTemplateClass(normalDataClass, (plain as Record<string, UnknownObject>)[key]);
     }
     return out;
 }
@@ -348,9 +307,7 @@ class DataManager {
         setValue: (valueToSet: T) => void;
     } {
         if (typeof this.data[key] === "undefined" && this.normalData) {
-            console.warn(
-                "eMath.js: After initializing data, you should not add new properties to data.",
-            );
+            console.warn("eMath.js: After initializing data, you should not add new properties to data.");
         }
         this.data[key] = value;
         const thisData = (): UnknownObject => this.data;
@@ -395,9 +352,7 @@ class DataManager {
         );
 
         if (typeof this.static[key] === "undefined" && this.normalData) {
-            console.warn(
-                "eMath.js: After initializing data, you should not add new properties to staticData.",
-            );
+            console.warn("eMath.js: After initializing data, you should not add new properties to staticData.");
         }
         this.static[key] = value;
         return this.static[key] as T;
@@ -442,9 +397,7 @@ class DataManager {
         const gameDataString = instanceToPlain(data);
 
         // Create a hash of the data
-        const hashedData = md5(
-            `${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`,
-        );
+        const hashedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
 
         // Create the metadata for the save file
         const saveMetadata: SaveMetadata = {
@@ -476,9 +429,7 @@ class DataManager {
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData(
-        data?: string | null,
-    ): [SaveMetadata, UnknownObject] | null {
+    public decompileData(data?: string | null): [SaveMetadata, UnknownObject] | null {
         // If the data is not provided, get it from local storage
         if (!data) {
             // If local storage is not supported, return null
@@ -490,9 +441,7 @@ class DataManager {
             }
 
             // Get the data from local storage
-            data = this.localStorage.getItem(
-                `${this.gameRef.config.name.id}-data`,
-            );
+            data = this.localStorage.getItem(`${this.gameRef.config.name.id}-data`);
         }
 
         // If the data is empty, return null
@@ -502,18 +451,12 @@ class DataManager {
 
         try {
             // Decompress the data, then JSON parse it
-            parsedData = JSON.parse(decompressFromBase64(data)) as [
-                SaveMetadata,
-                UnknownObject,
-            ];
+            parsedData = JSON.parse(decompressFromBase64(data)) as [SaveMetadata, UnknownObject];
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
             if (error instanceof SyntaxError) {
-                console.error(
-                    `Failed to decompile data (corrupted) "${data}":`,
-                    error,
-                );
+                console.error(`Failed to decompile data (corrupted) "${data}":`, error);
             } else {
                 throw error;
             }
@@ -531,18 +474,12 @@ class DataManager {
 
         // Backwards compatibility: In versions before 8.x.x, data was of type [hash: string, data: object]. Now it's of type [SaveMetadata, data: object].
         if (typeof saveMetadata === "string") {
-            return (
-                md5(
-                    `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`,
-                ) === saveMetadata
-            );
+            return md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
         }
 
         // Compare the hash of the data with the hash in the save file. If they don't match, the data has been tampered with.
         const hashSave = saveMetadata.hash;
-        const hashCheck = md5(
-            `${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`,
-        );
+        const hashCheck = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
 
         return hashSave === hashCheck;
     }
@@ -555,9 +492,7 @@ class DataManager {
     public resetData(reload = false): void {
         // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
         if (!this.normalData) {
-            throw new Error(
-                "dataManager.resetData(): You must call init() before writing to data.",
-            );
+            throw new Error("dataManager.resetData(): You must call init() before writing to data.");
         }
 
         // Reset the data
@@ -592,10 +527,7 @@ class DataManager {
         }
 
         // Save the data to local storage
-        this.localStorage.setItem(
-            `${this.gameRef.config.name.id}-data`,
-            dataToSave,
-        );
+        this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
 
         // Call the `saveData` event on the game eventManager
         this.gameRef.eventManager.dispatch("saveData");
@@ -639,15 +571,10 @@ class DataManager {
      * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    public parseData(
-        dataToParse = this.decompileData(),
-        mergeData = true,
-    ): UnknownObject | null {
+    public parseData(dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
         // If the normal data is not set, throw an error
         if ((!this.normalData || !this.normalDataPlain) && mergeData) {
-            throw new Error(
-                "dataManager.parseData(): You must call init() before writing to data.",
-            );
+            throw new Error("dataManager.parseData(): You must call init() before writing to data.");
         }
 
         // If the data is empty, return null
@@ -657,9 +584,7 @@ class DataManager {
         const [, loadedData] = dataToParse;
 
         // Merge the loaded data with the normal data, if specified
-        const loadedDataMerged = !mergeData
-            ? loadedData
-            : deepMerge(this.normalDataPlain, this.normalData, loadedData);
+        const loadedDataMerged = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
 
         // Recursively convert the loaded data to class instances
         return plainToInstanceRecursive(this.normalData, loadedDataMerged);
@@ -670,25 +595,14 @@ class DataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData(
-        dataToLoad:
-            | [SaveMetadata, UnknownObject]
-            | null
-            | string = this.decompileData(),
-    ): null | boolean {
-        dataToLoad =
-            typeof dataToLoad === "string"
-                ? this.decompileData(dataToLoad)
-                : dataToLoad;
+    public loadData(dataToLoad: [SaveMetadata, UnknownObject] | null | string = this.decompileData()): null | boolean {
+        dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
 
         // If the data is empty, return null
         if (!dataToLoad) return null;
 
         // Check if the data is valid
-        const isDataValid = this.validateData([
-            dataToLoad[0],
-            instanceToPlain(dataToLoad[1]),
-        ]);
+        const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
 
         // TODO: dataToLoad somehow plainToInstance?
         const parsedData = this.parseData(dataToLoad);

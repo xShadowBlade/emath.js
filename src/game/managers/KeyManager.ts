@@ -90,9 +90,7 @@ class KeyManager {
     private readonly config: KeyManagerConfig;
 
     /** The configuration manager for the key manager */
-    private static readonly configManager = new ConfigManager(
-        keyManagerDefaultConfig,
-    );
+    private static readonly configManager = new ConfigManager(keyManagerDefaultConfig);
 
     /** The tickers for the key manager */
     private readonly tickers: ((dt: number) => void)[];
@@ -132,8 +130,7 @@ class KeyManager {
             for (const bind of this.binds) {
                 // console.log(bind);
                 if (
-                    (typeof bind.onDownContinuous !== "undefined" ||
-                        typeof bind.fn !== "undefined") &&
+                    (typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") &&
                     this.isPressing(bind.id)
                 ) {
                     bind.onDownContinuous?.(dt);
@@ -254,11 +251,7 @@ class KeyManager {
      * ]);
      */
     public addKey(keysToAdd: KeyBinding | KeyBinding[]): void;
-    public addKey(
-        nameOrKeysToAdd: string | KeyBinding | KeyBinding[],
-        key?: string,
-        fn?: (dt: number) => void,
-    ): void {
+    public addKey(nameOrKeysToAdd: string | KeyBinding | KeyBinding[], key?: string, fn?: (dt: number) => void): void {
         nameOrKeysToAdd =
             typeof nameOrKeysToAdd === "string"
                 ? {
@@ -269,13 +262,11 @@ class KeyManager {
                   }
                 : nameOrKeysToAdd;
 
-        nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd)
-            ? nameOrKeysToAdd
-            : [nameOrKeysToAdd];
+        nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
         for (const keyBinding of nameOrKeysToAdd) {
             // Backwards compatibility: In versions before 8.2.0, `name` was used as the id.
             // If `id` is not provided, use `name` as the id.
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
             keyBinding.id = keyBinding.id ?? keyBinding.name;
 
             const existing = this.getBind(keyBinding.id);

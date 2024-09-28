@@ -143,17 +143,14 @@ interface EventManagerEventsWithComments {
  * Default event manager events.
  * For more information, see {@link EventManagerEventsWithComments}.
  */
-type EventManagerEvents =
-    EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
+type EventManagerEvents = EventManagerEventsWithComments[keyof EventManagerEventsWithComments];
 
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  */
 class EventManager<Events extends string = string> {
     /** The static config manager for the event manager */
-    private static readonly configManager = new ConfigManager(
-        eventManagerDefaultConfig,
-    );
+    private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
 
     /** The timer events stored in the event manager */
     private readonly events: Record<string, IntervalEvent | TimeoutEvent>;
@@ -162,10 +159,7 @@ class EventManager<Events extends string = string> {
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Record<
-        Events | EventManagerEvents,
-        CallbackEvent[] | undefined
-    >;
+    private readonly callbackEvents: Record<Events | EventManagerEvents, CallbackEvent[] | undefined>;
 
     /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;
@@ -246,14 +240,8 @@ class EventManager<Events extends string = string> {
                 case EventTypes.interval:
                     {
                         // If interval
-                        if (
-                            currentTime -
-                                (event as IntervalEvent).intervalLast >=
-                            event.delay
-                        ) {
-                            const dt =
-                                currentTime -
-                                (event as IntervalEvent).intervalLast;
+                        if (currentTime - (event as IntervalEvent).intervalLast >= event.delay) {
+                            const dt = currentTime - (event as IntervalEvent).intervalLast;
                             event.callback(dt);
                             (event as IntervalEvent).intervalLast = currentTime;
                         }
@@ -344,10 +332,7 @@ class EventManager<Events extends string = string> {
                         const event: IntervalEvent = {
                             name,
                             type: type as EventTypes.interval,
-                            delay:
-                                typeof delay === "number"
-                                    ? delay
-                                    : delay.toNumber(),
+                            delay: typeof delay === "number" ? delay : delay.toNumber(),
                             callback: callbackFn,
                             timeCreated: Date.now(),
                             intervalLast: Date.now(),
@@ -360,10 +345,7 @@ class EventManager<Events extends string = string> {
                     const event: TimeoutEvent = {
                         name,
                         type: type as EventTypes.timeout,
-                        delay:
-                            typeof delay === "number"
-                                ? delay
-                                : delay.toNumber(),
+                        delay: typeof delay === "number" ? delay : delay.toNumber(),
                         callback: callbackFn,
                         timeCreated: Date.now(),
                     };
@@ -394,10 +376,5 @@ class EventManager<Events extends string = string> {
     }
 }
 
-export type {
-    EventManagerConfig,
-    IntervalEvent,
-    TimeoutEvent,
-    TimerEvent as Event,
-};
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent as Event };
 export { EventManager, EventTypes };

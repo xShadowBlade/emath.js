@@ -35,10 +35,7 @@ class ConfigManager<T extends UnknownObject | object> {
          * @param template - The template to use for default values.
          * @returns A new object with default values for any missing options.
          */
-        function parseObject(
-            obj: UnknownObject,
-            template: UnknownObject,
-        ): UnknownObject {
+        function parseObject(obj: UnknownObject, template: UnknownObject): UnknownObject {
             for (const key in template) {
                 if (typeof obj[key] === "undefined") {
                     obj[key] = template[key];
@@ -57,10 +54,7 @@ class ConfigManager<T extends UnknownObject | object> {
             return obj;
         }
 
-        return parseObject(
-            config as UnknownObject,
-            this.configOptionTemplate as UnknownObject,
-        ) as T;
+        return parseObject(config as UnknownObject, this.configOptionTemplate as UnknownObject) as T;
     }
 
     /**
