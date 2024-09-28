@@ -7,6 +7,7 @@ import { assert } from "chai";
 
 /**
  * Asserts that two Decimal instances are equal.
+ * @deprecated
  * @param e1 - The first Decimal instance.
  * @param e2 - The second Decimal instance.
  */
@@ -51,6 +52,9 @@ class LocalStorageTest implements Storage {
     }
 }
 
+/**
+ * An instance of {@link LocalStorageTest} for testing.
+ */
 const localStorageTest = new LocalStorageTest();
 
 export { assertDecimal, LocalStorageTest, localStorageTest };

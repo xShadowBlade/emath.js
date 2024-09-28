@@ -7360,7 +7360,7 @@ var EventManager = class _EventManager {
   }
   /**
    * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
-   * @param dt - The time to warp by.
+   * @param dt - The time to warp by (in milliseconds).
    */
   timeWarp(dt) {
     for (const event of Object.values(this.events)) {

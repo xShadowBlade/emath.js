@@ -20,7 +20,7 @@ const gameConfig: GameConfigOptions = {
         framerate: 10,
     },
 
-    // Seperate localStorage for testing in node
+    // Separate localStorage for testing in node
     localStorage: localStorageTest,
 };
 
