@@ -16,7 +16,7 @@
     "emath.js": "file:../"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.19",
+    "@types/chai": "^5.0.0",
     "@types/mocha": "^10.0.8",
     "chai": "^5.1.1",
     "esbuild": "^0.20.2",
