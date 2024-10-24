@@ -5539,7 +5539,7 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound) {
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
   lowerBound = new Decimal(lowerBound);
   upperBound = new Decimal(upperBound ?? n);
   if (lowerBound.gt(upperBound)) {
@@ -5562,6 +5562,49 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   }
   for (let i = 0; i < iterations; i++) {
     const mid = mean(lowerBound, upperBound, mode);
+    const midValue = f(mid);
+    if (equalsTolerance(lowerBound, upperBound, tolerance, {
+      verbose: false,
+      mode: "geometric"
+    })) {
+      break;
+    }
+    if (midValue.lt(n)) {
+      lowerBound = mid;
+    } else {
+      upperBound = mid;
+    }
+  }
+  const out = {
+    value: lowerBound,
+    lowerBound,
+    upperBound
+  };
+  return out;
+}
+function inverseFunctionApproxInt(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
+  lowerBound = new Decimal(lowerBound).floor();
+  upperBound = new Decimal(upperBound).ceil();
+  if (lowerBound.gt(upperBound)) {
+    [lowerBound, upperBound] = [upperBound, lowerBound];
+  }
+  if (f(upperBound).eq(0)) {
+    return {
+      value: Decimal.dZero,
+      lowerBound: Decimal.dZero,
+      upperBound: Decimal.dZero
+    };
+  }
+  if (f(upperBound).lt(n)) {
+    console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  for (let i = 0; i < iterations; i++) {
+    const mid = mean(lowerBound, upperBound, mode).floor();
     const midValue = f(mid);
     if (equalsTolerance(lowerBound, upperBound, tolerance, {
       verbose: false,
@@ -6968,6 +7011,7 @@ export {
   equalsTolerance,
   formats,
   inverseFunctionApprox,
+  inverseFunctionApproxInt,
   roundingBase,
   upgradeToCacheNameEL
 };
