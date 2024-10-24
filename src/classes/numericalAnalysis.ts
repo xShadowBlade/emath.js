@@ -141,6 +141,28 @@ function equalsTolerance(
 }
 
 /**
+ * Represents the result of an inverse function approximation.
+ * See {@link inverseFunctionApprox} and {@link inverseFunctionApproxInt}.
+ */
+interface InverseFunctionApproxResult {
+    /**
+     * The value of the inverse function approximation.
+     * Defaults to the lower bound ({@link lowerBound}).
+     */
+    value: Decimal;
+
+    /**
+     * The lower bound of the inverse function approximation.
+     */
+    lowerBound: Decimal;
+
+    /**
+     * The upper bound of the inverse function approximation
+     */
+    upperBound: Decimal;
+}
+
+/**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
  * @deprecated Use {@link Decimal.increasingInverse} instead.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
@@ -163,8 +185,8 @@ function inverseFunctionApprox(
     iterations = DEFAULT_ITERATIONS,
     tolerance = DEFAULT_TOLERANCE,
     lowerBound: DecimalSource = 1,
-    upperBound?: DecimalSource,
-): { value: Decimal; lowerBound: Decimal; upperBound: Decimal } {
+    upperBound: DecimalSource = n,
+): InverseFunctionApproxResult {
     // Set the initial bounds
     lowerBound = new Decimal(lowerBound);
     upperBound = new Decimal(upperBound ?? n);
@@ -214,7 +236,7 @@ function inverseFunctionApprox(
 
     // Perform the bisection / binary search
     for (let i = 0; i < iterations; i++) {
-        const mid = mean(lowerBound, upperBound, mode);
+        const mid: Decimal = mean(lowerBound, upperBound, mode);
 
         const midValue = f(mid);
         // console.log({ lowerBound, upperBound, mid, midValue, n, i });
@@ -239,13 +261,99 @@ function inverseFunctionApprox(
         }
     }
 
-    const out = {
+    const out: InverseFunctionApproxResult = {
         value: lowerBound,
         lowerBound,
         upperBound,
     };
 
-    // console.log(out);
+    return out;
+}
+
+/**
+ * Approximates the inverse of a function at `n` using the bisection / binary search method.
+ * Only outputs and searches through integers.
+ * Also see {@link inverseFunctionApprox}, though this function is optimized for integers.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
+ * @param n - The value to approximate the inverse at.
+ * @param mode - The mode/mean method to use. See {@link MeanMode}
+ * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
+ * @param upperBound - The upper bound to start the search from. Defaults to `n`.
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
+ */
+function inverseFunctionApproxInt(
+    f: (x: Decimal) => Decimal,
+    n: DecimalSource,
+    mode: MeanMode = "geometric",
+    iterations = DEFAULT_ITERATIONS,
+    tolerance = DEFAULT_TOLERANCE,
+    lowerBound: DecimalSource = 1,
+    upperBound: DecimalSource = n,
+): InverseFunctionApproxResult {
+    // Set the initial bounds
+    lowerBound = new Decimal(lowerBound).floor();
+    upperBound = new Decimal(upperBound).ceil();
+
+    // Reorder the bounds if they are in the wrong order
+    if (lowerBound.gt(upperBound)) {
+        [lowerBound, upperBound] = [upperBound, lowerBound];
+    }
+
+    // If the function evaluates to 0, return 0
+    if (f(upperBound).eq(0)) {
+        return {
+            value: Decimal.dZero,
+            lowerBound: Decimal.dZero,
+            upperBound: Decimal.dZero,
+        };
+    }
+
+    // If the function is not monotonically increasing, return the upper bound
+    if (f(upperBound).lt(n)) {
+        console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
+        // console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
+        return {
+            value: upperBound,
+            lowerBound: upperBound,
+            upperBound: upperBound,
+        };
+    }
+
+    // Perform the bisection / binary search
+    for (let i = 0; i < iterations; i++) {
+        const mid: Decimal = mean(lowerBound, upperBound, mode).floor();
+
+        const midValue = f(mid);
+        // console.log({ lowerBound, upperBound, mid, midValue, n, i });
+
+        // Stop the loop if the bounds are close enough
+        if (
+            equalsTolerance(lowerBound, upperBound, tolerance, {
+                verbose: false,
+                mode: "geometric",
+            })
+        ) {
+            // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
+            break;
+        }
+
+        if (midValue.lt(n)) {
+            // If the value is less than the target, set the lower bound to the mid value
+            lowerBound = mid;
+        } else {
+            // If the value is greater than the target, set the upper bound to the mid value
+            upperBound = mid;
+        }
+    }
+
+    const out: InverseFunctionApproxResult = {
+        value: lowerBound,
+        lowerBound,
+        upperBound,
+    };
+
     return out;
 }
 
@@ -493,6 +601,7 @@ function roundingBase(
 export {
     equalsTolerance,
     inverseFunctionApprox,
+    inverseFunctionApproxInt,
     calculateSumLoop,
     calculateSumApprox,
     calculateSum,

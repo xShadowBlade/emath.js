@@ -6234,7 +6234,7 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound) {
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
   lowerBound = new Decimal(lowerBound);
   upperBound = new Decimal(upperBound ?? n);
   if (lowerBound.gt(upperBound)) {
