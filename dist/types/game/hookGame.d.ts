@@ -181,7 +181,6 @@ declare const eMath: {
     Grid: typeof eMathMain.Grid;
     equalsTolerance: typeof eMathMain.equalsTolerance;
     inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;
-    inverseFunctionApproxInt: typeof eMathMain.inverseFunctionApproxInt;
     calculateSumLoop: typeof eMathMain.calculateSumLoop;
     calculateSumApprox: typeof eMathMain.calculateSumApprox;
     calculateSum: typeof eMathMain.calculateSum;

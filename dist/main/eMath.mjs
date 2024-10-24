@@ -5539,9 +5539,11 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n, round = false) {
   lowerBound = new Decimal(lowerBound);
-  upperBound = new Decimal(upperBound ?? n);
+  lowerBound = round ? lowerBound.floor() : lowerBound;
+  upperBound = new Decimal(upperBound);
+  upperBound = round ? upperBound.ceil() : upperBound;
   if (lowerBound.gt(upperBound)) {
     [lowerBound, upperBound] = [upperBound, lowerBound];
   }
@@ -5561,7 +5563,8 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   for (let i = 0; i < iterations; i++) {
-    const mid = mean(lowerBound, upperBound, mode);
+    let mid = mean(lowerBound, upperBound, mode);
+    mid = round ? mid.floor() : mid;
     const midValue = f(mid);
     if (equalsTolerance(lowerBound, upperBound, tolerance, {
       verbose: false,
@@ -5574,48 +5577,12 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     } else {
       upperBound = mid;
     }
-  }
-  const out = {
-    value: lowerBound,
-    lowerBound,
-    upperBound
-  };
-  return out;
-}
-function inverseFunctionApproxInt(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
-  lowerBound = new Decimal(lowerBound).floor();
-  upperBound = new Decimal(upperBound).ceil();
-  if (lowerBound.gt(upperBound)) {
-    [lowerBound, upperBound] = [upperBound, lowerBound];
-  }
-  if (f(upperBound).eq(0)) {
-    return {
-      value: Decimal.dZero,
-      lowerBound: Decimal.dZero,
-      upperBound: Decimal.dZero
-    };
-  }
-  if (f(upperBound).lt(n)) {
-    console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  for (let i = 0; i < iterations; i++) {
-    const mid = mean(lowerBound, upperBound, mode).floor();
-    const midValue = f(mid);
-    if (equalsTolerance(lowerBound, upperBound, tolerance, {
-      verbose: false,
-      mode: "geometric"
-    })) {
-      break;
-    }
-    if (midValue.lt(n)) {
-      lowerBound = mid;
-    } else {
-      upperBound = mid;
+    if (midValue.eq(n)) {
+      return {
+        value: mid,
+        lowerBound: mid,
+        upperBound: mid
+      };
     }
   }
   const out = {
@@ -7011,7 +6978,6 @@ export {
   equalsTolerance,
   formats,
   inverseFunctionApprox,
-  inverseFunctionApproxInt,
   roundingBase,
   upgradeToCacheNameEL
 };

@@ -6268,9 +6268,11 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n) {
+function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n, round = false) {
   lowerBound = new Decimal(lowerBound);
-  upperBound = new Decimal(upperBound ?? n);
+  lowerBound = round ? lowerBound.floor() : lowerBound;
+  upperBound = new Decimal(upperBound);
+  upperBound = round ? upperBound.ceil() : upperBound;
   if (lowerBound.gt(upperBound)) {
     [lowerBound, upperBound] = [upperBound, lowerBound];
   }
@@ -6290,7 +6292,8 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     };
   }
   for (let i = 0; i < iterations; i++) {
-    const mid = mean(lowerBound, upperBound, mode);
+    let mid = mean(lowerBound, upperBound, mode);
+    mid = round ? mid.floor() : mid;
     const midValue = f(mid);
     if (equalsTolerance(lowerBound, upperBound, tolerance, {
       verbose: false,
@@ -6302,6 +6305,13 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
       lowerBound = mid;
     } else {
       upperBound = mid;
+    }
+    if (midValue.eq(n)) {
+      return {
+        value: mid,
+        lowerBound: mid,
+        upperBound: mid
+      };
     }
   }
   const out = {
