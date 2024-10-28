@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/chai": "^5.0.0",
     "@types/mocha": "^10.0.9",
-    "chai": "^5.1.1",
+    "chai": "^5.1.2",
     "esbuild": "^0.20.2",
     "mocha": "^10.7.3",
     "typescript": "^5.4.5"
