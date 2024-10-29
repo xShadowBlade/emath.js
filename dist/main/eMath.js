@@ -5678,6 +5678,10 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     lowerBound,
     upperBound
   };
+  console.log({
+    out
+  });
+  console.trace();
   return out;
 }
 function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
@@ -5857,6 +5861,7 @@ var UpgradeStatic = class _UpgradeStatic {
     this.effect = init.effect;
     this.el = init.el;
     this.defaultLevel = init.level ?? Decimal.dOne;
+    this.bounds = init.bounds;
   }
   // /**
   //  * Gets the cached data of the upgrade.
