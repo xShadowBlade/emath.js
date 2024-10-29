@@ -62,6 +62,7 @@ __export(src_exports, {
   ST_NAMES: () => ST_NAMES,
   UpgradeData: () => UpgradeData,
   UpgradeStatic: () => UpgradeStatic,
+  calculateInverseFunction: () => calculateInverseFunction,
   calculateItem: () => calculateItem,
   calculateSum: () => calculateSum,
   calculateSumApprox: () => calculateSumApprox,
@@ -5605,11 +5606,16 @@ function equalsTolerance(a, b, tolerance, config) {
   }
   return result;
 }
+function calculateInverseFunction(f, n, options) {
+  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
+  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
+}
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n, round = false) {
   lowerBound = new Decimal(lowerBound);
   lowerBound = round ? lowerBound.floor() : lowerBound;
   upperBound = new Decimal(upperBound);
   upperBound = round ? upperBound.ceil() : upperBound;
+  const BOUND_THRESHOLD = 5;
   if (lowerBound.gt(upperBound)) {
     [lowerBound, upperBound] = [upperBound, lowerBound];
   }
@@ -5648,6 +5654,22 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
         value: mid,
         lowerBound: mid,
         upperBound: mid
+      };
+    }
+    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
+      let closest = upperBound;
+      let closestDiff = f(upperBound).sub(n).abs();
+      for (let j = lowerBound; j.lte(upperBound); j = j.add(1)) {
+        const diff = f(j).sub(n).abs();
+        if (diff.lt(closestDiff)) {
+          closest = new Decimal(j);
+          closestDiff = diff;
+        }
+      }
+      return {
+        value: closest,
+        lowerBound,
+        upperBound
       };
     }
   }

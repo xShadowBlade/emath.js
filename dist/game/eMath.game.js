@@ -6273,6 +6273,7 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   lowerBound = round ? lowerBound.floor() : lowerBound;
   upperBound = new Decimal(upperBound);
   upperBound = round ? upperBound.ceil() : upperBound;
+  const BOUND_THRESHOLD = 5;
   if (lowerBound.gt(upperBound)) {
     [lowerBound, upperBound] = [upperBound, lowerBound];
   }
@@ -6311,6 +6312,22 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
         value: mid,
         lowerBound: mid,
         upperBound: mid
+      };
+    }
+    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
+      let closest = upperBound;
+      let closestDiff = f(upperBound).sub(n).abs();
+      for (let j = lowerBound; j.lte(upperBound); j = j.add(1)) {
+        const diff = f(j).sub(n).abs();
+        if (diff.lt(closestDiff)) {
+          closest = new Decimal(j);
+          closestDiff = diff;
+        }
+      }
+      return {
+        value: closest,
+        lowerBound,
+        upperBound
       };
     }
   }
