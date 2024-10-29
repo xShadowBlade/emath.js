@@ -56,6 +56,36 @@ interface EqualsToleranceConfig {
  */
 declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EqualsToleranceConfig>): boolean;
 /**
+ *
+ * Represents the options for the {@link inverseFunctionApprox} function.
+ */
+interface InverseFunctionOptions {
+    /**
+     * The mode/mean method to use. See {@link MeanMode}
+     */
+    mode: MeanMode;
+    /**
+     * The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+     */
+    iterations: number;
+    /**
+     * The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+     */
+    tolerance: DecimalSource;
+    /**
+     * The lower bound to start the search from. Defaults to `1`.
+     */
+    lowerBound: DecimalSource;
+    /**
+     * The upper bound to start the search from. Defaults to `n`.
+     */
+    upperBound: DecimalSource;
+    /**
+     * Whether to round the bound and search only through integers. Defaults to `false`.
+     */
+    round: boolean;
+}
+/**
  * Represents the result of an inverse function approximation.
  * See {@link inverseFunctionApprox} and {@link inverseFunctionApproxInt}.
  */
@@ -79,6 +109,19 @@ interface InverseFunctionApproxResult {
  * @deprecated Use {@link Decimal.increasingInverse} instead.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
  * @param n - The value to approximate the inverse at.
+ * @param options - The options for the approximation. See {@link InverseFunctionOptions}
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const inverse = inverseFunctionApprox(f, 16);
+ * console.log(inverse.value); // ~3.9999999999999996
+ */
+declare function calculateInverseFunction(f: (x: Decimal) => Decimal, n: DecimalSource, options: InverseFunctionOptions): InverseFunctionApproxResult;
+/**
+ * Approximates the inverse of a function at `n` using the bisection / binary search method.
+ * @deprecated Use {@link Decimal.increasingInverse} instead.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
+ * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
@@ -91,7 +134,7 @@ interface InverseFunctionApproxResult {
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean): InverseFunctionApproxResult;
+declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: DecimalSource, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean): InverseFunctionApproxResult;
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
  * See {@link calculateSum} for a more general function.
@@ -141,5 +184,5 @@ declare function calculateSum(f: (n: Decimal) => Decimal, b: DecimalSource, a?: 
  * roundingBase(245, 2); // 256
  */
 declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
-export { equalsTolerance, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS, };
+export { equalsTolerance, calculateInverseFunction, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS, };
 export type { MeanMode, EqualsToleranceConfig };

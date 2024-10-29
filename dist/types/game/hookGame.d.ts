@@ -180,6 +180,7 @@ declare const eMath: {
     GridCellCollection: typeof eMathMain.GridCellCollection;
     Grid: typeof eMathMain.Grid;
     equalsTolerance: typeof eMathMain.equalsTolerance;
+    calculateInverseFunction: typeof eMathMain.calculateInverseFunction;
     inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;
     calculateSumLoop: typeof eMathMain.calculateSumLoop;
     calculateSumApprox: typeof eMathMain.calculateSumApprox;

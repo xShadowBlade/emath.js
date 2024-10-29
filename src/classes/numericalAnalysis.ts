@@ -86,6 +86,7 @@ interface EqualsToleranceConfig {
      * - `"onlyOnFail"` - Only log the values to the console if the result is `false`.
      */
     verbose: boolean | "onlyOnFail";
+
     /**
      * The mode/mean method to use. See {@link MeanMode}
      */
@@ -139,6 +140,41 @@ function equalsTolerance(
 
     return result;
 }
+/**
+ * 
+ * Represents the options for the {@link inverseFunctionApprox} function.
+ */
+interface InverseFunctionOptions {
+    /**
+     * The mode/mean method to use. See {@link MeanMode}
+     */
+    mode: MeanMode;
+
+    /**
+     * The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+     */
+    iterations: number;
+
+    /**
+     * The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+     */
+    tolerance: DecimalSource;
+
+    /**
+     * The lower bound to start the search from. Defaults to `1`.
+     */
+    lowerBound: DecimalSource;
+
+    /**
+     * The upper bound to start the search from. Defaults to `n`.
+     */
+    upperBound: DecimalSource;
+
+    /**
+     * Whether to round the bound and search only through integers. Defaults to `false`.
+     */
+    round: boolean;
+}
 
 /**
  * Represents the result of an inverse function approximation.
@@ -167,6 +203,29 @@ interface InverseFunctionApproxResult {
  * @deprecated Use {@link Decimal.increasingInverse} instead.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
  * @param n - The value to approximate the inverse at.
+ * @param options - The options for the approximation. See {@link InverseFunctionOptions}
+ * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
+ * @example
+ * const f = (x) => x.pow(2);
+ * const inverse = inverseFunctionApprox(f, 16);
+ * console.log(inverse.value); // ~3.9999999999999996
+ */
+function calculateInverseFunction(
+    f: (x: Decimal) => Decimal,
+    n: DecimalSource,
+    options: InverseFunctionOptions,
+): InverseFunctionApproxResult {
+    // Wrapper, call the old function
+    const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
+
+    return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
+}
+
+/**
+ * Approximates the inverse of a function at `n` using the bisection / binary search method.
+ * @deprecated Use {@link Decimal.increasingInverse} instead.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
+ * @param n - The value to approximate the inverse at.
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
  * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
@@ -184,7 +243,7 @@ function inverseFunctionApprox(
     n: DecimalSource,
     mode: MeanMode = "geometric",
     iterations = DEFAULT_ITERATIONS,
-    tolerance = DEFAULT_TOLERANCE,
+    tolerance: DecimalSource = DEFAULT_TOLERANCE,
     lowerBound: DecimalSource = 1,
     upperBound: DecimalSource = n,
     round = false,
@@ -195,6 +254,11 @@ function inverseFunctionApprox(
 
     upperBound = new Decimal(upperBound);
     upperBound = round ? upperBound.ceil() : upperBound;
+
+    /**
+     * If round is true and upperBound - lowerBound is less than this value, search through all the values manually and return the closest one.
+     */
+    const BOUND_THRESHOLD = 5;
 
     // Reorder the bounds if they are in the wrong order
     if (lowerBound.gt(upperBound)) {
@@ -283,6 +347,24 @@ function inverseFunctionApprox(
                 value: mid,
                 lowerBound: mid,
                 upperBound: mid,
+            };
+        }
+
+        // If the bounds are close enough and round is true, search through all the values manually and return the closest one
+        if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
+            let closest = upperBound;
+            let closestDiff = f(upperBound).sub(n).abs();
+            for (let j = lowerBound; j.lte(upperBound); j = j.add(1)) {
+                const diff = f(j).sub(n).abs();
+                if (diff.lt(closestDiff)) {
+                    closest = new Decimal(j);
+                    closestDiff = diff;
+                }
+            }
+            return {
+                value: closest,
+                lowerBound: lowerBound,
+                upperBound: upperBound,
             };
         }
     }
@@ -539,6 +621,7 @@ function roundingBase(
 
 export {
     equalsTolerance,
+    calculateInverseFunction,
     inverseFunctionApprox,
     calculateSumLoop,
     calculateSumApprox,
