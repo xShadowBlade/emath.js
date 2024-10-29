@@ -26,7 +26,7 @@ const coinsUpgrades = [
     {
         id: "upg1Coins", // Unique ID
         name: "Basic Coin Boost",
-        cost: (level): Decimal => level.mul(10), // Cost of 10 times the level
+        cost: (level): Decimal => level.mul(2).pow(1.1), // Cost of 10 times the level
         effect: function (level, _, currency): void {
             currency.boost.setBoost(
                 "boostUpg1Coins",

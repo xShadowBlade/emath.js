@@ -375,6 +375,12 @@ function inverseFunctionApprox(
         upperBound,
     };
 
+    // test
+    console.log({
+        out,
+    });
+    console.trace();
+
     return out;
 }
 
