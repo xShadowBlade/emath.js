@@ -42,8 +42,9 @@ const DEFAULT_TOLERANCE = 0.001;
  * - Mode 1 `"arithmetic"` `(a+b)/2` is a bit faster but way less accurate for large numbers.
  * - Mode 2 `"geometric"` `sqrt(ab)` is more accurate, and is the default.
  * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
+ * - Mode 4 `"logarithmic"` `10^sqrt(log10(a)*log10(b))` is the most "accurate" and slightly slower.
  */
-type MeanMode = "arithmetic" | "geometric" | "harmonic" | 1 | 2 | 3;
+type MeanMode = "arithmetic" | "geometric" | "harmonic" | "logarithmic" | 1 | 2 | 3 | 4;
 
 /**
  * Calculates the mean of two values using a specified method.
@@ -67,6 +68,9 @@ function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric"):
         case "harmonic":
         case 3:
             return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
+        case "logarithmic":
+        case 4:
+            return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
     }
 }
 
