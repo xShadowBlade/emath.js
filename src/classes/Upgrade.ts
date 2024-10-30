@@ -6,7 +6,7 @@ import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
-import { MeanMode, inverseFunctionApprox, calculateSum } from "./numericalAnalysis";
+import { MeanMode, inverseFunctionApprox, calculateSum, calculateInverseFunction } from "./numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";
 
 /**
@@ -114,7 +114,10 @@ function calculateUpgrade(
         const costTargetFn = (level: Decimal): Decimal => upgrade.cost(level.add(start));
         const maxLevelAffordable = Decimal.min(
             end,
-            inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor(),
+            calculateInverseFunction(costTargetFn, value, {
+                mode,
+                iterations,
+            }).value.floor(),
         );
         // const cost = upgrade.cost(maxLevelAffordable);
         const cost = Decimal.dZero;
@@ -126,20 +129,20 @@ function calculateUpgrade(
 
     // Binary Search with sum calculation
     // console.log("binary search");
-    const maxLevelAffordable = inverseFunctionApprox(
-        (x: Decimal) => calculateSum(upgrade.cost, x, start),
-        value,
+    const maxLevelAffordable = calculateInverseFunction((x: Decimal) => calculateSum(upgrade.cost, x, start), value, {
         mode,
         iterations,
-    )
+    })
         .value.floor()
         .min(start.add(target).sub(1));
+
+    // After finding the max level affordable, calculate the cost at that level
     const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
 
     // console.log({ maxLevelAffordable, cost });
     const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
-
     // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
+
     // Set the cache
     // upgrade.setCached("sum", start, end, cost);
     return [maxLevelAffordableActual, cost];
@@ -239,12 +242,14 @@ interface UpgradeInit {
      * By providing a bounds function, you can make the calculations more accurate.
      * For example, if you can only buy 102 upgrades with 1e100 currency, you can provide a bounds function that returns something like [0, 1000].
      *
-     * It should satisfy the following for all `currency` in positive numbers (where cost' is the inverse of the cost function):
+     * It should satisfy the following for all `currency` >= 0 (and where cost' is the inverse of the cost function):
      * - 0 <= min < cost'(currency) < max < currency
      *
      * Basically, the bounds function should include the interval where the inverse cost function is within that interval,
      * but the max bound should grow slower than the currency (y=x), for accurate calculations.
      * @param currency - The currency value.
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
      * @returns [min, max] - The minimum and maximum level that can be bought with the currency.
      * @example
      * // Given a cost function,
@@ -257,7 +262,7 @@ interface UpgradeInit {
      * // So the bounds grows faster (y=x^0.75) than the inverse (y=x^0.5), but still slower than the currency (y=x).
      */
     // TODO: Implement upgrade bounds in calculateUpgrade
-    bounds?: (currency: Decimal) => [min: Decimal, max: Decimal];
+    bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
 
     // Below are types that are automatically added
     /**

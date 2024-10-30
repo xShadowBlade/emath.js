@@ -141,7 +141,6 @@ function equalsTolerance(
     return result;
 }
 /**
- * 
  * Represents the options for the {@link inverseFunctionApprox} function.
  */
 interface InverseFunctionOptions {
@@ -200,7 +199,7 @@ interface InverseFunctionApproxResult {
 
 /**
  * Approximates the inverse of a function at `n` using the bisection / binary search method.
- * @deprecated Use {@link Decimal.increasingInverse} instead.
+ * See {@link Decimal.increasingInverse} for a more general function.
  * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
  * @param n - The value to approximate the inverse at.
  * @param options - The options for the approximation. See {@link InverseFunctionOptions}
@@ -213,7 +212,7 @@ interface InverseFunctionApproxResult {
 function calculateInverseFunction(
     f: (x: Decimal) => Decimal,
     n: DecimalSource,
-    options: InverseFunctionOptions,
+    options: Partial<InverseFunctionOptions> = {},
 ): InverseFunctionApproxResult {
     // Wrapper, call the old function
     const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
@@ -276,32 +275,52 @@ function inverseFunctionApprox(
 
     // If the interval does not contain the value, warn and return the upper bound
     // (Note: This assumes the function is monotonically increasing)
-    // if (f(lowerBound).gt(n)) {
-    //     console.warn(
-    //         "The interval does not contain the value. (f(lowerBound) > n)",
-    //         lowerBound,
-    //         upperBound,
-    //     );
-    //     // console.log({ lowerBound, upperBound, iterations, n, f: f(lowerBound)});
-    //     return {
-    //         value: upperBound,
-    //         lowerBound: upperBound,
-    //         upperBound: upperBound,
-    //     };
-    // }
+    if (f(lowerBound).gt(n)) {
+        console.warn("The interval does not contain the value. (f(lowerBound) > n)", {
+            lowerBound,
+            upperBound,
+            n,
+            /* eslint-disable @typescript-eslint/naming-convention */
+            "f(lowerBound)": f(lowerBound),
+            "f(upperBound)": f(upperBound),
+            /* eslint-enable @typescript-eslint/naming-convention */
+        });
 
-    // If the function is not monotonically increasing, return the upper bound
-    if (f(upperBound).lt(n)) {
-        console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
-        // console.log({ lowerBound, upperBound, iterations, n, f: f(upperBound)});
+        // If the lower bound is not already 0, try again with 0 as the lower bound
+        if (!lowerBound.eq(0)) {
+            return inverseFunctionApprox(f, n, mode, iterations, tolerance, 0, upperBound, round);
+        }
+
+        // If the lower bound is already 0, return the upper bound
         return {
             value: upperBound,
             lowerBound: upperBound,
             upperBound: upperBound,
         };
     }
+    if (f(upperBound).lt(n)) {
+        console.warn("The interval does not contain the value. (f(upperBound) < n)", {
+            lowerBound,
+            upperBound,
+            n,
+            /* eslint-disable @typescript-eslint/naming-convention */
+            "f(lowerBound)": f(lowerBound),
+            "f(upperBound)": f(upperBound),
+            /* eslint-enable @typescript-eslint/naming-convention */
+        });
 
-    // console.log({ lowerBound, upperBound, iterations });
+        // If the upper bound is not already n, try again with n as the upper bound
+        if (!upperBound.eq(n)) {
+            return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
+        }
+
+        // If the upper bound is already n, return the upper bound
+        return {
+            value: upperBound,
+            lowerBound: upperBound,
+            upperBound: upperBound,
+        };
+    }
 
     // Perform the bisection / binary search
     for (let i = 0; i < iterations; i++) {
@@ -376,10 +395,10 @@ function inverseFunctionApprox(
     };
 
     // test
-    console.log({
-        out,
-    });
-    console.trace();
+    // console.log({
+    //     out,
+    // });
+    // console.trace();
 
     return out;
 }

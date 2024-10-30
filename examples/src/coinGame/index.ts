@@ -27,6 +27,14 @@ const coinsUpgrades = [
         id: "upg1Coins", // Unique ID
         name: "Basic Coin Boost",
         cost: (level): Decimal => level.mul(2).pow(1.1), // Cost of 10 times the level
+
+        // The bounds of the upgrade. The first value is the lower bound and the second value is the upper bound.
+        // Must satisfy: 0 < lowerBound < inverseCost(currency) < upperBound < currency
+        bounds: (currency) => [
+            currency.pow(Decimal.reciprocal(1.2)).div(2),
+            currency.pow(Decimal.reciprocal(1.1)).mul(2),
+        ],
+
         effect: function (level, _, currency): void {
             currency.boost.setBoost(
                 "boostUpg1Coins",
@@ -53,6 +61,9 @@ const items = [
 ] as const satisfies ItemInit[];
 
 const coins = coinGame.addCurrency("coins", coinsUpgrades, items);
+
+// Debug
+Object.assign(window, { coins });
 
 // Add item
 coins.addItem(items);
