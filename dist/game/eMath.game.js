@@ -6245,32 +6245,6 @@ function mean(a, b, mode = "geometric") {
       return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
   }
 }
-function equalsTolerance(a, b, tolerance, config) {
-  config = Object.assign(
-    {},
-    {
-      verbose: false,
-      mode: "geometric"
-    },
-    config
-  );
-  a = new Decimal(a);
-  b = new Decimal(b);
-  tolerance = new Decimal(tolerance);
-  let diff;
-  let result;
-  if (config.mode === "geometric") {
-    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
-    result = diff.lte(tolerance);
-  } else {
-    diff = a.sub(b).abs();
-    result = diff.lte(tolerance);
-  }
-  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
-    console.log({ a, b, tolerance, config, diff, result });
-  }
-  return result;
-}
 
 // src/classes/numericalAnalysis/inverseFunction.ts
 function calculateInverseFunction(f, n, options = {}) {
@@ -6335,12 +6309,6 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     let mid = mean(lowerBound, upperBound, mode);
     mid = round ? mid.floor() : mid;
     const midValue = f(mid);
-    if (equalsTolerance(lowerBound, upperBound, tolerance, {
-      verbose: false,
-      mode: "geometric"
-    })) {
-      break;
-    }
     if (midValue.lt(n)) {
       lowerBound = mid;
     } else {
@@ -6391,7 +6359,7 @@ function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
   }
   return sum;
 }
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS - 10) {
   a = new Decimal(a);
   b = new Decimal(b);
   let sum = Decimal.dZero;

@@ -5692,12 +5692,6 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     let mid = mean(lowerBound, upperBound, mode);
     mid = round ? mid.floor() : mid;
     const midValue = f(mid);
-    if (equalsTolerance(lowerBound, upperBound, tolerance, {
-      verbose: false,
-      mode: "geometric"
-    })) {
-      break;
-    }
     if (midValue.lt(n)) {
       lowerBound = mid;
     } else {
@@ -5760,7 +5754,7 @@ function calculateSumApproxOld(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tol
   }
   return sum.div(2).mul(intervalWidth);
 }
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS - 10) {
   a = new Decimal(a);
   b = new Decimal(b);
   let sum = Decimal.dZero;
