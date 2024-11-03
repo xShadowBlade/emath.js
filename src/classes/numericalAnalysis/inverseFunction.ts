@@ -202,16 +202,16 @@ function inverseFunctionApprox(
          */
         const midValue = f(mid);
 
-        // Stop the loop if the bounds are close enough
-        if (
-            equalsTolerance(lowerBound, upperBound, tolerance, {
-                verbose: false,
-                mode: "geometric",
-            })
-        ) {
-            // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
-            break;
-        }
+        // Stop the loop if the bounds are close enough (removed, slower)
+        // if (
+        //     equalsTolerance(lowerBound, upperBound, tolerance, {
+        //         verbose: false,
+        //         mode: "geometric",
+        //     })
+        // ) {
+        //     // console.log("bounds close", { lowerBound, upperBound, mid, midValue, n, i });
+        //     break;
+        // }
 
         // Adjust the bounds based on the mid value (binary search)
         if (midValue.lt(n)) {
@@ -269,6 +269,16 @@ function inverseFunctionApprox(
 }
 
 // Test
+// const f = (x: Decimal): Decimal => x.pow(2);
+
+// console.time("old");
+// for (let i = 0; i < 10000; i++) calculateInverseFunction(f, 152399025);
+// console.timeEnd("old");
+
+// console.time("new");
+// for (let i = 0; i < 10000; i++) inverseFunctionApproxNew(f, 152399025);
+// console.timeEnd("new");
+
 // const inverse = inverseFunctionApprox(f, 152399025);
 // console.log(inverse.value.format());
 // console.log(equalsTolerance(inverse.value, 12345, 1e-3, { verbose: true, mode: "geometric" }));

@@ -3,8 +3,6 @@
  */
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
-import { calculateSumLoop, calculateSumApprox, calculateSum } from "./sum";
-import { inverseFunctionApprox, calculateInverseFunction } from "./inverseFunction";
 
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.

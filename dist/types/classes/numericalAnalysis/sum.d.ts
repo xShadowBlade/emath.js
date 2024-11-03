@@ -30,7 +30,7 @@ declare function calculateSumApproxOld(f: (n: Decimal) => Decimal, b: DecimalSou
  * @param f - The function `f(n)` to calculate the sum.
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS} - 10.
  * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number): Decimal;
