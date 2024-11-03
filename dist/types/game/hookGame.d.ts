@@ -179,6 +179,7 @@ declare const eMath: {
     GridCell: typeof eMathMain.GridCell;
     GridCellCollection: typeof eMathMain.GridCellCollection;
     Grid: typeof eMathMain.Grid;
+    mean(a: eMathMain.DecimalSource, b: eMathMain.DecimalSource, mode?: eMathMain.MeanMode): eMathMain.Decimal;
     equalsTolerance: typeof eMathMain.equalsTolerance;
     calculateInverseFunction: typeof eMathMain.calculateInverseFunction;
     inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;
@@ -187,6 +188,7 @@ declare const eMath: {
     calculateSum: typeof eMathMain.calculateSum;
     roundingBase: typeof eMathMain.roundingBase;
     DEFAULT_ITERATIONS: 30;
+    DEFAULT_TOLERANCE: 0.001;
     E: ((x?: eMathMain.DecimalSource) => eMathMain.Decimal) & typeof eMathMain.Decimal;
 };
 export default eMath;

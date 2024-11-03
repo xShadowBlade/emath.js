@@ -6,7 +6,7 @@ import { Type } from "class-transformer";
 
 import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
-import { MeanMode } from "./numericalAnalysis";
+import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
 import { ItemData, Item, calculateItem } from "./Item";
 
