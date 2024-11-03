@@ -3,8 +3,6 @@
  */
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
-import { calculateSumLoop, calculateSumApprox, calculateSum } from "./sum";
-import { inverseFunctionApprox, calculateInverseFunction } from "./inverseFunction";
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
  * Can be overridden by passing a custom amount of iterations.
@@ -91,5 +89,5 @@ declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: 
  * roundingBase(245, 2); // 256
  */
 declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
-export { equalsTolerance, calculateInverseFunction, inverseFunctionApprox, calculateSumLoop, calculateSumApprox, calculateSum, roundingBase, DEFAULT_ITERATIONS, DEFAULT_TOLERANCE, };
+export { equalsTolerance, roundingBase, DEFAULT_ITERATIONS, DEFAULT_TOLERANCE, };
 export type { MeanMode, EqualsToleranceConfig };

@@ -268,5 +268,10 @@ function inverseFunctionApprox(
     return out;
 }
 
+// Test
+// const inverse = inverseFunctionApprox(f, 152399025);
+// console.log(inverse.value.format());
+// console.log(equalsTolerance(inverse.value, 12345, 1e-3, { verbose: true, mode: "geometric" }));
+
 export type { InverseFunctionOptions, InverseFunctionApproxResult };
 export { calculateInverseFunction, inverseFunctionApprox };

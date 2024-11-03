@@ -5494,46 +5494,69 @@ var Boost = class {
 import "reflect-metadata";
 import { Type, Expose as Expose2 } from "class-transformer";
 
-// src/classes/numericalAnalysis/sum.ts
-function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
-  let sum = new Decimal();
-  let n = new Decimal(b);
-  for (; n.gte(a); n = n.sub(1)) {
-    const initSum = sum;
-    const value = f(n);
-    sum = sum.add(value);
-    const diff = initSum.div(sum);
-    if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
-  }
-  return sum;
-}
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE * 2) {
+// src/classes/numericalAnalysis/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 30;
+var DEFAULT_TOLERANCE = 1e-3;
+function mean(a, b, mode = "geometric") {
   a = new Decimal(a);
   b = new Decimal(b);
-  let sum = Decimal.dZero;
-  const intervalWidth = b.sub(a).div(iterations);
-  for (let i = iterations - 1; i >= 0; i--) {
-    const x0 = a.add(intervalWidth.mul(i));
-    const x1 = a.add(intervalWidth.mul(i + 1));
-    const oldSum = sum;
-    sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
-    if (equalsTolerance(oldSum, sum, tolerance, {
+  switch (mode) {
+    case "arithmetic":
+    case 1:
+      return a.add(b).div(2);
+    case "geometric":
+    case 2:
+    default:
+      return a.mul(b).sqrt();
+    case "harmonic":
+    case 3:
+      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
+    case "logarithmic":
+    case 4:
+      return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
+  }
+}
+function equalsTolerance(a, b, tolerance, config) {
+  config = Object.assign(
+    {},
+    {
       verbose: false,
       mode: "geometric"
-    })) {
-      break;
-    }
-  }
-  return sum;
-}
-function calculateSum(f, b, a = 0, epsilon, iterations) {
+    },
+    config
+  );
   a = new Decimal(a);
   b = new Decimal(b);
-  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
-    return calculateSumLoop(f, b, a, epsilon);
+  tolerance = new Decimal(tolerance);
+  let diff;
+  let result;
+  if (config.mode === "geometric") {
+    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
+    result = diff.lte(tolerance);
   } else {
-    return calculateSumApprox(f, b, a, iterations);
+    diff = a.sub(b).abs();
+    result = diff.lte(tolerance);
   }
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, config, diff, result });
+  }
+  return result;
+}
+function roundingBase(x, base = 10, acc = 0, max = 1e3) {
+  x = new Decimal(x);
+  base = new Decimal(base);
+  acc = new Decimal(acc);
+  max = new Decimal(max);
+  if (base.lt(1) || acc.lt(1)) return Decimal.dNaN;
+  const xSign = x.sign;
+  x = x.abs();
+  if (x.gte(Decimal.pow(base, max))) return x;
+  const powerN = Decimal.floor(Decimal.log(x, base));
+  let out = x.div(Decimal.pow(base, powerN));
+  out = out.mul(Decimal.pow(base, acc)).round();
+  out = out.div(Decimal.pow(base, acc));
+  out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
+  return out;
 }
 
 // src/classes/numericalAnalysis/inverseFunction.ts
@@ -5642,69 +5665,49 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
   return out;
 }
 
-// src/classes/numericalAnalysis/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 30;
-var DEFAULT_TOLERANCE = 1e-3;
-function mean(a, b, mode = "geometric") {
-  a = new Decimal(a);
-  b = new Decimal(b);
-  switch (mode) {
-    case "arithmetic":
-    case 1:
-      return a.add(b).div(2);
-    case "geometric":
-    case 2:
-    default:
-      return a.mul(b).sqrt();
-    case "harmonic":
-    case 3:
-      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-    case "logarithmic":
-    case 4:
-      return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
+// src/classes/numericalAnalysis/sum.ts
+function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
+  let sum = new Decimal();
+  let n = new Decimal(b);
+  for (; n.gte(a); n = n.sub(1)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    const diff = initSum.div(sum);
+    if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
   }
+  return sum;
 }
-function equalsTolerance(a, b, tolerance, config) {
-  config = Object.assign(
-    {},
-    {
-      verbose: false,
-      mode: "geometric"
-    },
-    config
-  );
+function calculateSumApproxOld(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE * 2) {
   a = new Decimal(a);
   b = new Decimal(b);
-  tolerance = new Decimal(tolerance);
-  let diff;
-  let result;
-  if (config.mode === "geometric") {
-    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
-    result = diff.lte(tolerance);
+  let sum = Decimal.dZero;
+  const intervalWidth = b.sub(a).div(iterations);
+  for (let i = iterations - 1; i >= 0; i--) {
+    const x0 = a.add(intervalWidth.mul(i));
+    const x1 = a.add(intervalWidth.mul(i + 1));
+    sum = sum.add(f(x0).add(f(x1)));
+  }
+  return sum.div(2).mul(intervalWidth);
+}
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS) {
+  a = new Decimal(a);
+  b = new Decimal(b);
+  let sum = Decimal.dZero;
+  const intervalWidth = b.sub(a).div(iterations);
+  for (let i = iterations - 1; i >= 0; i--) {
+    sum = sum.add(f(a.add(intervalWidth.mul(i))));
+  }
+  return sum.mul(intervalWidth);
+}
+function calculateSum(f, b, a = 0, epsilon, iterations) {
+  a = new Decimal(a);
+  b = new Decimal(b);
+  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
+    return calculateSumLoop(f, b, a, epsilon);
   } else {
-    diff = a.sub(b).abs();
-    result = diff.lte(tolerance);
+    return calculateSumApprox(f, b, a, iterations);
   }
-  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
-    console.log({ a, b, tolerance, config, diff, result });
-  }
-  return result;
-}
-function roundingBase(x, base = 10, acc = 0, max = 1e3) {
-  x = new Decimal(x);
-  base = new Decimal(base);
-  acc = new Decimal(acc);
-  max = new Decimal(max);
-  if (base.lt(1) || acc.lt(1)) return Decimal.dNaN;
-  const xSign = x.sign;
-  x = x.abs();
-  if (x.gte(Decimal.pow(base, max))) return x;
-  const powerN = Decimal.floor(Decimal.log(x, base));
-  let out = x.div(Decimal.pow(base, powerN));
-  out = out.mul(Decimal.pow(base, acc)).round();
-  out = out.div(Decimal.pow(base, acc));
-  out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
-  return out;
 }
 
 // src/classes/Upgrade.ts
@@ -7033,6 +7036,7 @@ export {
   calculateItem,
   calculateSum,
   calculateSumApprox,
+  calculateSumApproxOld,
   calculateSumLoop,
   calculateUpgrade,
   decimalToJSONString,

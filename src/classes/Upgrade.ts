@@ -6,8 +6,9 @@ import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
-import { MeanMode, calculateSum } from "./numericalAnalysis/numericalAnalysis";
+import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
+import { calculateSum } from "./numericalAnalysis/sum";
 import type { CurrencyStatic } from "./Currency";
 
 /**
