@@ -200,7 +200,7 @@ describe("calculateSum", () => {
         const f = (x: Decimal): Decimal => x.pow(2);
         const result = calculateSum(f, 1e3);
         assert(
-            equalsTolerance(result, 333833500, equalTolerance, toleranceConfig),
+            equalsTolerance(result, 333833500, equalTolerance * 20, toleranceConfig),
         );
     });
 

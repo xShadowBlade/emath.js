@@ -147,16 +147,6 @@ function equalsTolerance(
     return result;
 }
 
-// test
-// const f = (x: Decimal): Decimal => x.pow(2);
-// const sum = calculateSumApprox(f, 10000);
-// console.log(sum.format());
-// console.log(equalsTolerance(sum, 333383335000, 1e-3, { verbose: true, mode: "geometric" }));
-
-// const inverse = inverseFunctionApprox(f, 152399025);
-// console.log(inverse.value.format());
-// console.log(equalsTolerance(inverse.value, 12345, 1e-3, { verbose: true, mode: "geometric" }));
-
 /**
  * Function to round a number to the nearest power of a specified base.
  * @param x - The number to round.
@@ -215,11 +205,11 @@ function roundingBase(
 
 export {
     equalsTolerance,
-    calculateInverseFunction,
-    inverseFunctionApprox,
-    calculateSumLoop,
-    calculateSumApprox,
-    calculateSum,
+    // calculateInverseFunction,
+    // inverseFunctionApprox,
+    // calculateSumLoop,
+    // calculateSumApprox,
+    // calculateSum,
     roundingBase,
     DEFAULT_ITERATIONS,
     DEFAULT_TOLERANCE,

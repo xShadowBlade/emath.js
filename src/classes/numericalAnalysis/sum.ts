@@ -50,7 +50,7 @@ function calculateSumLoop(
  * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
  * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
-function calculateSumApprox(
+function calculateSumApproxOld(
     f: (n: Decimal) => Decimal,
     b: DecimalSource,
     a: DecimalSource = 0,
@@ -69,9 +69,7 @@ function calculateSumApprox(
         const x0 = a.add(intervalWidth.mul(i));
         const x1 = a.add(intervalWidth.mul(i + 1));
 
-        const oldSum = sum;
-
-        sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
+        sum = sum.add(f(x0).add(f(x1)));
 
         // console.log({
         //     oldSum: oldSum.format(),
@@ -81,19 +79,72 @@ function calculateSumApprox(
         //     x1: x1.format(),
         //     i,
         // });
-        // Stop the loop if the sums don't change much
-        if (
-            equalsTolerance(oldSum, sum, tolerance, {
-                verbose: false,
-                mode: "geometric",
-            })
-        ) {
-            // console.log("sums close", { oldSum, sum, x0, x1, i, i2: iterations - i });
-            break;
-        }
+
+        // Stop the loop if the sums don't change much (removed, it is actually slower)
     }
-    return sum;
+    return sum.div(2).mul(intervalWidth);
 }
+
+/**
+ * Approximates the sum of `f(n)` from `a` to `b` using a midpoint riemann sum.
+ * See {@link calculateSum} for a more general function.
+ * @param f - The function `f(n)` to calculate the sum.
+ * @param b - The upper limit for the sum.
+ * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
+ * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
+ */
+function calculateSumApprox(
+    f: (n: Decimal) => Decimal,
+    b: DecimalSource,
+    a: DecimalSource = 0,
+    iterations: number = DEFAULT_ITERATIONS,
+): Decimal {
+    // Initialize the values
+    a = new Decimal(a);
+    b = new Decimal(b);
+
+    let sum = Decimal.dZero;
+    const intervalWidth = b.sub(a).div(iterations);
+
+    // w\sum_{n=0}^{i}f\left(a+nw\right)
+    for (let i = iterations - 1; i >= 0; i--) {
+        sum = sum.add(f(a.add(intervalWidth.mul(i))));
+
+        // console.log({
+        //     oldSum: oldSum.format(),
+        //     sum: sum.format(),
+        //     delta: sum.sub(oldSum).format(),
+        //     x0: x0.format(),
+        //     x1: x1.format(),
+        //     i,
+        // });
+
+        // Stop the loop if the sums don't change much (removed, it is actually slower)
+    }
+
+    return sum.mul(intervalWidth);
+}
+
+// Test
+// const f = (x: Decimal): Decimal => x.pow(1.1).add(x);
+
+// Compare the two methods
+// console.time("old");
+// for (let i = 0; i < 10000; i++) calculateSumApproxOld(f, 10000);
+
+// const sumOld = calculateSumApproxOld(f, 10000);
+// console.log(sumOld.format());
+// console.log(equalsTolerance(sumOld, 333383335000, 1e-3, { verbose: true, mode: "geometric" }));
+// console.timeEnd("old");
+
+// console.time("new");
+// for (let i = 0; i < 10000; i++) calculateSumApprox(f, 10000);
+
+// const sumNew = calculateSumApprox(f, 10000);
+// console.log(sumNew.format());
+// console.log(equalsTolerance(sumNew, 333383335000, 1e-3, { verbose: true, mode: "geometric" }));
+// console.timeEnd("new");
 
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using either the trapezoidal rule or a basic loop depending on the size of `b - a`.
@@ -124,4 +175,4 @@ function calculateSum(
     }
 }
 
-export { calculateSumLoop, calculateSumApprox, calculateSum };
+export { calculateSumLoop, calculateSumApprox, calculateSum, calculateSumApproxOld };

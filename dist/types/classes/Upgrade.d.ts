@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
-import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
+import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";
 /**
  * Calculates the cost and how many upgrades you can buy
