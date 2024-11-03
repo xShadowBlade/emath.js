@@ -6189,50 +6189,52 @@ var Boost = class {
 import "reflect-metadata";
 import { Type, Expose as Expose2 } from "class-transformer";
 
-// src/classes/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 30;
-var DEFAULT_TOLERANCE = 1e-3;
-function mean(a, b, mode = "geometric") {
+// src/classes/numericalAnalysis/sum.ts
+function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
+  let sum = new Decimal();
+  let n = new Decimal(b);
+  for (; n.gte(a); n = n.sub(1)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    const diff = initSum.div(sum);
+    if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
+  }
+  return sum;
+}
+function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE * 2) {
   a = new Decimal(a);
   b = new Decimal(b);
-  switch (mode) {
-    case "arithmetic":
-    case 1:
-      return a.add(b).div(2);
-    case "geometric":
-    case 2:
-    default:
-      return a.mul(b).sqrt();
-    case "harmonic":
-    case 3:
-      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-  }
-}
-function equalsTolerance(a, b, tolerance, config) {
-  config = Object.assign(
-    {},
-    {
+  let sum = Decimal.dZero;
+  const intervalWidth = b.sub(a).div(iterations);
+  for (let i = iterations - 1; i >= 0; i--) {
+    const x0 = a.add(intervalWidth.mul(i));
+    const x1 = a.add(intervalWidth.mul(i + 1));
+    const oldSum = sum;
+    sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
+    if (equalsTolerance(oldSum, sum, tolerance, {
       verbose: false,
       mode: "geometric"
-    },
-    config
-  );
+    })) {
+      break;
+    }
+  }
+  return sum;
+}
+function calculateSum(f, b, a = 0, epsilon, iterations) {
   a = new Decimal(a);
   b = new Decimal(b);
-  tolerance = new Decimal(tolerance);
-  let diff;
-  let result;
-  if (config.mode === "geometric") {
-    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
-    result = diff.lte(tolerance);
+  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
+    return calculateSumLoop(f, b, a, epsilon);
   } else {
-    diff = a.sub(b).abs();
-    result = diff.lte(tolerance);
+    return calculateSumApprox(f, b, a, iterations);
   }
-  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
-    console.log({ a, b, tolerance, config, diff, result });
-  }
-  return result;
+}
+
+// src/classes/numericalAnalysis/inverseFunction.ts
+function calculateInverseFunction(f, n, options = {}) {
+  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
+  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
 }
 function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n, round = false) {
   lowerBound = new Decimal(lowerBound);
@@ -6250,8 +6252,38 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
       upperBound: Decimal.dZero
     };
   }
+  if (f(lowerBound).gt(n)) {
+    console.warn("The interval does not contain the value. (f(lowerBound) > n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": f(lowerBound),
+      "f(upperBound)": f(upperBound)
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!lowerBound.eq(0)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, 0, upperBound, round);
+    }
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
   if (f(upperBound).lt(n)) {
-    console.warn("eMath.js: The function is not monotonically increasing. (f(n) < n)");
+    console.warn("The interval does not contain the value. (f(upperBound) < n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": f(lowerBound),
+      "f(upperBound)": f(upperBound)
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!upperBound.eq(n)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
+    }
     return {
       value: upperBound,
       lowerBound: upperBound,
@@ -6302,51 +6334,56 @@ function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_IT
     lowerBound,
     upperBound
   };
-  console.log({
-    out
-  });
-  console.trace();
   return out;
 }
-function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
-  let sum = new Decimal();
-  let n = new Decimal(b);
-  for (; n.gte(a); n = n.sub(1)) {
-    const initSum = sum;
-    const value = f(n);
-    sum = sum.add(value);
-    const diff = initSum.div(sum);
-    if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
-  }
-  return sum;
-}
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE * 2) {
+
+// src/classes/numericalAnalysis/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 30;
+var DEFAULT_TOLERANCE = 1e-3;
+function mean(a, b, mode = "geometric") {
   a = new Decimal(a);
   b = new Decimal(b);
-  let sum = Decimal.dZero;
-  const intervalWidth = b.sub(a).div(iterations);
-  for (let i = iterations - 1; i >= 0; i--) {
-    const x0 = a.add(intervalWidth.mul(i));
-    const x1 = a.add(intervalWidth.mul(i + 1));
-    const oldSum = sum;
-    sum = sum.add(f(x0).add(f(x1)).div(2).mul(intervalWidth));
-    if (equalsTolerance(oldSum, sum, tolerance, {
+  switch (mode) {
+    case "arithmetic":
+    case 1:
+      return a.add(b).div(2);
+    case "geometric":
+    case 2:
+    default:
+      return a.mul(b).sqrt();
+    case "harmonic":
+    case 3:
+      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
+    case "logarithmic":
+    case 4:
+      return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
+  }
+}
+function equalsTolerance(a, b, tolerance, config) {
+  config = Object.assign(
+    {},
+    {
       verbose: false,
       mode: "geometric"
-    })) {
-      break;
-    }
-  }
-  return sum;
-}
-function calculateSum(f, b, a = 0, epsilon, iterations) {
+    },
+    config
+  );
   a = new Decimal(a);
   b = new Decimal(b);
-  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
-    return calculateSumLoop(f, b, a, epsilon);
+  tolerance = new Decimal(tolerance);
+  let diff;
+  let result;
+  if (config.mode === "geometric") {
+    diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
+    result = diff.lte(tolerance);
   } else {
-    return calculateSumApprox(f, b, a, iterations);
+    diff = a.sub(b).abs();
+    result = diff.lte(tolerance);
   }
+  if (config.verbose === true || config.verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, config, diff, result });
+  }
+  return result;
 }
 
 // src/classes/Upgrade.ts
@@ -6382,17 +6419,18 @@ function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, itera
     const costTargetFn = (level) => upgrade.cost(level.add(start));
     const maxLevelAffordable2 = Decimal.min(
       end,
-      inverseFunctionApprox(costTargetFn, value, mode, iterations).value.floor()
+      calculateInverseFunction(costTargetFn, value, {
+        mode,
+        iterations
+      }).value.floor()
     );
     const cost2 = Decimal.dZero;
     return [maxLevelAffordable2, cost2];
   }
-  const maxLevelAffordable = inverseFunctionApprox(
-    (x) => calculateSum(upgrade.cost, x, start),
-    value,
+  const maxLevelAffordable = calculateInverseFunction((x) => calculateSum(upgrade.cost, x, start), value, {
     mode,
     iterations
-  ).value.floor().min(start.add(target).sub(1));
+  }).value.floor().min(start.add(target).sub(1));
   const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
   const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
   return [maxLevelAffordableActual, cost];

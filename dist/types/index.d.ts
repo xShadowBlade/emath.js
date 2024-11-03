@@ -11,6 +11,6 @@ export * from "./classes/Item";
 export * from "./classes/Currency";
 export * from "./classes/Attribute";
 export * from "./classes/Grid";
-export * from "./classes/numericalAnalysis";
+export * from "./classes/numericalAnalysis/numericalAnalysis";
 export * from "./E/eMain";
 export type * from "./common/types";

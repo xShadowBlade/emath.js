@@ -4,7 +4,7 @@
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
-import { MeanMode } from "./numericalAnalysis";
+import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { UpgradeData, UpgradeStatic } from "./Upgrade";
 import { ItemData, Item } from "./Item";
 import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";

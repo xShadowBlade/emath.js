@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
 import { LRUCache } from "../E/lru-cache";
-import { MeanMode } from "./numericalAnalysis";
+import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import type { CurrencyStatic } from "./Currency";
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -109,12 +109,14 @@ interface UpgradeInit {
      * By providing a bounds function, you can make the calculations more accurate.
      * For example, if you can only buy 102 upgrades with 1e100 currency, you can provide a bounds function that returns something like [0, 1000].
      *
-     * It should satisfy the following for all `currency` in positive numbers (where cost' is the inverse of the cost function):
+     * It should satisfy the following for all `currency` >= 0 (and where cost' is the inverse of the cost function):
      * - 0 <= min < cost'(currency) < max < currency
      *
      * Basically, the bounds function should include the interval where the inverse cost function is within that interval,
      * but the max bound should grow slower than the currency (y=x), for accurate calculations.
      * @param currency - The currency value.
+     * @param start - The starting level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade.
      * @returns [min, max] - The minimum and maximum level that can be bought with the currency.
      * @example
      * // Given a cost function,
@@ -126,7 +128,7 @@ interface UpgradeInit {
      * // and the maximum level that can be bought with the currency is the square root of the currency.
      * // So the bounds grows faster (y=x^0.75) than the inverse (y=x^0.5), but still slower than the currency (y=x).
      */
-    bounds?: (currency: Decimal) => [min: Decimal, max: Decimal];
+    bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
     /**
      * The default level of the upgrade.
      * Automatically set to `1` if not provided.
@@ -239,7 +241,7 @@ declare class UpgradeStatic implements IUpgradeStatic {
     effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void) | undefined;
     el?: boolean | (() => boolean) | undefined;
     defaultLevel: Decimal;
-    bounds?: ((currency: Decimal) => [min: Decimal, max: Decimal]) | undefined;
+    bounds?: ((currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal]) | undefined;
     /** The default size of the cache. Should be one less than a power of 2. */
     static cacheSize: number;
     /**
