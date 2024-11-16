@@ -31,8 +31,8 @@ module.exports = (env, argv) => {
             alias: {
                 // "@": path.resolve(__dirname, "src"),
                 // Uncomment the following if you use emath.js
-                "emath.js": "emath.js/ts",
-                "emath.js/game": "emath.js/ts/game",
+                // "emath.js": "emath.js/ts",
+                // "emath.js/game": "emath.js/ts/game",
             },
         },
         // watch: true,

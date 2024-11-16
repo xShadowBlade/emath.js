@@ -18,7 +18,7 @@ const options = [
         output: {
             format: "umd",
             name: "eMath",
-            file: "./dist/eMath.js",
+            file: "./dist/main/eMath.js",
         },
     },
     // Module "emath.game.js"
@@ -27,7 +27,7 @@ const options = [
         output: {
             format: "umd",
             name: "eMathGame",
-            file: "./dist/eMath.game.js",
+            file: "./dist/game/eMath.game.js",
         },
     },
     // Module "emath.presets.js"
@@ -36,7 +36,7 @@ const options = [
         output: {
             format: "umd",
             name: "eMathPresets",
-            file: "./dist/eMath.presets.js",
+            file: "./dist/presets/eMath.presets.js",
         },
     },
 ];
