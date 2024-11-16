@@ -7,10 +7,14 @@
         "documentation/**/*.tsx",
         "test/tests/**/*.test.ts",
         "test/tests/**/*.ts",
-        "examples/src/**/*.ts"
+        "examples/src/**/*.ts",
+        "eslint.config.js",
+        "rollup.config.mjs",
+        "spack.config.mjs"
     ],
     "exclude": [
         "node_modules",
+		"dist",
 		"src/E/e.ts",
         "src/E/format.ts",
     ],
