@@ -16,17 +16,17 @@
         ".": {
             "types": "./dist/types/index.d.ts",
             "import": "./dist/main/eMath.mjs",
-            "default": "./dist/main/eMath.js"
+            "default": "./dist/main/eMath.min.js"
         },
         "./game": {
             "types": "./dist/types/game/index.d.ts",
             "import": "./dist/game/eMath.game.mjs",
-            "default": "./dist/game/eMath.game.js"
+            "default": "./dist/game/eMath.game.min.js"
         },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
             "import": "./dist/presets/eMath.presets.mjs",
-            "default": "./dist/presets/eMath.presets.js"
+            "default": "./dist/presets/eMath.presets.min.js"
         },
         "./ts": {
             "default": "./src/index.ts"
