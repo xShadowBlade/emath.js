@@ -1,27 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* global require module */
 // @ts-check
 
 /**
  * @file ESLint configuration file
  */
-const eslint = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended");
-const jsdoc = require("eslint-plugin-jsdoc");
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import jsdoc from "eslint-plugin-jsdoc";
 
-module.exports = tseslint.config(
+export default tseslint.config(
     eslint.configs.recommended,
     ...tseslint.configs.strict,
     ...tseslint.configs.stylistic,
-    // @ts-expect-error - jsdoc plugin is not included in the TypeScript configuration
     jsdoc.configs["flat/recommended-typescript"],
     eslintPluginPrettierRecommended,
 
     {
         plugins: {
-            // @ts-expect-error - jsdoc plugin is not included in the TypeScript configuration
             jsdoc,
         },
         languageOptions: {
@@ -31,7 +27,7 @@ module.exports = tseslint.config(
                 ecmaVersion: "latest",
             },
         },
-        files: ["src/**/*.ts", "src/**/*.tsx", "eslint.config.js", "rollup.config.mjs", "spack.config.mjs"],
+        files: ["src/**/*.ts", "src/**/*.tsx", "eslint.config.js", "rollup.config.mjs"],
         ignores: ["node_modules", "dist", "test"],
         rules: {
             "prettier/prettier": "warn",
