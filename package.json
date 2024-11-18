@@ -15,14 +15,17 @@
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
+            "import": "./dist/main/eMath.mjs",
             "default": "./dist/main/eMath.js"
         },
         "./game": {
             "types": "./dist/types/game/index.d.ts",
+            "import": "./dist/game/eMath.game.mjs",
             "default": "./dist/game/eMath.game.js"
         },
         "./presets": {
             "types": "./dist/types/presets/index.d.ts",
+            "import": "./dist/presets/eMath.presets.mjs",
             "default": "./dist/presets/eMath.presets.js"
         },
         "./ts": {
