@@ -68,7 +68,7 @@ interface GameConfigOptions {
      * If you want to use a different storage, you can specify it here.
      * @default window.localStorage
      */
-    localStorage: Storage | undefined;
+    localStorage?: Storage | undefined;
 }
 
 /**
@@ -85,7 +85,8 @@ const gameDefaultConfig = {
         framerate: 30,
     },
     initIntervalBasedManagers: true,
-    localStorage: undefined,
+    // @ts-expect-error - This is a default value, so it's fine to use undefined here
+    localStorage: undefined as Storage,
 } as const satisfies RequiredDeep<GameConfigOptions>;
 
 /**

@@ -55,7 +55,7 @@ interface GameConfigOptions {
      * If you want to use a different storage, you can specify it here.
      * @default window.localStorage
      */
-    localStorage: Storage | undefined;
+    localStorage?: Storage | undefined;
 }
 /**
  * The default configuration for the game
@@ -71,7 +71,7 @@ declare const gameDefaultConfig: {
         readonly framerate: 30;
     };
     readonly initIntervalBasedManagers: true;
-    readonly localStorage: undefined;
+    readonly localStorage: Storage;
 };
 /**
  * A game instance.
