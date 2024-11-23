@@ -3,6 +3,9 @@
  */
 import type { GameCurrency } from "./GameCurrency";
 
+/**
+ * An object that represents a game reset.
+ */
 type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
     currenciesToReset: GameCurrency | GameCurrency[];
     extender?: GameReset | GameReset[];
@@ -64,26 +67,34 @@ class GameReset {
     }
 
     /**
-     * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
-     * @param force Whether to force the reset. Defaults to `false`.
-     * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
-     * @param cached The set of cached symbols to prevent infinite loops.
+     * Resets the currencies and upgrades.
+     * 1. Resets the extenders (if any), see {@link extender}.
+     * 2. Runs {@link onReset}
+     * 3. Resets the currencies and upgrades, see {@link currenciesToReset}.
+     * @param force - Whether to force the reset. Defaults to `false`.
+     * @param forceExtenders - Whether to force the reset of the extenders. Defaults to `true`.
+     * @param cached - The set of cached symbols to prevent infinite loops. Used internally.
      */
     public reset(force = false, forceExtenders = true, cached = new Set<symbol>()): void {
         // If there is a condition and it is not met, then return
         if (
-            force ||
-            ((typeof this.condition === "function" ? !this.condition(this) : !this.condition) &&
-                typeof this.condition !== "undefined")
+            !force &&
+            (typeof this.condition === "function" ? !this.condition(this) : !this.condition) &&
+            typeof this.condition !== "undefined"
         ) {
             return;
         }
 
+        /**
+         * The function to reset this instance.
+         */
         const resetThis = (): void => {
+            // Call the onReset function
             this.onReset?.(this);
 
+            // Reset the currencies
             this.currenciesToReset.forEach((currency) => {
-                currency.static.reset();
+                currency.reset();
             });
         };
 
@@ -95,10 +106,16 @@ class GameReset {
 
         // If there are extenders, reset the extenders first, then reset the currencies
         this.extender.forEach((extender) => {
-            if (!cached.has(extender.id)) {
-                cached.add(extender.id);
-                extender.reset(forceExtenders || force, forceExtenders, cached);
+            // If the extender has already been reset, then return
+            if (cached.has(extender.id)) {
+                return;
             }
+
+            // Add the extender to the cached set
+            cached.add(extender.id);
+
+            // Reset the extender
+            extender.reset(forceExtenders || force, forceExtenders, cached);
         });
 
         resetThis();

@@ -2,6 +2,9 @@
  * @file This file contains all the reset layer related classes.
  */
 import type { GameCurrency } from "./GameCurrency";
+/**
+ * An object that represents a game reset.
+ */
 type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
     currenciesToReset: GameCurrency | GameCurrency[];
     extender?: GameReset | GameReset[];
@@ -40,10 +43,13 @@ declare class GameReset {
      */
     constructor(currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset | GameReset[], onReset?: typeof GameReset.prototype.onReset, condition?: typeof GameReset.prototype.condition);
     /**
-     * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
-     * @param force Whether to force the reset. Defaults to `false`.
-     * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
-     * @param cached The set of cached symbols to prevent infinite loops.
+     * Resets the currencies and upgrades.
+     * 1. Resets the extenders (if any), see {@link extender}.
+     * 2. Runs {@link onReset}
+     * 3. Resets the currencies and upgrades, see {@link currenciesToReset}.
+     * @param force - Whether to force the reset. Defaults to `false`.
+     * @param forceExtenders - Whether to force the reset of the extenders. Defaults to `true`.
+     * @param cached - The set of cached symbols to prevent infinite loops. Used internally.
      */
     reset(force?: boolean, forceExtenders?: boolean, cached?: Set<symbol>): void;
 }

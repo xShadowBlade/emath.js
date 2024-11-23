@@ -3785,10 +3785,10 @@ class GameReset {
         return new GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
     }
     reset(force = !1, forceExtenders = !0, cached = new Set()) {
-        if (force || ("function" == typeof this.condition ? !this.condition(this) : !this.condition) && void 0 !== this.condition) return;
+        if (!force && ("function" == typeof this.condition ? !this.condition(this) : !this.condition) && void 0 !== this.condition) return;
         let resetThis = ()=>{
             this.onReset?.(this), this.currenciesToReset.forEach((currency)=>{
-                currency.static.reset();
+                currency.reset();
             });
         };
         if (0 === this.extender.length) {
