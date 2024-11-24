@@ -2619,3 +2619,4 @@ let formatOptions = [
 ].sort((a, b)=>a.name.localeCompare(b.name));
 
 export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
+//# sourceMappingURL=eMath.presets.mjs.map

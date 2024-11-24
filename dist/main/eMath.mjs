@@ -3359,3 +3359,4 @@ let E = (()=>{
 "undefined" == typeof window || window.Decimal || (window.Decimal = Decimal);
 
 export { Attribute, AttributeStatic, Boost, BoostObject, Currency, CurrencyStatic, DEFAULT_ITERATIONS, DEFAULT_TOLERANCE, Decimal, E, FORMATS, formatTypeList as FormatTypeList, Grid, GridCell, GridCellCollection, Item, ItemData, LRUCache, ListNode, ST_NAMES, UpgradeData, UpgradeStatic, calculateInverseFunction, calculateItem, calculateSum, calculateSumApprox, calculateSumApproxOld, calculateSumLoop, calculateUpgrade, decimalToJSONString, eMathMetadata, equalsTolerance, formats, inverseFunctionApprox, mean, roundingBase, upgradeToCacheNameEL };
+//# sourceMappingURL=eMath.mjs.map

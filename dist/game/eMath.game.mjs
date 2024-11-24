@@ -3863,3 +3863,4 @@ class Game {
 Game.configManager = new ConfigManager(gameDefaultConfig);
 
 export { ConfigManager, DataManager, EventManager, EventTypes1 as EventTypes, Game, GameAttribute, GameCurrency, GameReset, KeyManager, gameDefaultConfig, keys };
+//# sourceMappingURL=eMath.game.mjs.map

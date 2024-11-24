@@ -44,6 +44,7 @@
         "build-and-build-and-test": "rollup -c rollup.config.mjs && cd test && npm run build && npm run test && cd ..",
         "build-and-test": "rollup -c rollup.config.mjs && cd test && npm run test && cd ..",
         "build:main": "npm run rollup",
+        "build:watch": "rollup -c rollup.config.mjs -w",
         "build:types": "tsc",
         "doc": "typedoc --options typedoc.json",
         "lint": "eslint src/**/*.ts",

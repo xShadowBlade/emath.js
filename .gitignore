@@ -1,6 +1,9 @@
 documentation/production
 test/build
 
+# Dist source maps
+dist/**/*.map
+
 # Logs
 logs
 *.log

@@ -3,6 +3,9 @@
 /**
  * @file Config file for rollup
  */
+import process from "node:process";
+import console from "node:console";
+
 import resolve from "@rollup/plugin-node-resolve";
 import swc from "@rollup/plugin-swc";
 import commonjs from "@rollup/plugin-commonjs";
@@ -129,27 +132,37 @@ const optionsMin = {
  * The configuration object for rollup
  * @type {import("rollup").RollupOptions[]}
  */
-const config = options.map((option) => {
-    /**
-     * The temporary options for the current option
-     * @type {RollupOptions}
-     */
-    const temporaryOptions = {
-        // If the type is development, use the development options, otherwise use the production options
-        ...(option.type === "development" ? optionsDev : optionsMin),
+const config = options
+    // If watch mode is on, only use the development options
+    .filter((option) => (process.env.ROLLUP_WATCH ? option.type === "development" : true))
+    .map((option) => {
+        /**
+         * The temporary options for the current option
+         * @type {RollupOptions}
+         */
+        const temporaryOptions = {
+            // If the type is development, use the development options, otherwise use the production options
+            ...(option.type === "development" ? optionsDev : optionsMin),
 
-        // Add the options
-        ...option,
+            // Add the options
+            ...option,
 
-        // Remove the type property
-        // type: undefined,
-    };
+            // If watch mode is on, add sourcemaps
+            // sourcemap: process.env.ROLLUP_WATCH,
+            output: {
+                ...option.output,
+                sourcemap: process.env.ROLLUP_WATCH === "true",
+            },
 
-    // Delete the type property
-    // @ts-expect-error - Attempting to delete a property
-    delete temporaryOptions.type;
+            // Remove the type property
+            // type: undefined,
+        };
 
-    return temporaryOptions;
-});
+        // Delete the type property
+        // @ts-expect-error - Attempting to delete a property
+        delete temporaryOptions.type;
+
+        return temporaryOptions;
+    });
 
 export default config;
