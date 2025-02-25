@@ -70,7 +70,7 @@ export function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = "geome
             return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
         case "logarithmic":
         case 4:
-            return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
+            return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
     }
 }
 
