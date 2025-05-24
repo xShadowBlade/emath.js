@@ -6242,7 +6242,7 @@ function mean(a, b, mode = "geometric") {
       return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
     case "logarithmic":
     case 4:
-      return Decimal.pow(10, a.log10().mul(b.log10()).sqrt());
+      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
   }
 }
 

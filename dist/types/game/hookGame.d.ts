@@ -17,7 +17,7 @@ declare const eMath: {
             readonly framerate: 30;
         };
         readonly initIntervalBasedManagers: true;
-        readonly localStorage: undefined;
+        readonly localStorage: Storage | undefined;
     };
     GameCurrency: typeof eMathGame.GameCurrency;
     GameAttribute: typeof eMathGame.GameAttribute;

@@ -55,8 +55,11 @@ interface GameConfigOptions {
      * If you want to use a different storage, you can specify it here.
      * @default window.localStorage
      */
-    localStorage: Storage | undefined;
+    localStorage?: Storage | undefined;
 }
+type GameConfigOptionsRequired = RequiredDeep<Omit<GameConfigOptions, "localStorage">> & {
+    localStorage: Storage | undefined;
+};
 /**
  * The default configuration for the game
  */
@@ -71,14 +74,14 @@ declare const gameDefaultConfig: {
         readonly framerate: 30;
     };
     readonly initIntervalBasedManagers: true;
-    readonly localStorage: undefined;
+    readonly localStorage: Storage | undefined;
 };
 /**
  * A game instance.
  */
 declare class Game {
     /** The static config manager for the game. */
-    protected static readonly configManager: ConfigManager<RequiredDeep<GameConfigOptions>>;
+    protected static readonly configManager: ConfigManager<GameConfigOptionsRequired>;
     /** The config object */
     readonly config: typeof Game.configManager.options;
     /**
