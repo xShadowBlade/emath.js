@@ -40,6 +40,118 @@ interface WeightOptionEntry<Name extends string = string> extends Pick<RandomOpt
 }
 
 /**
+ * A method of selecting a random option from a list of entries given their chance and a luck multiplier.
+ */
+abstract class SelectionMethod {
+    /**
+     * Selects a random option from the given entries based on their weights and the provided luck.
+     * @param entries - An array of objects representing the possible options.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns A randomly selected option from the entries, or undefined if no options are available.
+     */
+    public abstract select<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): T | undefined;
+
+    /**
+     * Gets the normalized weights of the given entries based on the provided luck.
+     * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+     * @param entries - An array of objects representing the possible options.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns An array of objects representing the normalized weights of the entries.
+     */
+    public getNormalizedWeights<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): WeightOptionEntry<T>[] | undefined {
+        return undefined;
+    }
+}
+
+/**
+ * A selection method that selects entries starting with the rarest one first and moving to the next one if that one is not selected.
+ */
+class RarestFirstCascadeSelectionMethod extends SelectionMethod {
+    public select<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): T | undefined {
+        // Sort the entries by their chance in descending order
+        entries.sort((a, b) => -a.chance.compare(b.chance));
+
+        // for (const entry of entries) {
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+
+            // If it is the last entry, return it
+            if (i === entries.length - 1) {
+                return entry.name;
+            }
+
+            // Divide the chance of the entry by the luck
+            const newChance = entry.chance.div(luck);
+
+            // TODO: replace this with select from chance
+            if (new Decimal(Math.random()).lt(newChance.reciprocal())) {
+                return entry.name;
+            }
+        }
+
+        // Nothing picked (should never happen)
+        return undefined;
+    }
+
+    public getNormalizedWeights<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): WeightOptionEntry<T>[] {
+        // Sort the entries by their chance in descending order
+        entries.sort((a, b) => -a.chance.compare(b.chance));
+
+        const out: WeightOptionEntry<T>[] = [];
+
+        /**
+         * The probability that all previous chances do not get selected.
+         * 
+         * For example, if the chances were [2, 4, 8], the cumulative previous chance multiplier would be:
+         * - Index 0: 1 (no previous chances)
+         * - Index 1: 1 * (1 - (1 / 2)) = 0.5
+         * - Index 2: 0.5 * (1 - (1 / 4)) = 0.375
+         * - Index 3: 0.375 * (1 - (1 / 8)) = 0.328125
+         */
+        let cumulativePreviousChanceMultiplier = new Decimal(1);
+
+        let sumOfOutputWeights = new Decimal(0);
+
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+
+            // If the luck is greater than the chance or if it is the last entry, return 1 - sumOfOutputWeights and the rest of the entries with 0 chance
+            if (luck.gte(entry.chance) || i === entries.length - 1) {
+                out.push({
+                    name: entry.name,
+                    weight: Decimal.dOne.sub(sumOfOutputWeights),
+                });
+
+                for (let j = i + 1; j < entries.length; j++) {
+                    out.push({
+                        name: entries[j].name,
+                        weight: Decimal.dZero,
+                    });
+                }
+
+                break;
+            }
+
+            const baseChanceInverted = luck.div(entry.chance);
+            const outputWeight = baseChanceInverted.mul(cumulativePreviousChanceMultiplier);
+
+            out.push({
+                name: entry.name,
+                weight: outputWeight,
+            });
+
+            // Update the cumulative previous chance multiplier and sum of output weights
+            cumulativePreviousChanceMultiplier = cumulativePreviousChanceMultiplier.mul(Decimal.dOne.sub(baseChanceInverted));
+            sumOfOutputWeights = sumOfOutputWeights.add(outputWeight);
+        }
+
+        return out;
+    }
+}
+
+abstract class WeightBasedSelectionMethod extends SelectionMethod {}
+
+/**
  * A class that allows for random selection of options based on their relative chances.
  *
  * - A chance is a {@link Decimal} that represents the relative likelihood of an option being selected.
@@ -78,55 +190,84 @@ class RandomSelector<PossibleNames extends string = string> {
     }
 
     /**
-     * A list of all possible options that can be selected converted to unnormalized weights.
+     * An array of {@link RandomOptionEntry} objects representing the possible options.
      */
-    public readonly weightEntries: WeightOptionEntry<PossibleNames>[];
+    public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
 
     /**
-     * The total weight of all options, used to normalize chances.
-     * This is calculated as the sum of all unnormalized weights when the class is instantiated.
+     * The method used to select a random option from the list of entries.
      */
-    private readonly totalWeight: Decimal;
+    private readonly selectionMethod: SelectionMethod;
 
     /**
      * Creates a new RandomSelector with the given options.
      * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
+     * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
      */
-    constructor(options: RandomOptionEntry<PossibleNames>[]) {
-        this.weightEntries = options.map(entry => ({
-            name: entry.name,
-            weight: entry.chance.eq(Decimal.dZero) ? Decimal.dZero : Decimal.dOne.div(entry.chance)
-        }));
-
-        this.totalWeight = this.weightEntries.reduce((sum, entry) => sum.add(entry.weight), new Decimal(0));
+    constructor(options: RandomOptionEntry<PossibleNames>[], selectionMethod: SelectionMethod = new RarestFirstCascadeSelectionMethod()) {
+        this.selectionMethod = selectionMethod;
+        this.entries = options;
     }
 
     /**
-     * Converts the chances/weights of each entry into a relative chance from 0 to 1 given the luck multiplier.
-     * The sum of all chances should equal 1.
+     * Selects a random option from the list of entries based on their chances and the provided luck.
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
-     * @returns An array of {@link RandomOptionEntry} objects with normalized chances.
+     * @returns A randomly selected option from the entries, or undefined if no options are available.
      */
-    // private getEntriesWithWeightedChances(luck: DecimalSource = Decimal.dOne): RandomOptionEntry<PossibleNames>[] {
-    //     luck = new Decimal(luck);
+    public select(luck: DecimalSource = Decimal.dOne): PossibleNames | undefined {
+        luck = new Decimal(luck);
 
-    //     return this.entries.map(entry => ({
-    //         ...entry,
-    //         chance: entry.chance.div(this.totalWeight)
-    //     }));
-    // }
+        return this.selectionMethod.select(this.entries, luck);
+    }
+
+    /**
+     * Gets the normalized weights of the entries based on the provided luck.
+     * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns An array of objects representing the normalized weights of the entries.
+     */
+    public getNormalizedWeights(luck: DecimalSource = Decimal.dOne): WeightOptionEntry<PossibleNames>[] | undefined {
+        luck = new Decimal(luck);
+
+        return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+    }
 }
 
 // Test
-const testEntries = [
-    { name: "A", chance: new Decimal(2) },
-    { name: "B", chance: new Decimal(5) },
-    { name: "C", chance: new Decimal(10) },
-    { name: "D", chance: new Decimal(20) }
-] as const satisfies RandomOptionEntry[];
+// const testEntries = [
+//     { name: "Common", chance: new Decimal(2) },
+//     { name: "Rare", chance: new Decimal(5) },
+//     { name: "Epic", chance: new Decimal(10) },
+//     { name: "Legendary", chance: new Decimal(2000) },
+//     { name: "Mythic", chance: new Decimal(1e6) },
+// ] as const satisfies RandomOptionEntry[];
 
-const randomSelector = new RandomSelector(testEntries);
+// const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
-console.log(RandomSelector.normalizeWeights(randomSelector.weightEntries));
+// const luckToTest = new Decimal(2);
 
-export type { RandomOptionEntry };
+// // Test the selector
+// console.time("Selector");
+// const selected = new Map<string, number>();
+// const numberOfIterations = 1_000_000;
+
+// for (let i = 0; i < numberOfIterations; i++) {
+//     const selectedEntry = randomSelector.select(luckToTest);
+//     if (selectedEntry) {
+//         selected.set(selectedEntry, (selected.get(selectedEntry) ?? 0) + 1);
+//     }
+// }
+// console.timeEnd("Selector");
+// console.log("Selected entries:", selected);
+
+// console.table((randomSelector.getNormalizedWeights(luckToTest) ?? []).map(entry => ({
+//     name: entry.name,
+//     expectedRatio: entry.weight.toNumber(),
+//     observedRatio: (selected.get(entry.name) ?? 0) / numberOfIterations,
+//     expected: entry.weight.mul(numberOfIterations).toNumber(),
+//     observed: selected.get(entry.name) ?? 0,
+//     ratioBetweenExpectedAndObserved: entry.weight.div((selected.get(entry.name) ?? 0) / numberOfIterations).toNumber(),
+// })));
+
+export type { RandomOptionEntry, WeightOptionEntry };
+export { SelectionMethod, RandomSelector, RarestFirstCascadeSelectionMethod };
