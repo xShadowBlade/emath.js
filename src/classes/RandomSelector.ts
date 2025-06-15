@@ -19,11 +19,13 @@ interface RandomOptionEntry<Name extends string = string> {
      * - Chances are relative to each other, so the sum of all chances does not need to equal 1.
      * - A chance of 0 means the option will never be selected.
      * 
+     * This can be a getter and is called every time the selector is used.
      * See {@link RandomSelector} for more information on how chances are used and limitations.
      * @example
      * new Decimal(10)
      * new Decimal(20) // This one would be 2 times more likely to be selected than the previous one (with 1x luck).
      */
+    // TODO: Allow this to be changed after {@link RandomSelector} is created.
     chance: Decimal;
 }
 
@@ -160,6 +162,8 @@ abstract class WeightBasedSelectionMethod extends SelectionMethod {}
  *    - The higher the weight, the more likely the option is to be selected.
  *    - Normalized weights (in an entry) add up to 1, while unnormalized weights do not have this requirement.
  *
+ * This is essentially a wrapper around the various {@link SelectionMethod} classes.
+ *  - Use a {@link SelectionMethod} class if the chances can change between initialization and selection.
  * @template PossibleNames - The type of the names of the options, defaults to `string`.
  */
 class RandomSelector<PossibleNames extends string = string> {

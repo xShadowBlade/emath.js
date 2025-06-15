@@ -179,6 +179,9 @@ declare const eMath: {
     GridCell: typeof eMathMain.GridCell;
     GridCellCollection: typeof eMathMain.GridCellCollection;
     Grid: typeof eMathMain.Grid;
+    SelectionMethod: typeof eMathMain.SelectionMethod;
+    RandomSelector: typeof eMathMain.RandomSelector;
+    RarestFirstCascadeSelectionMethod: typeof eMathMain.RarestFirstCascadeSelectionMethod;
     mean(a: eMathMain.DecimalSource, b: eMathMain.DecimalSource, mode?: eMathMain.MeanMode): eMathMain.Decimal;
     equalsTolerance: typeof eMathMain.equalsTolerance;
     roundingBase: typeof eMathMain.roundingBase;
