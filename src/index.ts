@@ -13,6 +13,7 @@ export * from "./classes/Item";
 export * from "./classes/Currency";
 export * from "./classes/Attribute";
 export * from "./classes/Grid";
+export * from "./classes/RandomSelector";
 export * from "./classes/numericalAnalysis/numericalAnalysis";
 export * from "./classes/numericalAnalysis/sum";
 export * from "./classes/numericalAnalysis/inverseFunction";

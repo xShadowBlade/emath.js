@@ -6987,6 +6987,125 @@ var Grid = class _Grid {
   }
 };
 
+// src/classes/RandomSelector.ts
+var SelectionMethod = class {
+  /**
+   * Gets the normalized weights of the given entries based on the provided luck.
+   * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+   * @param entries - An array of objects representing the possible options.
+   * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @returns An array of objects representing the normalized weights of the entries.
+   */
+  getNormalizedWeights(entries, luck) {
+    return void 0;
+  }
+};
+var RarestFirstCascadeSelectionMethod = class extends SelectionMethod {
+  select(entries, luck) {
+    entries.sort((a, b) => -a.chance.compare(b.chance));
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      if (i === entries.length - 1) {
+        return entry.name;
+      }
+      const newChance = entry.chance.div(luck);
+      if (new Decimal(Math.random()).lt(newChance.reciprocal())) {
+        return entry.name;
+      }
+    }
+    return void 0;
+  }
+  getNormalizedWeights(entries, luck) {
+    entries.sort((a, b) => -a.chance.compare(b.chance));
+    const out = [];
+    let cumulativePreviousChanceMultiplier = new Decimal(1);
+    let sumOfOutputWeights = new Decimal(0);
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      if (luck.gte(entry.chance) || i === entries.length - 1) {
+        out.push({
+          name: entry.name,
+          weight: Decimal.dOne.sub(sumOfOutputWeights)
+        });
+        for (let j = i + 1; j < entries.length; j++) {
+          out.push({
+            name: entries[j].name,
+            weight: Decimal.dZero
+          });
+        }
+        break;
+      }
+      const baseChanceInverted = luck.div(entry.chance);
+      const outputWeight = baseChanceInverted.mul(cumulativePreviousChanceMultiplier);
+      out.push({
+        name: entry.name,
+        weight: outputWeight
+      });
+      cumulativePreviousChanceMultiplier = cumulativePreviousChanceMultiplier.mul(Decimal.dOne.sub(baseChanceInverted));
+      sumOfOutputWeights = sumOfOutputWeights.add(outputWeight);
+    }
+    return out;
+  }
+};
+var RandomSelector = class {
+  /**
+   * Creates a new RandomSelector with the given options.
+   * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
+   * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
+   */
+  constructor(options, selectionMethod = new RarestFirstCascadeSelectionMethod()) {
+    /**
+     * An array of {@link RandomOptionEntry} objects representing the possible options.
+     */
+    this.entries = [];
+    this.selectionMethod = selectionMethod;
+    this.entries = options;
+  }
+  /**
+   * Converts the chances of each entry into a relative chance from 0 to 1 given the total weight.
+   * @param entries - An array of {@link RandomOptionEntry} objects representing the possible options.
+   * @param totalWeight - The total weight of all options, used to normalize chances. If not provided, it will be calculated as the sum of all chances.
+   * @returns An array of {@link RandomOptionEntry} objects with normalized chances.
+   * @example
+   * const entries = [
+   *   { name: "A", weight: new Decimal(1/2) },
+   *   { name: "B", weight: new Decimal(1/5) },
+   *   { name: "C", weight: new Decimal(1/10) },
+   *   { name: "D", weight: new Decimal(1/20) },
+   * ];
+   * 
+   * // Will return chances normalized to the total weight (1/2 + 1/5 + 1/10 + 1/20).
+   * // Resulting chances will be approximately: [0.58824, 0.23529, 0.11765, 0.058824]
+   * const normalizedEntries = RandomSelector.normalizeWeights(entries);
+   */
+  static normalizeWeights(entries, totalWeight) {
+    totalWeight = totalWeight ?? entries.reduce((sum, entry) => sum.add(entry.weight), new Decimal(0));
+    return entries.map((entry) => ({
+      ...entry,
+      weight: entry.weight.div(totalWeight)
+    }));
+  }
+  /**
+   * Selects a random option from the list of entries based on their chances and the provided luck.
+   * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @returns A randomly selected option from the entries, or undefined if no options are available.
+   */
+  select(luck = Decimal.dOne) {
+    luck = new Decimal(luck);
+    return this.selectionMethod.select(this.entries, luck);
+  }
+  /**
+   * Gets the normalized weights of the entries based on the provided luck.
+   * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+   * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @returns An array of objects representing the normalized weights of the entries.
+   */
+  getNormalizedWeights(luck = Decimal.dOne) {
+    luck = new Decimal(luck);
+    return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+  }
+};
+
 // src/E/eMain.ts
 var E = (() => {
   let shownWarning = false;
@@ -7023,7 +7142,10 @@ export {
   ItemData,
   LRUCache,
   ListNode,
+  RandomSelector,
+  RarestFirstCascadeSelectionMethod,
   ST_NAMES,
+  SelectionMethod,
   UpgradeData,
   UpgradeStatic,
   calculateInverseFunction,
