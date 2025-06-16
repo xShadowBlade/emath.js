@@ -1,7 +1,8 @@
 /**
  * @file Declares the RandomSelector class
  */
-import { Decimal, DecimalSource } from "../E/e";
+import type { DecimalSource } from "../E/e";
+import { Decimal } from "../E/e";
 
 /**
  * An entry when used to create a {@link RandomSelector}.
@@ -18,7 +19,7 @@ interface RandomOptionEntry<Name extends string = string> {
      * - Chances can be any positive {@link Decimal} value, within the interval of [0, Infinity).
      * - Chances are relative to each other, so the sum of all chances does not need to equal 1.
      * - A chance of 0 means the option will never be selected.
-     * 
+     *
      * This can be a getter and is called every time the selector is used.
      * See {@link RandomSelector} for more information on how chances are used and limitations.
      * @example
@@ -60,7 +61,10 @@ abstract class SelectionMethod {
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
      * @returns An array of objects representing the normalized weights of the entries.
      */
-    public getNormalizedWeights<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): WeightOptionEntry<T>[] | undefined {
+    public getNormalizedWeights<T extends string>(
+        entries: RandomOptionEntry<T>[],
+        luck: Decimal,
+    ): WeightOptionEntry<T>[] | undefined {
         return undefined;
     }
 }
@@ -85,8 +89,7 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
             // Divide the chance of the entry by the luck
             const newChance = entry.chance.div(luck);
 
-            // TODO: replace this with select from chance
-            if (new Decimal(Math.random()).lt(newChance.reciprocal())) {
+            if (RandomSelector.getRandomBooleanWithChance(newChance)) {
                 return entry.name;
             }
         }
@@ -95,7 +98,10 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
         return undefined;
     }
 
-    public getNormalizedWeights<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): WeightOptionEntry<T>[] {
+    public getNormalizedWeights<T extends string>(
+        entries: RandomOptionEntry<T>[],
+        luck: Decimal,
+    ): WeightOptionEntry<T>[] {
         // Sort the entries by their chance in descending order
         entries.sort((a, b) => -a.chance.compare(b.chance));
 
@@ -103,7 +109,7 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
 
         /**
          * The probability that all previous chances do not get selected.
-         * 
+         *
          * For example, if the chances were [2, 4, 8], the cumulative previous chance multiplier would be:
          * - Index 0: 1 (no previous chances)
          * - Index 1: 1 * (1 - (1 / 2)) = 0.5
@@ -143,7 +149,9 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
             });
 
             // Update the cumulative previous chance multiplier and sum of output weights
-            cumulativePreviousChanceMultiplier = cumulativePreviousChanceMultiplier.mul(Decimal.dOne.sub(baseChanceInverted));
+            cumulativePreviousChanceMultiplier = cumulativePreviousChanceMultiplier.mul(
+                Decimal.dOne.sub(baseChanceInverted),
+            );
             sumOfOutputWeights = sumOfOutputWeights.add(outputWeight);
         }
 
@@ -168,6 +176,28 @@ abstract class WeightBasedSelectionMethod extends SelectionMethod {}
  */
 class RandomSelector<PossibleNames extends string = string> {
     /**
+     * Generates a random boolean based on a given chance.
+     * - If the chance is less than or equal to 1, it will always return `true`.
+     * This suffers from floating point precision issues when the chance is very unlikely.
+     * @param chance - The chance of returning `true`. The higher the chance, the less likely it is to return `true`.
+     * @returns - A random boolean value based on the given chance.
+     * @example
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(1)); // Always returns true
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(2)); // 1 in 2 chance (50%) of returning true
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(5)); // 1 in 5 chance (20%)
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(3.5)); // 1 in 3.5 chance (~28.57%)
+     */
+    public static getRandomBooleanWithChance(chance: DecimalSource): boolean {
+        chance = new Decimal(chance);
+
+        if (chance.lte(1)) {
+            return true;
+        }
+
+        return new Decimal(Math.random()).lt(chance.reciprocal());
+    }
+
+    /**
      * Converts the chances of each entry into a relative chance from 0 to 1 given the total weight.
      * @param entries - An array of {@link RandomOptionEntry} objects representing the possible options.
      * @param totalWeight - The total weight of all options, used to normalize chances. If not provided, it will be calculated as the sum of all chances.
@@ -179,18 +209,55 @@ class RandomSelector<PossibleNames extends string = string> {
      *   { name: "C", weight: new Decimal(1/10) },
      *   { name: "D", weight: new Decimal(1/20) },
      * ];
-     * 
+     *
      * // Will return chances normalized to the total weight (1/2 + 1/5 + 1/10 + 1/20).
      * // Resulting chances will be approximately: [0.58824, 0.23529, 0.11765, 0.058824]
      * const normalizedEntries = RandomSelector.normalizeWeights(entries);
      */
-    public static normalizeWeights<T extends string = string>(entries: WeightOptionEntry<T>[], totalWeight?: Decimal): WeightOptionEntry<T>[] {
+    public static normalizeWeights<T extends string = string>(
+        entries: WeightOptionEntry<T>[],
+        totalWeight?: Decimal,
+    ): WeightOptionEntry<T>[] {
         totalWeight = totalWeight ?? entries.reduce((sum, entry) => sum.add(entry.weight), new Decimal(0));
 
-        return entries.map(entry => ({
+        return entries.map((entry) => ({
             ...entry,
-            weight: entry.weight.div(totalWeight)
+            weight: entry.weight.div(totalWeight),
         }));
+    }
+
+    /**
+     * Selects an option from the given normalized weights.
+     * Suffers from floating point precision issues when the weights are very small.
+     * @param entries - An array of normalized {@link WeightOptionEntry} objects. Can be unsorted.
+     * @param randomValue - A random value between 0 and 1 used to select an option. Defaults to `Math.random()`.
+     * @returns The selected option name, or `null` if no option was selected.
+     */
+    public static selectFromNormalizedWeights<T extends string = string>(
+        entries: WeightOptionEntry<T>[],
+        randomValue: DecimalSource = Math.random(),
+    ): T | undefined {
+        // Sort from lowest to highest weight
+        entries.sort((a, b) => a.weight.compare(b.weight));
+
+        // debug
+        // console.log("Sorted entries:", entries);
+
+        randomValue = new Decimal(randomValue);
+        let cumulativeWeight = new Decimal(0);
+
+        // For each entry, add its weight to the cumulative weight and check if the random value is less than or equal to it
+        for (const entry of entries) {
+            cumulativeWeight = cumulativeWeight.add(entry.weight);
+
+            if (randomValue.lte(cumulativeWeight)) {
+                return entry.name;
+            }
+        }
+
+        // If no entry was selected, return undefined
+        // Normally this should not happen if the weights are normalized correctly
+        return undefined;
     }
 
     /**
@@ -208,7 +275,10 @@ class RandomSelector<PossibleNames extends string = string> {
      * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
      * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
      */
-    constructor(options: RandomOptionEntry<PossibleNames>[], selectionMethod: SelectionMethod = new RarestFirstCascadeSelectionMethod()) {
+    constructor(
+        options: RandomOptionEntry<PossibleNames>[],
+        selectionMethod: SelectionMethod = new RarestFirstCascadeSelectionMethod(),
+    ) {
         this.selectionMethod = selectionMethod;
         this.entries = options;
     }
