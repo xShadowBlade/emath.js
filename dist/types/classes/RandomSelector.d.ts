@@ -1,7 +1,8 @@
 /**
  * @file Declares the RandomSelector class
  */
-import { Decimal, DecimalSource } from "../E/e";
+import type { DecimalSource } from "../E/e";
+import { Decimal } from "../E/e";
 /**
  * An entry when used to create a {@link RandomSelector}.
  * @template Name - The type of the name of the option, defaults to `string`.
@@ -35,6 +36,12 @@ interface WeightOptionEntry<Name extends string = string> extends Pick<RandomOpt
      * - Weights may or may not be "normalized" (i.e., the sum of all weights may not equal 1).
      */
     weight: Decimal;
+}
+interface SelectedOptionEntry<Name extends string = string> extends Pick<RandomOptionEntry<Name>, "name"> {
+    /**
+     * The number of times this option was selected.
+     */
+    numberOfSelections: Decimal;
 }
 /**
  * A method of selecting a random option from a list of entries given their chance and a luck multiplier.
@@ -78,6 +85,19 @@ declare class RarestFirstCascadeSelectionMethod extends SelectionMethod {
  */
 declare class RandomSelector<PossibleNames extends string = string> {
     /**
+     * Generates a random boolean based on a given chance.
+     * - If the chance is less than or equal to 1, it will always return `true`.
+     * This suffers from floating point precision issues when the chance is very unlikely.
+     * @param chance - The chance of returning `true`. The higher the chance, the less likely it is to return `true`.
+     * @returns - A random boolean value based on the given chance.
+     * @example
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(1)); // Always returns true
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(2)); // 1 in 2 chance (50%) of returning true
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(5)); // 1 in 5 chance (20%)
+     * RandomSelector.getRandomBooleanWithChance(new Decimal(3.5)); // 1 in 3.5 chance (~28.57%)
+     */
+    static getRandomBooleanWithChance(chance: DecimalSource): boolean;
+    /**
      * Converts the chances of each entry into a relative chance from 0 to 1 given the total weight.
      * @param entries - An array of {@link RandomOptionEntry} objects representing the possible options.
      * @param totalWeight - The total weight of all options, used to normalize chances. If not provided, it will be calculated as the sum of all chances.
@@ -95,6 +115,39 @@ declare class RandomSelector<PossibleNames extends string = string> {
      * const normalizedEntries = RandomSelector.normalizeWeights(entries);
      */
     static normalizeWeights<T extends string = string>(entries: WeightOptionEntry<T>[], totalWeight?: Decimal): WeightOptionEntry<T>[];
+    /**
+     * Selects an option from the given normalized weights.
+     * Suffers from floating point precision issues when the weights are very small.
+     * @param entries - An array of normalized {@link WeightOptionEntry} objects. Can be unsorted.
+     * @param randomValue - A random value between 0 and 1 used to select an option. Defaults to `Math.random()`.
+     * @returns The selected option name, or `null` if no option was selected.
+     */
+    static selectFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], randomValue?: DecimalSource): T | undefined;
+    /**
+     * Samples from a multinomial distribution based on the normalized weights of the entries.
+     * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
+     * @param entries - An array of normalized {@link WeightOptionEntry} objects.
+     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+     * @example
+     * const entries = [
+     *     { name: "A", weight: new Decimal(0.5) },
+     *     { name: "B", weight: new Decimal(0.3) },
+     *     { name: "C", weight: new Decimal(0.2) },
+     * ];
+     *
+     * const numberOfSelections = new Decimal(1000);
+     *
+     * // `selected` will contain an array of SelectedOptionEntry objects with the counts of each selected option.
+     * // For example, it might return something like:
+     * // [
+     * //     { name: "A", numberOfSelections: new Decimal(493) },
+     * //     { name: "B", numberOfSelections: new Decimal(302) },
+     * //     { name: "C", numberOfSelections: new Decimal(205) },
+     * // ]
+     * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
+     */
+    static selectMultipleFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], numberOfSelections: DecimalSource): SelectedOptionEntry<T>[];
     /**
      * An array of {@link RandomOptionEntry} objects representing the possible options.
      */
@@ -122,6 +175,14 @@ declare class RandomSelector<PossibleNames extends string = string> {
      * @returns An array of objects representing the normalized weights of the entries.
      */
     getNormalizedWeights(luck?: DecimalSource): WeightOptionEntry<PossibleNames>[] | undefined;
+    /**
+     * Selects multiple entries based on the normalized weights of the entries.
+     * See {@link selectMultipleFromNormalizedWeights} for more information.
+     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+     */
+    selectMultiple(numberOfSelections?: DecimalSource, luck?: DecimalSource): SelectedOptionEntry<PossibleNames>[];
 }
 export type { RandomOptionEntry, WeightOptionEntry };
 export { SelectionMethod, RandomSelector, RarestFirstCascadeSelectionMethod };

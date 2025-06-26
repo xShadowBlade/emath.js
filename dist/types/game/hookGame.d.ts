@@ -193,6 +193,9 @@ declare const eMath: {
     calculateSumApproxOld: typeof eMathMain.calculateSumApproxOld;
     calculateInverseFunction: typeof eMathMain.calculateInverseFunction;
     inverseFunctionApprox: typeof eMathMain.inverseFunctionApprox;
+    gaussianRandom: typeof eMathMain.gaussianRandom;
+    poissonRandom: typeof eMathMain.poissonRandom;
+    sampleFromBinomialDistribution: typeof eMathMain.sampleFromBinomialDistribution;
     E: ((x?: eMathMain.DecimalSource) => eMathMain.Decimal) & typeof eMathMain.Decimal;
 };
 export default eMath;

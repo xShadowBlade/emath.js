@@ -15,5 +15,6 @@ export * from "./classes/RandomSelector";
 export * from "./classes/numericalAnalysis/numericalAnalysis";
 export * from "./classes/numericalAnalysis/sum";
 export * from "./classes/numericalAnalysis/inverseFunction";
+export * from "./classes/numericalAnalysis/sampling";
 export * from "./E/eMain";
 export type * from "./common/types";

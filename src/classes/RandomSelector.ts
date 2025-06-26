@@ -3,6 +3,7 @@
  */
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
+import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
 
 /**
  * An entry when used to create a {@link RandomSelector}.
@@ -42,6 +43,13 @@ interface WeightOptionEntry<Name extends string = string> extends Pick<RandomOpt
     weight: Decimal;
 }
 
+interface SelectedOptionEntry<Name extends string = string> extends Pick<RandomOptionEntry<Name>, "name"> {
+    /**
+     * The number of times this option was selected.
+     */
+    numberOfSelections: Decimal;
+}
+
 /**
  * A method of selecting a random option from a list of entries given their chance and a luck multiplier.
  */
@@ -62,8 +70,10 @@ abstract class SelectionMethod {
      * @returns An array of objects representing the normalized weights of the entries.
      */
     public getNormalizedWeights<T extends string>(
+        /* eslint-disable @typescript-eslint/no-unused-vars */
         entries: RandomOptionEntry<T>[],
         luck: Decimal,
+        /* eslint-enable @typescript-eslint/no-unused-vars */
     ): WeightOptionEntry<T>[] | undefined {
         return undefined;
     }
@@ -77,7 +87,6 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
         // Sort the entries by their chance in descending order
         entries.sort((a, b) => -a.chance.compare(b.chance));
 
-        // for (const entry of entries) {
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
 
@@ -159,7 +168,8 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
     }
 }
 
-abstract class WeightBasedSelectionMethod extends SelectionMethod {}
+// TODO: Implement other selection methods
+// abstract class WeightBasedSelectionMethod extends SelectionMethod {}
 
 /**
  * A class that allows for random selection of options based on their relative chances.
@@ -261,6 +271,65 @@ class RandomSelector<PossibleNames extends string = string> {
     }
 
     /**
+     * Samples from a multinomial distribution based on the normalized weights of the entries.
+     * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
+     * @param entries - An array of normalized {@link WeightOptionEntry} objects.
+     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+     * @example
+     * const entries = [
+     *     { name: "A", weight: new Decimal(0.5) },
+     *     { name: "B", weight: new Decimal(0.3) },
+     *     { name: "C", weight: new Decimal(0.2) },
+     * ];
+     *
+     * const numberOfSelections = new Decimal(1000);
+     *
+     * // `selected` will contain an array of SelectedOptionEntry objects with the counts of each selected option.
+     * // For example, it might return something like:
+     * // [
+     * //     { name: "A", numberOfSelections: new Decimal(493) },
+     * //     { name: "B", numberOfSelections: new Decimal(302) },
+     * //     { name: "C", numberOfSelections: new Decimal(205) },
+     * // ]
+     * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
+     */
+    public static selectMultipleFromNormalizedWeights<T extends string = string>(
+        entries: WeightOptionEntry<T>[],
+        numberOfSelections: DecimalSource,
+    ): SelectedOptionEntry<T>[] {
+        const k = entries.length;
+        const out: SelectedOptionEntry<T>[] = entries.map((entry) => ({
+            name: entry.name,
+            numberOfSelections: Decimal.dZero,
+        }));
+        let remainingTrials = new Decimal(numberOfSelections);
+        let remainingProbMass = new Decimal(1);
+
+        // For each entry, do a binomial sampling based on the remaining trials and the adjusted probability mass
+        for (let i = 0; i < k - 1; i++) {
+            // If there are no remaining trials or probability mass, stop sampling
+            if (remainingTrials.lte(0) || remainingProbMass.lte(0)) break;
+
+            // Calculate the adjusted probability for the current entry
+            // and sample from the binomial distribution
+            const adjustedP = entries[i].weight.div(remainingProbMass);
+            const x = sampleFromBinomialDistribution(remainingTrials, adjustedP) ?? Decimal.dZero;
+
+            out[i].numberOfSelections = x;
+
+            // Update the remaining trials and probability mass
+            remainingTrials = remainingTrials.sub(x);
+            remainingProbMass = remainingProbMass.sub(entries[i].weight);
+        }
+
+        // Assign remaining trials to the last bucket
+        out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
+
+        return out;
+    }
+
+    /**
      * An array of {@link RandomOptionEntry} objects representing the possible options.
      */
     public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
@@ -305,6 +374,29 @@ class RandomSelector<PossibleNames extends string = string> {
 
         return this.selectionMethod.getNormalizedWeights(this.entries, luck);
     }
+
+    /**
+     * Selects multiple entries based on the normalized weights of the entries.
+     * See {@link selectMultipleFromNormalizedWeights} for more information.
+     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+     */
+    public selectMultiple(
+        numberOfSelections: DecimalSource = Decimal.dOne,
+        luck: DecimalSource = Decimal.dOne,
+    ): SelectedOptionEntry<PossibleNames>[] {
+        numberOfSelections = new Decimal(numberOfSelections);
+
+        const normalizedWeights = this.getNormalizedWeights(luck);
+
+        if (!normalizedWeights) {
+            return [];
+        }
+
+        // Select multiple entries based on the normalized weights
+        return RandomSelector.selectMultipleFromNormalizedWeights(normalizedWeights, numberOfSelections);
+    }
 }
 
 // Test
@@ -341,6 +433,32 @@ class RandomSelector<PossibleNames extends string = string> {
 //     expected: entry.weight.mul(numberOfIterations).toNumber(),
 //     observed: selected.get(entry.name) ?? 0,
 //     ratioBetweenExpectedAndObserved: entry.weight.div((selected.get(entry.name) ?? 0) / numberOfIterations).toNumber(),
+// })));
+
+// Test multinomial
+// const testEntries = [
+//     { name: "Common", chance: new Decimal(2) },
+//     { name: "Rare", chance: new Decimal(5) },
+//     { name: "Epic", chance: new Decimal(10) },
+//     { name: "Legendary", chance: new Decimal(2000) },
+//     { name: "Mythic", chance: new Decimal(1e6) },
+// ] as const satisfies RandomOptionEntry[];
+
+// const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
+
+// const numberOfSelections = new Decimal(10).pow(0);
+// const luck = new Decimal(2);
+// const selected = randomSelector.selectMultiple(numberOfSelections, luck);
+
+// const correspondingNormalizedWeights = randomSelector.getNormalizedWeights(luck) ?? [];
+
+// console.table(selected.map((entry, i) => ({
+//     name: entry.name,
+//     expectedRatio: correspondingNormalizedWeights[i]?.weight.toNumber() ?? 0,
+//     observedRatio: entry.numberOfSelections.div(numberOfSelections).toNumber(),
+//     expected: correspondingNormalizedWeights[i]?.weight.mul(numberOfSelections).toNumber() ?? 0,
+//     observed: entry.numberOfSelections.toNumber(),
+//     ratioBetweenExpectedAndObserved: correspondingNormalizedWeights[i]?.weight.div(entry.numberOfSelections.div(numberOfSelections)).toNumber() ?? 0,
 // })));
 
 export type { RandomOptionEntry, WeightOptionEntry };
