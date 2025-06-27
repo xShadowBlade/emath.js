@@ -1,6 +1,7 @@
 /**
  * @file Declares the RandomSelector class
  */
+import type { Pointer } from "../common/types";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
 /**
@@ -149,19 +150,27 @@ declare class RandomSelector<PossibleNames extends string = string> {
      */
     static selectMultipleFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], numberOfSelections: DecimalSource): SelectedOptionEntry<T>[];
     /**
-     * An array of {@link RandomOptionEntry} objects representing the possible options.
+     * The default selection method used by the {@link RandomSelector} class.
      */
-    readonly entries: RandomOptionEntry<PossibleNames>[];
+    static defaultSelectionMethod: SelectionMethod;
+    /**
+     * A function that returns the entries of the selector.
+     */
+    private getEntries;
+    /**
+     * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
+     */
+    get entries(): RandomOptionEntry<PossibleNames>[];
     /**
      * The method used to select a random option from the list of entries.
      */
     private readonly selectionMethod;
     /**
      * Creates a new RandomSelector with the given options.
-     * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
-     * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
+     * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options.
+     * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
      */
-    constructor(options: RandomOptionEntry<PossibleNames>[], selectionMethod?: SelectionMethod);
+    constructor(options: Pointer<RandomOptionEntry<PossibleNames>[]>, selectionMethod?: SelectionMethod);
     /**
      * Selects a random option from the list of entries based on their chances and the provided luck.
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).

@@ -7157,19 +7157,6 @@ var RarestFirstCascadeSelectionMethod = class extends SelectionMethod {
 };
 var RandomSelector = class _RandomSelector {
   /**
-   * Creates a new RandomSelector with the given options.
-   * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
-   * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
-   */
-  constructor(options, selectionMethod = new RarestFirstCascadeSelectionMethod()) {
-    /**
-     * An array of {@link RandomOptionEntry} objects representing the possible options.
-     */
-    this.entries = [];
-    this.selectionMethod = selectionMethod;
-    this.entries = options;
-  }
-  /**
    * Generates a random boolean based on a given chance.
    * - If the chance is less than or equal to 1, it will always return `true`.
    * This suffers from floating point precision issues when the chance is very unlikely.
@@ -7273,6 +7260,28 @@ var RandomSelector = class _RandomSelector {
     }
     out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
     return out;
+  }
+  static {
+    /**
+     * The default selection method used by the {@link RandomSelector} class.
+     */
+    this.defaultSelectionMethod = new RarestFirstCascadeSelectionMethod();
+  }
+  /**
+   * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
+   */
+  // public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
+  get entries() {
+    return this.getEntries();
+  }
+  /**
+   * Creates a new RandomSelector with the given options.
+   * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options.
+   * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
+   */
+  constructor(options, selectionMethod = _RandomSelector.defaultSelectionMethod) {
+    this.selectionMethod = selectionMethod;
+    this.getEntries = typeof options === "function" ? options : () => options;
   }
   /**
    * Selects a random option from the list of entries based on their chances and the provided luck.

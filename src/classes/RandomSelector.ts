@@ -1,6 +1,7 @@
 /**
  * @file Declares the RandomSelector class
  */
+import type { Pointer } from "../common/types";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
 import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
@@ -330,9 +331,23 @@ class RandomSelector<PossibleNames extends string = string> {
     }
 
     /**
-     * An array of {@link RandomOptionEntry} objects representing the possible options.
+     * The default selection method used by the {@link RandomSelector} class.
+     * Currently set to {@link RarestFirstCascadeSelectionMethod}.
      */
-    public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
+    public static defaultSelectionMethod: SelectionMethod = new RarestFirstCascadeSelectionMethod();
+
+    /**
+     * A function that returns the entries of the selector.
+     */
+    private getEntries: () => RandomOptionEntry<PossibleNames>[];
+
+    /**
+     * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
+     */
+    // public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
+    public get entries(): RandomOptionEntry<PossibleNames>[] {
+        return this.getEntries();
+    }
 
     /**
      * The method used to select a random option from the list of entries.
@@ -341,15 +356,15 @@ class RandomSelector<PossibleNames extends string = string> {
 
     /**
      * Creates a new RandomSelector with the given options.
-     * @param options - An array of {@link RandomOptionEntry} objects representing the possible options.
-     * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link RarestFirstCascadeSelectionMethod}.
+     * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options.
+     * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
      */
     constructor(
-        options: RandomOptionEntry<PossibleNames>[],
-        selectionMethod: SelectionMethod = new RarestFirstCascadeSelectionMethod(),
+        options: Pointer<RandomOptionEntry<PossibleNames>[]>,
+        selectionMethod: SelectionMethod = RandomSelector.defaultSelectionMethod,
     ) {
         this.selectionMethod = selectionMethod;
-        this.entries = options;
+        this.getEntries = typeof options === "function" ? options : (): typeof options => options;
     }
 
     /**
