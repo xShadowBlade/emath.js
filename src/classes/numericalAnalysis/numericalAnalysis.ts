@@ -74,10 +74,10 @@ export function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = "geome
     }
 }
 
-interface EqualsToleranceBounds {
-    lowerBound: DecimalSource;
-    upperBound: DecimalSource;
-}
+// interface EqualsToleranceBounds {
+//     lowerBound: DecimalSource;
+//     upperBound: DecimalSource;
+// }
 
 /**
  * The configuration object for the {@link equalsTolerance} function.

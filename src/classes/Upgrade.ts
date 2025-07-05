@@ -152,14 +152,14 @@ function calculateUpgrade(
 
 /**
  * Interface for initializing an upgrade.
- * @template Id - The ID of the upgrade. Defaults to `string`.
+ * @template TId - The ID of the upgrade. Defaults to `string`.
  */
-interface UpgradeInit<Id extends string = string> {
+interface UpgradeInit<TId extends string = string> {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: Id;
+    readonly id: TId;
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;
@@ -276,8 +276,9 @@ interface UpgradeInit<Id extends string = string> {
 }
 
 /**
- * Infers the id type of an upgrade array
- * @template U - The upgrade array
+ * Infers the id type of an upgrade array.
+ * @deprecated Infer using the array type directly instead.
+ * @template TUpgradeArray - The upgrade array.
  * @example
  * const testUpg = [
  *     {
@@ -292,7 +293,9 @@ interface UpgradeInit<Id extends string = string> {
  *
  * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-type UpgradeInitArrayType<U extends Readonly<UpgradeInit>[]> = U[number]["id"] extends never ? string : U[number]["id"];
+type UpgradeInitArrayType<TUpgradeArray extends Readonly<UpgradeInit>[]> = TUpgradeArray[number]["id"] extends never
+    ? string
+    : TUpgradeArray[number]["id"];
 
 /**
  * Represents a decimal number in the form of a string. `sign/mag/layer`

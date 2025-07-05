@@ -47,6 +47,7 @@ type Pointer<T> = (() => T) | T;
  * @example
  * type Test = PickOptional<{ a: number; b: string; c: boolean }, "a" | "b">; // { a?: number; b?: string; c: boolean; }
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 type PickOptional<T, K extends keyof T> = {
     [P in K]?: T[P];
 } & Omit<T, K>;

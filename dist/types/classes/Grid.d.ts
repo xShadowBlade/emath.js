@@ -16,9 +16,9 @@ type GridDirectionCollection = "adjacent" | "diagonal" | "encircling";
 type GridDirection = GridDirectionCell | GridDirectionCollection;
 /**
  * Represents a grid cell with coordinates and properties.
- * @template PropertiesType - The type of the properties of the grid cell.
+ * @template TProperties - The type of the properties of the grid cell.
  */
-declare class GridCell<PropertiesType extends object = UnknownObject> {
+declare class GridCell<TProperties extends object = UnknownObject> {
     /** The x-coordinate of the cell. */
     x: number;
     /** The y-coordinate of the cell. */
@@ -26,9 +26,9 @@ declare class GridCell<PropertiesType extends object = UnknownObject> {
     /** The grid instance the cell belongs to. */
     private gridSymbol;
     /** @returns The grid instance the cell belongs to. */
-    get grid(): Grid<PropertiesType>;
+    get grid(): Grid<TProperties>;
     /** The properties of the cell. */
-    properties: PropertiesType;
+    properties: TProperties;
     /**
      * Initializes a new instance of the grid cell.
      * Note: The properties are copied using object spread to prevent reference sharing. This may break with getters and setters.
@@ -37,31 +37,31 @@ declare class GridCell<PropertiesType extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props: (PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType)) | undefined, gridSymbol: symbol);
+    constructor(x: number, y: number, props: (TProperties | ((grid: GridCell<TProperties>) => TProperties)) | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
      * @param value - The value to set.
      * @returns The set value.
      */
-    set(name: keyof PropertiesType, value: PropertiesType[keyof PropertiesType]): typeof value;
+    set(name: keyof TProperties, value: TProperties[keyof TProperties]): typeof value;
     /** @deprecated Use {@link set} instead. */
-    setValue: (name: keyof PropertiesType, value: PropertiesType[keyof PropertiesType]) => typeof value;
+    setValue: (name: keyof TProperties, value: TProperties[keyof TProperties]) => typeof value;
     /**
      * Gets the value of a property on the cell.
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    get(name: keyof PropertiesType): PropertiesType[keyof PropertiesType];
+    get(name: keyof TProperties): TProperties[keyof TProperties];
     /** @deprecated Use {@link get} instead. */
-    getValue: (name: keyof PropertiesType) => PropertiesType[keyof PropertiesType];
+    getValue: (name: keyof TProperties) => TProperties[keyof TProperties];
     /**
      * Gets the cell a specified distance away from the current cell.
      * @param x - The x distance to move
      * @param y - The y distance to move
      * @returns The translated cell
      */
-    translate(x?: number, y?: number): GridCell<PropertiesType>;
+    translate(x?: number, y?: number): GridCell<TProperties>;
     /**
      * Gets the cell in a specific direction from the current cell.
      * @param direction - The direction to move.
@@ -69,42 +69,42 @@ declare class GridCell<PropertiesType extends object = UnknownObject> {
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cell in the specified direction.
      */
-    direction<D extends GridDirection>(direction: D, distance?: number, fill?: boolean): D extends GridDirectionCollection ? GridCellCollection<PropertiesType> : GridCell<PropertiesType>;
+    direction<TDirection extends GridDirection>(direction: TDirection, distance?: number, fill?: boolean): TDirection extends GridDirectionCollection ? GridCellCollection<TProperties> : GridCell<TProperties>;
     /**
      * Gets the cell to the right of the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the right.
      */
-    up(distance?: number): GridCell<PropertiesType>;
+    up(distance?: number): GridCell<TProperties>;
     /**
      * Gets the cell to the right of the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the right.
      */
-    right(distance?: number): GridCell<PropertiesType>;
+    right(distance?: number): GridCell<TProperties>;
     /**
      * Gets the cell below the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell below.
      */
-    down(distance?: number): GridCell<PropertiesType>;
+    down(distance?: number): GridCell<TProperties>;
     /**
      * Gets the cell to the left of the current cell. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the left.
      */
-    left(distance?: number): GridCell<PropertiesType>;
+    left(distance?: number): GridCell<TProperties>;
 }
 /**
  * Represents a collection of grid cells.
- * @template PropertiesType - The type of the properties of the grid cells.
+ * @template TProperties - The type of the properties of the grid cells.
  */
-declare class GridCellCollection<PropertiesType extends object = UnknownObject> extends Array<GridCell<PropertiesType>> {
+declare class GridCellCollection<TProperties extends object = UnknownObject> extends Array<GridCell<TProperties>> {
     /**
      * Initializes a new instance of the grid cell collection.
      * @param cells - The cells to initialize with.
      */
-    constructor(cells: GridCell<PropertiesType> | (GridCell<PropertiesType> | undefined)[]);
+    constructor(cells: GridCell<TProperties> | (GridCell<TProperties> | undefined)[]);
     /**
      * Removes duplicate cells from the collection.
      * Modifies the array in place.
@@ -116,7 +116,7 @@ declare class GridCellCollection<PropertiesType extends object = UnknownObject> 
      * @param y - The y distance to move
      * @returns The translated cells
      */
-    translate(x?: number, y?: number): GridCellCollection<PropertiesType>;
+    translate(x?: number, y?: number): GridCellCollection<TProperties>;
     /**
      * Gets the cells in a specific direction from the current cells.
      * @param direction - The direction to move.
@@ -124,31 +124,31 @@ declare class GridCellCollection<PropertiesType extends object = UnknownObject> 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells in the specified direction.
      */
-    direction(direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<PropertiesType>;
+    direction(direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<TProperties>;
     /**
      * Gets the cells above the current cells. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells above.
      */
-    up(distance?: number): GridCellCollection<PropertiesType>;
+    up(distance?: number): GridCellCollection<TProperties>;
     /**
      * Gets the cells to the right of the current cells. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells to the right.
      */
-    right(distance?: number): GridCellCollection<PropertiesType>;
+    right(distance?: number): GridCellCollection<TProperties>;
     /**
      * Gets the cells below the current cells. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells below.
      */
-    down(distance?: number): GridCellCollection<PropertiesType>;
+    down(distance?: number): GridCellCollection<TProperties>;
     /**
      * Gets the cells to the left of the current cells. Can be chained.
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells to the left.
      */
-    left(distance?: number): GridCellCollection<PropertiesType>;
+    left(distance?: number): GridCellCollection<TProperties>;
     /**
      * Gets the cells adjacent to the current cells. Can be chained.
      * Note: Can be slow with large collections.
@@ -156,7 +156,7 @@ declare class GridCellCollection<PropertiesType extends object = UnknownObject> 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells adjacent.
      */
-    adjacent(distance?: number, fill?: boolean): GridCellCollection<PropertiesType>;
+    adjacent(distance?: number, fill?: boolean): GridCellCollection<TProperties>;
     /**
      * Gets the cells diagonally from the current cells. Can be chained.
      * Note: Can be slow with large collections.
@@ -164,7 +164,7 @@ declare class GridCellCollection<PropertiesType extends object = UnknownObject> 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells diagonally.
      */
-    diagonal(distance?: number, fill?: boolean): GridCellCollection<PropertiesType>;
+    diagonal(distance?: number, fill?: boolean): GridCellCollection<TProperties>;
     /**
      * Gets the cells encircling the current cells. Can be chained.
      * Note: Can be slow with large collections.
@@ -172,13 +172,13 @@ declare class GridCellCollection<PropertiesType extends object = UnknownObject> 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells encircling.
      */
-    encircling(distance?: number, fill?: boolean): GridCellCollection<PropertiesType>;
+    encircling(distance?: number, fill?: boolean): GridCellCollection<TProperties>;
 }
 /**
  * Represents a grid with cells.
- * @template PropertiesType - The type of the properties of the grid cells.
+ * @template TProperties - The type of the properties of the grid cells.
  */
-declare class Grid<PropertiesType extends object = UnknownObject> {
+declare class Grid<TProperties extends object = UnknownObject> {
     /** A map of grid instances. */
     private static instances;
     /**
@@ -192,7 +192,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
     /** The size of the grid along the x-axis. */
     ySize: number;
     /** Represents the cells of the grid. */
-    cells: GridCell<PropertiesType>[][];
+    cells: GridCell<TProperties>[][];
     /** A symbol to store the grid instance. */
     private readonly gridSymbol;
     /**
@@ -207,7 +207,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(xSize: number, ySize?: number, starterProps?: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType));
+    constructor(xSize: number, ySize?: number, starterProps?: TProperties | ((grid: GridCell<TProperties>) => TProperties));
     /**
      * Resizes the grid. Merges the cells if the new grid is bigger and truncates the cells if the new grid is smaller.
      * @param xSize - The new size of the grid along the x-axis.
@@ -218,45 +218,45 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.
      */
-    getAll(): GridCellCollection<PropertiesType>;
+    getAll(): GridCellCollection<TProperties>;
     /** @deprecated Use {@link getAll} instead. */
-    all: () => GridCellCollection<PropertiesType>;
+    all: () => GridCellCollection<TProperties>;
     /**
      * Gets an array containing all cells that have the same x coordinate.
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      */
-    getAllX(x: number): GridCellCollection<PropertiesType>;
+    getAllX(x: number): GridCellCollection<TProperties>;
     /** @deprecated Use {@link getAllX} instead. */
-    allX: (x: number) => GridCellCollection<PropertiesType>;
+    allX: (x: number) => GridCellCollection<TProperties>;
     /**
      * Gets an array containing all cells that have the same y coordinate.
      * @returns - An array of all cells.
      * @param y - The y coordinate to check.
      */
-    getAllY(y: number): GridCellCollection<PropertiesType>;
+    getAllY(y: number): GridCellCollection<TProperties>;
     /** @deprecated Use {@link getAllY} instead. */
-    allY: (y: number) => GridCellCollection<PropertiesType>;
+    allY: (y: number) => GridCellCollection<TProperties>;
     /**
      * Gets a cell.
-     * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
+     * @template TIsOverflow - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - The cell.
      */
-    getCell<O extends boolean = true>(x: number, y: number, overflow?: O): O extends true ? GridCell<PropertiesType> : GridCell<PropertiesType> | undefined;
+    getCell<TIsOverflow extends boolean = true>(x: number, y: number, overflow?: TIsOverflow): TIsOverflow extends true ? GridCell<TProperties> : GridCell<TProperties> | undefined;
     /** @deprecated Use {@link getCell} instead. */
-    get: <O extends boolean = true>(x: number, y: number, overflow?: O) => O extends true ? GridCell<PropertiesType> : GridCell<PropertiesType> | undefined;
+    get: <TIsOverflow extends boolean = true>(x: number, y: number, overflow?: TIsOverflow) => TIsOverflow extends true ? GridCell<TProperties> : GridCell<TProperties> | undefined;
     /**
      * Sets the value of a cell in the grid.
      * @param x The x-coordinate of the cell.
      * @param y The y-coordinate of the cell.
      * @param value The value to set for the cell.
      */
-    setCell(x: number, y: number, value: GridCell<PropertiesType>): void;
+    setCell(x: number, y: number, value: GridCell<TProperties>): void;
     /** @deprecated Use {@link setCell} instead. */
-    set: (x: number, y: number, value: GridCell<PropertiesType>) => void;
+    set: (x: number, y: number, value: GridCell<TProperties>) => void;
     /**
      * Gets an array containing all cells orthogonally adjacent to a specific cell.
      * @param x - The x coordinate to check.
@@ -266,7 +266,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - An array of all cells.
      */
-    getAdjacent(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<PropertiesType>;
+    getAdjacent(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<TProperties>;
     /**
      * Gets an array containing all cells diagonally adjacent from a specific cell.
      * @param x - The x coordinate to check.
@@ -276,7 +276,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - An array of all cells.
      */
-    getDiagonal(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<PropertiesType>;
+    getDiagonal(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<TProperties>;
     /**
      * Gets an array containing all cells that surround a cell at a specific distance.
      * @param x - The x coordinate to check.
@@ -295,7 +295,7 @@ declare class Grid<PropertiesType extends object = UnknownObject> {
      * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - An array of all cells.
      */
-    getEncircling(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<PropertiesType>;
+    getEncircling(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<TProperties>;
     /**
      * Calculates the distance between two points on the grid.
      * @deprecated Use your own distance function instead.

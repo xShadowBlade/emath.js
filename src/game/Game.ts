@@ -175,7 +175,7 @@ class Game {
     /**
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-     * @template CurrencyName - The name
+     * @template TCurrencyName - The name
      * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
      * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
@@ -188,14 +188,14 @@ class Game {
      * console.log(currency.value); // Decimal.dOne
      */
     public addCurrency<
-        CurrencyName extends string = string,
-        UpgradeIds extends string = string,
-        ItemIds extends string = string,
+        TCurrencyName extends string = string,
+        TUpgradeIds extends string = string,
+        TItemIds extends string = string,
     >(
-        name: CurrencyName,
-        upgrades?: UpgradeInit<UpgradeIds>[],
-        items?: ItemInit<ItemIds>[],
-    ): GameCurrency<CurrencyName, UpgradeIds, ItemIds> {
+        name: TCurrencyName,
+        upgrades?: UpgradeInit<TUpgradeIds>[],
+        items?: ItemInit<TItemIds>[],
+    ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
         // Set the data and static objects
         this.dataManager.setData(name, {
             currency: new Currency(),
@@ -225,11 +225,11 @@ class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    public addAttribute<B extends boolean = true>(
+    public addAttribute<TEnableBoost extends boolean = true>(
         name: string,
-        useBoost: B = true as B,
+        useBoost: TEnableBoost = true as TEnableBoost,
         initial: DecimalSource = 0,
-    ): GameAttribute<B> {
+    ): GameAttribute<TEnableBoost> {
         this.dataManager.setData(name, new Attribute(initial));
 
         const classInstance = new GameAttribute(

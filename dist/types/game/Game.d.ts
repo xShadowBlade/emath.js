@@ -121,7 +121,7 @@ declare class Game {
     /**
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-     * @template CurrencyName - The name
+     * @template TCurrencyName - The name
      * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
      * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
@@ -133,7 +133,7 @@ declare class Game {
      * currency.static.gain();
      * console.log(currency.value); // Decimal.dOne
      */
-    addCurrency<CurrencyName extends string = string, UpgradeIds extends string = string, ItemIds extends string = string>(name: CurrencyName, upgrades?: UpgradeInit<UpgradeIds>[], items?: ItemInit<ItemIds>[]): GameCurrency<CurrencyName, UpgradeIds, ItemIds>;
+    addCurrency<TCurrencyName extends string = string, TUpgradeIds extends string = string, TItemIds extends string = string>(name: TCurrencyName, upgrades?: UpgradeInit<TUpgradeIds>[], items?: ItemInit<TItemIds>[]): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds>;
     /**
      * Adds a new attribute to the game. {@link GameAttribute} is the class.
      * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
@@ -144,7 +144,7 @@ declare class Game {
      * @example
      * const myAttribute = game.addAttribute("myAttribute");
      */
-    addAttribute<B extends boolean = true>(name: string, useBoost?: B, initial?: DecimalSource): GameAttribute<B>;
+    addAttribute<TEnableBoost extends boolean = true>(name: string, useBoost?: TEnableBoost, initial?: DecimalSource): GameAttribute<TEnableBoost>;
     /**
      * Creates a new game reset object with the specified currencies to reset.
      * @deprecated Use the class {@link GameReset} instead.

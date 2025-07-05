@@ -1,6 +1,7 @@
 /**
  * @file Defines a LRU cache. From break_eternity.js (https://github.com/Patashu/break_eternity.js).
  */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * A LRU cache intended for caching pure functions.

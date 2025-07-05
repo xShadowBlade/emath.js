@@ -20,9 +20,9 @@ type GridDirection = GridDirectionCell | GridDirectionCollection;
 
 /**
  * Represents a grid cell with coordinates and properties.
- * @template PropertiesType - The type of the properties of the grid cell.
+ * @template TProperties - The type of the properties of the grid cell.
  */
-class GridCell<PropertiesType extends object = UnknownObject> {
+class GridCell<TProperties extends object = UnknownObject> {
     /** The x-coordinate of the cell. */
     public x: number;
 
@@ -33,12 +33,12 @@ class GridCell<PropertiesType extends object = UnknownObject> {
     private gridSymbol: symbol;
 
     /** @returns The grid instance the cell belongs to. */
-    public get grid(): Grid<PropertiesType> {
+    public get grid(): Grid<TProperties> {
         return Grid.getInstance(this.gridSymbol);
     }
 
     /** The properties of the cell. */
-    public properties: PropertiesType;
+    public properties: TProperties;
 
     /**
      * Initializes a new instance of the grid cell.
@@ -51,7 +51,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
     constructor(
         x: number,
         y: number,
-        props: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType) = {} as PropertiesType,
+        props: TProperties | ((grid: GridCell<TProperties>) => TProperties) = {} as TProperties,
         gridSymbol: symbol,
     ) {
         this.x = x;
@@ -68,7 +68,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param value - The value to set.
      * @returns The set value.
      */
-    public set(name: keyof PropertiesType, value: PropertiesType[keyof PropertiesType]): typeof value {
+    public set(name: keyof TProperties, value: TProperties[keyof TProperties]): typeof value {
         this.properties[name] = value;
         return value;
     }
@@ -80,7 +80,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    public get(name: keyof PropertiesType): PropertiesType[keyof PropertiesType] {
+    public get(name: keyof TProperties): TProperties[keyof TProperties] {
         return this.properties[name];
     }
     /** @deprecated Use {@link get} instead. */
@@ -94,8 +94,8 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param y - The y distance to move
      * @returns The translated cell
      */
-    public translate(x = 0, y = 0): GridCell<PropertiesType> {
-        return Grid.getInstance<PropertiesType>(this.gridSymbol).getCell(this.x + x, this.y + y);
+    public translate(x = 0, y = 0): GridCell<TProperties> {
+        return Grid.getInstance<TProperties>(this.gridSymbol).getCell(this.x + x, this.y + y);
     }
 
     /**
@@ -105,11 +105,11 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cell in the specified direction.
      */
-    public direction<D extends GridDirection>(
-        direction: D,
+    public direction<TDirection extends GridDirection>(
+        direction: TDirection,
         distance = 1,
         fill?: boolean,
-    ): D extends GridDirectionCollection ? GridCellCollection<PropertiesType> : GridCell<PropertiesType> {
+    ): TDirection extends GridDirectionCollection ? GridCellCollection<TProperties> : GridCell<TProperties> {
         const grid = this.grid as Grid;
 
         const out: GridCell | GridCellCollection = ((): typeof out => {
@@ -133,7 +133,9 @@ class GridCell<PropertiesType extends object = UnknownObject> {
             }
         })();
 
-        return out as D extends GridDirectionCollection ? GridCellCollection<PropertiesType> : GridCell<PropertiesType>;
+        return out as TDirection extends GridDirectionCollection
+            ? GridCellCollection<TProperties>
+            : GridCell<TProperties>;
     }
 
     /**
@@ -141,7 +143,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the right.
      */
-    public up(distance = 1): GridCell<PropertiesType> {
+    public up(distance = 1): GridCell<TProperties> {
         return this.direction("up", distance);
     }
 
@@ -150,7 +152,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the right.
      */
-    public right(distance = 1): GridCell<PropertiesType> {
+    public right(distance = 1): GridCell<TProperties> {
         return this.direction("right", distance);
     }
 
@@ -159,7 +161,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell below.
      */
-    public down(distance = 1): GridCell<PropertiesType> {
+    public down(distance = 1): GridCell<TProperties> {
         return this.direction("down", distance);
     }
 
@@ -168,7 +170,7 @@ class GridCell<PropertiesType extends object = UnknownObject> {
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cell to the left.
      */
-    public left(distance = 1): GridCell<PropertiesType> {
+    public left(distance = 1): GridCell<TProperties> {
         return this.direction("left", distance);
     }
 }
@@ -211,22 +213,22 @@ function validateCoordinates(x: number, y: number, isSize = true): void {
 
 /**
  * Represents a collection of grid cells.
- * @template PropertiesType - The type of the properties of the grid cells.
+ * @template TProperties - The type of the properties of the grid cells.
  */
-class GridCellCollection<PropertiesType extends object = UnknownObject> extends Array<GridCell<PropertiesType>> {
+class GridCellCollection<TProperties extends object = UnknownObject> extends Array<GridCell<TProperties>> {
     /**
      * Initializes a new instance of the grid cell collection.
      * @param cells - The cells to initialize with.
      */
-    constructor(cells: GridCell<PropertiesType> | (GridCell<PropertiesType> | undefined)[]) {
+    constructor(cells: GridCell<TProperties> | (GridCell<TProperties> | undefined)[]) {
         // Normalize the input to an array of cells
         cells = Array.isArray(cells) ? cells : [cells];
 
         // Filter out undefined cells
-        cells = cells.filter((cell): cell is GridCell<PropertiesType> => cell !== undefined);
+        cells = cells.filter((cell): cell is GridCell<TProperties> => cell !== undefined);
 
         // Call the parent constructor with the cells
-        super(...(cells as GridCell<PropertiesType>[]));
+        super(...(cells as GridCell<TProperties>[]));
 
         // Remove duplicates
         this.removeDuplicates();
@@ -258,7 +260,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param y - The y distance to move
      * @returns The translated cells
      */
-    public translate(x = 0, y = 0): GridCellCollection<PropertiesType> {
+    public translate(x = 0, y = 0): GridCellCollection<TProperties> {
         return new GridCellCollection(this.map((cell) => cell.translate(x, y)));
     }
 
@@ -269,7 +271,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells in the specified direction.
      */
-    public direction(direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<PropertiesType> {
+    public direction(direction: GridDirection, distance?: number, fill?: boolean): GridCellCollection<TProperties> {
         return new GridCellCollection(this.flatMap((cell) => cell.direction(direction, distance, fill)));
     }
 
@@ -278,7 +280,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells above.
      */
-    public up(distance?: number): GridCellCollection<PropertiesType> {
+    public up(distance?: number): GridCellCollection<TProperties> {
         return this.direction("up", distance);
     }
 
@@ -287,7 +289,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells to the right.
      */
-    public right(distance?: number): GridCellCollection<PropertiesType> {
+    public right(distance?: number): GridCellCollection<TProperties> {
         return this.direction("right", distance);
     }
 
@@ -296,7 +298,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells below.
      */
-    public down(distance?: number): GridCellCollection<PropertiesType> {
+    public down(distance?: number): GridCellCollection<TProperties> {
         return this.direction("down", distance);
     }
 
@@ -305,7 +307,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param distance - The distance to move. Defaults to 1.
      * @returns - The cells to the left.
      */
-    public left(distance?: number): GridCellCollection<PropertiesType> {
+    public left(distance?: number): GridCellCollection<TProperties> {
         return this.direction("left", distance);
     }
 
@@ -318,7 +320,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells adjacent.
      */
-    public adjacent(distance?: number, fill?: boolean): GridCellCollection<PropertiesType> {
+    public adjacent(distance?: number, fill?: boolean): GridCellCollection<TProperties> {
         return this.direction("adjacent", distance, fill);
     }
 
@@ -329,7 +331,7 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells diagonally.
      */
-    public diagonal(distance?: number, fill?: boolean): GridCellCollection<PropertiesType> {
+    public diagonal(distance?: number, fill?: boolean): GridCellCollection<TProperties> {
         return this.direction("diagonal", distance, fill);
     }
 
@@ -340,16 +342,16 @@ class GridCellCollection<PropertiesType extends object = UnknownObject> extends 
      * @param fill - Whether to fill the cells. Defaults to `false`.
      * @returns - The cells encircling.
      */
-    public encircling(distance?: number, fill?: boolean): GridCellCollection<PropertiesType> {
+    public encircling(distance?: number, fill?: boolean): GridCellCollection<TProperties> {
         return this.direction("encircling", distance, fill);
     }
 }
 
 /**
  * Represents a grid with cells.
- * @template PropertiesType - The type of the properties of the grid cells.
+ * @template TProperties - The type of the properties of the grid cells.
  */
-class Grid<PropertiesType extends object = UnknownObject> {
+class Grid<TProperties extends object = UnknownObject> {
     /** A map of grid instances. */
     // private static instances = new Map<symbol, Grid>();
     private static instances: Record<symbol, Grid> = {};
@@ -370,7 +372,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
     public ySize: number;
 
     /** Represents the cells of the grid. */
-    public cells: GridCell<PropertiesType>[][] = [];
+    public cells: GridCell<TProperties>[][] = [];
 
     /** A symbol to store the grid instance. */
     private readonly gridSymbol = Symbol();
@@ -380,7 +382,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * @param grid - The grid cell to initialize with.
      * @returns - The properties to initialize with.
      */
-    private readonly starterProps: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType);
+    private readonly starterProps: TProperties | ((grid: GridCell<TProperties>) => TProperties);
 
     /**
      * Initializes a new instance of the grid.
@@ -391,13 +393,13 @@ class Grid<PropertiesType extends object = UnknownObject> {
     constructor(
         xSize: number,
         ySize?: number,
-        starterProps?: PropertiesType | ((grid: GridCell<PropertiesType>) => PropertiesType),
+        starterProps?: TProperties | ((grid: GridCell<TProperties>) => TProperties),
     ) {
         // Assign the instance symbol to the grid
         // @ts-expect-error - Generic class type
         Grid.instances[this.gridSymbol] = this;
 
-        this.starterProps = starterProps ?? ({} as PropertiesType);
+        this.starterProps = starterProps ?? ({} as TProperties);
 
         this.xSize = xSize;
         this.ySize = ySize ?? xSize;
@@ -488,7 +490,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * Gets an array containing all cells in the grid.
      * @returns - An array of all cells.
      */
-    public getAll(): GridCellCollection<PropertiesType> {
+    public getAll(): GridCellCollection<TProperties> {
         return new GridCellCollection(this.cells.flat());
     }
     /** @deprecated Use {@link getAll} instead. */
@@ -499,8 +501,8 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * @returns - An array of all cells.
      * @param x - The x coordinate to check.
      */
-    public getAllX(x: number): GridCellCollection<PropertiesType> {
-        const output: GridCell<PropertiesType>[] = [];
+    public getAllX(x: number): GridCellCollection<TProperties> {
+        const output: GridCell<TProperties>[] = [];
         for (let i = 0; i < this.ySize; i++) {
             output.push(this.cells[i][x]);
         }
@@ -514,7 +516,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * @returns - An array of all cells.
      * @param y - The y coordinate to check.
      */
-    public getAllY(y: number): GridCellCollection<PropertiesType> {
+    public getAllY(y: number): GridCellCollection<TProperties> {
         return new GridCellCollection(this.cells[y]);
     }
     /** @deprecated Use {@link getAllY} instead. */
@@ -522,26 +524,27 @@ class Grid<PropertiesType extends object = UnknownObject> {
 
     /**
      * Gets a cell.
-     * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
+     * @template TIsOverflow - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
      * @param x - The x coordinate to check.
      * @param y - The y coordinate to check.
      * @param overflow - Whether to allow overflow. Defaults to `true`.
      * @returns - The cell.
      */
-    public getCell<O extends boolean = true>(
+    public getCell<TIsOverflow extends boolean = true>(
         x: number,
         y: number,
-        overflow: O = true as O,
-    ): O extends true ? GridCell<PropertiesType> : GridCell<PropertiesType> | undefined {
+        overflow: TIsOverflow = true as TIsOverflow,
+    ): TIsOverflow extends true ? GridCell<TProperties> : GridCell<TProperties> | undefined {
         // Normalize the coordinates based on overflow
         x = overflow ? (x + this.xSize) % this.xSize : x;
         y = overflow ? (y + this.ySize) % this.ySize : y;
 
-        let out: GridCell<PropertiesType> | undefined;
+        let out: GridCell<TProperties> | undefined;
 
         try {
             out = this.cells[y][x];
-        } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
             return undefined as never;
         }
 
@@ -560,7 +563,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
      * @param y The y-coordinate of the cell.
      * @param value The value to set for the cell.
      */
-    public setCell(x: number, y: number, value: GridCell<PropertiesType>): void {
+    public setCell(x: number, y: number, value: GridCell<TProperties>): void {
         this.cells[y][x] = value;
     }
     /** @deprecated Use {@link setCell} instead. */
@@ -581,7 +584,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
         distance = 1,
         fill = false,
         overflow = true,
-    ): GridCellCollection<PropertiesType> {
+    ): GridCellCollection<TProperties> {
         // If the distance is 1, return the adjacent cells
         if (distance === 1) {
             return new GridCellCollection([
@@ -602,7 +605,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
             ]);
         }
 
-        const output: GridCell<PropertiesType>[] = [this.getCell(x, y)];
+        const output: GridCell<TProperties>[] = [this.getCell(x, y)];
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
@@ -634,7 +637,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
         distance = 1,
         fill = false,
         overflow = true,
-    ): GridCellCollection<PropertiesType> {
+    ): GridCellCollection<TProperties> {
         // If the distance is 1, return the diagonal cells
         if (distance === 1) {
             return new GridCellCollection([
@@ -655,7 +658,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
             ]);
         }
 
-        const output: GridCell<PropertiesType>[] = [this.getCell(x, y)];
+        const output: GridCell<TProperties>[] = [this.getCell(x, y)];
 
         // Iterate through the distance
         for (let i = 1; i <= distance; i++) {
@@ -685,7 +688,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
         y: number,
         distance: number,
         overflow = true,
-    ): GridCellCollection<PropertiesType> {
+    ): GridCellCollection<TProperties> {
         // If the distance is 1, return the encircling cells
         if (distance <= 1) {
             return new GridCellCollection([
@@ -696,7 +699,7 @@ class Grid<PropertiesType extends object = UnknownObject> {
 
         // An encircling is basically the cells coordinates
 
-        const output: GridCell<PropertiesType>[] = [];
+        const output: GridCell<TProperties>[] = [];
 
         for (let i = 1; i < distance * 2; i++) {
             output.push(
@@ -737,13 +740,13 @@ class Grid<PropertiesType extends object = UnknownObject> {
         distance = 1,
         fill = false,
         overflow = true,
-    ): GridCellCollection<PropertiesType> {
+    ): GridCellCollection<TProperties> {
         // If the distance is 1, or fill is false return the encircling cells
         if (distance === 1 || !fill) {
             return this.getEncirclingAtDistance(x, y, distance, overflow);
         }
 
-        const output: GridCell<PropertiesType>[] = [this.getCell(x, y)];
+        const output: GridCell<TProperties>[] = [this.getCell(x, y)];
 
         // Return all the distances
         for (let i = 1; i <= distance; i++) {

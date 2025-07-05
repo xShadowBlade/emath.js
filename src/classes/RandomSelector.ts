@@ -8,13 +8,13 @@ import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
 
 /**
  * An entry when used to create a {@link RandomSelector}.
- * @template Name - The type of the name of the option, defaults to `string`.
+ * @template TName - The type of the name of the option, defaults to `string`.
  */
-interface RandomOptionEntry<Name extends string = string> {
+interface RandomOptionEntry<TName extends string = string> {
     /**
      * A unique identifier for the option that is returned by the selector.
      */
-    name: Name;
+    name: TName;
 
     /**
      * Represents the chance of this option being selected, as a {@link Decimal}.
@@ -35,7 +35,7 @@ interface RandomOptionEntry<Name extends string = string> {
 /**
  * Used internally to represent an array of {@link RandomOptionEntry} objects with weights.
  */
-interface WeightOptionEntry<Name extends string = string> extends Pick<RandomOptionEntry<Name>, "name"> {
+interface WeightOptionEntry<TName extends string = string> extends Pick<RandomOptionEntry<TName>, "name"> {
     /**
      * A weight for the option, as a {@link Decimal}.
      * - Weights are numeric values within the range of [0, Infinity)
@@ -44,7 +44,7 @@ interface WeightOptionEntry<Name extends string = string> extends Pick<RandomOpt
     weight: Decimal;
 }
 
-interface SelectedOptionEntry<Name extends string = string> extends Pick<RandomOptionEntry<Name>, "name"> {
+interface SelectedOptionEntry<TName extends string = string> extends Pick<RandomOptionEntry<TName>, "name"> {
     /**
      * The number of times this option was selected.
      */
@@ -183,9 +183,9 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
  *
  * This is essentially a wrapper around the various {@link SelectionMethod} classes.
  *  - Use a {@link SelectionMethod} class if the chances can change between initialization and selection.
- * @template PossibleNames - The type of the names of the options, defaults to `string`.
+ * @template TPossibleNames - The type of the names of the options, defaults to `string`.
  */
-class RandomSelector<PossibleNames extends string = string> {
+class RandomSelector<TPossibleNames extends string = string> {
     /**
      * Generates a random boolean based on a given chance.
      * - If the chance is less than or equal to 1, it will always return `true`.
@@ -339,13 +339,13 @@ class RandomSelector<PossibleNames extends string = string> {
     /**
      * A function that returns the entries of the selector.
      */
-    private getEntries: () => RandomOptionEntry<PossibleNames>[];
+    private getEntries: () => RandomOptionEntry<TPossibleNames>[];
 
     /**
      * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
      */
     // public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
-    public get entries(): RandomOptionEntry<PossibleNames>[] {
+    public get entries(): RandomOptionEntry<TPossibleNames>[] {
         return this.getEntries();
     }
 
@@ -360,7 +360,7 @@ class RandomSelector<PossibleNames extends string = string> {
      * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
      */
     constructor(
-        options: Pointer<RandomOptionEntry<PossibleNames>[]>,
+        options: Pointer<RandomOptionEntry<TPossibleNames>[]>,
         selectionMethod: SelectionMethod = RandomSelector.defaultSelectionMethod,
     ) {
         this.selectionMethod = selectionMethod;
@@ -372,7 +372,7 @@ class RandomSelector<PossibleNames extends string = string> {
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
      * @returns A randomly selected option from the entries, or undefined if no options are available.
      */
-    public select(luck: DecimalSource = Decimal.dOne): PossibleNames | undefined {
+    public select(luck: DecimalSource = Decimal.dOne): TPossibleNames | undefined {
         luck = new Decimal(luck);
 
         return this.selectionMethod.select(this.entries, luck);
@@ -384,7 +384,7 @@ class RandomSelector<PossibleNames extends string = string> {
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
      * @returns An array of objects representing the normalized weights of the entries.
      */
-    public getNormalizedWeights(luck: DecimalSource = Decimal.dOne): WeightOptionEntry<PossibleNames>[] | undefined {
+    public getNormalizedWeights(luck: DecimalSource = Decimal.dOne): WeightOptionEntry<TPossibleNames>[] | undefined {
         luck = new Decimal(luck);
 
         return this.selectionMethod.getNormalizedWeights(this.entries, luck);
@@ -400,7 +400,7 @@ class RandomSelector<PossibleNames extends string = string> {
     public selectMultiple(
         numberOfSelections: DecimalSource = Decimal.dOne,
         luck: DecimalSource = Decimal.dOne,
-    ): SelectedOptionEntry<PossibleNames>[] {
+    ): SelectedOptionEntry<TPossibleNames>[] {
         numberOfSelections = new Decimal(numberOfSelections);
 
         const normalizedWeights = this.getNormalizedWeights(luck);

@@ -6892,7 +6892,7 @@ var Grid = class _Grid {
   }
   /**
    * Gets a cell.
-   * @template O - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
+   * @template TIsOverflow - Whether to allow overflow. Defaults to `true`. If `false`, the cell can exist or be `undefined`.
    * @param x - The x coordinate to check.
    * @param y - The y coordinate to check.
    * @param overflow - Whether to allow overflow. Defaults to `true`.
@@ -6904,7 +6904,7 @@ var Grid = class _Grid {
     let out;
     try {
       out = this.cells[y][x];
-    } catch (e) {
+    } catch (error) {
       return void 0;
     }
     if (!out) return void 0;

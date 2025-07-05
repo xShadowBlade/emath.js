@@ -3,7 +3,7 @@
  */
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
-import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS, equalsTolerance } from "./numericalAnalysis";
+import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS } from "./numericalAnalysis";
 
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.

@@ -4,7 +4,7 @@
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
 import type { MeanMode } from "./numericalAnalysis";
-import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS, equalsTolerance, mean } from "./numericalAnalysis";
+import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS, mean } from "./numericalAnalysis";
 
 /**
  * Represents the options for the {@link inverseFunctionApprox} function.

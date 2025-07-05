@@ -16,14 +16,14 @@ import type { CurrencyStatic } from "./Currency";
 declare function calculateItem(value: DecimalSource, item: Item, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
 /**
  * An interface for an item. An item is a type of upgrade that does not have a level. Ex. A potion that gives you 10 gold.
- * @template Id - The ID of the item. Defaults to `string`.
+ * @template TId - The ID of the item. Defaults to `string`.
  */
-interface ItemInit<Id extends string = string> {
+interface ItemInit<TId extends string = string> {
     /**
      * The ID of the item.
      * Used to retrieve the item later.
      */
-    readonly id: Id;
+    readonly id: TId;
     /** The name of the item. Defaults to the ID. */
     name?: string;
     /**
@@ -73,9 +73,10 @@ interface ItemInit<Id extends string = string> {
 }
 /**
  * Infers the id type of an item array. See {@link UpgradeInitArrayType}
- * @template I - The item array
+ * @deprecated Infer using the array type directly instead.
+ * @template TItemArray - The item array
  */
-type ItemInitArrayType<I extends Readonly<ItemInit>[]> = I[number]["id"] extends never ? string : I[number]["id"];
+type ItemInitArrayType<TItemArray extends Readonly<ItemInit>[]> = TItemArray[number]["id"] extends never ? string : TItemArray[number]["id"];
 /**
  * Represents an item.
  */

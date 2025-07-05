@@ -37,13 +37,37 @@ module.exports = tseslint.config(
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/ban-ts-comment": "warn",
             "@typescript-eslint/explicit-function-return-type": "warn",
-            "@typescript-eslint/restrict-template-expressions": [
-                "warn",
-                { allowNumber: true, allowBoolean: true },
-            ],
+            "@typescript-eslint/restrict-template-expressions": ["warn", { allowNumber: true, allowBoolean: true }],
             "@typescript-eslint/consistent-type-exports": "warn",
             "@typescript-eslint/consistent-type-imports": "warn",
-            "@typescript-eslint/naming-convention": "warn",
+            "@typescript-eslint/naming-convention": [
+                "warn",
+                {
+                    selector: "typeParameter",
+                    format: ["PascalCase"],
+                    prefix: ["T"],
+                },
+                {
+                    selector: "default",
+                    format: ["camelCase"],
+                    leadingUnderscore: "allow",
+                    trailingUnderscore: "allow",
+                },
+                {
+                    selector: "import",
+                    format: ["camelCase", "PascalCase"],
+                },
+                {
+                    selector: "variable",
+                    format: ["camelCase", "UPPER_CASE"],
+                    leadingUnderscore: "allow",
+                    trailingUnderscore: "allow",
+                },
+                {
+                    selector: "typeLike",
+                    format: ["PascalCase"],
+                },
+            ],
 
             "jsdoc/require-file-overview": 1,
         },
