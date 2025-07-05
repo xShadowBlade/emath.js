@@ -48,13 +48,14 @@ function calculateItem(
 
 /**
  * An interface for an item. An item is a type of upgrade that does not have a level. Ex. A potion that gives you 10 gold.
+ * @template Id - The ID of the item. Defaults to `string`.
  */
-interface ItemInit {
+interface ItemInit<Id extends string = string> {
     /**
      * The ID of the item.
      * Used to retrieve the item later.
      */
-    readonly id: string;
+    readonly id: Id;
 
     /** The name of the item. Defaults to the ID. */
     name?: string;

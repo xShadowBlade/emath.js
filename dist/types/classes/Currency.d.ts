@@ -7,8 +7,8 @@ import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { UpgradeData, UpgradeStatic } from "./Upgrade";
 import { ItemData, Item } from "./Item";
-import type { UpgradeInitArrayType, UpgradeInit } from "./Upgrade";
-import type { ItemInit, ItemInitArrayType } from "./Item";
+import type { UpgradeInit } from "./Upgrade";
+import type { ItemInit } from "./Item";
 import type { Pointer, IsPrimitiveString } from "../common/types";
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -35,16 +35,14 @@ declare class Currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template UpgradeInitArray - The initial upgrades
  * @template UpgradeIds - An string union that represents the names of the upgrades.
- * @template ItemInitArray - The initial items
  * @template ItemIds - An string union that represents the names of the items.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = [], UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>, ItemInitArray extends Readonly<ItemInit>[] = [], ItemIds extends string = ItemInitArrayType<ItemInitArray>> {
+declare class CurrencyStatic<UpgradeIds extends string = string, ItemIds extends string = string> {
     /** An array that represents upgrades */
     readonly upgrades: Record<UpgradeIds, UpgradeStatic>;
     /** An array that represents items and their effects. */
@@ -85,7 +83,7 @@ declare class CurrencyStatic<UpgradeInitArray extends Readonly<UpgradeInit>[] = 
      * ] as const satisfies UpgradeInit[]);
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
-    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInitArray, items?: ItemInitArray, defaults?: {
+    constructor(pointer?: Pointer<Currency>, upgrades?: UpgradeInit<UpgradeIds>[], items?: ItemInit<ItemIds>[], defaults?: {
         defaultVal: Decimal;
         defaultBoost: Decimal;
     });

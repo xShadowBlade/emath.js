@@ -8041,7 +8041,7 @@ var Game = class _Game {
   /**
    * Adds a new currency section to the game. {@link GameCurrency} is the class.
    * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-   * @template N - The name
+   * @template CurrencyName - The name
    * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
    * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
    * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
@@ -8053,7 +8053,7 @@ var Game = class _Game {
    * currency.static.gain();
    * console.log(currency.value); // Decimal.dOne
    */
-  addCurrency(name, upgrades = [], items = []) {
+  addCurrency(name, upgrades, items) {
     this.dataManager.setData(name, {
       currency: new Currency()
     });

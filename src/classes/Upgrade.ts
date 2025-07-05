@@ -152,13 +152,14 @@ function calculateUpgrade(
 
 /**
  * Interface for initializing an upgrade.
+ * @template Id - The ID of the upgrade. Defaults to `string`.
  */
-interface UpgradeInit {
+interface UpgradeInit<Id extends string = string> {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: string;
+    readonly id: Id;
 
     /** The name of the upgrade. Defaults to the ID. */
     name?: string;

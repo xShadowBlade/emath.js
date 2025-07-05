@@ -51,21 +51,14 @@ class Currency {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template UpgradeInitArray - The initial upgrades
  * @template UpgradeIds - An string union that represents the names of the upgrades.
- * @template ItemInitArray - The initial items
  * @template ItemIds - An string union that represents the names of the items.
  * @example
  * const currency = new CurrencyStatic();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-class CurrencyStatic<
-    UpgradeInitArray extends Readonly<UpgradeInit>[] = [],
-    UpgradeIds extends string = UpgradeInitArrayType<UpgradeInitArray>,
-    ItemInitArray extends Readonly<ItemInit>[] = [],
-    ItemIds extends string = ItemInitArrayType<ItemInitArray>,
-> {
+class CurrencyStatic<UpgradeIds extends string = string, ItemIds extends string = string> {
     /** An array that represents upgrades */
     public readonly upgrades: Record<UpgradeIds, UpgradeStatic>;
 
@@ -122,8 +115,8 @@ class CurrencyStatic<
      */
     constructor(
         pointer: Pointer<Currency> = new Currency(),
-        upgrades?: UpgradeInitArray,
-        items?: ItemInitArray,
+        upgrades?: UpgradeInit<UpgradeIds>[],
+        items?: ItemInit<ItemIds>[],
         defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
     ) {
         // Assign the default values

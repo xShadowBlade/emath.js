@@ -151,6 +151,7 @@ declare class RandomSelector<PossibleNames extends string = string> {
     static selectMultipleFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], numberOfSelections: DecimalSource): SelectedOptionEntry<T>[];
     /**
      * The default selection method used by the {@link RandomSelector} class.
+     * Currently set to {@link RarestFirstCascadeSelectionMethod}.
      */
     static defaultSelectionMethod: SelectionMethod;
     /**

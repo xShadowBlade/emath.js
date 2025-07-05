@@ -7188,6 +7188,7 @@ var RandomSelector = class _RandomSelector {
   static {
     /**
      * The default selection method used by the {@link RandomSelector} class.
+     * Currently set to {@link RarestFirstCascadeSelectionMethod}.
      */
     this.defaultSelectionMethod = new RarestFirstCascadeSelectionMethod();
   }
