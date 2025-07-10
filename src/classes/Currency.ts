@@ -410,7 +410,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
-     * @param id - The ID or position of the upgrade to calculate.
+     * @param id - The upgrade ID or the upgrade to calculate.
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -420,17 +420,17 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
     public calculateUpgrade(
-        id: TUpgradeIds,
+        id: TUpgradeIds | UpgradeStatic,
         target: DecimalSource = Infinity,
         mode?: MeanMode,
         iterations?: number,
     ): [amount: Decimal, cost: Decimal] {
         // Get the upgrade
-        const upgrade = this.getUpgrade(id);
+        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
 
         // If the upgrade doesn't exist, return [0, 0]
         if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
             return [Decimal.dZero, Decimal.dZero];
         }
 
@@ -457,13 +457,18 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    public getNextCost(id: TUpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCost(
+        id: TUpgradeIds | UpgradeStatic,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
         // Get the upgrade
-        const upgrade = this.getUpgrade(id);
+        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
 
         // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
             return Decimal.dZero;
         }
 
@@ -477,8 +482,8 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
 
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
-     * @param id - Index or ID of the upgrade
-     * @param target - How many before the next upgrade
+     * @param id - Upgrade ID or upgrade object to calculate the next cost for.
+     * @param target - How many before the next upgrade.
      * @param mode  - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns The cost of the next upgrade.
@@ -488,13 +493,18 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    public getNextCostMax(id: TUpgradeIds, target: DecimalSource = 1, mode?: MeanMode, iterations?: number): Decimal {
+    public getNextCostMax(
+        id: TUpgradeIds | UpgradeStatic,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
         // Get the upgrade
-        const upgrade = this.getUpgrade(id);
+        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
 
         // If the upgrade doesn't exist, return 0
         if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
             return Decimal.dZero;
         }
 
@@ -508,7 +518,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
 
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
-     * @param id - The ID or position of the upgrade to buy or upgrade.
+     * @param id - The upgrade ID or the upgrade to buy.
      * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -517,13 +527,18 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    public buyUpgrade(id: TUpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean {
+    public buyUpgrade(
+        id: TUpgradeIds | UpgradeStatic,
+        target?: DecimalSource,
+        mode?: MeanMode,
+        iterations?: number,
+    ): boolean {
         // Get the upgrade
-        const upgrade = this.getUpgrade(id);
+        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
 
         // If the upgrade doesn't exist, return false
         if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id}" not found.`);
+            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
             return false;
         }
 
