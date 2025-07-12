@@ -29,42 +29,46 @@ type Event = TimerEvent;
 type EventInit = PickOptional<Omit<TimerEvent, "timeCreated" | "intervalLast">, "type" | "delay">;
 
 /**
- * The event interface
+ * An event that is triggered after a certain delay.
  */
 interface TimerEvent {
     /**
-     * The name / identifier of the event
+     * The name / identifier of the event.
      */
     name: string;
 
     /**
-     * The type of the event
+     * The type of the event.
      * @default "timeout"
      */
     type: EventTypes;
 
     /**
-     * The delay before the event triggers
+     * The delay before the event triggers, in milliseconds.
+     * If the delay is less than the time between frames, it will trigger at most once every frame.
+     * - A delay of `0` will cause the event to trigger every frame regardless of the framerate.
+     * @example
+     * 1000 // 1 second
      * @default 0
      */
     delay: number;
 
     /**
-     * The callback function to execute when the event triggers
-     * @param dt - The time since the last execution of the event in milliseconds
-     * For timeout events, this will be the time since the event was created.
+     * The callback function to execute when the event triggers.
+     * @param dt - The time since the last execution of the event in milliseconds.
+     * For timeout events, this will be the time since the event was created..
      * For interval events, this will be the time since the last execution of the event (based on the frame rate).
      */
     callback: (dt: number) => void;
 
     /**
-     * The time the event was created, as a Unix timestamp/
+     * The time the event was created, as a Unix timestamp.
      * Created automatically when the event is added to the event manager.
      */
     timeCreated: number;
 
     /**
-     * The last time the event was executed
+     * The last time the event was executed.
      * Only used for interval events, but is still defined for all events.
      * Created automatically when the event is added to the event manager.
      */
@@ -72,29 +76,29 @@ interface TimerEvent {
 }
 
 /**
- * The callback event interface
+ * A callback that is executed when an event is dispatched.
  */
 interface CallbackEvent {
     /**
-     * The type/event of the callback. Used when it is dispatched.
-     *
-     * (Should have been named `on` or `event` but it is `type` for consistency with other event types)
+     * The name of the event that will trigger the callback.
      */
     type: string;
 
     /**
-     * The callback function to execute when the event triggers
+     * The callback function to execute when the event triggers.
      */
     callback: () => void;
 }
 
 /**
- * The interval event interface
+ * An event that is triggered at a set interval.
  */
 interface IntervalEvent extends TimerEvent {
-    // type: "interval";
     type: EventTypes.interval;
-    /** The last time the event was executed */
+
+    /**
+     * The last time the event was executed.
+     */
     intervalLast: number;
 }
 
@@ -108,21 +112,21 @@ type TimeoutEvent = TimerEvent;
  */
 interface EventManagerConfig {
     /**
-     * Whether or not to automatically add an interval
-     * that checks and calls for keybindings.
-     * Defaults to `true`.
+     * Whether or not to automatically add an interval that checks and calls for keybindings.
+     * @default true
      */
     autoAddInterval?: boolean;
 
     /**
-     * The framerate to use for the interval.
-     * Defaults to `30`.
+     * The framerate at which the event manager will run.
+     * Note that events will only trigger at most once every frame.
+     * @default 30
      */
     fps?: number;
 }
 
 /**
- * The default configuration for the event manager
+ * The default configuration for the event manager.
  */
 const eventManagerDefaultConfig: EventManagerConfig = {
     autoAddInterval: true,
@@ -167,19 +171,20 @@ type EventManagerEvents = keyof EventManagerEventsWithComments & string;
 
 /**
  * The event manager class, used to manage events and execute them at the correct time.
+ * @template TEvents - Possible event names that can be used.
  */
-class EventManager<Events extends string = string> {
-    /** The static config manager for the event manager */
+class EventManager<TEvents extends string = string> {
+    /** The static config manager for the event manager. */
     private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
 
-    /** The timer events stored in the event manager */
+    /** The timer events stored in the event manager. */
     private readonly events: Record<string, IntervalEvent | TimeoutEvent>;
 
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Record<Events | EventManagerEvents, CallbackEvent[] | undefined>;
+    private readonly callbackEvents: Record<TEvents | EventManagerEvents, CallbackEvent[] | undefined>;
 
     /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;
@@ -194,7 +199,7 @@ class EventManager<Events extends string = string> {
      * These events will be added to the event manager's callback events, although you could omit this and add events manually
      * (though this is not recommended as you won't get type checking).
      */
-    constructor(config?: EventManagerConfig, events?: readonly Events[]) {
+    constructor(config?: EventManagerConfig, events?: readonly TEvents[]) {
         this.config = EventManager.configManager.parse(config);
         this.events = {};
 
@@ -222,7 +227,7 @@ class EventManager<Events extends string = string> {
      * @param event - The event to add the callback to.
      * @param callback - The callback to add to the event.
      */
-    public on(event: Events | EventManagerEvents, callback: () => void): void {
+    public on(event: TEvents | EventManagerEvents, callback: () => void): void {
         // If the event does not exist, create it.
         if (!this.callbackEvents[event]) {
             this.callbackEvents[event] = [];
@@ -236,7 +241,7 @@ class EventManager<Events extends string = string> {
      * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
      * @param event - The event to dispatch.
      */
-    public dispatch(event: Events | EventManagerEvents): void {
+    public dispatch(event: TEvents | EventManagerEvents): void {
         // If the event does not exist, return.
         if (!this.callbackEvents[event]) {
             return;
@@ -317,7 +322,9 @@ class EventManager<Events extends string = string> {
     }
 
     /**
-     * Warps time by a certain amount. Note: This will affect the stored creation time of timeout events.
+     * Warps time by a certain amount.
+     * - Events will be triggered as if the time has passed.
+     * - The stored creation time of timeout events will be adjusted.
      * @param dt - The time to warp by (in milliseconds).
      */
     public timeWarp(dt: number): void {
