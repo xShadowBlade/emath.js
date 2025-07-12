@@ -22,6 +22,7 @@ declare const eMath: {
     GameCurrency: typeof eMathGame.GameCurrency;
     GameAttribute: typeof eMathGame.GameAttribute;
     GameReset: typeof eMathGame.GameReset;
+    GameSkillTree: typeof eMathGame.GameSkillTree;
     KeyManager: typeof eMathGame.KeyManager;
     keys: string[];
     EventManager: typeof eMathGame.EventManager;
@@ -182,6 +183,10 @@ declare const eMath: {
     SelectionMethod: typeof eMathMain.SelectionMethod;
     RandomSelector: typeof eMathMain.RandomSelector;
     RarestFirstCascadeSelectionMethod: typeof eMathMain.RarestFirstCascadeSelectionMethod;
+    SkillNodeStatic: typeof eMathMain.SkillNodeStatic;
+    SkillTreeStatic: typeof eMathMain.SkillTreeStatic;
+    SkillTreeData: typeof eMathMain.SkillTreeData;
+    SkillNodeData: typeof eMathMain.SkillNodeData;
     mean(a: eMathMain.DecimalSource, b: eMathMain.DecimalSource, mode?: eMathMain.MeanMode): eMathMain.Decimal;
     equalsTolerance: typeof eMathMain.equalsTolerance;
     roundingBase: typeof eMathMain.roundingBase;

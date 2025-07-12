@@ -40,7 +40,7 @@ const coinsUpgrades = [
                 "boostUpg1Coins",
                 "Basic Coin Boost",
                 "Basic Coin Boost",
-                n => n.plus(level.mul(11)).sub(1),
+                (n) => n.plus(level.mul(11)).sub(1),
                 1,
             );
         },
@@ -76,7 +76,7 @@ console.log(coinGame.dataManager.loadData());
 const coinsDisplay = document.getElementById("coinsDisplay");
 
 /** Function to update the coins display */
-function updateDisplay (): void {
+function updateDisplay(): void {
     // Updates the display and shows the multiplier. Ex. "Coins: 2.00 (x1.0)"
     coinsDisplay!.innerHTML = `
         Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.boost.calculate())})
@@ -92,7 +92,7 @@ updateDisplay();
 const gainButton = document.getElementById("coinGain");
 
 /** Function to gain coins */
-function gainCoins (): void {
+function gainCoins(): void {
     // Triggers when button is pressed
     coins.gain(); // Gain
     updateDisplay(); // Updates the display for the amount of coins
@@ -105,7 +105,7 @@ gainButton!.addEventListener("click", gainCoins);
 const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
-function updateDisplayUpgrade (): void {
+function updateDisplayUpgrade(): void {
     const calculatedUpg = coins.calculateUpgrade("upg1Coins");
 
     buyUpgradesButton!.innerHTML = `Buy ${calculatedUpg[0].format()} Upgrades for ${calculatedUpg[1].format()} Coins (b)`;
@@ -113,7 +113,7 @@ function updateDisplayUpgrade (): void {
 updateDisplayUpgrade();
 
 /** Function to buy upgrades */
-function buyUpgrades (): void {
+function buyUpgrades(): void {
     coins.buyUpgrade("upg1Coins");
     updateDisplayUpgrade();
     updateDisplay();
@@ -122,7 +122,10 @@ buyUpgradesButton!.addEventListener("click", buyUpgrades);
 
 const buyItem1Button = document.getElementById("buyItem1Button");
 
-function updateDisplayItem (): void {
+/**
+ * Function to update the item display
+ */
+function updateDisplayItem(): void {
     const calculatedItem = coins.calculateItem("item1");
 
     buyItem1Button!.innerHTML = `Buy ${calculatedItem[0].format()} Gold Coins for ${calculatedItem[1].format()} Coins`;
@@ -130,7 +133,7 @@ function updateDisplayItem (): void {
 updateDisplayItem();
 
 /** Function to buy items */
-function buyItems (): void {
+function buyItems(): void {
     coins.buyItem("item1");
     updateDisplayItem();
     updateDisplay();

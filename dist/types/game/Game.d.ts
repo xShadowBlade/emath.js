@@ -12,6 +12,8 @@ import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 import type { ItemInit } from "../classes/Item";
+import { SkillInit } from "../classes/SkillTree";
+import { GameSkillTree } from "./GameSkillTree";
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
  * See {@link gameDefaultConfig} for the default configuration.
@@ -161,6 +163,15 @@ declare class Game {
      * @returns The newly created game reset object.
      */
     addResetFromObject(object: Parameters<typeof GameReset.fromObject>[0]): GameReset;
+    /**
+     * Adds a new skill tree to the game.
+     * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+     * @template TSkillNames - The names of the skills in the skill tree.
+     * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+     * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+     * @returns A new instance of the game skill tree class.
+     */
+    addSkillTree<TSkillNames extends string = string>(name: string, skills: SkillInit<TSkillNames>[]): GameSkillTree<TSkillNames>;
 }
 export type { GameConfigOptions };
 export { Game, gameDefaultConfig };

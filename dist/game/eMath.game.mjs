@@ -6845,7 +6845,7 @@ var CurrencyStatic = class {
   /**
    * Calculates the cost and how many upgrades you can buy.
    * See {@link calculateUpgrade} for more information.
-   * @param id - The ID or position of the upgrade to calculate.
+   * @param id - The upgrade ID or the upgrade to calculate.
    * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -6855,7 +6855,7 @@ var CurrencyStatic = class {
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
   calculateUpgrade(id, target = Infinity, mode, iterations) {
-    const upgrade = this.getUpgrade(id);
+    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return [Decimal.dZero, Decimal.dZero];
@@ -6879,7 +6879,7 @@ var CurrencyStatic = class {
    * const nextCost = currency.getNextCost("healthBoost");
    */
   getNextCost(id, target = 1, mode, iterations) {
-    const upgrade = this.getUpgrade(id);
+    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
@@ -6890,8 +6890,8 @@ var CurrencyStatic = class {
   }
   /**
    * Calculates the cost of the next upgrade after the maximum affordable quantity.
-   * @param id - Index or ID of the upgrade
-   * @param target - How many before the next upgrade
+   * @param id - Upgrade ID or upgrade object to calculate the next cost for.
+   * @param target - How many before the next upgrade.
    * @param mode  - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
    * @returns The cost of the next upgrade.
@@ -6902,7 +6902,7 @@ var CurrencyStatic = class {
    * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
    */
   getNextCostMax(id, target = 1, mode, iterations) {
-    const upgrade = this.getUpgrade(id);
+    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
@@ -6913,7 +6913,7 @@ var CurrencyStatic = class {
   }
   /**
    * Buys an upgrade based on its ID or array position if enough currency is available.
-   * @param id - The ID or position of the upgrade to buy or upgrade.
+   * @param id - The upgrade ID or the upgrade to buy.
    * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -6923,7 +6923,7 @@ var CurrencyStatic = class {
    * currency.buyUpgrade("healthBoost", 10);
    */
   buyUpgrade(id, target, mode, iterations) {
-    const upgrade = this.getUpgrade(id);
+    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return false;
@@ -7976,6 +7976,226 @@ var GameReset = class _GameReset {
   }
 };
 
+// src/classes/SkillTree.ts
+import "reflect-metadata";
+import { Expose as Expose4, Type as Type5 } from "class-transformer";
+var SkillNodeData = class extends UpgradeData {
+  /**
+   * Constructs a new skill node data.
+   * @param init - The skill node object initialization.
+   */
+  constructor(init) {
+    init = init ?? {};
+    super(init);
+  }
+};
+var SkillNodeStatic = class extends UpgradeStatic {
+  /**
+   * Represents a skill tree node.
+   * @param init - The skill tree node to initialize.
+   * @param dataPointer - The data of the skill tree node.
+   */
+  constructor(init, dataPointer = new SkillNodeData(init)) {
+    super(init, dataPointer, init.costCurrency);
+    this.costCurrency = init.costCurrency;
+    this.requirements = init.requirements ?? [];
+  }
+};
+var SkillTreeData = class {
+  constructor() {
+    this.skills = {};
+  }
+};
+__decorateClass([
+  Type5(() => SkillNodeData),
+  Expose4()
+], SkillTreeData.prototype, "skills", 2);
+var SkillTreeStatic = class {
+  /**
+   * Creates a new skill tree.
+   * @param skills - The skills in the skill tree.
+   * @param pointer - The pointer to the skill tree data.
+   */
+  constructor(skills, pointer = new SkillTreeData()) {
+    /**
+     * The skills in the skill tree.
+     */
+    this.skills = {};
+    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
+    skills = Array.isArray(skills) ? skills : [skills];
+    this.addSkill(skills);
+  }
+  /** @returns The pointer of the data. */
+  get pointer() {
+    return this.pointerFn();
+  }
+  /**
+   * Adds an skill node to the data class.
+   * @param skill - Skill node to add
+   * @returns The skill node object.
+   */
+  pointerAddSkill(skill) {
+    const skillsToAdd = new SkillNodeData(skill);
+    this.pointer.skills[skillsToAdd.id] = skillsToAdd;
+    return skillsToAdd;
+  }
+  /**
+   * Adds a skill to the skill tree.
+   * Recommended to use the constructor instead of this method.
+   * @param skillNodeMember - The skill to add to the skill tree.
+   */
+  addSkill(skillNodeMember) {
+    skillNodeMember = Array.isArray(skillNodeMember) ? skillNodeMember : [skillNodeMember];
+    skillNodeMember.forEach((skillNode) => {
+      this.skills[skillNode.id] = new SkillNodeStatic(skillNode);
+    });
+  }
+  /**
+   * Gets a skill from the skill tree.
+   * @param id - The id of the skill to get.
+   * @returns The skill node.
+   */
+  getSkill(id) {
+    return this.skills[id] ?? null;
+  }
+  /**
+   * Checks if a skill is unlocked.
+   * @param id - The id of the skill to check.
+   * @returns If the skill is unlocked.
+   */
+  isSkillUnlocked(id) {
+    const skillToCheck = typeof id === "string" ? this.getSkill(id) : id;
+    if (!skillToCheck) {
+      return false;
+    }
+    if (!skillToCheck.requirements || skillToCheck.requirements.length === 0) {
+      return true;
+    }
+    const requiredSkills = typeof skillToCheck.requirements === "function" ? skillToCheck.requirements(this, skillToCheck) : skillToCheck.requirements;
+    if (typeof requiredSkills === "boolean") {
+      return requiredSkills;
+    }
+    return requiredSkills.every((requiredSkill) => {
+      if (typeof requiredSkill === "string") {
+        const skillNode = this.getSkill(requiredSkill);
+        if (!skillNode) {
+          console.warn(`eMath.js: Required skill "${requiredSkill}" not found in skill tree.`);
+          return false;
+        }
+        requiredSkill = skillNode;
+      }
+      if ("skill" in requiredSkill) {
+        return requiredSkill.skill.level.gte(requiredSkill.level) && this.isSkillUnlocked(requiredSkill.skill);
+      }
+      return this.isSkillUnlocked(requiredSkill);
+    });
+  }
+  /**
+   * Calculates the cost and how many upgrades you can buy. A wrapper around {@link CurrencyStatic.calculateUpgrade}.
+   * See {@link calculateUpgrade} and {@link CurrencyStatic.calculateUpgrade} for more information.
+   * @param id - The upgrade ID or the upgrade to calculate.
+   * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+   * @example
+   * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
+   * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
+   */
+  calculateSkill(id, target = Infinity, mode, iterations) {
+    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
+    if (!skillToCalculate) {
+      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
+      return [Decimal.dZero, Decimal.dZero];
+    }
+    if (!this.isSkillUnlocked(skillToCalculate)) {
+      return [Decimal.dZero, Decimal.dZero];
+    }
+    return skillToCalculate.costCurrency.calculateUpgrade(skillToCalculate, target, mode, iterations);
+  }
+  /**
+   * Calculates how much is needed for the next skill. A wrapper around {@link CurrencyStatic.getNextCost}.
+   * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
+   * @param id - Index or ID of the upgrade.
+   * @param target - How many before the next upgrade.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns The cost of the next upgrade.
+   */
+  getNextCost(id, target = 1, mode, iterations) {
+    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
+    if (!skillToCalculate) {
+      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
+      return Decimal.dZero;
+    }
+    if (!this.isSkillUnlocked(skillToCalculate)) {
+      return Decimal.dZero;
+    }
+    return skillToCalculate.costCurrency.getNextCost(skillToCalculate, target, mode, iterations);
+  }
+  /**
+   * Calculates the cost of the next upgrade after the maximum affordable quantity. A wrapper around {@link CurrencyStatic.getNextCostMax}.
+   * @param id - Upgrade ID or upgrade object to calculate the next cost for.
+   * @param target - How many before the next upgrade.
+   * @param mode  - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns The cost of the next upgrade.
+   * @example
+   * // Calculate the cost of the next healthBoost upgrade
+   * currency.gain(1e6); // Gain 1 thousand currency
+   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
+   * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
+   */
+  getNextCostMax(id, target = 1, mode, iterations) {
+    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
+    if (!skillToCalculate) {
+      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
+      return Decimal.dZero;
+    }
+    if (!this.isSkillUnlocked(skillToCalculate)) {
+      return Decimal.dZero;
+    }
+    return skillToCalculate.costCurrency.getNextCostMax(skillToCalculate, target, mode, iterations);
+  }
+  /**
+   * Buys an upgrade based on its ID or array position if enough currency is available.
+   * @param id - The upgrade ID or the upgrade to buy.
+   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
+   * @param mode - See the argument in {@link calculateUpgrade}.
+   * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+   * @example
+   * // Attempt to buy up to 10 healthBoost upgrades at once
+   * currency.buyUpgrade("healthBoost", 10);
+   */
+  buySkill(id, target = Infinity, mode, iterations) {
+    const skillToBuy = typeof id === "string" ? this.getSkill(id) : id;
+    if (!skillToBuy) {
+      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
+      return false;
+    }
+    if (!this.isSkillUnlocked(skillToBuy)) {
+      return false;
+    }
+    return skillToBuy.costCurrency.buyUpgrade(skillToBuy, target, mode, iterations);
+  }
+};
+
+// src/game/GameSkillTree.ts
+var GameSkillTree = class extends SkillTreeStatic {
+  /**
+   * Creates a new instance of the game skill tree class.
+   * @param skillTreeStaticParams - The parameters for the skill tree static class.
+   * @param gamePointer A pointer to the game instance.
+   * @param name - The name of the skill tree. This is optional, and you can use it for display purposes.
+   */
+  constructor(skillTreeStaticParams, gamePointer, name) {
+    super(...skillTreeStaticParams);
+    this.name = name;
+    this.game = gamePointer;
+  }
+};
+
 // src/game/Game.ts
 var gameDefaultConfig = {
   mode: "production",
@@ -8112,6 +8332,28 @@ var Game = class _Game {
     );
     return GameReset.fromObject(object);
   }
+  /**
+   * Adds a new skill tree to the game.
+   * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+   * @template TSkillNames - The names of the skills in the skill tree.
+   * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+   * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+   * @returns A new instance of the game skill tree class.
+   */
+  addSkillTree(name, skills) {
+    this.dataManager.setData(name, {
+      skillTree: new SkillTreeData()
+    });
+    const classInstance = new GameSkillTree(
+      [
+        skills,
+        () => this.dataManager.getData(name).skillTree
+      ],
+      this,
+      name
+    );
+    return classInstance;
+  }
 };
 export {
   ConfigManager,
@@ -8122,6 +8364,7 @@ export {
   GameAttribute,
   GameCurrency,
   GameReset,
+  GameSkillTree,
   KeyManager,
   gameDefaultConfig,
   keys

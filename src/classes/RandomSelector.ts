@@ -25,10 +25,9 @@ interface RandomOptionEntry<TName extends string = string> {
      * This can be a getter and is called every time the selector is used.
      * See {@link RandomSelector} for more information on how chances are used and limitations.
      * @example
-     * new Decimal(10)
-     * new Decimal(20) // This one would be 2 times more likely to be selected than the previous one (with 1x luck).
+     * new Decimal(10) // This one would be 2 times more likely to be selected than the next one (with 1x luck).
+     * new Decimal(20)
      */
-    // TODO: Allow this to be changed after {@link RandomSelector} is created.
     chance: Decimal;
 }
 

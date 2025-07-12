@@ -391,7 +391,8 @@ class UpgradeData implements IUpgradeData {
      * @param init - The upgrade object to initialize.
      */
     constructor(init: IUpgradeData) {
-        init = init ?? {}; // class-transformer bug
+        // class-transformer bug
+        init = init ?? {};
 
         this.id = init.id;
         this.level = init.level ? new Decimal(init.level) : Decimal.dOne;

@@ -1,13 +1,15 @@
 /**
  * @file Skill tree class
- * Work in progress
  */
+import "reflect-metadata";
+
 import { Expose, Type } from "class-transformer";
-import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
-// import { calculateUpgrade } from "./currency";
+import type { DecimalSource } from "../E/e";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
+import type { UpgradeInit } from "./Upgrade";
 import type { CurrencyStatic } from "./Currency";
-import { UpgradeData, UpgradeStatic, type UpgradeInit } from "./Upgrade";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { Pointer } from "../common/types";
 
@@ -40,11 +42,16 @@ interface SkillInit<TId extends string = string> extends UpgradeInit<TId> {
     /**
      * The skill nodes that are required to unlock this skill node.
      * See {@link SkillRequirement} for more information.
-     * Can also be a function that takes the skill tree context and returns the required skills.
+     * - Can also be a function that takes the skill tree context and returns the required skills.
+     * - Can also be a function that takes the contexts and returns a boolean indicating if the skill is unlocked (`true` is unlocked, `false` is not unlocked).
      */
-    readonly required?:
-        | (SkillNodeStatic | SkillRequirement)[]
-        | ((skillTreeContext: SkillTreeStatic) => (SkillNodeStatic | SkillRequirement)[]);
+    readonly requirements?:
+        | (TId | SkillNodeStatic | SkillRequirement)[]
+        | ((
+              skillTreeContext: SkillTreeStatic,
+              skillNodeContext: SkillNodeStatic,
+          ) => (TId | SkillNodeStatic | SkillRequirement)[])
+        | ((skillTreeContext: SkillTreeStatic, skillNodeContext: SkillNodeStatic) => boolean);
 }
 
 /**
@@ -70,7 +77,7 @@ class SkillNodeData extends UpgradeData {
  */
 class SkillNodeStatic extends UpgradeStatic implements SkillInit {
     public readonly costCurrency;
-    public readonly required;
+    public readonly requirements;
 
     /**
      * Represents a skill tree node.
@@ -82,7 +89,7 @@ class SkillNodeStatic extends UpgradeStatic implements SkillInit {
 
         // Assign properties
         this.costCurrency = init.costCurrency;
-        this.required = init.required ?? [];
+        this.requirements = init.requirements ?? [];
     }
 }
 
@@ -183,16 +190,36 @@ class SkillTreeStatic<TSkillNames extends string = string> {
         }
 
         // If there are no required skills, the skill is unlocked
-        if (!skillToCheck.required || skillToCheck.required.length === 0) {
+        if (!skillToCheck.requirements || skillToCheck.requirements.length === 0) {
             return true;
         }
 
         // If the required skills are a function, call it
         const requiredSkills =
-            typeof skillToCheck.required === "function" ? skillToCheck.required(this) : skillToCheck.required;
+            typeof skillToCheck.requirements === "function"
+                ? skillToCheck.requirements(this, skillToCheck)
+                : skillToCheck.requirements;
+
+        // If the requirements is a boolean, return the boolean value
+        if (typeof requiredSkills === "boolean") {
+            return requiredSkills;
+        }
 
         // Check if all the required skills are unlocked
         return requiredSkills.every((requiredSkill) => {
+            // If the required skill is a string, get the skill node
+            if (typeof requiredSkill === "string") {
+                const skillNode = this.getSkill(requiredSkill as TSkillNames);
+
+                // If the skill node is not found, return false
+                if (!skillNode) {
+                    console.warn(`eMath.js: Required skill "${requiredSkill}" not found in skill tree.`);
+                    return false;
+                }
+
+                requiredSkill = skillNode;
+            }
+
             // If the required skill is a skill node with extra levels, check if the level is high enough
             if ("skill" in requiredSkill) {
                 return requiredSkill.skill.level.gte(requiredSkill.level) && this.isSkillUnlocked(requiredSkill.skill);
@@ -203,6 +230,18 @@ class SkillTreeStatic<TSkillNames extends string = string> {
         });
     }
 
+    /**
+     * Calculates the cost and how many upgrades you can buy. A wrapper around {@link CurrencyStatic.calculateUpgrade}.
+     * See {@link calculateUpgrade} and {@link CurrencyStatic.calculateUpgrade} for more information.
+     * @param id - The upgrade ID or the upgrade to calculate.
+     * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+     * @example
+     * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
+     * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
+     */
     public calculateSkill(
         id: TSkillNames | SkillNodeStatic,
         target: DecimalSource = Infinity,
@@ -223,10 +262,112 @@ class SkillTreeStatic<TSkillNames extends string = string> {
             return [Decimal.dZero, Decimal.dZero];
         }
 
-        // TODO: Complete this
-        throw new Error();
+        return skillToCalculate.costCurrency.calculateUpgrade(skillToCalculate, target, mode, iterations);
+    }
+
+    /**
+     * Calculates how much is needed for the next skill. A wrapper around {@link CurrencyStatic.getNextCost}.
+     * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
+     * @param id - Index or ID of the upgrade.
+     * @param target - How many before the next upgrade.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns The cost of the next upgrade.
+     */
+    public getNextCost(
+        id: TSkillNames | SkillNodeStatic,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
+        // Get the skill
+        const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
+
+        // If the skill is not found, return 0
+        if (!skillToCalculate) {
+            console.warn(`eMath.js: Skill "${id as string}" not found in skill tree.`);
+            return Decimal.dZero;
+        }
+
+        // If the skill is not unlocked, return 0
+        if (!this.isSkillUnlocked(skillToCalculate)) {
+            return Decimal.dZero;
+        }
+
+        return skillToCalculate.costCurrency.getNextCost(skillToCalculate, target, mode, iterations);
+    }
+
+    /**
+     * Calculates the cost of the next upgrade after the maximum affordable quantity. A wrapper around {@link CurrencyStatic.getNextCostMax}.
+     * @param id - Upgrade ID or upgrade object to calculate the next cost for.
+     * @param target - How many before the next upgrade.
+     * @param mode  - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns The cost of the next upgrade.
+     * @example
+     * // Calculate the cost of the next healthBoost upgrade
+     * currency.gain(1e6); // Gain 1 thousand currency
+     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
+     * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
+     */
+    public getNextCostMax(
+        id: TSkillNames | SkillNodeStatic,
+        target: DecimalSource = 1,
+        mode?: MeanMode,
+        iterations?: number,
+    ): Decimal {
+        // Get the skill
+        const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
+
+        // If the skill is not found, return 0
+        if (!skillToCalculate) {
+            console.warn(`eMath.js: Skill "${id as string}" not found in skill tree.`);
+            return Decimal.dZero;
+        }
+
+        // If the skill is not unlocked, return 0
+        if (!this.isSkillUnlocked(skillToCalculate)) {
+            return Decimal.dZero;
+        }
+
+        return skillToCalculate.costCurrency.getNextCostMax(skillToCalculate, target, mode, iterations);
+    }
+
+    /**
+     * Buys an upgrade based on its ID or array position if enough currency is available.
+     * @param id - The upgrade ID or the upgrade to buy.
+     * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
+     * @param mode - See the argument in {@link calculateUpgrade}.
+     * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
+     * @example
+     * // Attempt to buy up to 10 healthBoost upgrades at once
+     * currency.buyUpgrade("healthBoost", 10);
+     */
+    public buySkill(
+        id: TSkillNames | SkillNodeStatic,
+        target: DecimalSource = Infinity,
+        mode?: MeanMode,
+        iterations?: number,
+    ): boolean {
+        // Get the skill
+        const skillToBuy = typeof id === "string" ? this.getSkill(id) : id;
+
+        // If the skill is not found, return false
+        if (!skillToBuy) {
+            console.warn(`eMath.js: Skill "${id as string}" not found in skill tree.`);
+            return false;
+        }
+
+        // If the skill is not unlocked, return false
+        if (!this.isSkillUnlocked(skillToBuy)) {
+            return false;
+        }
+
+        // Try to buy the upgrade
+        return skillToBuy.costCurrency.buyUpgrade(skillToBuy, target, mode, iterations);
     }
 }
 
-export type { SkillInit };
-export { SkillNodeStatic as SkillNode, SkillTreeStatic as SkillTree };
+export type { SkillInit, SkillRequirement };
+export { SkillNodeStatic, SkillTreeStatic, SkillTreeData, SkillNodeData };

@@ -3,35 +3,21 @@
  */
 import { CurrencyStatic } from "../classes/Currency";
 import type { Currency } from "../classes/Currency";
-import type { UpgradeInit, UpgradeInitArrayType } from "../classes/Upgrade";
 import type { Game } from "./Game";
-import type { ItemInit, ItemInitArrayType } from "../classes/Item";
 
 /**
  * Represents a game currency. {@link Currency} is the data class. This class extends {@link CurrencyStatic} and adds additional functionality for {@link Game}.
- * @template CurrencyName - The name of the currency. This is optional, and you can use it for display purposes.
- * @template UpgradeIds - The ids of the upgrades that can be bought with this currency.
- * @template ItemIds - The ids of the items that can be bought with this currency.
+ * @template TCurrencyName - The name of the currency. This is optional, and you can use it for display purposes.
+ * @template TUpgradeIds - The ids of the upgrades that can be bought with this currency.
+ * @template TItemIds - The ids of the items that can be bought with this currency.
  */
 class GameCurrency<
-    CurrencyName extends string = string,
-    UpgradeIds extends string = string,
-    ItemIds extends string = string,
-> extends CurrencyStatic<UpgradeIds, ItemIds> {
-    /**
-     * A function that returns the data for the currency.
-     * @deprecated Use {@link pointerFn} instead. This property is only here for backwards compatibility.
-     */
-    // private readonly dataPointer: never;
-
-    /**
-     * A function that returns the static data for the currency.
-     * @deprecated Use this class as a static class as it now has all the properties of {@link CurrencyStatic}. This property is only here for backwards compatibility.
-     */
-    // private readonly staticPointer: never;
-
+    TCurrencyName extends string = string,
+    TUpgradeIds extends string = string,
+    TItemIds extends string = string,
+> extends CurrencyStatic<TUpgradeIds, TItemIds> {
     /** The name of the currency. This is optional, and you can use it for display purposes. */
-    public readonly name: CurrencyName;
+    public readonly name: TCurrencyName;
 
     /**
      * @returns The data for the currency.
@@ -59,9 +45,9 @@ class GameCurrency<
      * @param name - The name of the currency. This is optional, and you can use it for display purposes.
      */
     constructor(
-        currencyStaticParams: ConstructorParameters<typeof CurrencyStatic<UpgradeIds, ItemIds>>,
+        currencyStaticParams: ConstructorParameters<typeof CurrencyStatic<TUpgradeIds, TItemIds>>,
         gamePointer: Game,
-        name: CurrencyName,
+        name: TCurrencyName,
     ) {
         // "backwards compatibility" lol
         if (typeof currencyStaticParams === "function") {

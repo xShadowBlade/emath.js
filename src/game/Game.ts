@@ -18,6 +18,8 @@ import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 import type { ItemInit } from "../classes/Item";
+import { SkillInit, SkillTreeData, SkillTreeStatic } from "../classes/SkillTree";
+import { GameSkillTree } from "./GameSkillTree";
 
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
@@ -270,7 +272,38 @@ class Game {
 
         return GameReset.fromObject(object);
     }
+
+    /**
+     * Adds a new skill tree to the game.
+     * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+     * @template TSkillNames - The names of the skills in the skill tree.
+     * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+     * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+     * @returns A new instance of the game skill tree class.
+     */
+    public addSkillTree<TSkillNames extends string = string>(
+        name: string,
+        skills: SkillInit<TSkillNames>[],
+    ): GameSkillTree<TSkillNames> {
+        // Set the data and static objects
+        this.dataManager.setData(name, {
+            skillTree: new SkillTreeData(),
+        });
+
+        // Create the class instance
+        const classInstance = new GameSkillTree<TSkillNames>(
+            [
+                skills,
+                (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
+            ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
+            this,
+            name,
+        );
+
+        return classInstance;
+    }
 }
+
 // test
 // const myGame = new Game();
 // const currency = myGame.addCurrency("curr", [
@@ -284,7 +317,21 @@ class Game {
 //     },
 // ] as const satisfies UpgradeInit[]);
 
-// const upgrade1 = currency.static.getUpgrade("upgId1");
+// const upgrade1 = currency.getUpgrade("upgId1");
+
+// const skillTree = myGame.addSkillTree("skillTree", [
+//     {
+//         id: "skill1",
+//         costCurrency: currency,
+//         cost: (level) => level.mul(10),
+//     },
+//     {
+//         id: "skill2",
+//         costCurrency: currency,
+//         requirements: ["skill1"],
+//         cost: (level) => level.mul(20),
+//     },
+// ] as const satisfies SkillInit[]);
 
 export type { GameConfigOptions };
 export { Game, gameDefaultConfig };

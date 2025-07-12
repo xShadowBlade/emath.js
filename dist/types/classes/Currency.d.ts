@@ -210,7 +210,7 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
     /**
      * Calculates the cost and how many upgrades you can buy.
      * See {@link calculateUpgrade} for more information.
-     * @param id - The ID or position of the upgrade to calculate.
+     * @param id - The upgrade ID or the upgrade to calculate.
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -219,7 +219,7 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: TUpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal];
+    calculateUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -232,11 +232,11 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: TUpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
+    getNextCost(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
-     * @param id - Index or ID of the upgrade
-     * @param target - How many before the next upgrade
+     * @param id - Upgrade ID or upgrade object to calculate the next cost for.
+     * @param target - How many before the next upgrade.
      * @param mode  - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
      * @returns The cost of the next upgrade.
@@ -246,10 +246,10 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    getNextCostMax(id: TUpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
+    getNextCostMax(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
-     * @param id - The ID or position of the upgrade to buy or upgrade.
+     * @param id - The upgrade ID or the upgrade to buy.
      * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
@@ -258,7 +258,7 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: TUpgradeIds, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
+    buyUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
     /**
      * Adds an item to the data class.
      * @param items - The items to add.
