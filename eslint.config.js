@@ -28,7 +28,7 @@ module.exports = tseslint.config(
                 ecmaVersion: "latest",
             },
         },
-        files: ["src/**/*.ts", "src/**/*.tsx"],
+        files: ["src/**/*.ts", "src/**/*.tsx", "examples/src/**/*.ts", "examples/src/**/*.tsx"],
         ignores: ["node_modules", "dist", "test"],
         rules: {
             "prettier/prettier": "warn",
