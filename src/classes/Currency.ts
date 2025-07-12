@@ -260,8 +260,6 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     public getUpgrade<T extends TUpgradeIds>(
         id: T,
     ): IsPrimitiveString<TUpgradeIds> extends false ? UpgradeStatic : UpgradeStatic | null {
-        // // @ts-expect-error - This is a hack to get the type to work
-
         return this.upgrades[id] ?? null;
     }
 
@@ -414,6 +412,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
@@ -424,6 +423,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         target: DecimalSource = Infinity,
         mode?: MeanMode,
         iterations?: number,
+        value: DecimalSource = this.value,
     ): [amount: Decimal, cost: Decimal] {
         // Get the upgrade
         const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
@@ -442,7 +442,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
             target = Decimal.min(target, upgrade.maxLevel);
         }
 
-        return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
+        return calculateUpgrade(value, upgrade, upgrade.level, target, mode, iterations);
     }
 
     /**
@@ -452,6 +452,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param target - How many before the next upgrade
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The cost of the next upgrade.
      * @example
      * // Calculate the cost of the next healthBoost upgrade
@@ -462,6 +463,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         target: DecimalSource = 1,
         mode?: MeanMode,
         iterations?: number,
+        value?: DecimalSource,
     ): Decimal {
         // Get the upgrade
         const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
@@ -473,7 +475,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         }
 
         // Calculate the amount of upgrades you can buy
-        const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
+        const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
 
         // Calculate the cost of the next upgrade
         const nextCost = upgrade.cost(upgrade.level.add(amount));
@@ -486,6 +488,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param target - How many before the next upgrade.
      * @param mode  - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The cost of the next upgrade.
      * @example
      * // Calculate the cost of the next healthBoost upgrade
@@ -498,6 +501,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         target: DecimalSource = 1,
         mode?: MeanMode,
         iterations?: number,
+        value?: DecimalSource,
     ): Decimal {
         // Get the upgrade
         const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
@@ -509,7 +513,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         }
 
         // Calculate the amount of upgrades you can buy
-        const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
+        const upgCalc = this.calculateUpgrade(id, target, mode, iterations, value);
 
         // Calculate the cost of the next upgrade after the maximum affordable quantity
         const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
@@ -522,6 +526,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      * @example
      * // Attempt to buy up to 10 healthBoost upgrades at once
@@ -532,6 +537,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         target?: DecimalSource,
         mode?: MeanMode,
         iterations?: number,
+        value?: DecimalSource,
     ): boolean {
         // Get the upgrade
         const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
@@ -543,7 +549,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         }
 
         // Calculate the amount of upgrades you can buy
-        const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+        const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
 
         // Check if affordable
         if (amount.lte(0)) {
@@ -618,8 +624,6 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @returns The item object if found, otherwise null.
      */
     public getItem<T extends TItemIds>(id: T): IsPrimitiveString<TItemIds> extends false ? Item : Item | null {
-        // // @ts-expect-error - This is a hack to get the type to work
-
         return this.items[id] ?? null;
     }
 
@@ -629,19 +633,25 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param id - The ID or position of the item to calculate.
      * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    public calculateItem(id: TItemIds, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal] {
+    public calculateItem(
+        id: TItemIds | Item,
+        tier?: DecimalSource,
+        target?: DecimalSource,
+        value: DecimalSource = this.value,
+    ): [amount: Decimal, cost: Decimal] {
         // Get the item
-        const item = this.getItem(id);
+        const item = typeof id === "string" ? this.getItem(id) : id;
 
         // If the item doesn't exist, return [0, 0]
         if (item === null) {
-            console.warn(`eMath.js: Item "${id}" not found.`);
+            console.warn(`eMath.js: Item "${id as string}" not found.`);
             return [Decimal.dZero, Decimal.dZero];
         }
 
-        return calculateItem(this.value, item, tier, target);
+        return calculateItem(value, item, tier, target);
     }
 
     /**
@@ -649,20 +659,21 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @param id - The ID or position of the item to buy or upgrade.
      * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    public buyItem(id: TItemIds, tier?: DecimalSource, target?: DecimalSource): boolean {
+    public buyItem(id: TItemIds | Item, tier?: DecimalSource, target?: DecimalSource, value?: DecimalSource): boolean {
         // Get the item
-        const item = this.getItem(id);
+        const item = typeof id === "string" ? this.getItem(id) : id;
 
         // If the item doesn't exist, return false
         if (item === null) {
-            console.warn(`eMath.js: Item "${id}" not found.`);
+            console.warn(`eMath.js: Item "${id as string}" not found.`);
             return false;
         }
 
         // Calculate the amount of items you can buy
-        const [amount, cost] = this.calculateItem(id, tier, target);
+        const [amount, cost] = this.calculateItem(id, tier, target, value);
 
         // Check if affordable
         if (amount.lte(0)) {
