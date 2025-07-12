@@ -214,12 +214,13 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      * @example
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): [amount: Decimal, cost: Decimal];
+    calculateUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): [amount: Decimal, cost: Decimal];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -227,18 +228,20 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * @param target - How many before the next upgrade
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The cost of the next upgrade.
      * @example
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
+    getNextCost(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): Decimal;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param id - Upgrade ID or upgrade object to calculate the next cost for.
      * @param target - How many before the next upgrade.
      * @param mode  - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The cost of the next upgrade.
      * @example
      * // Calculate the cost of the next healthBoost upgrade
@@ -246,19 +249,20 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
-    getNextCostMax(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): Decimal;
+    getNextCostMax(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): Decimal;
     /**
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param id - The upgrade ID or the upgrade to buy.
      * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
      * @param mode - See the argument in {@link calculateUpgrade}.
      * @param iterations - See the argument in {@link calculateUpgrade}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
      * @example
      * // Attempt to buy up to 10 healthBoost upgrades at once
      * currency.buyUpgrade("healthBoost", 10);
      */
-    buyUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number): boolean;
+    buyUpgrade(id: TUpgradeIds | UpgradeStatic, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): boolean;
     /**
      * Adds an item to the data class.
      * @param items - The items to add.
@@ -289,16 +293,18 @@ declare class CurrencyStatic<TUpgradeIds extends string = string, TItemIds exten
      * @param id - The ID or position of the item to calculate.
      * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
      */
-    calculateItem(id: TItemIds, tier?: DecimalSource, target?: DecimalSource): [amount: Decimal, cost: Decimal];
+    calculateItem(id: TItemIds | Item, tier?: DecimalSource, target?: DecimalSource, value?: DecimalSource): [amount: Decimal, cost: Decimal];
     /**
      * Buys an item based on its ID or array position if enough currency is available.
      * @param id - The ID or position of the item to buy or upgrade.
      * @param tier - The tier of the item that to calculate.
      * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
      * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
      */
-    buyItem(id: TItemIds, tier?: DecimalSource, target?: DecimalSource): boolean;
+    buyItem(id: TItemIds | Item, tier?: DecimalSource, target?: DecimalSource, value?: DecimalSource): boolean;
 }
 export { Currency, CurrencyStatic };

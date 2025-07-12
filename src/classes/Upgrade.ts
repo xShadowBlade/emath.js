@@ -440,8 +440,12 @@ class UpgradeStatic implements IUpgradeStatic {
         return this.dataPointerFn();
     }
 
-    /** @returns The currency static class that the upgrade is being run on. */
     protected currencyPointerFn: () => CurrencyStatic;
+
+    /** @returns The currency static class that the upgrade is being run on. */
+    public get currency(): CurrencyStatic {
+        return this.currencyPointerFn();
+    }
 
     /** The description of the upgrade as a function. */
     private descriptionFn: Exclude<UpgradeInit["description"], string | undefined>;

@@ -5866,6 +5866,10 @@ var UpgradeStatic = class _UpgradeStatic {
   get data() {
     return this.dataPointerFn();
   }
+  /** @returns The currency static class that the upgrade is being run on. */
+  get currency() {
+    return this.currencyPointerFn();
+  }
   get description() {
     return this.descriptionFn(this.level, this, this.currencyPointerFn());
   }
@@ -6297,12 +6301,13 @@ var CurrencyStatic = class {
    * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
    * @example
    * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
    * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
    */
-  calculateUpgrade(id, target = Infinity, mode, iterations) {
+  calculateUpgrade(id, target = Infinity, mode, iterations, value = this.value) {
     const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
@@ -6312,7 +6317,7 @@ var CurrencyStatic = class {
     if (upgrade.maxLevel !== void 0) {
       target = Decimal.min(target, upgrade.maxLevel);
     }
-    return calculateUpgrade(this.value, upgrade, upgrade.level, target, mode, iterations);
+    return calculateUpgrade(value, upgrade, upgrade.level, target, mode, iterations);
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -6321,18 +6326,19 @@ var CurrencyStatic = class {
    * @param target - How many before the next upgrade
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns The cost of the next upgrade.
    * @example
    * // Calculate the cost of the next healthBoost upgrade
    * const nextCost = currency.getNextCost("healthBoost");
    */
-  getNextCost(id, target = 1, mode, iterations) {
+  getNextCost(id, target = 1, mode, iterations, value) {
     const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
     }
-    const amount = this.calculateUpgrade(id, target, mode, iterations)[0];
+    const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
     const nextCost = upgrade.cost(upgrade.level.add(amount));
     return nextCost;
   }
@@ -6342,6 +6348,7 @@ var CurrencyStatic = class {
    * @param target - How many before the next upgrade.
    * @param mode  - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns The cost of the next upgrade.
    * @example
    * // Calculate the cost of the next healthBoost upgrade
@@ -6349,13 +6356,13 @@ var CurrencyStatic = class {
    * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
    * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
    */
-  getNextCostMax(id, target = 1, mode, iterations) {
+  getNextCostMax(id, target = 1, mode, iterations, value) {
     const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return Decimal.dZero;
     }
-    const upgCalc = this.calculateUpgrade(id, target, mode, iterations);
+    const upgCalc = this.calculateUpgrade(id, target, mode, iterations, value);
     const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
     return nextCost;
   }
@@ -6365,18 +6372,19 @@ var CurrencyStatic = class {
    * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
    * @param mode - See the argument in {@link calculateUpgrade}.
    * @param iterations - See the argument in {@link calculateUpgrade}.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
    * @example
    * // Attempt to buy up to 10 healthBoost upgrades at once
    * currency.buyUpgrade("healthBoost", 10);
    */
-  buyUpgrade(id, target, mode, iterations) {
+  buyUpgrade(id, target, mode, iterations, value) {
     const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
     if (upgrade === null) {
       console.warn(`eMath.js: Upgrade "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations);
+    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
     if (amount.lte(0)) {
       return false;
     }
@@ -6436,30 +6444,32 @@ var CurrencyStatic = class {
    * @param id - The ID or position of the item to calculate.
    * @param tier - The tier of the item that to calculate.
    * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
    */
-  calculateItem(id, tier, target) {
-    const item = this.getItem(id);
+  calculateItem(id, tier, target, value = this.value) {
+    const item = typeof id === "string" ? this.getItem(id) : id;
     if (item === null) {
       console.warn(`eMath.js: Item "${id}" not found.`);
       return [Decimal.dZero, Decimal.dZero];
     }
-    return calculateItem(this.value, item, tier, target);
+    return calculateItem(value, item, tier, target);
   }
   /**
    * Buys an item based on its ID or array position if enough currency is available.
    * @param id - The ID or position of the item to buy or upgrade.
    * @param tier - The tier of the item that to calculate.
    * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
+   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
    * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
    */
-  buyItem(id, tier, target) {
-    const item = this.getItem(id);
+  buyItem(id, tier, target, value) {
+    const item = typeof id === "string" ? this.getItem(id) : id;
     if (item === null) {
       console.warn(`eMath.js: Item "${id}" not found.`);
       return false;
     }
-    const [amount, cost] = this.calculateItem(id, tier, target);
+    const [amount, cost] = this.calculateItem(id, tier, target, value);
     if (amount.lte(0)) {
       return false;
     }

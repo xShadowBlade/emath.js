@@ -5420,7 +5420,262 @@ var formatTimeOptions = [
     value: "long"
   }
 ].sort((a, b) => a.name.localeCompare(b.name));
+
+// src/game/managers/ConfigManager.ts
+function parseObject(obj, template, recurse = true) {
+  for (const key in template) {
+    if (typeof obj[key] === "undefined") {
+      obj[key] = template[key];
+    } else if (recurse && typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
+      obj[key] = parseObject(
+        obj[key],
+        template[key]
+      );
+    }
+  }
+  return obj;
+}
+var ConfigManager = class {
+  /**
+   * Constructs a new configuration manager.
+   * @param configOptionTemplate - The template to use for default values.
+   * @param isParsingRecursive - Whether or not the configuration is being parsed recursively. Defaults to `true`.
+   */
+  constructor(configOptionTemplate, isParsingRecursive = true) {
+    this.configOptionTemplate = configOptionTemplate;
+    this.isParsingRecursive = isParsingRecursive;
+  }
+  /**
+   * Parses the given configuration object and returns a new object with default values for any missing options.
+   * @param config - The configuration object to parse.
+   * @returns A new object with default values for any missing options.
+   */
+  parse(config) {
+    if (typeof config === "undefined") {
+      return this.configOptionTemplate;
+    }
+    return parseObject(
+      config,
+      this.configOptionTemplate,
+      this.isParsingRecursive
+    );
+  }
+  /**
+   * @returns The template to use for default values.
+   */
+  get options() {
+    return this.configOptionTemplate;
+  }
+};
+
+// src/game/managers/EventManager.ts
+var eventManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30
+};
+var EventManager = class _EventManager {
+  /**
+   * Creates a new event manager.
+   * @param config - The config to use for this event manager.
+   * @param events - The events to add to the event manager.
+   * These events will be added to the event manager's callback events, although you could omit this and add events manually
+   * (though this is not recommended as you won't get type checking).
+   */
+  constructor(config, events) {
+    /**
+     * Adds a new event.
+     * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
+     * @deprecated Use {@link EventManager.setEvent} instead.
+     */
+    this.addEvent = this.setEvent.bind(this);
+    this.config = _EventManager.configManager.parse(config);
+    this.events = {};
+    this.callbackEvents = {};
+    if (events) {
+      for (const event of events) {
+        this.callbackEvents[event] = [];
+      }
+    }
+    if (this.config.autoAddInterval) {
+      const fps = this.config.fps ?? 30;
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
+    }
+  }
+  static {
+    /** The static config manager for the event manager. */
+    this.configManager = new ConfigManager(eventManagerDefaultConfig);
+  }
+  /**
+   * Adds a callback to an event.
+   * If you want to use a timer event, use {@link EventManager.setEvent} instead.
+   * @param event - The event to add the callback to.
+   * @param callback - The callback to add to the event.
+   */
+  on(event, callback) {
+    if (!this.callbackEvents[event]) {
+      this.callbackEvents[event] = [];
+    }
+    this.callbackEvents[event].push({ type: event, callback });
+  }
+  /**
+   * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
+   * @param event - The event to dispatch.
+   */
+  dispatch(event) {
+    if (!this.callbackEvents[event]) {
+      return;
+    }
+    for (const callback of this.callbackEvents[event]) {
+      callback.callback();
+    }
+  }
+  /**
+   * The function that is called every frame, executes all events.
+   */
+  tickerFunction() {
+    const currentTime = Date.now();
+    for (const event of Object.values(this.events)) {
+      switch (event.type) {
+        // prettier-ignore
+        case "interval" /* interval */:
+          {
+            if (currentTime - event.intervalLast >= event.delay) {
+              const dt = currentTime - event.intervalLast;
+              event.callback(dt);
+              event.intervalLast = currentTime;
+            }
+          }
+          break;
+        // prettier-ignore
+        case "timeout" /* timeout */:
+          {
+            if (currentTime - event.timeCreated >= event.delay) {
+              const dt = currentTime - event.timeCreated;
+              event.callback(dt);
+              delete this.events[event.name];
+            }
+          }
+          break;
+      }
+    }
+  }
+  /**
+   * Changes the framerate of the event manager.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.config.fps = fps;
+    if (this.tickerInterval) {
+      clearInterval(this.tickerInterval);
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
+    }
+  }
+  /**
+   * Warps time by a certain amount.
+   * - Events will be triggered as if the time has passed.
+   * - The stored creation time of timeout events will be adjusted.
+   * @param dt - The time to warp by (in milliseconds).
+   */
+  timeWarp(dt) {
+    for (const event of Object.values(this.events)) {
+      switch (event.type) {
+        case "interval" /* interval */:
+          event.intervalLast -= dt;
+          break;
+        case "timeout" /* timeout */:
+          event.timeCreated -= dt;
+          break;
+      }
+    }
+  }
+  setEvent(nameOrEvent, type, delay, callbackFn) {
+    const isEventInit = typeof nameOrEvent !== "string";
+    const eventToAdd = {
+      // Default values
+      // name: Symbol(),
+      type: "timeout" /* timeout */,
+      delay: 0,
+      // callback: () => {},
+      // If the event is being initialized with an object, spread the object.
+      // Otherwise, assign the values from the arguments.
+      // prettier-ignore
+      ...isEventInit ? nameOrEvent : {
+        name: nameOrEvent,
+        type,
+        delay,
+        callback: callbackFn
+      },
+      // Assign the default values.
+      timeCreated: Date.now(),
+      // If the event is an interval event, set the last interval time to now.
+      intervalLast: type === "interval" ? Date.now() : 0
+    };
+    this.events[eventToAdd.name] = eventToAdd;
+  }
+  /**
+   * Removes a timer event from the event manager.
+   * Does not remove callback events.
+   * @param name - The name of the event to remove.
+   * @example
+   * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
+   */
+  removeEvent(name) {
+    delete this.events[name];
+  }
+};
+
+// src/presets/AutoBuyer.ts
+var autoBuyerDefaultConfig = {
+  upgradesToAutoBuy: [],
+  isUnlocked: true,
+  maxCurrencyAllocated: (currency) => currency.value,
+  delay: 1e3
+};
+var AutoBuyer = class _AutoBuyer {
+  static {
+    /**
+     * The static config manager for the auto buyer.
+     */
+    this.configManager = new ConfigManager(autoBuyerDefaultConfig, false);
+  }
+  /**
+   * Creates a new auto buyer instance.
+   * @param id - The unique ID of the auto buyer.
+   * @param game - The game instance.
+   * @param config - The auto buyer options.
+   */
+  constructor(id, game, config) {
+    this.id = id;
+    this.game = game;
+    this.config = _AutoBuyer.configManager.parse(config);
+    this.game.eventManager.setEvent({
+      name: this.id,
+      type: "interval" /* interval */,
+      delay: this.config.delay,
+      callback: () => {
+        if (typeof this.config.isUnlocked === "function" ? this.config.isUnlocked() : this.config.isUnlocked) {
+          this.buyUpgrades();
+        }
+      }
+    });
+  }
+  /**
+   * Buys the upgrades if there is enough currency.
+   */
+  buyUpgrades() {
+    for (const upgrade of this.config.upgradesToAutoBuy) {
+      const currency = upgrade.currency;
+      const availableCurrency = this.config.maxCurrencyAllocated(currency);
+      currency.buyUpgrade(upgrade, void 0, void 0, void 0, availableCurrency);
+    }
+  }
+};
 export {
+  AutoBuyer,
   GameFormatClass,
   formatOptions,
   formatTimeOptions,

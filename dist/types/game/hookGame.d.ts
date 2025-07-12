@@ -28,6 +28,7 @@ declare const eMath: {
     EventManager: typeof eMathGame.EventManager;
     EventTypes: typeof eMathGame.EventTypes;
     DataManager: typeof eMathGame.DataManager;
+    parseObject: typeof eMathGame.parseObject;
     ConfigManager: typeof eMathGame.ConfigManager;
     eMathMetadata: {
         version: string;

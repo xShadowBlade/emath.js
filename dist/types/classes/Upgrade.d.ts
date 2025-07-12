@@ -255,8 +255,9 @@ declare class UpgradeStatic implements IUpgradeStatic {
     private dataPointerFn;
     /** @returns The data of the upgrade. */
     get data(): UpgradeData;
-    /** @returns The currency static class that the upgrade is being run on. */
     protected currencyPointerFn: () => CurrencyStatic;
+    /** @returns The currency static class that the upgrade is being run on. */
+    get currency(): CurrencyStatic;
     /** The description of the upgrade as a function. */
     private descriptionFn;
     get description(): string;
