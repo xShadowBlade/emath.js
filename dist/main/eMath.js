@@ -5290,6 +5290,22 @@ var Decimal = class {
     return formats.formatGain(new Decimal(value), gain, type, acc, max);
   }
   /**
+   * Formats a number as a string, truncating it if it's an integer and less than or equal to `max`.
+   * If the number is not an integer, it is formatted as normal.
+   * @param max - Above this value, the value is formatted as normal using {@link format}. Defaults to `100`.
+   * @param formatAcc - See the parameter in {@link format}.
+   * @param formatMax - See the parameter in {@link format}.
+   * @param formatType - See the parameter in {@link format}.
+   * @returns The formatted number as a string.
+   */
+  formatInteger(max = 100, formatAcc, formatMax, formatType) {
+    const value = this.clone();
+    return value.trunc().eq(value) && value.abs().lte(max) ? value.toFixed(0) : value.format(formatAcc, formatMax, formatType);
+  }
+  static formatInteger(value, max, formatAcc, formatMax, formatType) {
+    return new Decimal(value).formatInteger(max, formatAcc, formatMax, formatType);
+  }
+  /**
    * Converts the Decimal instance to a Roman numeral representation.
    * @param [max] - Max before it returns the original
    * @returns A string representing the Roman numeral equivalent of the Decimal value,

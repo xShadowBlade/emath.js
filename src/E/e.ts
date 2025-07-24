@@ -5055,6 +5055,24 @@ class Decimal {
     public formatGain (gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string { return formats.formatGain(this.clone(), gain, type, acc, max); }
     public static formatGain (value: DecimalSource, gain: DecimalSource, type: FormatType = "mixed_sc", acc?: number, max?: number): string { return formats.formatGain(new Decimal(value), gain, type, acc, max); }
 
+    
+    /**
+     * Formats a number as a string, truncating it if it's an integer and less than or equal to `max`.
+     * If the number is not an integer, it is formatted as normal.
+     * @param max - Above this value, the value is formatted as normal using {@link format}. Defaults to `100`.
+     * @param formatAcc - See the parameter in {@link format}.
+     * @param formatMax - See the parameter in {@link format}.
+     * @param formatType - See the parameter in {@link format}.
+     * @returns The formatted number as a string.
+     */
+    public formatInteger (max: DecimalSource = 100, formatAcc?: number, formatMax?: number, formatType?: FormatType): string {
+        const value = this.clone();
+
+        // If the value is an integer and less than or equal to `max`, return it as a fixed-point number with no decimal places.
+        return value.trunc().eq(value) && value.abs().lte(max) ? value.toFixed(0) : value.format(formatAcc, formatMax, formatType);
+    }
+    public static formatInteger (value: DecimalSource, max?: DecimalSource, formatAcc?: number, formatMax?: number, formatType?: FormatType): string { return new Decimal(value).formatInteger(max, formatAcc, formatMax, formatType) }
+
     /**
      * Converts the Decimal instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original

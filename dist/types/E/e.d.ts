@@ -1401,6 +1401,17 @@ declare class Decimal {
     formatGain(gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     static formatGain(value: DecimalSource, gain: DecimalSource, type?: FormatType, acc?: number, max?: number): string;
     /**
+     * Formats a number as a string, truncating it if it's an integer and less than or equal to `max`.
+     * If the number is not an integer, it is formatted as normal.
+     * @param max - Above this value, the value is formatted as normal using {@link format}. Defaults to `100`.
+     * @param formatAcc - See the parameter in {@link format}.
+     * @param formatMax - See the parameter in {@link format}.
+     * @param formatType - See the parameter in {@link format}.
+     * @returns The formatted number as a string.
+     */
+    formatInteger(max?: DecimalSource, formatAcc?: number, formatMax?: number, formatType?: FormatType): string;
+    static formatInteger(value: DecimalSource, max?: DecimalSource, formatAcc?: number, formatMax?: number, formatType?: FormatType): string;
+    /**
      * Converts the Decimal instance to a Roman numeral representation.
      * @param [max] - Max before it returns the original
      * @returns A string representing the Roman numeral equivalent of the Decimal value,
