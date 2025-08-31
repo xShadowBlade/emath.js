@@ -30,6 +30,15 @@ declare class LRUCache<K, V> {
      */
     get size(): number;
     /**
+     * @param key The key to check.
+     * @returns Whether the cache contains the specified key.
+     */
+    has(key: K): boolean;
+    /**
+     * Clears the cache.
+     */
+    clear(): void;
+    /**
      * Gets the specified key from the cache, or undefined if it is not in the
      * cache.
      * @param key The key to get.

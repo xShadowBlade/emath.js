@@ -815,6 +815,21 @@ var LRUCache = class {
     return this.map.size;
   }
   /**
+   * @param key The key to check.
+   * @returns Whether the cache contains the specified key.
+   */
+  has(key) {
+    return this.map.has(key);
+  }
+  /**
+   * Clears the cache.
+   */
+  clear() {
+    this.map.clear();
+    this.first = void 0;
+    this.last = void 0;
+  }
+  /**
    * Gets the specified key from the cache, or undefined if it is not in the
    * cache.
    * @param key The key to get.

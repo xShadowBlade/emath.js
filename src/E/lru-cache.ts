@@ -47,6 +47,23 @@ class LRUCache<K, V> {
     }
 
     /**
+     * @param key The key to check.
+     * @returns Whether the cache contains the specified key.
+     */
+    public has(key: K): boolean {
+        return this.map.has(key);
+    }
+
+    /**
+     * Clears the cache.
+     */
+    public clear(): void {
+        this.map.clear();
+        this.first = undefined;
+        this.last = undefined;
+    }
+
+    /**
      * Gets the specified key from the cache, or undefined if it is not in the
      * cache.
      * @param key The key to get.

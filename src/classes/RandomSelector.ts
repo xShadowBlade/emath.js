@@ -4,13 +4,21 @@
 import type { Pointer } from "../common/types";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
+import { LRUCache } from "../E/lru-cache";
 import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
+import type { DecimalJSONString } from "./Upgrade";
+import { decimalToJSONString } from "./Upgrade";
 
 /**
  * An entry when used to create a {@link RandomSelector}.
  * @template TName - The type of the name of the option, defaults to `string`.
+ * @template _TSortedState - The sorting state of the array, defaults to {@link RandomArraySortedState.unsorted}. This is only for type safety and has no impact on functionality.
  */
-interface RandomOptionEntry<TName extends string = string> {
+interface RandomOptionEntry<
+    TName extends string = string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention
+    _TSortedState extends RandomArraySortedState = RandomArraySortedState.unsorted,
+> {
     /**
      * A unique identifier for the option that is returned by the selector.
      */
@@ -32,9 +40,102 @@ interface RandomOptionEntry<TName extends string = string> {
 }
 
 /**
- * Used internally to represent an array of {@link RandomOptionEntry} objects with weights.
+ * Possible sorting states for an array of {@link RandomOptionEntry} objects.
  */
-interface WeightOptionEntry<TName extends string = string> extends Pick<RandomOptionEntry<TName>, "name"> {
+enum RandomArraySortedState {
+    /**
+     * Unsorted, in any order.
+     */
+    unsorted,
+
+    /**
+     * Sorted from highest to lowest chance.
+     * @example
+     * // Unsorted
+     * [
+     *     { name: "A", chance: new Decimal(1) },
+     *     { name: "B", chance: new Decimal(5) },
+     *     { name: "C", chance: new Decimal(2) },
+     * ]
+     * // Sorted
+     * [
+     *     { name: "B", chance: new Decimal(5) },
+     *     { name: "C", chance: new Decimal(2) },
+     *     { name: "A", chance: new Decimal(1) },
+     * ]
+     */
+    sortedHighestToLowestChance,
+
+    /**
+     * Sorted from lowest to highest weight.
+     * @example
+     * // Unsorted
+     * [
+     *     { name: "A", weight: new Decimal(1) },
+     *     { name: "B", weight: new Decimal(0.2) },
+     *     { name: "C", weight: new Decimal(0.5) },
+     * ]
+     * // Sorted
+     * [
+     *     { name: "B", weight: new Decimal(0.2) },
+     *     { name: "C", weight: new Decimal(0.5) },
+     *     { name: "A", weight: new Decimal(1) },
+     * ]
+     */
+    sortedLowestToHighestWeight,
+}
+
+/**
+ * An array of {@link RandomOptionEntry} objects, with an optional sorting state.
+ * @template TName - The type of the name of the option, defaults to `string`.
+ * @template TSortedState - The sorting state of the array, defaults to {@link RandomArraySortedState.unsorted}. This is only for type safety and has no impact on functionality.
+ */
+// type RandomOptionEntryArray<
+//     TName extends string = string,
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     TSortedState extends RandomArraySortedState = RandomArraySortedState.unsorted,
+// > = RandomOptionEntry<TName>[];
+
+/**
+ * An array of {@link WeightOptionEntry} objects, with an optional sorting state.
+ * @template TName - The type of the name of the option, defaults to `string`.
+ * @template TSortedState - The sorting state of the array, defaults to {@link RandomArraySortedState.unsorted}. This is only for type safety and has no impact on functionality.
+ */
+// type WeightOptionEntryArray<
+//     TName extends string = string,
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     TSortedState extends RandomArraySortedState = RandomArraySortedState.unsorted,
+// > = WeightOptionEntry<TName>[];
+
+/**
+ * The normalization state of an array of weights.
+ */
+enum WeightOptionNormalizationState {
+    /**
+     * The array of weights is normalized; the sum of all weights equals 1.
+     */
+    normalized,
+
+    /**
+     * The array of weights is not normalized; the sum of all weights can be any positive value.
+     */
+    unnormalized,
+}
+
+/**
+ * Used internally to represent an array of {@link RandomOptionEntry} objects with weights.
+ * @template TName - The type of the name of the option, defaults to `string`.
+ * @template _TSortedState - The sorting state of the array, defaults to {@link RandomArraySortedState.unsorted}. This is only for type safety and has no impact on functionality.
+ * @template _TNormalized - The normalization state of the weights, defaults to {@link WeightOptionNormalizationState.unnormalized}. This is only for type safety and has no impact on functionality.
+ */
+interface WeightOptionEntry<
+    TName extends string = string,
+    /* eslint-disable @typescript-eslint/naming-convention */
+    _TSortedState extends RandomArraySortedState = RandomArraySortedState.unsorted,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _TNormalized extends WeightOptionNormalizationState = WeightOptionNormalizationState.unnormalized,
+    /* eslint-enable @typescript-eslint/naming-convention */
+> extends Pick<RandomOptionEntry<TName, _TSortedState>, "name"> {
     /**
      * A weight for the option, as a {@link Decimal}.
      * - Weights are numeric values within the range of [0, Infinity)
@@ -56,36 +157,52 @@ interface SelectedOptionEntry<TName extends string = string> extends Pick<Random
 abstract class SelectionMethod {
     /**
      * Selects a random option from the given entries based on their weights and the provided luck.
-     * @param entries - An array of objects representing the possible options.
+     * @param entries - An array of objects representing the possible options. This array must be sorted from highest to lowest chance ({@link RandomArraySortedState.sortedHighestToLowestChance}).
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
      * @returns A randomly selected option from the entries, or undefined if no options are available.
      */
-    public abstract select<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): T | undefined;
+    public abstract select<T extends string>(
+        // entries: RandomOptionEntryArray<T, RandomArraySortedState.sortedHighestToLowestChance>,
+        entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
+        luck: Decimal,
+    ): T | undefined;
 
     /**
      * Gets the normalized weights of the given entries based on the provided luck.
      * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
-     * @param entries - An array of objects representing the possible options.
+     * @param entries - An array of objects representing the possible options. This array must be sorted from highest to lowest chance ({@link RandomArraySortedState.sortedHighestToLowestChance}).
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
-     * @returns An array of objects representing the normalized weights of the entries.
+     * @returns An array of objects representing the normalized weights of the entries. Should be sorted from lowest to highest weight ({@link RandomArraySortedState.sortedLowestToHighestWeight}). If the selection method does not support normalized weights, it should return `undefined`.
      */
     public getNormalizedWeights<T extends string>(
         /* eslint-disable @typescript-eslint/no-unused-vars */
-        entries: RandomOptionEntry<T>[],
+        // entries: RandomOptionEntryArray<T, RandomArraySortedState.sortedHighestToLowestChance>,
+        entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
         luck: Decimal,
         /* eslint-enable @typescript-eslint/no-unused-vars */
-    ): WeightOptionEntry<T>[] | undefined {
+    ):
+        | WeightOptionEntry<
+              T,
+              RandomArraySortedState.sortedLowestToHighestWeight,
+              WeightOptionNormalizationState.normalized
+          >[]
+        | undefined {
         return undefined;
     }
 }
 
 /**
  * A selection method that selects entries starting with the rarest one first and moving to the next one if that one is not selected.
+ * - The chance of each entry is divided by the luck multiplier.
+ * - Note: entries with the same chance have different probabilities of being selected based on their order in the array.
  */
 class RarestFirstCascadeSelectionMethod extends SelectionMethod {
-    public select<T extends string>(entries: RandomOptionEntry<T>[], luck: Decimal): T | undefined {
+    public select<T extends string>(
+        entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
+        luck: Decimal,
+    ): T | undefined {
         // Sort the entries by their chance in descending order
-        entries.sort((a, b) => -a.chance.compare(b.chance));
+        // entries.sort((a, b) => -a.chance.compare(b.chance));
 
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
@@ -108,11 +225,15 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
     }
 
     public getNormalizedWeights<T extends string>(
-        entries: RandomOptionEntry<T>[],
+        entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
         luck: Decimal,
-    ): WeightOptionEntry<T>[] {
+    ): WeightOptionEntry<
+        T,
+        RandomArraySortedState.sortedLowestToHighestWeight,
+        WeightOptionNormalizationState.normalized
+    >[] {
         // Sort the entries by their chance in descending order
-        entries.sort((a, b) => -a.chance.compare(b.chance));
+        // entries.sort((a, b) => -a.chance.compare(b.chance));
 
         const out: WeightOptionEntry<T>[] = [];
 
@@ -225,9 +346,9 @@ class RandomSelector<TPossibleNames extends string = string> {
      * const normalizedEntries = RandomSelector.normalizeWeights(entries);
      */
     public static normalizeWeights<T extends string = string>(
-        entries: WeightOptionEntry<T>[],
+        entries: WeightOptionEntry<T, RandomArraySortedState.unsorted, WeightOptionNormalizationState.unnormalized>[],
         totalWeight?: Decimal,
-    ): WeightOptionEntry<T>[] {
+    ): WeightOptionEntry<T, RandomArraySortedState.unsorted, WeightOptionNormalizationState.normalized>[] {
         totalWeight = totalWeight ?? entries.reduce((sum, entry) => sum.add(entry.weight), new Decimal(0));
 
         return entries.map((entry) => ({
@@ -244,7 +365,11 @@ class RandomSelector<TPossibleNames extends string = string> {
      * @returns The selected option name, or `null` if no option was selected.
      */
     public static selectFromNormalizedWeights<T extends string = string>(
-        entries: WeightOptionEntry<T>[],
+        entries: WeightOptionEntry<
+            T,
+            RandomArraySortedState.sortedLowestToHighestWeight,
+            WeightOptionNormalizationState.normalized
+        >[],
         randomValue: DecimalSource = Math.random(),
     ): T | undefined {
         // Sort from lowest to highest weight
@@ -273,10 +398,10 @@ class RandomSelector<TPossibleNames extends string = string> {
     /**
      * Samples from a multinomial distribution based on the normalized weights of the entries.
      * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
-     * @param entries - An array of normalized {@link WeightOptionEntry} objects.
-     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+     * @param entries - An array of normalized {@link WeightOptionEntry} objects. Must be sorted from highest to lowest weight.
+     * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
      * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
-     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+     * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts. If {@link onlyReturnNonZeroSelections} is true, only entries with a non-zero number of selections will be included. Otherwise, it is returned in the same order as the input entries.
      * @example
      * const entries = [
      *     { name: "A", weight: new Decimal(0.5) },
@@ -296,8 +421,12 @@ class RandomSelector<TPossibleNames extends string = string> {
      * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
      */
     public static selectMultipleFromNormalizedWeights<T extends string = string>(
-        entries: WeightOptionEntry<T>[],
-        numberOfSelections: DecimalSource,
+        entries: WeightOptionEntry<
+            T,
+            RandomArraySortedState.sortedLowestToHighestWeight,
+            WeightOptionNormalizationState.normalized
+        >[],
+        numberOfSelections: DecimalSource = Decimal.dOne,
         onlyReturnNonZeroSelections = false,
     ): SelectedOptionEntry<T>[] {
         const k = entries.length;
@@ -338,7 +467,14 @@ class RandomSelector<TPossibleNames extends string = string> {
         }
 
         // Assign remaining trials to the last bucket
-        out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
+        if (!onlyReturnNonZeroSelections) {
+            out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
+        } else if (remainingTrials.gt(0)) {
+            out.push({
+                name: entries[k - 1].name,
+                numberOfSelections: remainingTrials.max(Decimal.dZero),
+            });
+        }
 
         return out;
     }
@@ -352,14 +488,16 @@ class RandomSelector<TPossibleNames extends string = string> {
     /**
      * A function that returns the entries of the selector.
      */
-    private getEntries: () => RandomOptionEntry<TPossibleNames>[];
+    private getEntries: () => RandomOptionEntry<TPossibleNames, RandomArraySortedState.unsorted>[];
 
     /**
-     * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
+     * @returns An array of {@link RandomOptionEntry} objects representing the possible options, sorted from highest to lowest chance.
      */
-    // public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
-    public get entries(): RandomOptionEntry<TPossibleNames>[] {
-        return this.getEntries();
+    public get entries(): RandomOptionEntry<TPossibleNames, RandomArraySortedState.sortedHighestToLowestChance>[] {
+        const entries = this.getEntries();
+        entries.sort((a, b) => -a.chance.compare(b.chance));
+
+        return entries;
     }
 
     /**
@@ -368,16 +506,41 @@ class RandomSelector<TPossibleNames extends string = string> {
     private readonly selectionMethod: SelectionMethod;
 
     /**
+     * A cache used to store normalized weights for different luck values.
+     */
+    private readonly weightCache:
+        | LRUCache<
+              DecimalJSONString,
+              WeightOptionEntry<
+                  TPossibleNames,
+                  RandomArraySortedState.sortedLowestToHighestWeight,
+                  WeightOptionNormalizationState.normalized
+              >[]
+          >
+        | undefined;
+
+    /**
      * Creates a new RandomSelector with the given options.
-     * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options.
+     * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options. Can be in any order.
      * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
+     * @param cacheMaxSize - The maximum size of the cache used to store normalized weights. Set to `0` to disable caching. Defaults to `3`.
      */
     constructor(
-        options: Pointer<RandomOptionEntry<TPossibleNames>[]>,
+        options: Pointer<RandomOptionEntry<TPossibleNames, RandomArraySortedState.sortedHighestToLowestChance>[]>,
         selectionMethod: SelectionMethod = RandomSelector.defaultSelectionMethod,
+        cacheMaxSize = 3,
     ) {
         this.selectionMethod = selectionMethod;
         this.getEntries = typeof options === "function" ? options : (): typeof options => options;
+
+        if (cacheMaxSize > 0) {
+            this.weightCache = new LRUCache<
+                DecimalJSONString,
+                WeightOptionEntry<TPossibleNames, RandomArraySortedState.sortedLowestToHighestWeight>[]
+            >(cacheMaxSize);
+        } else {
+            this.weightCache = undefined;
+        }
     }
 
     /**
@@ -393,14 +556,32 @@ class RandomSelector<TPossibleNames extends string = string> {
 
     /**
      * Gets the normalized weights of the entries based on the provided luck.
-     * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+     * If a cached value exists for the given luck, it will be returned instead of recalculating.
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
      * @returns An array of objects representing the normalized weights of the entries.
      */
-    public getNormalizedWeights(luck: DecimalSource = Decimal.dOne): WeightOptionEntry<TPossibleNames>[] | undefined {
+    public getNormalizedWeights(
+        luck: DecimalSource = Decimal.dOne,
+    ):
+        | WeightOptionEntry<
+              TPossibleNames,
+              RandomArraySortedState.sortedLowestToHighestWeight,
+              WeightOptionNormalizationState.normalized
+          >[]
+        | undefined {
         luck = new Decimal(luck);
 
-        return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+        // If there is no cache, just calculate and return the weights
+        if (!this.weightCache) {
+            return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+        }
+
+        // Check the cache first
+        const cachedWeights = this.getWeightsFromCache(luck);
+        if (cachedWeights) return cachedWeights;
+
+        // Update the cache and return the newly calculated weights
+        return this.updateCache(luck);
     }
 
     /**
@@ -408,14 +589,14 @@ class RandomSelector<TPossibleNames extends string = string> {
      * See {@link selectMultipleFromNormalizedWeights} for more information.
      * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
      * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
      * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
      */
     public selectMultiple(
-        numberOfSelections: DecimalSource = Decimal.dOne,
-        luck: DecimalSource = Decimal.dOne,
+        numberOfSelections?: DecimalSource,
+        luck?: DecimalSource,
+        onlyReturnNonZeroSelections?: boolean,
     ): SelectedOptionEntry<TPossibleNames>[] {
-        numberOfSelections = new Decimal(numberOfSelections);
-
         const normalizedWeights = this.getNormalizedWeights(luck);
 
         if (!normalizedWeights) {
@@ -423,20 +604,81 @@ class RandomSelector<TPossibleNames extends string = string> {
         }
 
         // Select multiple entries based on the normalized weights
-        return RandomSelector.selectMultipleFromNormalizedWeights(normalizedWeights, numberOfSelections);
+        return RandomSelector.selectMultipleFromNormalizedWeights(
+            normalizedWeights,
+            numberOfSelections,
+            onlyReturnNonZeroSelections,
+        );
+    }
+
+    /**
+     * Gets the cached normalized weights for the given luck, if they exist.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns The cached normalized weights for the given luck, or undefined if no cache exists or no cached value is found.
+     */
+    public getWeightsFromCache(
+        luck: DecimalSource = Decimal.dOne,
+    ):
+        | WeightOptionEntry<
+              TPossibleNames,
+              RandomArraySortedState.sortedLowestToHighestWeight,
+              WeightOptionNormalizationState.normalized
+          >[]
+        | undefined {
+        if (!this.weightCache) return undefined;
+
+        const luckKey = decimalToJSONString(new Decimal(luck));
+        return this.weightCache.get(luckKey);
+    }
+
+    /**
+     * Updates the cache of normalized weights for the given luck, and returns the newly set value.
+     * Note: this does not overwrite existing cache entries or return them. To update an existing entry, you must first clear the entire cache using {@link clearCache}.
+     * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+     * @returns The newly calculated normalized weights for the given luck, or undefined if no cache exists or if the entry already exists in the cache.
+     */
+    public updateCache(luck: DecimalSource = Decimal.dOne): ReturnType<typeof this.getNormalizedWeights> {
+        if (!this.weightCache) return undefined;
+
+        luck = new Decimal(luck);
+
+        const luckKey = decimalToJSONString(luck);
+
+        // If the key already exists, do nothing
+        // TODO: Add way to change existing cache entries without first clearing the entire cache
+        if (this.weightCache.has(luckKey)) {
+            return undefined;
+        }
+
+        const normalizedWeights = this.selectionMethod.getNormalizedWeights(this.entries, luck);
+
+        if (normalizedWeights) {
+            this.weightCache.set(luckKey, normalizedWeights);
+        }
+
+        return normalizedWeights;
+    }
+
+    /**
+     * Clears the weight cache.
+     */
+    public clearCache(): void {
+        if (this.weightCache) {
+            this.weightCache.clear();
+        }
     }
 }
 
 // Test
-// const testEntries = [
-//     { name: "Common", chance: new Decimal(2) },
-//     { name: "Rare", chance: new Decimal(5) },
-//     { name: "Epic", chance: new Decimal(10) },
-//     { name: "Legendary", chance: new Decimal(2000) },
-//     { name: "Mythic", chance: new Decimal(1e6) },
-// ] as const satisfies RandomOptionEntry[];
+const testEntries = [
+    { name: "Common", chance: new Decimal(2) },
+    { name: "Rare", chance: new Decimal(5) },
+    { name: "Epic", chance: new Decimal(10) },
+    { name: "Legendary", chance: new Decimal(2000) },
+    { name: "Mythic", chance: new Decimal(1e6) },
+] as const satisfies RandomOptionEntry[];
 
-// const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
+const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
 // const luckToTest = new Decimal(2);
 
@@ -464,30 +706,43 @@ class RandomSelector<TPossibleNames extends string = string> {
 // })));
 
 // Test multinomial
-// const testEntries = [
-//     { name: "Common", chance: new Decimal(2) },
-//     { name: "Rare", chance: new Decimal(5) },
-//     { name: "Epic", chance: new Decimal(10) },
-//     { name: "Legendary", chance: new Decimal(2000) },
-//     { name: "Mythic", chance: new Decimal(1e6) },
-// ] as const satisfies RandomOptionEntry[];
 
-// const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
-
-// const numberOfSelections = new Decimal(10).pow(0);
+// const numberOfSelections = new Decimal(10).pow(2);
 // const luck = new Decimal(2);
 // const selected = randomSelector.selectMultiple(numberOfSelections, luck);
 
 // const correspondingNormalizedWeights = randomSelector.getNormalizedWeights(luck) ?? [];
 
-// console.table(selected.map((entry, i) => ({
-//     name: entry.name,
-//     expectedRatio: correspondingNormalizedWeights[i]?.weight.toNumber() ?? 0,
-//     observedRatio: entry.numberOfSelections.div(numberOfSelections).toNumber(),
-//     expected: correspondingNormalizedWeights[i]?.weight.mul(numberOfSelections).toNumber() ?? 0,
-//     observed: entry.numberOfSelections.toNumber(),
-//     ratioBetweenExpectedAndObserved: correspondingNormalizedWeights[i]?.weight.div(entry.numberOfSelections.div(numberOfSelections)).toNumber() ?? 0,
-// })));
+// // Log results
+// console.table(
+//     selected.map((entry, i) => ({
+//         name: entry.name,
+//         expectedRatio: correspondingNormalizedWeights[i]?.weight.toNumber() ?? 0,
+//         observedRatio: entry.numberOfSelections.div(numberOfSelections).toNumber(),
+//         expected: correspondingNormalizedWeights[i]?.weight.mul(numberOfSelections).toNumber() ?? 0,
+//         observed: entry.numberOfSelections.toNumber(),
+//         ratioBetweenExpectedAndObserved:
+//             correspondingNormalizedWeights[i]?.weight
+//                 .div(entry.numberOfSelections.div(numberOfSelections))
+//                 .toNumber() ?? 0,
+//     })),
+// );
 
-export type { RandomOptionEntry, WeightOptionEntry };
+// Test performance
+// const manyEntries: RandomOptionEntry<string>[] = Array.from({ length: 100000 }, (_, i) => ({
+//     name: `Entry ${i + 1}`,
+//     chance: new Decimal(1.1).pow(i + 1),
+// }));
+// const manyEntriesSelector = new RandomSelector(manyEntries, new RarestFirstCascadeSelectionMethod());
+
+// console.time("Multinomial");
+// // for (let i = 0; i < 1; i++) {
+// //     manyEntriesSelector.selectMultiple(numberOfSelections, luck, true);
+// // }
+// const manyEntriesSelected = manyEntriesSelector.selectMultiple(numberOfSelections, luck, true);
+// console.timeEnd("Multinomial");
+
+// console.log(manyEntriesSelected);
+
+export type { RandomOptionEntry, WeightOptionEntry, SelectedOptionEntry, RandomArraySortedState };
 export { SelectionMethod, RandomSelector, RarestFirstCascadeSelectionMethod };

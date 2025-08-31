@@ -150,6 +150,21 @@ var LRUCache = class {
     return this.map.size;
   }
   /**
+   * @param key The key to check.
+   * @returns Whether the cache contains the specified key.
+   */
+  has(key) {
+    return this.map.has(key);
+  }
+  /**
+   * Clears the cache.
+   */
+  clear() {
+    this.map.clear();
+    this.first = void 0;
+    this.last = void 0;
+  }
+  /**
    * Gets the specified key from the cache, or undefined if it is not in the
    * cache.
    * @param key The key to get.
@@ -7128,9 +7143,9 @@ var SelectionMethod = class {
   /**
    * Gets the normalized weights of the given entries based on the provided luck.
    * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
-   * @param entries - An array of objects representing the possible options.
+   * @param entries - An array of objects representing the possible options. This array must be sorted from highest to lowest chance ({@link RandomArraySortedState.sortedHighestToLowestChance}).
    * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
-   * @returns An array of objects representing the normalized weights of the entries.
+   * @returns An array of objects representing the normalized weights of the entries. Should be sorted from lowest to highest weight ({@link RandomArraySortedState.sortedLowestToHighestWeight}). If the selection method does not support normalized weights, it should return `undefined`.
    */
   getNormalizedWeights(entries, luck) {
     return void 0;
@@ -7138,7 +7153,6 @@ var SelectionMethod = class {
 };
 var RarestFirstCascadeSelectionMethod = class extends SelectionMethod {
   select(entries, luck) {
-    entries.sort((a, b) => -a.chance.compare(b.chance));
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       if (i === entries.length - 1) {
@@ -7152,7 +7166,6 @@ var RarestFirstCascadeSelectionMethod = class extends SelectionMethod {
     return void 0;
   }
   getNormalizedWeights(entries, luck) {
-    entries.sort((a, b) => -a.chance.compare(b.chance));
     const out = [];
     let cumulativePreviousChanceMultiplier = new Decimal(1);
     let sumOfOutputWeights = new Decimal(0);
@@ -7251,10 +7264,10 @@ var RandomSelector = class _RandomSelector {
   /**
    * Samples from a multinomial distribution based on the normalized weights of the entries.
    * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
-   * @param entries - An array of normalized {@link WeightOptionEntry} objects.
-   * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+   * @param entries - An array of normalized {@link WeightOptionEntry} objects. Must be sorted from highest to lowest weight.
+   * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
    * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
-   * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
+   * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts. If {@link onlyReturnNonZeroSelections} is true, only entries with a non-zero number of selections will be included. Otherwise, it is returned in the same order as the input entries.
    * @example
    * const entries = [
    *     { name: "A", weight: new Decimal(0.5) },
@@ -7273,7 +7286,7 @@ var RandomSelector = class _RandomSelector {
    * // ]
    * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
    */
-  static selectMultipleFromNormalizedWeights(entries, numberOfSelections, onlyReturnNonZeroSelections = false) {
+  static selectMultipleFromNormalizedWeights(entries, numberOfSelections = Decimal.dOne, onlyReturnNonZeroSelections = false) {
     const k = entries.length;
     const out = onlyReturnNonZeroSelections ? [] : entries.map((entry) => ({
       name: entry.name,
@@ -7296,7 +7309,14 @@ var RandomSelector = class _RandomSelector {
       remainingTrials = remainingTrials.sub(x);
       remainingProbMass = remainingProbMass.sub(entries[i].weight);
     }
-    out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
+    if (!onlyReturnNonZeroSelections) {
+      out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
+    } else if (remainingTrials.gt(0)) {
+      out.push({
+        name: entries[k - 1].name,
+        numberOfSelections: remainingTrials.max(Decimal.dZero)
+      });
+    }
     return out;
   }
   static {
@@ -7307,20 +7327,27 @@ var RandomSelector = class _RandomSelector {
     this.defaultSelectionMethod = new RarestFirstCascadeSelectionMethod();
   }
   /**
-   * @returns An array of {@link RandomOptionEntry} objects representing the possible options.
+   * @returns An array of {@link RandomOptionEntry} objects representing the possible options, sorted from highest to lowest chance.
    */
-  // public readonly entries: RandomOptionEntry<PossibleNames>[] = [];
   get entries() {
-    return this.getEntries();
+    const entries = this.getEntries();
+    entries.sort((a, b) => -a.chance.compare(b.chance));
+    return entries;
   }
   /**
    * Creates a new RandomSelector with the given options.
-   * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options.
+   * @param options - An array of {@link RandomOptionEntry} objects or a function that returns that array representing the possible options. Can be in any order.
    * @param selectionMethod - The method used to select a random option from the list of entries. Defaults to {@link defaultSelectionMethod}.
+   * @param cacheMaxSize - The maximum size of the cache used to store normalized weights. Set to `0` to disable caching. Defaults to `3`.
    */
-  constructor(options, selectionMethod = _RandomSelector.defaultSelectionMethod) {
+  constructor(options, selectionMethod = _RandomSelector.defaultSelectionMethod, cacheMaxSize = 3) {
     this.selectionMethod = selectionMethod;
     this.getEntries = typeof options === "function" ? options : () => options;
+    if (cacheMaxSize > 0) {
+      this.weightCache = new LRUCache(cacheMaxSize);
+    } else {
+      this.weightCache = void 0;
+    }
   }
   /**
    * Selects a random option from the list of entries based on their chances and the provided luck.
@@ -7333,30 +7360,84 @@ var RandomSelector = class _RandomSelector {
   }
   /**
    * Gets the normalized weights of the entries based on the provided luck.
-   * This has no impact on the functionality of the selector, but is useful for displaying a probability distribution.
+   * If a cached value exists for the given luck, it will be returned instead of recalculating.
    * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
    * @returns An array of objects representing the normalized weights of the entries.
    */
   getNormalizedWeights(luck = Decimal.dOne) {
     luck = new Decimal(luck);
-    return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+    if (!this.weightCache) {
+      return this.selectionMethod.getNormalizedWeights(this.entries, luck);
+    }
+    const cachedWeights = this.getWeightsFromCache(luck);
+    if (cachedWeights) return cachedWeights;
+    return this.updateCache(luck);
   }
   /**
    * Selects multiple entries based on the normalized weights of the entries.
    * See {@link selectMultipleFromNormalizedWeights} for more information.
    * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want. Defaults to 1.
    * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
    * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
    */
-  selectMultiple(numberOfSelections = Decimal.dOne, luck = Decimal.dOne) {
-    numberOfSelections = new Decimal(numberOfSelections);
+  selectMultiple(numberOfSelections, luck, onlyReturnNonZeroSelections) {
     const normalizedWeights = this.getNormalizedWeights(luck);
     if (!normalizedWeights) {
       return [];
     }
-    return _RandomSelector.selectMultipleFromNormalizedWeights(normalizedWeights, numberOfSelections);
+    return _RandomSelector.selectMultipleFromNormalizedWeights(
+      normalizedWeights,
+      numberOfSelections,
+      onlyReturnNonZeroSelections
+    );
+  }
+  /**
+   * Gets the cached normalized weights for the given luck, if they exist.
+   * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @returns The cached normalized weights for the given luck, or undefined if no cache exists or no cached value is found.
+   */
+  getWeightsFromCache(luck = Decimal.dOne) {
+    if (!this.weightCache) return void 0;
+    const luckKey = decimalToJSONString(new Decimal(luck));
+    return this.weightCache.get(luckKey);
+  }
+  /**
+   * Updates the cache of normalized weights for the given luck, and returns the newly set value.
+   * Note: this does not overwrite existing cache entries or return them. To update an existing entry, you must first clear the entire cache using {@link clearCache}.
+   * @param luck - A multiplier that affects the chances of each entry. Defaults to 1 (no multiplier).
+   * @returns The newly calculated normalized weights for the given luck, or undefined if no cache exists or if the entry already exists in the cache.
+   */
+  updateCache(luck = Decimal.dOne) {
+    if (!this.weightCache) return void 0;
+    luck = new Decimal(luck);
+    const luckKey = decimalToJSONString(luck);
+    if (this.weightCache.has(luckKey)) {
+      return void 0;
+    }
+    const normalizedWeights = this.selectionMethod.getNormalizedWeights(this.entries, luck);
+    if (normalizedWeights) {
+      this.weightCache.set(luckKey, normalizedWeights);
+    }
+    return normalizedWeights;
+  }
+  /**
+   * Clears the weight cache.
+   */
+  clearCache() {
+    if (this.weightCache) {
+      this.weightCache.clear();
+    }
   }
 };
+var testEntries = [
+  { name: "Common", chance: new Decimal(2) },
+  { name: "Rare", chance: new Decimal(5) },
+  { name: "Epic", chance: new Decimal(10) },
+  { name: "Legendary", chance: new Decimal(2e3) },
+  { name: "Mythic", chance: new Decimal(1e6) }
+];
+var randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
 // src/classes/SkillTree.ts
 var import_reflect_metadata5 = require("reflect-metadata");
