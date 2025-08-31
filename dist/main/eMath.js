@@ -7253,6 +7253,7 @@ var RandomSelector = class _RandomSelector {
    * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
    * @param entries - An array of normalized {@link WeightOptionEntry} objects.
    * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+   * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
    * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
    * @example
    * const entries = [
@@ -7272,9 +7273,9 @@ var RandomSelector = class _RandomSelector {
    * // ]
    * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
    */
-  static selectMultipleFromNormalizedWeights(entries, numberOfSelections) {
+  static selectMultipleFromNormalizedWeights(entries, numberOfSelections, onlyReturnNonZeroSelections = false) {
     const k = entries.length;
-    const out = entries.map((entry) => ({
+    const out = onlyReturnNonZeroSelections ? [] : entries.map((entry) => ({
       name: entry.name,
       numberOfSelections: Decimal.dZero
     }));
@@ -7284,7 +7285,14 @@ var RandomSelector = class _RandomSelector {
       if (remainingTrials.lte(0) || remainingProbMass.lte(0)) break;
       const adjustedP = entries[i].weight.div(remainingProbMass);
       const x = sampleFromBinomialDistribution(remainingTrials, adjustedP) ?? Decimal.dZero;
-      out[i].numberOfSelections = x;
+      if (!onlyReturnNonZeroSelections) {
+        out[i].numberOfSelections = x;
+      } else if (x.gt(0)) {
+        out.push({
+          name: entries[i].name,
+          numberOfSelections: x
+        });
+      }
       remainingTrials = remainingTrials.sub(x);
       remainingProbMass = remainingProbMass.sub(entries[i].weight);
     }

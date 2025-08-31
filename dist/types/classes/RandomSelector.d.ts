@@ -129,6 +129,7 @@ declare class RandomSelector<TPossibleNames extends string = string> {
      * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
      * @param entries - An array of normalized {@link WeightOptionEntry} objects.
      * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+     * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
      * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
      * @example
      * const entries = [
@@ -148,7 +149,7 @@ declare class RandomSelector<TPossibleNames extends string = string> {
      * // ]
      * const selected = RandomSelector.selectMultipleFromNormalizedWeights(entries, numberOfSelections);
      */
-    static selectMultipleFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], numberOfSelections: DecimalSource): SelectedOptionEntry<T>[];
+    static selectMultipleFromNormalizedWeights<T extends string = string>(entries: WeightOptionEntry<T>[], numberOfSelections: DecimalSource, onlyReturnNonZeroSelections?: boolean): SelectedOptionEntry<T>[];
     /**
      * The default selection method used by the {@link RandomSelector} class.
      * Currently set to {@link RarestFirstCascadeSelectionMethod}.

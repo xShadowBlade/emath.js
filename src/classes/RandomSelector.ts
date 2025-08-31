@@ -275,6 +275,7 @@ class RandomSelector<TPossibleNames extends string = string> {
      * Approximated using a binomial distribution for each entry. See {@link sampleFromBinomialDistribution} for more information.
      * @param entries - An array of normalized {@link WeightOptionEntry} objects.
      * @param numberOfSelections - The number of selections to make from the entries. This can be as large as you want.
+     * @param onlyReturnNonZeroSelections - If true, only entries with a non-zero number of selections will be returned. Defaults to false.
      * @returns An array of {@link SelectedOptionEntry} objects representing the selected options and their counts.
      * @example
      * const entries = [
@@ -297,12 +298,17 @@ class RandomSelector<TPossibleNames extends string = string> {
     public static selectMultipleFromNormalizedWeights<T extends string = string>(
         entries: WeightOptionEntry<T>[],
         numberOfSelections: DecimalSource,
+        onlyReturnNonZeroSelections = false,
     ): SelectedOptionEntry<T>[] {
         const k = entries.length;
-        const out: SelectedOptionEntry<T>[] = entries.map((entry) => ({
-            name: entry.name,
-            numberOfSelections: Decimal.dZero,
-        }));
+
+        const out: SelectedOptionEntry<T>[] = onlyReturnNonZeroSelections
+            ? []
+            : entries.map((entry) => ({
+                  name: entry.name,
+                  numberOfSelections: Decimal.dZero,
+              }));
+
         let remainingTrials = new Decimal(numberOfSelections);
         let remainingProbMass = new Decimal(1);
 
@@ -316,7 +322,15 @@ class RandomSelector<TPossibleNames extends string = string> {
             const adjustedP = entries[i].weight.div(remainingProbMass);
             const x = sampleFromBinomialDistribution(remainingTrials, adjustedP) ?? Decimal.dZero;
 
-            out[i].numberOfSelections = x;
+            // If onlyReturnNonZeroSelections is true, only add the entry if it has a non-zero number of selections
+            if (!onlyReturnNonZeroSelections) {
+                out[i].numberOfSelections = x;
+            } else if (x.gt(0)) {
+                out.push({
+                    name: entries[i].name,
+                    numberOfSelections: x,
+                });
+            }
 
             // Update the remaining trials and probability mass
             remainingTrials = remainingTrials.sub(x);
