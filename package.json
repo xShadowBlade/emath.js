@@ -61,7 +61,7 @@
         "@types/node": "^22.0.0",
         "break_eternity.js": "^2.0.0",
         "concurrently": "^9.0.0",
-        "esbuild": "^0.24.0",
+        "esbuild": "^0.25.10",
         "esbuild-plugin-replace": "^1.4.0",
         "eslint": "^9.9.1",
         "eslint-config-prettier": "^9.1.0",
