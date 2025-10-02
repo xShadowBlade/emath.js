@@ -216,52 +216,23 @@ describe("Boost", () => {
 
     describe("setBoost", () => {
         it("should add a new boost if it doesn't exist", () => {
-            testBoost.setBoost(
-                "b1",
-                "Boost 1",
-                "Description 1",
-                (x) => x.add(2),
-                1,
-            );
+            testBoost.setBoost("b1", "Boost 1", "Description 1", (x) => x.add(2), 1);
             assert.equal(testBoost.boostArray.length, 1);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1");
             assert.equal(testBoost.boostArray[0].description, "Description 1");
-            assert(
-                testBoost.boostArray[0]
-                    .value(Decimal.dZero)
-                    .equals(Decimal.dTwo),
-            );
+            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(Decimal.dTwo));
             assert.equal(testBoost.boostArray[0].order, 1);
         });
 
         it("should update an existing boost if it exists", () => {
-            testBoost.setBoost(
-                "b1",
-                "Boost 1",
-                "Description 1",
-                (x) => x.add(2),
-                1,
-            );
-            testBoost.setBoost(
-                "b1",
-                "Boost 1 Updated",
-                "Description 1 Updated",
-                (x) => x.add(3),
-                2,
-            );
+            testBoost.setBoost("b1", "Boost 1", "Description 1", (x) => x.add(2), 1);
+            testBoost.setBoost("b1", "Boost 1 Updated", "Description 1 Updated", (x) => x.add(3), 2);
             assert.equal(testBoost.boostArray.length, 1);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
-            assert.equal(
-                testBoost.boostArray[0].description,
-                "Description 1 Updated",
-            );
-            assert(
-                testBoost.boostArray[0]
-                    .value(Decimal.dZero)
-                    .equals(new Decimal(3)),
-            );
+            assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
+            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(new Decimal(3)));
             assert.equal(testBoost.boostArray[0].order, 2);
         });
 
@@ -312,15 +283,8 @@ describe("Boost", () => {
             assert.equal(testBoost.boostArray.length, 2);
             assert.equal(testBoost.boostArray[0].id, "b1");
             assert.equal(testBoost.boostArray[0].name, "Boost 1 Updated");
-            assert.equal(
-                testBoost.boostArray[0].description,
-                "Description 1 Updated",
-            );
-            assert(
-                testBoost.boostArray[0]
-                    .value(Decimal.dZero)
-                    .equals(new Decimal(4)),
-            );
+            assert.equal(testBoost.boostArray[0].description, "Description 1 Updated");
+            assert(testBoost.boostArray[0].value(Decimal.dZero).equals(new Decimal(4)));
             assert.equal(testBoost.boostArray[0].order, 3);
             assert.equal(testBoost.boostArray[1].id, "b2");
         });

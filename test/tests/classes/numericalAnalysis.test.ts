@@ -4,13 +4,7 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import {
-    Decimal,
-    inverseFunctionApprox,
-    calculateSum,
-    equalsTolerance,
-    roundingBase,
-} from "emath.js";
+import { Decimal, inverseFunctionApprox, calculateSum, equalsTolerance, roundingBase } from "emath.js";
 import type { EqualsToleranceConfig } from "emath.js";
 
 import { assertDecimal } from "../shared/utils";
@@ -21,19 +15,30 @@ const toleranceConfig: EqualsToleranceConfig = {
     mode: "geometric",
 };
 
-// describe("equalsTolerance", () => {
-//     it("should return true for equal numbers", () => {
-//         assert(equalsTolerance(1, 1, equalTolerance, toleranceConfig));
-//     });
+describe("equalsTolerance", () => {
+    it("should return true for equal numbers", () => {
+        assert(equalsTolerance(1, 1, equalTolerance, toleranceConfig));
+    });
 
-//     it("should return true for numbers within the tolerance", () => {
-//         assert(equalsTolerance(1, 1 + 5e-4, equalTolerance, toleranceConfig));
-//     });
+    it("should return true for numbers within the tolerance", () => {
+        assert(equalsTolerance(1, 1 + 5e-4, equalTolerance, toleranceConfig));
+    });
 
-//     it("should return false for numbers outside the tolerance", () => {
-//         assert(!equalsTolerance(1, 1 + 5e-3, equalTolerance, toleranceConfig));
-//     });
-// });
+    it("should return false for numbers outside the tolerance", () => {
+        assert(!equalsTolerance(1, 1.01, equalTolerance, toleranceConfig));
+    });
+
+    it("should use geometric mean for tolerance calculation", () => {
+        assert(equalsTolerance(1000, 1005, equalTolerance, toleranceConfig));
+        assert(!equalsTolerance(1000, 1010, equalTolerance, toleranceConfig));
+    });
+
+    it("should use arithmetic mean for tolerance calculation", () => {
+        const config: EqualsToleranceConfig = { verbose: false, mode: "arithmetic" };
+        assert(equalsTolerance(1000, 1000.0001, equalTolerance, config));
+        assert(!equalsTolerance(1000, 1001, equalTolerance, config));
+    });
+});
 
 describe("inverseFunctionApprox", () => {
     it("should return the correct result when the function evaluates to 0", () => {
@@ -47,139 +52,47 @@ describe("inverseFunctionApprox", () => {
     it("should return the upper bound when the function is not monotonically increasing", () => {
         const f = (x: Decimal): Decimal => x.sub(5);
         const result = inverseFunctionApprox(f, Decimal.dTen);
-        assert(
-            equalsTolerance(result.value, 10, equalTolerance, toleranceConfig),
-        );
-        assert(
-            equalsTolerance(
-                result.lowerBound,
-                10,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.upperBound,
-                10,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 10, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.lowerBound, 10, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.upperBound, 10, equalTolerance, toleranceConfig));
     });
 
     it("should return the correct result for arithmetic mode", () => {
         const f = (x: Decimal): Decimal => x.mul(x).sub(9);
         const result = inverseFunctionApprox(f, 16, "arithmetic");
-        assert(
-            equalsTolerance(result.value, 5, equalTolerance, toleranceConfig),
-        );
-        assert(
-            equalsTolerance(
-                result.lowerBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.upperBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.lowerBound, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.upperBound, 5, equalTolerance, toleranceConfig));
     });
 
     it("should return the correct result for geometric mode", () => {
         const f = (x: Decimal): Decimal => x.mul(x).sub(9);
         const result = inverseFunctionApprox(f, 16, "geometric");
-        assert(
-            equalsTolerance(result.value, 5, equalTolerance, toleranceConfig),
-        );
-        assert(
-            equalsTolerance(
-                result.lowerBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.upperBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.lowerBound, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.upperBound, 5, equalTolerance, toleranceConfig));
     });
 
     it("should return the correct result for the default number of iterations", () => {
         const f = (x: Decimal): Decimal => x.mul(x).sub(9);
         const result = inverseFunctionApprox(f, 16);
-        assert(
-            equalsTolerance(result.value, 5, equalTolerance, toleranceConfig),
-        );
-        assert(
-            equalsTolerance(
-                result.lowerBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.upperBound,
-                5,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.lowerBound, 5, equalTolerance, toleranceConfig));
+        assert(equalsTolerance(result.upperBound, 5, equalTolerance, toleranceConfig));
     });
 
     it("should return the correct result for a custom number of iterations", () => {
         const f = (x: Decimal): Decimal => x.mul(x).sub(9);
         const result = inverseFunctionApprox(f, 16, "geometric", 10);
-        assert(
-            equalsTolerance(
-                result.value,
-                5,
-                equalTolerance * 100,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.lowerBound,
-                5,
-                equalTolerance * 100,
-                toleranceConfig,
-            ),
-        );
-        assert(
-            equalsTolerance(
-                result.upperBound,
-                5,
-                equalTolerance * 100,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 5, equalTolerance * 100, toleranceConfig));
+        assert(equalsTolerance(result.lowerBound, 5, equalTolerance * 100, toleranceConfig));
+        assert(equalsTolerance(result.upperBound, 5, equalTolerance * 100, toleranceConfig));
     });
 
     it("should return the correct result for large inputs", () => {
         const f = (x: Decimal): Decimal => x.mul(x).sub(9);
         const result = inverseFunctionApprox(f, 152399016);
-        assert(
-            equalsTolerance(
-                result.value,
-                12345,
-                equalTolerance,
-                toleranceConfig,
-            ),
-        );
+        assert(equalsTolerance(result.value, 12345, equalTolerance, toleranceConfig));
     });
 });
 
@@ -199,9 +112,7 @@ describe("calculateSum", () => {
     it("should return the correct result for higher bounds, using approximation", () => {
         const f = (x: Decimal): Decimal => x.pow(2);
         const result = calculateSum(f, 1e3);
-        assert(
-            equalsTolerance(result, 333833500, equalTolerance * 20, toleranceConfig),
-        );
+        assert(equalsTolerance(result, 333833500, equalTolerance * 20, toleranceConfig));
     });
 
     it("should return the correct result for a custom lower bound", () => {
