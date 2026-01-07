@@ -26,7 +26,7 @@ type Mutable<T> = {
 
 /** A class constructor */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ClassType = new (...args: any[]) => any;
+type ClassType<T = any> = new (...args: any[]) => T;
 
 /** A plain object with unknown properties. */
 type UnknownObject = Record<string, unknown>;
