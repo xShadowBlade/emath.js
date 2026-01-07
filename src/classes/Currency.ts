@@ -13,7 +13,7 @@ import { ItemData, Item, calculateItem } from "./Item";
 import type { UpgradeInit } from "./Upgrade";
 import type { ItemInit } from "./Item";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
-import { Serializable, Serializer } from "../game/serialize/Serializer";
+import { SerializableClass, DescribeSerialize } from "../game/serialize/Serializer";
 
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -26,13 +26,17 @@ interface CurrencyStaticResetOptions {
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
  * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
  */
-class Currency implements Serializable<Currency> {
+class Currency implements SerializableClass<Currency> {
 
-    private static serializer: Serializer<Currency> = {
+    private static serializer: DescribeSerialize<Currency> = {
         value: Decimal,
         upgrades: UpgradeData,
         items: ItemData,
     };
+
+    public getSerializer(): DescribeSerialize<Currency> {
+        return Currency.serializer;
+    }
 
     /** The current value of the currency. */
     @Type(() => Decimal)
