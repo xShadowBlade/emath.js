@@ -30,7 +30,7 @@
  
  
 import { Exclude, Expose } from "class-transformer";
-import { LRUCache } from "./lru-cache";
+import { LRUCache } from "./LRUCache";
 
 import { decimalFormatGenerator, FormatType } from "./format";
 
