@@ -4,7 +4,7 @@
 import type { Pointer } from "../common/types";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
-import { LRUCache } from "../E/lru-cache";
+import { LRUCache } from "../E/LRUCache";
 import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
 import type { DecimalJSONString } from "./Upgrade";
 import { decimalToJSONString } from "./Upgrade";

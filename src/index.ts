@@ -5,7 +5,7 @@ import "reflect-metadata";
 
 export * from "./metadata";
 
-export * from "./E/lru-cache";
+export * from "./E/LRUCache";
 export * from "./E/e";
 export * from "./classes/Boost";
 export * from "./classes/Upgrade";
