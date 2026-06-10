@@ -13,12 +13,12 @@ import { Decimal } from "../../E/e";
  */
 function gaussianRandom(mean: DecimalSource = 0, standardDeviation: DecimalSource = 1): Decimal {
     // Convert [0, 1) to (0, 1]
-    const u = Decimal.dOne.sub(Math.random());
-    const v = new Decimal(Math.random());
-    const z = Decimal.sqrt(u.ln().mul(-2)).mul(v.mul(2 * Math.PI).cos());
+    const u = 1 - Math.random();
+    const v = Math.random();
+    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 
     // Transform to the desired mean and standard deviation
-    return z.mul(standardDeviation).add(mean);
+    return new Decimal(z).mul(standardDeviation).add(mean);
 }
 
 /**
