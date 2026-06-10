@@ -16,23 +16,14 @@ class GameCurrency<
     TUpgradeIds extends string = string,
     TItemIds extends string = string,
 > extends CurrencyStatic<TUpgradeIds, TItemIds> {
-    /** The name of the currency. This is optional, and you can use it for display purposes. */
     public readonly name: TCurrencyName;
 
     /**
      * @returns The data for the currency.
-     * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
+     * @deprecated Use {@link data} instead. This property is only here for backwards compatibility.
      */
     get data(): Currency {
-        return this.pointer;
-    }
-
-    /**
-     * @returns The static data for the currency.
-     * @deprecated Use this class as a static class as it now has all the properties of {@link CurrencyStatic}. This property is only here for backwards compatibility.
-     */
-    get static(): this {
-        return this;
+        return this.data;
     }
 
     /** The game pointer/reference */
@@ -56,7 +47,6 @@ class GameCurrency<
             );
         }
 
-        // Call the parent constructor
         super(...currencyStaticParams);
 
         this.game = gamePointer;
@@ -64,7 +54,7 @@ class GameCurrency<
 
         // Add an event on load to update upgrade effects
         this.game.dataManager.addEventOnLoad(() => {
-            this.static.onLoadData();
+            this.onLoadData();
         });
     }
 }

@@ -16,6 +16,7 @@ void (async (): Promise<void> => {
         eMathGame: await import("emath.js/game"),
         eMathPresets: await import("emath.js/presets"),
         lzstring: await import("lz-string"),
+        classTransformer: await import("class-transformer"),
     };
 
     Object.assign(window, keysToLoad);

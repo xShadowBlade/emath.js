@@ -40,6 +40,10 @@ type ConstructableObject = object & { constructor: ClassType };
  */
 type Pointer<T> = (() => T) | T;
 
+function getSupplierFromPointer<T>(pointer: Pointer<T>): () => T {
+    return typeof pointer === "function" ? (pointer as () => T) : (): T => pointer;
+}
+
 /**
  * Picks a subset of properties from a type and makes them optional.
  * @template T - The type to pick properties from.
@@ -53,3 +57,4 @@ type PickOptional<T, K extends keyof T> = {
 } & Omit<T, K>;
 
 export type { IsPrimitiveString, Mutable, ClassType, UnknownObject, ConstructableObject, Pointer, PickOptional };
+export { getSupplierFromPointer };

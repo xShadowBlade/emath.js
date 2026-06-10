@@ -99,8 +99,9 @@ class BoostObject implements BoostsObjectInit {
 }
 
 /**
- * Represents a boost manager that applies various effects to a base value.
- * Typically used in combination with Attribute or Currency classes.
+ * Calculates various effects to a base value.
+ * Each boost is represented by a {@link BoostObject} which contains the parameters of the boost, and the boost manager calculates the cumulative effect of all boosts on a base value.
+ * Typically used in combination with an Attribute or Currency.
  */
 class Boost {
     /** An array of boost objects. */
@@ -260,11 +261,6 @@ class Boost {
             }
         }
     }
-    /**
-     * @alias setBoost
-     * @deprecated Use {@link setBoost} instead.
-     */
-    public addBoost = this.setBoost.bind(this);
 
     /**
      * Clears all boosts from the boost manager.
