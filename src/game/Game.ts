@@ -18,7 +18,8 @@ import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
 import type { UpgradeInit } from "../classes/Upgrade";
 import type { ItemInit } from "../classes/Item";
-import { SkillInit, SkillTreeData, SkillTreeStatic } from "../classes/SkillTree";
+import type { SkillInit, SkillTreeStatic } from "../classes/SkillTree";
+import { SkillTreeData } from "../classes/SkillTree";
 import { GameSkillTree } from "./GameSkillTree";
 
 /**
@@ -157,7 +158,7 @@ class Game {
      * See {@link DataManager.init} for more information.
      */
     public init(): void {
-        this.dataManager.init();
+        // this.dataManager.init();
     }
 
     /**
@@ -198,18 +199,11 @@ class Game {
         upgrades?: UpgradeInit<TUpgradeIds>[],
         items?: ItemInit<TItemIds>[],
     ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
-        // Set the data and static objects
-        this.dataManager.setData(name, {
-            currency: new Currency(),
-        });
-
         // Create the class instance
         const classInstance = new GameCurrency(
-            [
-                (): Currency => (this.dataManager.getData(name) as { currency: Currency }).currency,
-                upgrades,
-                items,
-            ] as ConstructorParameters<typeof CurrencyStatic>,
+            [this.dataManager.setData(name, new Currency()), upgrades, items] as ConstructorParameters<
+                typeof CurrencyStatic
+            >,
             this,
             name,
         );
@@ -232,14 +226,13 @@ class Game {
         useBoost: TEnableBoost = true as TEnableBoost,
         initial: DecimalSource = 0,
     ): GameAttribute<TEnableBoost> {
-        this.dataManager.setData(name, new Attribute(initial));
-
         const classInstance = new GameAttribute(
-            [this.dataManager.getData(name) as Attribute, useBoost, initial] as ConstructorParameters<
+            [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
                 typeof AttributeStatic
             >,
             this,
         );
+
         return classInstance;
     }
 
