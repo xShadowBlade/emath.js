@@ -9,7 +9,7 @@ import { LRUCache } from "../E/LRUCache";
 import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
 import { calculateSum } from "./numericalAnalysis/sum";
-import type { CurrencyStatic } from "./Currency";
+import type { Currency } from "./Currency";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -28,7 +28,7 @@ import type { CurrencyStatic } from "./Currency";
  */
 function calculateUpgrade(
     value: DecimalSource,
-    upgrade: UpgradeStatic,
+    upgrade: Upgrade,
     start?: DecimalSource,
     end: DecimalSource = Decimal.dInf,
     mode?: MeanMode,
@@ -184,7 +184,7 @@ interface UpgradeInit<TId extends string = string> {
      * // Getter property
      * console.log(upgrade.description); // "This upgrade is at level 1"
      */
-    description?: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => string) | string;
+    description?: ((level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => string) | string;
 
     /**
      * The cost of upgrades at a certain level.
@@ -225,7 +225,7 @@ interface UpgradeInit<TId extends string = string> {
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    effect?: (level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
+    effect?: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void;
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
@@ -412,7 +412,7 @@ interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
 /**
  * Represents the backend for an upgrade.
  */
-class UpgradeStatic implements IUpgradeStatic {
+class Upgrade implements IUpgradeStatic {
     public id;
     name;
     cost;
@@ -440,10 +440,10 @@ class UpgradeStatic implements IUpgradeStatic {
         return this.dataPointerFn();
     }
 
-    protected currencyPointerFn: () => CurrencyStatic;
+    protected currencyPointerFn: () => Currency;
 
     /** @returns The currency static class that the upgrade is being run on. */
-    public get currency(): CurrencyStatic {
+    public get currency(): Currency {
         return this.currencyPointerFn();
     }
 
@@ -477,21 +477,21 @@ class UpgradeStatic implements IUpgradeStatic {
      * Constructs a new static upgrade object.
      * @param init - The upgrade object to initialize.
      * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
+     * @param currencyPointer - A function or reference that returns the pointer of the {@link Currency} class.
      * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
      */
     constructor(
         init: UpgradeInit,
         dataPointer: Pointer<UpgradeData>,
-        currencyPointer: Pointer<CurrencyStatic>,
+        currencyPointer: Pointer<Currency>,
         cacheSize?: number,
     ) {
         const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
         this.currencyPointerFn =
-            typeof currencyPointer === "function" ? currencyPointer : (): CurrencyStatic => currencyPointer;
+            typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
 
-        this.cache = new LRUCache(cacheSize ?? UpgradeStatic.cacheSize);
+        this.cache = new LRUCache(cacheSize ?? Upgrade.cacheSize);
         this.id = init.id;
         this.name = init.name ?? init.id;
         this.descriptionFn = init.description
@@ -559,6 +559,6 @@ class UpgradeStatic implements IUpgradeStatic {
 }
 
 export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
-export { UpgradeData, UpgradeStatic, calculateUpgrade };
+export { UpgradeData, Upgrade, calculateUpgrade };
 export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
 export { decimalToJSONString, upgradeToCacheNameEL };

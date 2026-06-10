@@ -3,8 +3,8 @@
  */
 
 import type { DecimalSource } from "../E/e";
-import type { CurrencyStatic } from "../classes/Currency";
-import { Currency } from "../classes/Currency";
+import type { Currency } from "../classes/Currency";
+import { CurrencyData } from "../classes/Currency";
 import type { AttributeStatic } from "../classes/Attribute";
 import { Attribute } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
@@ -179,8 +179,8 @@ class Game {
      * Adds a new currency section to the game. {@link GameCurrency} is the class.
      * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
      * @template TCurrencyName - The name
-     * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
-     * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
+     * @template U - The upgrade names for the currency. See {@link Currency} for more information.
+     * @template I - The item names for the currency. See {@link Currency} for more information.
      * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
      * @param upgrades - The upgrades for the currency.
      * @param items - The items for the currency.
@@ -201,8 +201,8 @@ class Game {
     ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
         // Create the class instance
         const classInstance = new GameCurrency(
-            [this.dataManager.setData(name, new Currency()), upgrades, items] as ConstructorParameters<
-                typeof CurrencyStatic
+            [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
+                typeof Currency
             >,
             this,
             name,

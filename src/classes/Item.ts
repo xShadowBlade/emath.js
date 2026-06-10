@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { Type, Expose } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
-import type { CurrencyStatic } from "./Currency";
+import type { Currency } from "./Currency";
 
 /**
  * Calculates the cost and how many items you can buy.
@@ -79,7 +79,7 @@ interface ItemInit<TId extends string = string> {
      * // Getter function
      * console.log(item.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
-    description?: ((level: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => string) | string;
+    description?: ((level: Decimal, itemContext: Item, currencyContext: Currency) => string) | string;
 
     /**
      * The cost of items at a certain level.
@@ -98,7 +98,7 @@ interface ItemInit<TId extends string = string> {
      * @param itemContext - The item object that the effect is being run on.
      * @param currencyContext - The currency static class that the item is being run on.
      */
-    effect?: (tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: CurrencyStatic) => void;
+    effect?: (tier: Decimal, amount: Decimal, itemContext: Item, currencyContext: Currency) => void;
 
     // Below are types that are automatically added
     /**
@@ -136,7 +136,7 @@ class Item implements ItemInit {
     }
 
     /** @returns The currency static class that the item is being run on. */
-    protected currencyPointerFn: () => CurrencyStatic;
+    protected currencyPointerFn: () => Currency;
 
     /** The description of the item as a function. */
     private descriptionFn: Exclude<ItemInit["description"], string | undefined>;
@@ -171,11 +171,11 @@ class Item implements ItemInit {
      * @param dataPointer - The pointer to the data of the item.
      * @param currencyPointer - The pointer to the currency static class that the item is being run on.
      */
-    constructor(init: ItemInit, dataPointer: Pointer<ItemData>, currencyPointer: Pointer<CurrencyStatic>) {
+    constructor(init: ItemInit, dataPointer: Pointer<ItemData>, currencyPointer: Pointer<Currency>) {
         const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
         this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): ItemData => data;
         this.currencyPointerFn =
-            typeof currencyPointer === "function" ? currencyPointer : (): CurrencyStatic => currencyPointer;
+            typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
 
         this.id = init.id;
         this.name = init.name ?? init.id;
