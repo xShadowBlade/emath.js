@@ -7,9 +7,9 @@ import { Expose, Type } from "class-transformer";
 import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
+import { UpgradeData, Upgrade, calculateUpgrade } from "./Upgrade";
 import type { UpgradeInit } from "./Upgrade";
-import type { CurrencyStatic } from "./Currency";
+import type { Currency } from "./Currency";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { Pointer } from "../common/types";
 
@@ -37,7 +37,7 @@ interface SkillInit<TId extends string = string> extends UpgradeInit<TId> {
     /**
      * The currency that is used to purchase the skill node.
      */
-    readonly costCurrency: CurrencyStatic;
+    readonly costCurrency: Currency;
 
     /**
      * The skill nodes that are required to unlock this skill node.
@@ -75,7 +75,7 @@ class SkillNodeData extends UpgradeData {
  * Represents an upgrade in the skill tree.
  * Each upgrade has its own id, name, description, cost, required skills, maximum level, and effect.
  */
-class SkillNodeStatic extends UpgradeStatic implements SkillInit {
+class SkillNodeStatic extends Upgrade implements SkillInit {
     public readonly costCurrency;
     public readonly requirements;
 
@@ -231,8 +231,8 @@ class SkillTreeStatic<TSkillNames extends string = string> {
     }
 
     /**
-     * Calculates the cost and how many upgrades you can buy. A wrapper around {@link CurrencyStatic.calculateUpgrade}.
-     * See {@link calculateUpgrade} and {@link CurrencyStatic.calculateUpgrade} for more information.
+     * Calculates the cost and how many upgrades you can buy. A wrapper around {@link Currency.calculateUpgrade}.
+     * See {@link calculateUpgrade} and {@link Currency.calculateUpgrade} for more information.
      * @param id - The upgrade ID or the upgrade to calculate.
      * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
      * @param mode - See the argument in {@link calculateUpgrade}.
@@ -266,7 +266,7 @@ class SkillTreeStatic<TSkillNames extends string = string> {
     }
 
     /**
-     * Calculates how much is needed for the next skill. A wrapper around {@link CurrencyStatic.getNextCost}.
+     * Calculates how much is needed for the next skill. A wrapper around {@link Currency.getNextCost}.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
      * @param id - Index or ID of the upgrade.
      * @param target - How many before the next upgrade.
@@ -298,7 +298,7 @@ class SkillTreeStatic<TSkillNames extends string = string> {
     }
 
     /**
-     * Calculates the cost of the next upgrade after the maximum affordable quantity. A wrapper around {@link CurrencyStatic.getNextCostMax}.
+     * Calculates the cost of the next upgrade after the maximum affordable quantity. A wrapper around {@link Currency.getNextCostMax}.
      * @param id - Upgrade ID or upgrade object to calculate the next cost for.
      * @param target - How many before the next upgrade.
      * @param mode  - See the argument in {@link calculateUpgrade}.

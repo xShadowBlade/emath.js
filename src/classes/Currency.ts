@@ -7,7 +7,7 @@ import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
-import { UpgradeData, UpgradeStatic, calculateUpgrade } from "./Upgrade";
+import { UpgradeData, Upgrade, calculateUpgrade } from "./Upgrade";
 import { ItemData, Item, calculateItem } from "./Item";
 
 import type { UpgradeInit } from "./Upgrade";
@@ -23,9 +23,9 @@ interface CurrencyStaticResetOptions {
 
 /**
  * Represents the frontend READONLY for a currency. Useful for saving / data management.
- * Note: This class is created by default when creating a {@link CurrencyStatic} class. Use that instead as there are no methods here.
+ * Note: This class is created by default when creating a {@link Currency} class. Use that instead as there are no methods here.
  */
-class Currency {
+class CurrencyData {
     /** The current value of the currency. */
     @Type(() => Decimal)
     public value: Decimal;
@@ -58,11 +58,11 @@ class Currency {
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends string = string> {
+class Currency<TUpgradeIds extends string = string, TItemIds extends string = string> {
     /**
      * Stores a each of this currency's upgrades and their corresponding data.
      */
-    public readonly upgrades: UpgradeStatic[];
+    public readonly upgrades: Upgrade[];
 
     /**
      * Stores a each of this currency's items and their corresponding data.
@@ -70,10 +70,10 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     public readonly items: Item[];
 
     /** A function that returns the pointer of the data */
-    protected readonly dataSupplier: () => Currency;
+    protected readonly dataSupplier: () => CurrencyData;
 
     /** @returns The pointer of the data. */
-    protected get data(): Currency {
+    protected get data(): CurrencyData {
         return this.dataSupplier();
     }
 
@@ -118,7 +118,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * // CurrencyStatic<["upgId1", "upgId2"]>
      */
     constructor(
-        pointer: Pointer<Currency> = new Currency(),
+        pointer: Pointer<CurrencyData> = new CurrencyData(),
         upgrades?: UpgradeInit<TUpgradeIds>[],
         items?: ItemInit<TItemIds>[],
         defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
@@ -128,7 +128,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         this.defaultBoost = defaults.defaultBoost;
 
         // Assign the pointer function
-        this.dataSupplier = typeof pointer === "function" ? pointer : (): Currency => pointer;
+        this.dataSupplier = typeof pointer === "function" ? pointer : (): CurrencyData => pointer;
 
         // Set the boost object
         this.boost = new Boost(this.defaultBoost);
@@ -195,7 +195,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
 
         // Reset the upgrades
         if (resetObj.resetUpgradeLevels) {
-            for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
+            for (const upgrade of Object.values<Upgrade>(this.upgrades)) {
                 // Reset the level to the default level
                 upgrade.level = new Decimal(upgrade.defaultLevel);
 
@@ -261,7 +261,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     public getUpgrade<T extends TUpgradeIds>(
         id: T,
-    ): IsPrimitiveString<TUpgradeIds> extends false ? UpgradeStatic : UpgradeStatic | null {
+    ): IsPrimitiveString<TUpgradeIds> extends false ? Upgrade : Upgrade | null {
         // TODO: fix this
         // @ts-expect-error
         return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
@@ -293,23 +293,23 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      *     }
      * });
      */
-    public addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): UpgradeStatic[] {
+    public addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): Upgrade[] {
         // Convert to array if not already
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
         // Create an array to store the added upgrades
-        const addedUpgradeList: UpgradeStatic[] = [];
+        const addedUpgradeList: Upgrade[] = [];
 
         for (const upgrade of upgrades) {
             // Add the upgrade to the data
             this.pointerAddUpgrade(upgrade);
 
             // Create the upgrade object
-            const addedUpgradeStatic = new UpgradeStatic(
+            const addedUpgradeStatic = new Upgrade(
                 upgrade,
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 () => this.pointerGetUpgrade(upgrade.id)!,
-                () => this as CurrencyStatic,
+                () => this as Currency,
             );
 
             // Run the effect instantly if needed
@@ -341,7 +341,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     public updateUpgrade(id: TUpgradeIds, newUpgrade: Partial<UpgradeInit>): void {
         // Get the upgrade
-        const oldUpgrade = this.getUpgrade(id) as Mutable<UpgradeStatic> | null;
+        const oldUpgrade = this.getUpgrade(id) as Mutable<Upgrade> | null;
 
         // If the upgrade doesn't exist, return
         if (oldUpgrade === null) return;
@@ -354,8 +354,8 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
      */
-    public runUpgradeEffect(upgrade: UpgradeStatic): void {
-        upgrade.effect?.(upgrade.level, upgrade, this as CurrencyStatic);
+    public runUpgradeEffect(upgrade: Upgrade): void {
+        upgrade.effect?.(upgrade.level, upgrade, this as Currency);
     }
 
     /**
@@ -366,7 +366,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     public runItemEffect(item: Item, tier: DecimalSource = Decimal.dOne): void {
         tier = new Decimal(tier);
 
-        item.effect?.(item.amount, tier, item, this as CurrencyStatic);
+        item.effect?.(item.amount, tier, item, this as Currency);
     }
 
     /**
@@ -383,7 +383,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
     public calculateUpgrade(
-        id: TUpgradeIds | UpgradeStatic,
+        id: TUpgradeIds | Upgrade,
         target: DecimalSource = Infinity,
         mode?: MeanMode,
         iterations?: number,
@@ -423,7 +423,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * const nextCost = currency.getNextCost("healthBoost");
      */
     public getNextCost(
-        id: TUpgradeIds | UpgradeStatic,
+        id: TUpgradeIds | Upgrade,
         target: DecimalSource = 1,
         mode?: MeanMode,
         iterations?: number,
@@ -461,7 +461,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
     public getNextCostMax(
-        id: TUpgradeIds | UpgradeStatic,
+        id: TUpgradeIds | Upgrade,
         target: DecimalSource = 1,
         mode?: MeanMode,
         iterations?: number,
@@ -497,7 +497,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * currency.buyUpgrade("healthBoost", 10);
      */
     public buyUpgrade(
-        id: TUpgradeIds | UpgradeStatic,
+        id: TUpgradeIds | Upgrade,
         target?: DecimalSource,
         mode?: MeanMode,
         iterations?: number,
@@ -573,7 +573,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
                 item,
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 () => this.pointerGetItem(item.id)!,
-                () => this as CurrencyStatic,
+                () => this as Currency,
             );
 
             // Run the effect instantly if needed
@@ -661,7 +661,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     }
 }
 
-export { Currency, CurrencyStatic };
+export { CurrencyData, Currency };
 
 // Test
 
