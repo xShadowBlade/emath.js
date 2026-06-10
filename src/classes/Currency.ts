@@ -32,19 +32,19 @@ class Currency {
 
     /** An array that represents upgrades and their levels. */
     @Type(() => UpgradeData)
-    public upgrades: Record<string, UpgradeData>;
+    public upgrades: UpgradeData[];
 
     /** An array that represents items and their effects. */
     @Type(() => ItemData)
-    public items: Record<string, ItemData>;
+    public items: ItemData[];
 
     /**
      * Constructs a new currency object with an initial value of 0.
      */
     constructor() {
         this.value = Decimal.dZero;
-        this.upgrades = {};
-        this.items = {};
+        this.upgrades = [];
+        this.items = [];
     }
 }
 
@@ -59,18 +59,22 @@ class Currency {
  * console.log(currency.value); // Decimal.dOne
  */
 class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends string = string> {
-    /** An array that represents upgrades */
-    public readonly upgrades: Record<TUpgradeIds, UpgradeStatic>;
+    /**
+     * Stores a each of this currency's upgrades and their corresponding data.
+     */
+    public readonly upgrades: UpgradeStatic[];
 
-    /** An array that represents items and their effects. */
-    public readonly items: Record<TItemIds, Item>;
+    /**
+     * Stores a each of this currency's items and their corresponding data.
+     */
+    public readonly items: Item[];
 
     /** A function that returns the pointer of the data */
-    protected readonly pointerFn: () => Currency;
+    protected readonly dataSupplier: () => Currency;
 
     /** @returns The pointer of the data. */
-    protected get pointer(): Currency {
-        return this.pointerFn();
+    protected get data(): Currency {
+        return this.dataSupplier();
     }
 
     /** A boost object that affects the currency gain. */
@@ -88,10 +92,10 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @returns The current value of the currency.
      */
     get value(): Decimal {
-        return this.pointer.value;
+        return this.data.value;
     }
     set value(value: Decimal) {
-        this.pointer.value = value;
+        this.data.value = value;
     }
 
     /**
@@ -124,22 +128,20 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         this.defaultBoost = defaults.defaultBoost;
 
         // Assign the pointer function
-        this.pointerFn = typeof pointer === "function" ? pointer : (): Currency => pointer;
+        this.dataSupplier = typeof pointer === "function" ? pointer : (): Currency => pointer;
 
         // Set the boost object
         this.boost = new Boost(this.defaultBoost);
 
         // Set the pointer value to the default value
-        this.pointer.value = this.defaultVal;
+        this.data.value = this.defaultVal;
 
-        // @ts-expect-error - Properties are added in the next line
-        this.upgrades = {};
+        this.upgrades = [];
 
         // Add upgrades
         if (upgrades) this.addUpgrade(upgrades);
 
-        // @ts-expect-error - Properties are added in the next line
-        this.items = {};
+        this.items = [];
 
         // Add items
         if (items) this.addItem(items);
@@ -150,7 +152,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     public onLoadData(): void {
         // Call the effect function for each upgrade
-        for (const upgrade of Object.values<UpgradeStatic>(this.upgrades)) {
+        for (const upgrade of this.upgrades) {
             this.runUpgradeEffect(upgrade);
         }
     }
@@ -204,7 +206,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
 
         // Reset the items
         if (resetObj.resetItemAmounts) {
-            for (const item of Object.values<Item>(this.items)) {
+            for (const item of this.items) {
                 // Reset the amount to the default amount
                 item.amount = new Decimal(item.defaultAmount);
 
@@ -224,7 +226,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     public gain(dt: DecimalSource = 1000): Decimal {
         const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1000));
-        this.pointer.value = this.pointer.value.add(toAdd);
+        this.data.value = this.data.value.add(toAdd);
         return toAdd;
     }
 
@@ -235,7 +237,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     private pointerAddUpgrade(upgrades: UpgradeInit): UpgradeData {
         const upgradesToAdd = new UpgradeData(upgrades);
-        this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
+        this.data.upgrades.push(upgradesToAdd);
         return upgradesToAdd;
     }
 
@@ -245,7 +247,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @returns The upgrade object if found, otherwise null.
      */
     private pointerGetUpgrade(id: string): UpgradeData | null {
-        return this.pointer.upgrades[id] ?? null;
+        return this.data.upgrades.find((upgrade) => upgrade.id === id) ?? null;
     }
 
     /**
@@ -260,47 +262,9 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
     public getUpgrade<T extends TUpgradeIds>(
         id: T,
     ): IsPrimitiveString<TUpgradeIds> extends false ? UpgradeStatic : UpgradeStatic | null {
-        return this.upgrades[id] ?? null;
-    }
-
-    /**
-     * Queries upgrades based on the provided id. Returns an array of upgrades that match the id.
-     * @param id - The id of the upgrade to query.
-     * @returns An array of upgrades that match the id.
-     * @example
-     * const currency = new CurrencyStatic(undefined, [
-     *     { id: "healthBoostSmall", cost: (level) => level.mul(10) },
-     *     { id: "healthBoostLarge", cost: (level) => level.mul(20) },
-     *     { id: "damageBoostSmall", cost: (level) => level.mul(10) },
-     *     { id: "damageBoostLarge", cost: (level) => level.mul(20) },
-     * ] as const satisfies UpgradeInit[]);
-     *
-     * // Get all health upgrades
-     * const healthUpgrades = currency.queryUpgrade(/health/); // [{ id: "healthBoostSmall", ... }, { id: "healthBoostLarge", ... }]
-     *
-     * // Get all small upgrades
-     * const smallUpgrades = currency.queryUpgrade(["healthBoostSmall", "damageBoostSmall"]);
-     * // or
-     * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
-     */
-    public queryUpgrade(id: TUpgradeIds | TUpgradeIds[] | RegExp): UpgradeStatic[] {
-        const allUpgradeIds = Object.keys(this.upgrades) as TUpgradeIds[];
-
-        // If the id is a regular expression search for all upgrades that match the regex
-        if (id instanceof RegExp) {
-            const regex = id;
-            const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
-            return matchedIds.map((matchedId) => this.upgrades[matchedId]);
-        }
-
-        // Convert to array if not already
-        if (typeof id === "string") {
-            id = [id];
-        }
-
-        // If the id is an array, return all upgrades that match the ids
-        const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
-        return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
+        // TODO: fix this
+        // @ts-expect-error
+        return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
     }
 
     /**
@@ -352,7 +316,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
             if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.upgrades
-            this.upgrades[upgrade.id as TUpgradeIds] = addedUpgradeStatic;
+            this.upgrades.push(addedUpgradeStatic);
 
             // Add the upgrade to the list
             addedUpgradeList.push(addedUpgradeStatic);
@@ -557,7 +521,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         }
 
         // Deduct the cost from available currency
-        this.pointer.value = this.pointer.value.sub(cost);
+        this.data.value = this.data.value.sub(cost);
 
         // Set the upgrade level
         upgrade.level = upgrade.level.add(amount);
@@ -576,7 +540,8 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      */
     private pointerAddItem(items: ItemInit): ItemData {
         const itemToAdd = new ItemData(items);
-        this.pointer.items[items.id] = itemToAdd;
+        // this.pointer.items[items.id] = itemToAdd;
+        this.data.items.push(itemToAdd);
         return itemToAdd;
     }
 
@@ -586,7 +551,8 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @returns The item object if found, otherwise null.
      */
     private pointerGetItem(id: string): ItemData | null {
-        return this.pointer.items[id] ?? null;
+        // return this.pointer.items[id] ?? null;
+        return this.data.items.find((item) => item.id === id) ?? null;
     }
 
     /**
@@ -614,7 +580,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
             if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
 
             // Add the upgrade to this.item
-            this.items[item.id as TItemIds] = addedUpgradeStatic;
+            this.items.push(addedUpgradeStatic);
         }
     }
 
@@ -624,7 +590,8 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
      * @returns The item object if found, otherwise null.
      */
     public getItem<T extends TItemIds>(id: T): IsPrimitiveString<TItemIds> extends false ? Item : Item | null {
-        return this.items[id] ?? null;
+        // @ts-expect-error - bandaid
+        return this.items.find((item) => item.id === id) ?? null;
     }
 
     /**
@@ -681,7 +648,7 @@ class CurrencyStatic<TUpgradeIds extends string = string, TItemIds extends strin
         }
 
         // Deduct the cost from available currency
-        this.pointer.value = this.pointer.value.sub(cost);
+        this.data.value = this.data.value.sub(cost);
 
         // Set the item level
         item.amount = item.amount.add(amount);

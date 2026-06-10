@@ -9,16 +9,10 @@ import type { Game } from "../Game";
 
 import { eMathMetadata } from "../../metadata";
 
-// Recursive plain to class
-import { Currency } from "../../classes/Currency";
-import { UpgradeData } from "../../classes/Upgrade";
-import { ItemData } from "../../classes/Item";
-import { Decimal } from "../../E/e";
-
 // Save validation
 import md5 from "md5";
 
-import type { UnknownObject, ClassType, ConstructableObject, Pointer } from "../../common/types";
+import type { UnknownObject, ConstructableObject, Pointer } from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -38,172 +32,13 @@ type SaveMetadata = typeof eMathMetadata & {
 };
 
 /**
- * Checks if the given object is a plain object.
- * @param obj - The object to check.
- * @returns Whether the object is a plain object.
+ * An interface for static classes that have data in the data manager.
  */
-function isPlainObject(obj: unknown): boolean {
-    return typeof obj === "object" && obj?.constructor === Object;
-}
-
-const objectHasOwnProperty = (obj: UnknownObject, key: string): boolean =>
-    Object.prototype.hasOwnProperty.call(obj, key);
-
-/**
- * Merge properties from the normal data to the loaded data. This is to ensure that new properties are added to the loaded data.
- * @deprecated use Object.assign instead
- * @param sourcePlain - The plain source object to reference if the property is missing from the target.
- * @param source - The source object to merge from.
- * @param target - The target object.
- * @returns The merged object.
- */
-function deepMerge(
-    sourcePlain: UnknownObject | null | undefined,
-    source: UnknownObject | null | undefined,
-    target: UnknownObject | null,
-): UnknownObject {
-    if (!sourcePlain || !source || !target) {
-        console.warn("eMath.js: dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
-        return target ?? {};
-    }
-
-    const out = target;
-    for (const key in sourcePlain) {
-        if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
-            // If the property is missing from the target, add it
-            out[key] = sourcePlain[key];
-        }
-        // Special case for currency.upgrades
-        if (source[key] instanceof Currency) {
-            const sourceCurrency = sourcePlain[key] as Currency;
-            const targetCurrency = target[key] as Currency;
-
-            // Backwards compatibility: In versions before 8.x.x, upgrades was of type UpgradeData[]. Now it's of type Record<string, UpgradeData>.
-            // Convert the old format to the new format
-            if (Array.isArray(targetCurrency.upgrades)) {
-                const upgrades = targetCurrency.upgrades;
-                targetCurrency.upgrades = {};
-                for (const upgrade of upgrades) {
-                    // ! warning: might not work
-                    targetCurrency.upgrades[(upgrade as UpgradeData).id] = upgrade as UpgradeData;
-                }
-            }
-
-            // Merge upgrades
-            targetCurrency.upgrades = {
-                ...sourceCurrency.upgrades,
-                ...targetCurrency.upgrades,
-            };
-            out[key] = targetCurrency;
-
-            // Merge items
-            targetCurrency.items = {
-                ...sourceCurrency.items,
-                ...targetCurrency.items,
-            };
-        } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
-            // Recursive
-            out[key] = deepMerge(
-                (sourcePlain as Record<string, UnknownObject>)[key],
-                (source as Record<string, UnknownObject>)[key],
-                (target as Record<string, UnknownObject>)[key],
-            );
-        }
-    }
-    return out;
-}
-
-// Special cases for Currency.upgrades and Currency.items
-const upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
-const itemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
-
-/**
- * Converts a plain object to a class instance.
- * @param templateClassToConvert - The template class to convert to.
- * @param plain - The plain object to convert.
- * @returns The converted class instance.
- */
-function convertTemplateClass(templateClassToConvert: ClassType, plain: UnknownObject): ClassType {
-    // Convert the object
-    const out = plainToInstance(templateClassToConvert, plain) as ClassType;
-
-    if (out instanceof Currency) {
-        // Special case for Currency.upgrades
-        for (const upgradeName in out.upgrades) {
-            const upgrade = out.upgrades[upgradeName] as UpgradeData | undefined;
-
-            if (
-                !upgrade ||
-                !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))
-            ) {
-                // Delete the upgrade if it's invalid (extraneous properties, etc.)
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete out.upgrades[upgradeName];
-                continue;
-            }
-            out.upgrades[upgradeName] = plainToInstance(UpgradeData, upgrade);
-        }
-
-        // Special case for Currency.items
-        for (const itemName in out.items) {
-            const item = out.items[itemName] as ItemData | undefined;
-
-            if (!item || !itemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
-                // Delete the item if it's invalid (extraneous properties, etc.)
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete out.items[itemName];
-                continue;
-            }
-            out.items[itemName] = plainToInstance(ItemData, item);
-        }
-    }
-    if (!out) {
-        throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
-    }
-    return out;
-}
-
-/**
- * Converts a plain object to a class instance.
- * @param normal - The normal data to reference.
- * @param plain - The plain object to convert.
- * @returns The converted class instance.
- */
-function plainToInstanceRecursive(
-    normal: UnknownObject | null | undefined,
-    plain?: UnknownObject | null | undefined,
-): UnknownObject {
-    if (!normal || !plain) {
-        throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
-    }
-    const out = plain;
-    for (const key in normal) {
-        if (plain[key] === undefined) {
-            // Should not happen
-            console.warn(`eMath.js: Missing property "${key}" in loaded data.`);
-            continue;
-        }
-
-        // If it's not an object, skip
-        if (!isPlainObject(plain[key])) continue;
-
-        // Convert the object using the normal data
-        const normalDataClass = (normal[key] as ConstructableObject).constructor;
-
-        // Check if the object is a plain object
-        if (normalDataClass === Object) {
-            // If the object doesn't match a template class, convert it recursively
-            (out as Record<string, object>)[key] = plainToInstanceRecursive(
-                (normal as Record<string, UnknownObject>)[key],
-                (plain as Record<string, UnknownObject>)[key],
-            );
-            continue;
-        }
-
-        // console.log("Normal data class: ", normalDataClass);
-        out[key] = convertTemplateClass(normalDataClass, (plain as Record<string, UnknownObject>)[key]);
-    }
-    return out;
+interface StaticClassWithData {
+    /**
+     * The name of the data entry in the data manager.
+     */
+    name: string;
 }
 
 /**
@@ -214,30 +49,10 @@ function plainToInstanceRecursive(
  */
 class DataManager {
     /**
-     * Game data in its initial state.
-     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
-     * It is set when calling {@link DataManager.init}.
-     */
-    private normalData?: UnknownObject;
-
-    /**
-     * Game data in its initial state, as a plain object.
-     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
-     * It is set when calling {@link DataManager.init}.
-     */
-    private normalDataPlain?: UnknownObject;
-
-    /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
     private data: UnknownObject = {};
-
-    /**
-     * The static game data.
-     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-     */
-    private static: UnknownObject = {};
 
     /** A reference to the game instance. */
     private readonly gameRef: Game;
@@ -298,34 +113,10 @@ class DataManager {
      * testData.value = 10; // Also sets the data
      * console.log(testData.value); // 10
      */
-    public setData<S extends string, T>(
-        key: S,
-        value: T,
-    ): {
-        value: T;
-        /** @deprecated Use the setter instead. */
-        setValue: (valueToSet: T) => void;
-    } {
-        if (typeof this.data[key] === "undefined" && this.normalData) {
-            console.warn("eMath.js: After initializing data, you should not add new properties to data.");
-        }
+    public setData<T>(key: string, value: T): () => T {
         this.data[key] = value;
-        const thisData = (): UnknownObject => this.data;
 
-        return {
-            get value(): T {
-                // console.log("Getter called", key, thisData()[key]);
-                return thisData()[key] as T;
-            },
-            set value(valueToSet: T) {
-                // console.log("Setter called", key, valueToSet);
-                thisData()[key] = valueToSet;
-            },
-            setValue(valueToSet: T): void {
-                // console.log("Setter called", key, valueToSet);
-                thisData()[key] = valueToSet;
-            },
-        };
+        return () => this.data[key] as T;
     }
 
     /**
@@ -339,52 +130,6 @@ class DataManager {
     }
 
     /**
-     * Sets the static data for the given key.
-     * This data is not affected by data loading and saving, and is mainly used internally.
-     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-     * @param key - The key to set the static data for.
-     * @param value - The value to set the static data to.
-     * @returns A getter for the static data.
-     */
-    public setStatic<T>(key: string, value: T): T {
-        console.warn(
-            "eMath.js: setStatic: Static data is basically useless and should not be used. Use variables in local scope instead.",
-        );
-
-        if (typeof this.static[key] === "undefined" && this.normalData) {
-            console.warn("eMath.js: After initializing data, you should not add new properties to staticData.");
-        }
-        this.static[key] = value;
-        return this.static[key] as T;
-    }
-
-    /**
-     * Gets the static data for the given key.
-     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
-     * @param key - The key to get the static data for.
-     * @returns The static data for the given key.
-     */
-    public getStatic(key: string): unknown {
-        console.warn(
-            "eMath.js: Static data is basically useless and should not be used. Use variables in local scope instead.",
-        );
-
-        return this.static[key];
-    }
-
-    /**
-     * Initializes / sets data that is unmodified by the player.
-     * This is used to merge the loaded data with the default data.
-     * It should be called before you load data.
-     * Note: This should only be called once, and after it is called, you should not add new properties to data.
-     * @example dataManager.init(); // Call this after setting the initial data.
-     */
-    public init(): void {
-        this.normalData = this.data;
-        this.normalDataPlain = instanceToPlain(this.data);
-    }
-
-    /**
      * Compiles the given game data to a tuple containing the compressed game data and a hash.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
@@ -394,10 +139,13 @@ class DataManager {
         this.gameRef.eventManager.dispatch("beforeCompileData");
 
         // Convert the data to a plain object that can be stringified
-        const gameDataString = instanceToPlain(data);
+        const plainGameData: UnknownObject = {};
+        for (const key in data) {
+            plainGameData[key] = instanceToPlain(data[key]);
+        }
 
         // Create a hash of the data
-        const hashedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+        const hashedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(plainGameData)}`);
 
         // Create the metadata for the save file
         const saveMetadata: SaveMetadata = {
@@ -411,7 +159,7 @@ class DataManager {
         };
 
         // Return a tuple containing the metadata and the data
-        return [saveMetadata, gameDataString];
+        return [saveMetadata, plainGameData];
     }
 
     /**
@@ -490,19 +238,21 @@ class DataManager {
      * (Reloading may help with some issues with saving data)
      */
     public resetData(reload = false): void {
-        // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
-        if (!this.normalData) {
-            throw new Error("dataManager.resetData(): You must call init() before writing to data.");
-        }
+        // // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
+        // if (!this.normalData) {
+        //     throw new Error("dataManager.resetData(): You must call init() before writing to data.");
+        // }
 
-        // Reset the data
-        this.data = this.normalData;
+        // // Reset the data
+        // this.data = this.normalData;
 
-        // Save the data
-        this.saveData();
+        // // Save the data
+        // this.saveData();
 
-        // Reload the page if specified
-        if (reload) window.location.reload();
+        // // Reload the page if specified
+        // if (reload) window.location.reload();
+
+        // TODO: implement resetData
     }
 
     /**
@@ -567,27 +317,37 @@ class DataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
-     * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    public parseData(dataToParse = this.decompileData(), mergeData = true): UnknownObject | null {
-        // If the normal data is not set, throw an error
-        if ((!this.normalData || !this.normalDataPlain) && mergeData) {
-            throw new Error("dataManager.parseData(): You must call init() before writing to data.");
-        }
-
-        // If the data is empty, return null
-        if (!dataToParse) return null;
+    public parseData(dataToParse = this.decompileData()): void {
+        // No data to parse
+        if (!dataToParse) return;
 
         // Get the loaded data from the data tuple
         const [, loadedData] = dataToParse;
 
-        // Merge the loaded data with the normal data, if specified
-        const loadedDataMerged = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
+        for (const key in loadedData) {
+            // Check in the data that the key exists and skip otherwise
+            if (typeof this.data[key] === "undefined") {
+                console.warn(
+                    `eMath.js: Loaded data has a key "${key}" that does not exist in the current game data. Skipping this key.`,
+                );
+                continue;
+            }
 
-        // Recursively convert the loaded data to class instances
-        return plainToInstanceRecursive(this.normalData, loadedDataMerged);
+            // If there is not a constructor for the current key, it is probably a primitive value, so just set it directly
+            if (
+                // TODO: currently only exists to make compiler happy, might have side effects
+                this.data[key] == null ||
+                typeof this.data[key].constructor === "undefined"
+            ) {
+                this.data[key] = loadedData[key];
+                continue;
+            }
+
+            // If there is a constructor for the current key, use class-transformer to convert the loaded data to an instance of the correct class
+            this.data[key] = plainToInstance((this.data[key] as ConstructableObject).constructor, loadedData[key]);
+        }
     }
 
     /**
@@ -604,14 +364,7 @@ class DataManager {
         // Check if the data is valid
         const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
 
-        // TODO: dataToLoad somehow plainToInstance?
-        const parsedData = this.parseData(dataToLoad);
-
-        // If the data is empty, return null
-        if (!parsedData) return null;
-
-        // Set the data
-        this.data = parsedData;
+        this.parseData(dataToLoad);
 
         // Call onLoadData on all objects
         for (const obj of this.eventsOnLoad) {
@@ -626,4 +379,4 @@ class DataManager {
 }
 
 export { DataManager };
-export type { SaveMetadata };
+export type { SaveMetadata, StaticClassWithData };
