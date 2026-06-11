@@ -10,9 +10,9 @@ import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { UpgradeData, Upgrade, calculateUpgrade } from "./Upgrade";
 import { ItemData, Item, calculateItem } from "./Item";
 
-import type { UpgradeInit } from "./Upgrade";
 import type { ItemInit } from "./Item";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
+import type { DataManager, StaticClassWithData } from "../game";
 
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -31,12 +31,12 @@ class CurrencyData {
     public value: Decimal;
 
     /** An array that represents upgrades and their levels. */
-    @Type(() => UpgradeData)
-    public upgrades: UpgradeData[];
+    // @Type(() => UpgradeData)
+    // public upgrades: UpgradeData[];
 
     /** An array that represents items and their effects. */
-    @Type(() => ItemData)
-    public items: ItemData[];
+    // @Type(() => ItemData)
+    // public items: ItemData[];
 
     /**
      * Constructs a new currency object with an initial value of 0.
@@ -51,26 +51,29 @@ class CurrencyData {
 /**
  * Represents the backend for a currency in the game.
  * All the functions are here instead of the `currency` class.
- * @template TUpgradeIds - An string union that represents the names of the upgrades.
- * @template TItemIds - An string union that represents the names of the items.
  * @example
- * const currency = new CurrencyStatic();
+ * const currency = new Currency();
  * currency.gain();
  * console.log(currency.value); // Decimal.dOne
  */
-class Currency<TUpgradeIds extends string = string, TItemIds extends string = string> {
-    /**
-     * Stores a each of this currency's upgrades and their corresponding data.
-     */
-    public readonly upgrades: Upgrade[];
+class Currency implements StaticClassWithData {
+    public readonly id: string;
 
     /**
-     * Stores a each of this currency's items and their corresponding data.
+     * Stores a list of each of this currency's upgrades and their corresponding data.
      */
-    public readonly items: Item[];
+    public readonly upgrades: Upgrade[] = [];
+
+    /**
+     * Stores a list of each of this currency's items and their corresponding data.
+     */
+    public readonly items: Item[] = [];
 
     /** A function that returns the pointer of the data */
-    protected readonly dataSupplier: () => CurrencyData;
+    protected dataSupplier: () => CurrencyData = () => {
+        console.warn("emath.js: Currency dataSupplier has not set. Returning placeholder data.");
+        return new CurrencyData();
+    };
 
     /** @returns The pointer of the data. */
     protected get data(): CurrencyData {
@@ -78,13 +81,10 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
     }
 
     /** A boost object that affects the currency gain. */
-    public readonly boost: Boost;
+    public readonly boost: Boost = new Boost(Decimal.dOne);
 
     /** The default value of the currency. */
-    public readonly defaultVal: Decimal;
-
-    /** The default boost of the currency. */
-    public readonly defaultBoost: Decimal;
+    public readonly defaultValue: Decimal = Decimal.dZero;
 
     /**
      * The current value of the currency.
@@ -98,53 +98,57 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
         this.data.value = value;
     }
 
-    /**
-     * Constructs a new currency
-     * @param pointer - A function or reference that returns the pointer of the data / frontend.
-     * @param upgrades - An array of upgrade objects.
-     * @param items - An array of item objects.
-     * @param defaults - The default value and boost of the currency.
-     * @example
-     * const currency = new CurrencyStatic(undefined, [
-     *     {
-     *         id: "upgId1",
-     *         cost: (level: Decimal): Decimal => level.mul(10),
-     *     },
-     *     {
-     *         id: "upgId2",
-     *         cost: (level: Decimal): Decimal => level.mul(20),
-     *     }
-     * ] as const satisfies UpgradeInit[]);
-     * // CurrencyStatic<["upgId1", "upgId2"]>
-     */
-    constructor(
-        pointer: Pointer<CurrencyData> = new CurrencyData(),
-        upgrades?: UpgradeInit<TUpgradeIds>[],
-        items?: ItemInit<TItemIds>[],
-        defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
-    ) {
-        // Assign the default values
-        this.defaultVal = defaults.defaultVal;
-        this.defaultBoost = defaults.defaultBoost;
+    private dataManagerReference: DataManager | null = null;
 
-        // Assign the pointer function
-        this.dataSupplier = typeof pointer === "function" ? pointer : (): CurrencyData => pointer;
+    // /**
+    //  * Constructs a new currency
+    //  * @param pointer - A function or reference that returns the pointer of the data / frontend.
+    //  * @param upgrades - An array of upgrade objects.
+    //  * @param items - An array of item objects.
+    //  * @param defaults - The default value and boost of the currency.
+    //  * @example
+    //  * const currency = new CurrencyStatic(undefined, [
+    //  *     {
+    //  *         id: "upgId1",
+    //  *         cost: (level: Decimal): Decimal => level.mul(10),
+    //  *     },
+    //  *     {
+    //  *         id: "upgId2",
+    //  *         cost: (level: Decimal): Decimal => level.mul(20),
+    //  *     }
+    //  * ] as const satisfies UpgradeInit[]);
+    //  * // CurrencyStatic<["upgId1", "upgId2"]>
+    //  */
+    // constructor(
+    //     pointer: Pointer<CurrencyData> = new CurrencyData(),
+    //     upgrades?: UpgradeInit<TUpgradeIds>[],
+    //     items?: ItemInit<TItemIds>[],
+    //     defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
+    // ) {
+    //     // Assign the default values
+    //     this.defaultValue = defaults.defaultVal;
 
-        // Set the boost object
-        this.boost = new Boost(this.defaultBoost);
+    //     // Assign the pointer function
+    //     this.dataSupplier = typeof pointer === "function" ? pointer : (): CurrencyData => pointer;
 
-        // Set the pointer value to the default value
-        this.data.value = this.defaultVal;
+    //     // Set the boost object
+    //     this.boost = new Boost(this.defaultBoost);
 
-        this.upgrades = [];
+    //     // Set the pointer value to the default value
+    //     this.data.value = this.defaultValue;
 
-        // Add upgrades
-        if (upgrades) this.addUpgrade(upgrades);
+    //     this.upgrades = [];
 
-        this.items = [];
+    //     // Add upgrades
+    //     if (upgrades) this.addUpgrade(upgrades);
 
-        // Add items
-        if (items) this.addItem(items);
+    //     this.items = [];
+
+    //     // Add items
+    //     if (items) this.addItem(items);
+    // }
+    constructor(id: string) {
+        this.id = id;
     }
 
     /**
@@ -155,6 +159,13 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
         for (const upgrade of this.upgrades) {
             this.runUpgradeEffect(upgrade);
         }
+    }
+
+    public onAddToDataManager(dataManager: DataManager): void {
+        this.dataManagerReference = dataManager;
+
+        this.dataSupplier = dataManager.setData(this.id, new CurrencyData());
+        // TODO: add upgrades to dataManager
     }
 
     /**
@@ -191,7 +202,7 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
         }
 
         // Reset the value
-        if (resetObj.resetCurrency) this.value = this.defaultVal;
+        if (resetObj.resetCurrency) this.value = this.defaultValue;
 
         // Reset the upgrades
         if (resetObj.resetUpgradeLevels) {
@@ -228,26 +239,6 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
         const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1000));
         this.data.value = this.data.value.add(toAdd);
         return toAdd;
-    }
-
-    /**
-     * Adds an upgrade to the data class.
-     * @param upgrades - Upgrade to add
-     * @returns The upgrade object.
-     */
-    private pointerAddUpgrade(upgrades: UpgradeInit): UpgradeData {
-        const upgradesToAdd = new UpgradeData(upgrades);
-        this.data.upgrades.push(upgradesToAdd);
-        return upgradesToAdd;
-    }
-
-    /**
-     * Retrieves an upgrade object from the data pointer based on the provided id.
-     * @param id - The id of the upgrade to retrieve.
-     * @returns The upgrade object if found, otherwise null.
-     */
-    private pointerGetUpgrade(id: string): UpgradeData | null {
-        return this.data.upgrades.find((upgrade) => upgrade.id === id) ?? null;
     }
 
     /**
@@ -301,16 +292,9 @@ class Currency<TUpgradeIds extends string = string, TItemIds extends string = st
         const addedUpgradeList: Upgrade[] = [];
 
         for (const upgrade of upgrades) {
-            // Add the upgrade to the data
-            this.pointerAddUpgrade(upgrade);
 
             // Create the upgrade object
-            const addedUpgradeStatic = new Upgrade(
-                upgrade,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                () => this.pointerGetUpgrade(upgrade.id)!,
-                () => this as Currency,
-            );
+            const addedUpgradeStatic = new Upgrade(upgrade.id);
 
             // Run the effect instantly if needed
             if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);

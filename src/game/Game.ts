@@ -9,14 +9,13 @@ import type { AttributeStatic } from "../classes/Attribute";
 import { Attribute } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
-import { DataManager } from "./managers/DataManager";
+import { DataManager, StaticClassWithData } from "./managers/DataManager";
 import { GameCurrency } from "./GameCurrency";
 import { GameAttribute } from "./GameAttribute";
 import { GameReset } from "./GameReset";
 
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
-import type { UpgradeInit } from "../classes/Upgrade";
 import type { ItemInit } from "../classes/Item";
 import type { SkillInit, SkillTreeStatic } from "../classes/SkillTree";
 import { SkillTreeData } from "../classes/SkillTree";
@@ -170,131 +169,106 @@ class Game {
         this.eventManager.changeFps(fps);
     }
 
+    public addData<T extends StaticClassWithData>(dataToAdd: T): T {
+        this.dataManager.addCustomData(dataToAdd);
+        return dataToAdd;
+    }
+
     // TODO: Implement clearTickers
     // public clearTickers(): void {
 
     // }
 
-    /**
-     * Adds a new currency section to the game. {@link GameCurrency} is the class.
-     * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-     * @template TCurrencyName - The name
-     * @template U - The upgrade names for the currency. See {@link Currency} for more information.
-     * @template I - The item names for the currency. See {@link Currency} for more information.
-     * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
-     * @param upgrades - The upgrades for the currency.
-     * @param items - The items for the currency.
-     * @returns A new instance of the gameCurrency class.
-     * @example
-     * const currency = game.addCurrency("currency");
-     * currency.static.gain();
-     * console.log(currency.value); // Decimal.dOne
-     */
-    public addCurrency<
-        TCurrencyName extends string = string,
-        TUpgradeIds extends string = string,
-        TItemIds extends string = string,
-    >(
-        name: TCurrencyName,
-        upgrades?: UpgradeInit<TUpgradeIds>[],
-        items?: ItemInit<TItemIds>[],
-    ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
-        // Create the class instance
-        const classInstance = new GameCurrency(
-            [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
-                typeof Currency
-            >,
-            this,
-            name,
-        );
+    // /**
+    //  * Adds a new currency section to the game. {@link GameCurrency} is the class.
+    //  * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+    //  * @template TCurrencyName - The name
+    //  * @template U - The upgrade names for the currency. See {@link Currency} for more information.
+    //  * @template I - The item names for the currency. See {@link Currency} for more information.
+    //  * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+    //  * @param upgrades - The upgrades for the currency.
+    //  * @param items - The items for the currency.
+    //  * @returns A new instance of the gameCurrency class.
+    //  * @example
+    //  * const currency = game.addCurrency("currency");
+    //  * currency.static.gain();
+    //  * console.log(currency.value); // Decimal.dOne
+    //  */
+    // public addCurrency<
+    //     TCurrencyName extends string = string,
+    //     TUpgradeIds extends string = string,
+    //     TItemIds extends string = string,
+    // >(
+    //     name: TCurrencyName,
+    //     upgrades?: UpgradeInit<TUpgradeIds>[],
+    //     items?: ItemInit<TItemIds>[],
+    // ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
+    //     // Create the class instance
+    //     const classInstance = new GameCurrency(
+    //         [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
+    //             typeof Currency
+    //         >,
+    //         this,
+    //         name,
+    //     );
 
-        return classInstance;
-    }
+    //     return classInstance;
+    // }
 
-    /**
-     * Adds a new attribute to the game. {@link GameAttribute} is the class.
-     * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
-     * @param name - The name of the attribute.
-     * @param useBoost - Indicates whether to use boost for the attribute.
-     * @param initial - The initial value of the attribute.
-     * @returns The newly created attribute.
-     * @example
-     * const myAttribute = game.addAttribute("myAttribute");
-     */
-    public addAttribute<TEnableBoost extends boolean = true>(
-        name: string,
-        useBoost: TEnableBoost = true as TEnableBoost,
-        initial: DecimalSource = 0,
-    ): GameAttribute<TEnableBoost> {
-        const classInstance = new GameAttribute(
-            [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
-                typeof AttributeStatic
-            >,
-            this,
-        );
+    // /**
+    //  * Adds a new attribute to the game. {@link GameAttribute} is the class.
+    //  * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
+    //  * @param name - The name of the attribute.
+    //  * @param useBoost - Indicates whether to use boost for the attribute.
+    //  * @param initial - The initial value of the attribute.
+    //  * @returns The newly created attribute.
+    //  * @example
+    //  * const myAttribute = game.addAttribute("myAttribute");
+    //  */
+    // public addAttribute<TEnableBoost extends boolean = true>(
+    //     name: string,
+    //     useBoost: TEnableBoost = true as TEnableBoost,
+    //     initial: DecimalSource = 0,
+    // ): GameAttribute<TEnableBoost> {
+    //     const classInstance = new GameAttribute(
+    //         [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
+    //             typeof AttributeStatic
+    //         >,
+    //         this,
+    //     );
 
-        return classInstance;
-    }
+    //     return classInstance;
+    // }
 
-    /**
-     * Creates a new game reset object with the specified currencies to reset.
-     * @deprecated Use the class {@link GameReset} instead.
-     * This method is a wrapper for the class and does not provide any additional functionality.
-     * @param args - The arguments for the game reset. See {@link GameReset} for more information.
-     * @returns The newly created game reset object.
-     */
-    // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
-    public addReset(...args: ConstructorParameters<typeof GameReset>): GameReset {
-        console.warn("eMath.js: Game.addReset is deprecated. Use the GameReset class instead.");
+    // /**
+    //  * Adds a new skill tree to the game.
+    //  * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+    //  * @template TSkillNames - The names of the skills in the skill tree.
+    //  * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+    //  * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+    //  * @returns A new instance of the game skill tree class.
+    //  */
+    // public addSkillTree<TSkillNames extends string = string>(
+    //     name: string,
+    //     skills: SkillInit<TSkillNames>[],
+    // ): GameSkillTree<TSkillNames> {
+    //     // Set the data and static objects
+    //     this.dataManager.setData(name, {
+    //         skillTree: new SkillTreeData(),
+    //     });
 
-        const reset = new GameReset(...args);
-        return reset;
-    }
+    //     // Create the class instance
+    //     const classInstance = new GameSkillTree<TSkillNames>(
+    //         [
+    //             skills,
+    //             (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
+    //         ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
+    //         this,
+    //         name,
+    //     );
 
-    /**
-     * Creates a new game reset object from an object.
-     * @deprecated Use the static method {@link GameReset.fromObject} instead.
-     * This method is a wrapper for the static method and does not provide any additional functionality.
-     * @param object - The object to create the game reset from.
-     * @returns The newly created game reset object.
-     */
-    public addResetFromObject(object: Parameters<typeof GameReset.fromObject>[0]): GameReset {
-        console.warn(
-            "eMath.js: Game.addResetFromObject is deprecated. Use the GameReset.fromObject static method instead.",
-        );
-
-        return GameReset.fromObject(object);
-    }
-
-    /**
-     * Adds a new skill tree to the game.
-     * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
-     * @template TSkillNames - The names of the skills in the skill tree.
-     * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
-     * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
-     * @returns A new instance of the game skill tree class.
-     */
-    public addSkillTree<TSkillNames extends string = string>(
-        name: string,
-        skills: SkillInit<TSkillNames>[],
-    ): GameSkillTree<TSkillNames> {
-        // Set the data and static objects
-        this.dataManager.setData(name, {
-            skillTree: new SkillTreeData(),
-        });
-
-        // Create the class instance
-        const classInstance = new GameSkillTree<TSkillNames>(
-            [
-                skills,
-                (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
-            ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
-            this,
-            name,
-        );
-
-        return classInstance;
-    }
+    //     return classInstance;
+    // }
 }
 
 // test
