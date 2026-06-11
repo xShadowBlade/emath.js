@@ -38,7 +38,11 @@ interface StaticClassWithData {
     /**
      * The name of the data entry in the data manager.
      */
-    name: string;
+    // id: string;
+
+    onLoadData?(): void;
+
+    onAddToDataManager?(dataManager: DataManager): void;
 }
 
 /**
@@ -127,6 +131,11 @@ class DataManager {
      */
     public getData(key: string): unknown {
         return this.data[key];
+    }
+
+    // TODO: jsdoc
+    public addCustomData(data: StaticClassWithData) {
+        data.onAddToDataManager?.(this);
     }
 
     /**

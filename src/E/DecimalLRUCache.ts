@@ -31,3 +31,5 @@ class DecimalLRUCache<V> extends LRUCache<DecimalKey, V> {
         super.set(DecimalLRUCache.decimalToKey(key), value);
     }
 }
+
+export { DecimalLRUCache };

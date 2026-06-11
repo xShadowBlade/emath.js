@@ -2,14 +2,15 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import { Type, Expose } from "class-transformer";
+import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import type { Pointer } from "../common/types";
-import { LRUCache } from "../E/LRUCache";
+import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
 import { calculateSum } from "./numericalAnalysis/sum";
 import type { Currency } from "./Currency";
+import { StaticClassWithData } from "../game";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -151,40 +152,79 @@ function calculateUpgrade(
 }
 
 /**
- * Interface for initializing an upgrade.
- * @template TId - The ID of the upgrade. Defaults to `string`.
+ * Infers the id type of an upgrade array.
+ * @deprecated Infer using the array type directly instead.
+ * @template TUpgradeArray - The upgrade array.
+ * @example
+ * const testUpg = [
+ *     {
+ *         id: "upgId1",
+ *         cost: (level: Decimal): Decimal => level.mul(10),
+ *     },
+ *     {
+ *         id: "upgId2",
+ *         cost: (level: Decimal): Decimal => level.mul(20),
+ *     },
+ * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
+ *
+ * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-interface UpgradeInit<TId extends string = string> {
+// type UpgradeInitArrayType<TUpgradeArray extends Readonly<UpgradeInit>[]> = TUpgradeArray[number]["id"] extends never
+//     ? string
+//     : TUpgradeArray[number]["id"];
+
+/**
+ * Interface for an upgrade that is cached.
+ * We need a cache to reduce redundant calculations.
+ *
+ * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
+ * and the cost of the upgrade at those levels.
+ *
+ * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
+ */
+interface UpgradeCached extends Pick<Upgrade, "id" | "el"> {
+    el: boolean;
+
+    endLower: UpgradeCachedLevel;
+    end: UpgradeCachedLevel;
+    endUpper: UpgradeCachedLevel;
+}
+
+interface UpgradeCachedLevel {
+    level: Decimal;
+    cost: Decimal;
+}
+
+/**
+ * Represents the frontend for an upgrade.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+class UpgradeData {
+    @Type(() => Decimal) public level;
+
+    /**
+     * Constructs a new upgrade object with an initial level of 1 (or the provided level)
+     * @param init - The upgrade object to initialize.
+     */
+    constructor() {
+        this.level = Decimal.dOne;
+    }
+}
+
+/**
+ * Represents the backend for an upgrade.
+ */
+class Upgrade {
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: TId;
-
-    /** The name of the upgrade. Defaults to the ID. */
-    name?: string;
+    public readonly id: string;
 
     /**
-     * The description of the upgrade.
-     * Can be a string or a function that returns a string.
-     * @param level - The current level of the upgrade.
-     * @param upgradeContext - The upgrade object that the description is being run on.
-     * @param currencyContext - The currency static class that the upgrade is being run on.
-     * @example
-     * // A dynamic description that returns a string
-     * const description = (level) => `This upgrade is at level ${level}`;
-     *
-     * // ... create upgrade here (see currencyStatic.addUpgrade)
-     *
-     * const upgrade = currencyStatic.getUpgrade("upgradeID");
-     *
-     * // Buy 1 level of the upgrade
-     * currencyStatic.buyUpgrade("upgradeID", 1);
-     *
-     * // Getter property
-     * console.log(upgrade.description); // "This upgrade is at level 1"
+     * The name of the upgrade. Defaults to the ID.
      */
-    description?: ((level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => string) | string;
+    public name = "";
 
     /**
      * The cost of upgrades at a certain level.
@@ -196,7 +236,7 @@ interface UpgradeInit<TId extends string = string> {
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
      */
-    cost: (level: Decimal) => Decimal;
+    public cost: (level: Decimal) => Decimal = () => Decimal.dOne;
 
     /**
      * The cost of buying a bulk of upgrades at a certain level. (inverse of cost function).
@@ -211,13 +251,13 @@ interface UpgradeInit<TId extends string = string> {
      * // -target^2 + target + level^2 + level
      * (level, target) => target.pow(2).mul(-1).add(target).add(level.pow(2)).add(level)
      */
-    costBulk?: (currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal];
+    public costBulk?: (currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal];
 
     /**
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
      */
-    maxLevel?: Decimal;
+    public maxLevel: Decimal = Decimal.dInf;
 
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
@@ -225,14 +265,15 @@ interface UpgradeInit<TId extends string = string> {
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    effect?: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void;
+    public effect: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void = () => {
+        // Empty effect placeholder
+    };
 
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
-     * (but you should use a getter function instead)
      */
-    el?: boolean | (() => boolean);
+    public el: boolean | (() => boolean) = false;
 
     /**
      * A function to provide the bounds of what level could be given `currency`.
@@ -265,196 +306,59 @@ interface UpgradeInit<TId extends string = string> {
      * // So the bounds grows faster (y=x^0.75) than the inverse (y=x^0.5), but still slower than the currency (y=x).
      */
     // TODO: Implement upgrade bounds in calculateUpgrade
-    bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
+    public bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
 
-    // Below are types that are automatically added
-    /**
-     * The default level of the upgrade.
-     * Automatically set to `1` if not provided.
-     */
-    level?: Decimal;
-}
-
-/**
- * Infers the id type of an upgrade array.
- * @deprecated Infer using the array type directly instead.
- * @template TUpgradeArray - The upgrade array.
- * @example
- * const testUpg = [
- *     {
- *         id: "upgId1",
- *         cost: (level: Decimal): Decimal => level.mul(10),
- *     },
- *     {
- *         id: "upgId2",
- *         cost: (level: Decimal): Decimal => level.mul(20),
- *     },
- * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
- *
- * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
- */
-type UpgradeInitArrayType<TUpgradeArray extends Readonly<UpgradeInit>[]> = TUpgradeArray[number]["id"] extends never
-    ? string
-    : TUpgradeArray[number]["id"];
-
-/**
- * Represents a decimal number in the form of a string. `sign/mag/layer`
- * @deprecated Use an object index instead.
- */
-type DecimalJSONString = `${number}/${number}/${number}`;
-
-/**
- * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "el/${level: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedELName = `el/${DecimalJSONString}`;
-
-/**
- * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
-
-/**
- * Converts a decimal number to a JSON string.
- * @deprecated Use an object index instead.
- * @param n - The decimal number to convert.
- * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
- */
-function decimalToJSONString(n: DecimalSource): DecimalJSONString {
-    n = new Decimal(n);
-    return `${n.sign}/${n.mag}/${n.layer}`;
-}
-
-/**
- * Converts an upgrade to a cache name (sum)
- * @deprecated Use an object index instead.
- * @param start - The starting level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade.
- * @returns The name of the upgrade (Sum) that is cached. See {@link UpgradeCachedSumName}
- */
-function upgradeToCacheNameSum(start: DecimalSource, end: DecimalSource): UpgradeCachedSumName {
-    // return `${upgrade.id}/sum/${start.toString()}/${end.toString()}/${cost.toString()}` as UpgradeCachedSumName;
-    return `sum/${decimalToJSONString(start)}/${decimalToJSONString(end)}}` as UpgradeCachedSumName;
-}
-
-/**
- * Converts an upgrade to a cache name (EL)
- * @deprecated Use an object index instead.
- * @param level - The level of the upgrade.
- * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
- */
-function upgradeToCacheNameEL(level: DecimalSource): UpgradeCachedELName {
-    // return `${upgrade.id}/el/${level.toString()}` as UpgradeCachedELName;
-    return `el/${decimalToJSONString(level)}`;
-}
-
-/**
- * Interface for an upgrade that is cached.
- * We need a cache to reduce redundant calculations.
- *
- * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
- * and the cost of the upgrade at those levels.
- *
- * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
- */
-interface UpgradeCached extends Pick<UpgradeInit, "id" | "el"> {
-    el: boolean;
-
-    endLower: UpgradeCachedLevel;
-    end: UpgradeCachedLevel;
-    endUpper: UpgradeCachedLevel;
-}
-
-interface UpgradeCachedLevel {
-    level: Decimal;
-    cost: Decimal;
-}
-
-/**
- * Interface for upgrade data.
- */
-type IUpgradeData = Pick<UpgradeInit, "id" | "level">;
-
-/**
- * Represents the frontend for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-class UpgradeData implements IUpgradeData {
-    @Expose() public id: string;
-    @Type(() => Decimal) public level;
-
-    /**
-     * Constructs a new upgrade object with an initial level of 1 (or the provided level)
-     * @param init - The upgrade object to initialize.
-     */
-    constructor(init: IUpgradeData) {
-        // class-transformer bug
-        init = init ?? {};
-
-        this.id = init.id;
-        this.level = init.level ? new Decimal(init.level) : Decimal.dOne;
-    }
-}
-
-/**
- * Interface for an upgrade.
- */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
-    maxLevel?: Decimal;
-    name: string;
-    readonly description: string;
-    defaultLevel: Decimal;
-}
-
-/**
- * Represents the backend for an upgrade.
- */
-class Upgrade implements IUpgradeStatic {
-    public id;
-    name;
-    cost;
-    costBulk;
-    maxLevel;
-    effect;
-    el?;
-    defaultLevel;
-    bounds?;
+    public defaultLevel: Decimal = Decimal.dOne;
 
     /** The default size of the cache. Should be one less than a power of 2. */
-    public static cacheSize = 15;
+    public static readonly defaultCacheSize = 15;
 
     /**
      * The cache to store the values of certain upgrade levels.
      * @deprecated Unfinished
      */
-    public cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
+    public cache = new DecimalLRUCache<UpgradeCached>(Upgrade.defaultCacheSize);
 
     /** @returns The data of the upgrade. */
-    private dataPointerFn: () => UpgradeData;
+    private dataSupplier: () => UpgradeData = () => {
+        console.warn("emath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
+        return new UpgradeData();
+    };
 
     /** @returns The data of the upgrade. */
     public get data(): UpgradeData {
-        return this.dataPointerFn();
+        return this.dataSupplier();
     }
 
-    protected currencyPointerFn: () => Currency;
-
+    protected currencySupplier: () => Currency = () => {
+        throw "emath.js: Upgrade currencySupplier has not set";
+    };
     /** @returns The currency static class that the upgrade is being run on. */
     public get currency(): Currency {
-        return this.currencyPointerFn();
+        return this.currencySupplier();
     }
 
-    /** The description of the upgrade as a function. */
-    private descriptionFn: Exclude<UpgradeInit["description"], string | undefined>;
-
+    /**
+     * The description of the upgrade as a function that returns a string.
+     * @param upgradeContext - The upgrade object that the description is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (upgrade) => `This upgrade is at level ${upgrade.level}`;
+     *
+     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     *
+     * const upgrade = currencyStatic.getUpgrade("upgradeID");
+     *
+     * // Buy 1 level of the upgrade
+     * currencyStatic.buyUpgrade("upgradeID", 1);
+     *
+     * // Getter property
+     * console.log(upgrade.description); // "This upgrade is at level 1"
+     */
+    private descriptionSupplier: (upgradeContext: Upgrade, currencyContext: Currency) => string = () => "";
     public get description(): string {
-        return this.descriptionFn(this.level, this, this.currencyPointerFn());
-    }
-    public set description(value: Exclude<UpgradeInit["description"], undefined>) {
-        this.descriptionFn = typeof value === "function" ? value : (): string => value;
+        return this.descriptionSupplier(this, this.currencySupplier());
     }
 
     /**
@@ -462,51 +366,97 @@ class Upgrade implements IUpgradeStatic {
      * @returns The current level of the upgrade.
      */
     get level(): Decimal {
-        // many fallbacks for some reason
-        return (
-            (this ?? { data: { level: Decimal.dOne } }).data ?? {
-                level: Decimal.dOne,
-            }
-        ).level;
+        return this.data.level;
     }
     set level(n: DecimalSource) {
         this.data.level = new Decimal(n);
     }
 
-    /**
-     * Constructs a new static upgrade object.
-     * @param init - The upgrade object to initialize.
-     * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param currencyPointer - A function or reference that returns the pointer of the {@link Currency} class.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
-     */
-    constructor(
-        init: UpgradeInit,
-        dataPointer: Pointer<UpgradeData>,
-        currencyPointer: Pointer<Currency>,
-        cacheSize?: number,
-    ) {
-        const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-        this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
-        this.currencyPointerFn =
-            typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
+    // /**
+    //  * Constructs a new static upgrade object.
+    //  * @param init - The upgrade object to initialize.
+    //  * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
+    //  * @param currencyPointer - A function or reference that returns the pointer of the {@link Currency} class.
+    //  * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
+    //  */
+    // constructor(
+    //     init: UpgradeInit,
+    //     dataPointer: Pointer<UpgradeData>,
+    //     currencyPointer: Pointer<Currency>,
+    //     cacheSize?: number,
+    // ) {
+    //     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
+    //     this.dataSupplier = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
+    //     this.currencySupplier =
+    //         typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
 
-        this.cache = new LRUCache(cacheSize ?? Upgrade.cacheSize);
-        this.id = init.id;
-        this.name = init.name ?? init.id;
-        this.descriptionFn = init.description
-            ? typeof init.description === "function"
-                ? init.description
-                : (): string => init.description as string
-            : (): string => "";
-        this.cost = init.cost;
-        this.costBulk = init.costBulk;
-        this.maxLevel = init.maxLevel;
-        this.effect = init.effect;
-        this.el = init.el;
-        this.defaultLevel = init.level ?? Decimal.dOne;
-        this.bounds = init.bounds;
+    //     this.cache = new LRUCache(cacheSize ?? Upgrade.cacheSize);
+    //     this.id = init.id;
+    //     this.name = init.name ?? init.id;
+    //     this.descriptionSupplier = init.description
+    //         ? typeof init.description === "function"
+    //             ? init.description
+    //             : (): string => init.description as string
+    //         : (): string => "";
+    //     this.cost = init.cost;
+    //     this.costBulk = init.costBulk;
+    //     this.maxLevel = init.maxLevel;
+    //     this.effect = init.effect;
+    //     this.el = init.el;
+    //     this.defaultLevel = init.level ?? Decimal.dOne;
+    //     this.bounds = init.bounds;
+    // }
+
+    constructor(id: string) {
+        this.id = id;
     }
+
+    // Chainable setters
+    // TODO: jsdoc
+    public withName(name: typeof this.name): Upgrade {
+        this.name = name;
+        return this;
+    }
+    public withCost(cost: typeof this.cost): Upgrade {
+        this.cost = cost;
+        return this;
+    }
+    public withMaxLevel(maxLevel: typeof this.maxLevel): Upgrade {
+        this.maxLevel = maxLevel;
+        return this;
+    }
+    public withEffect(effect: typeof this.effect): Upgrade {
+        this.effect = effect;
+        return this;
+    }
+    public withEl(el: typeof this.el): Upgrade {
+        this.el = el;
+        return this;
+    }
+    public withBounds(bounds: typeof this.bounds): Upgrade {
+        this.bounds = bounds;
+        return this;
+    }
+    public withDefaultLevel(defaultLevel: typeof this.defaultLevel): Upgrade {
+        this.defaultLevel = defaultLevel;
+        return this;
+    }
+    public withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): Upgrade {
+        this.descriptionSupplier = descriptionSupplier;
+        return this;
+    }
+
+    // Internal setters
+    public withDataSupplier(dataSupplier: typeof this.dataSupplier): Upgrade {
+        this.dataSupplier = dataSupplier;
+        return this;
+    }
+    public withCurrencySupplier(currencySupplier: typeof this.currencySupplier): Upgrade {
+        this.currencySupplier = currencySupplier;
+        return this;
+    }
+
+    // TODO: setter for cache
 
     // /**
     //  * Gets the cached data of the upgrade.
@@ -558,7 +508,6 @@ class Upgrade implements IUpgradeStatic {
     // }
 }
 
-export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
+// export type { UpgradeInitArrayType };
 export { UpgradeData, Upgrade, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
-export { decimalToJSONString, upgradeToCacheNameEL };
+export type { UpgradeCached };
