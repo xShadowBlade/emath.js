@@ -164,6 +164,8 @@ class Boost {
                 break;
             }
         }
+
+        this.sortBoosts();
     }
 
     /**
@@ -178,11 +180,13 @@ class Boost {
      *     value: (input) => input.mul(2),
      * });
      */
-    public addBoost(boostToAdd: BoostObject) {
+    public addBoost(boostToAdd: BoostObject): void {
         this.boostArray.push(boostToAdd);
+        this.sortBoosts();
     }
-    public addBoosts(boostToAdd: BoostObject[]) {
+    public addBoosts(boostToAdd: BoostObject[]): void {
         this.boostArray.push(...boostToAdd);
+        this.sortBoosts();
     }
 
     /**
