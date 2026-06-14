@@ -5,8 +5,7 @@
  * that when pressed gives you coins that you can use
  * on an upgrade that gives you more coins on gain.
  */
-import { Decimal } from "emath.js";
-import type { UpgradeInit, ItemInit } from "emath.js";
+import { Decimal, Currency, Upgrade, BoostObject } from "emath.js";
 import { Game } from "emath.js/game";
 
 // Initialize game
@@ -19,54 +18,62 @@ const coinGame = new Game({
         framerate: 30,
     },
 });
-Object.assign(window, { coinGame }); // For debugging
+
+// For debugging
+Object.assign(window, { coinGame });
 
 // Initialize coins and static coins
-const coinsUpgrades = [
-    {
-        id: "upg1Coins", // Unique ID
-        name: "Basic Coin Boost",
-        cost: (level): Decimal => level.mul(2).pow(1.1), // Cost of 10 times the level
+// const coinsUpgrades = [
+//     {
+//         id: "upg1Coins", // Unique ID
+//         name: "Basic Coin Boost",
+//         cost: (level): Decimal => level.mul(2).pow(1.1), // Cost of 10 times the level
 
-        // The bounds of the upgrade. The first value is the lower bound and the second value is the upper bound.
-        // Must satisfy: 0 < lowerBound < inverseCost(currency) < upperBound < currency
-        bounds: (currency) => [
+//         // The bounds of the upgrade. The first value is the lower bound and the second value is the upper bound.
+//         // Must satisfy: 0 < lowerBound < inverseCost(currency) < upperBound < currency
+//         bounds: (currency) => [
+//             currency.pow(Decimal.reciprocal(1.2)).div(2),
+//             currency.pow(Decimal.reciprocal(1.1)).mul(2),
+//         ],
+
+//         effect: function (level, _, currency): void {
+//             currency.boost.setBoost(
+//                 "boostUpg1Coins",
+//                 "Basic Coin Boost",
+//                 "Basic Coin Boost",
+//                 (n) => n.plus(level.mul(11)).sub(1),
+//                 1,
+//             );
+//         },
+//         // maxLevel: new Decimal(1000), // Max level of 1000
+//     },
+// ] as const satisfies UpgradeInit[];
+
+// const coins = coinGame.addCurrency("coins", coinsUpgrades, items);
+
+const coins = new Currency("coins");
+coins.addUpgrade(
+    new Upgrade("upg1Coins")
+        .withName("Basic Coin Boost")
+        .withCost((level) => level.mul(2).pow(1.1))
+        .withBounds((currency) => [
             currency.pow(Decimal.reciprocal(1.2)).div(2),
             currency.pow(Decimal.reciprocal(1.1)).mul(2),
-        ],
-
-        effect: function (level, _, currency): void {
-            currency.boost.setBoost(
-                "boostUpg1Coins",
-                "Basic Coin Boost",
-                "Basic Coin Boost",
-                (n) => n.plus(level.mul(11)).sub(1),
-                1,
+        ])
+        .withEffectOnAdd(function (upgrade, currency): void {
+            currency.boost.addBoost(
+                new BoostObject("boostUpg1Coins")
+                    .withName("Basic Coin Boost")
+                    .withValue((n) => n.plus(upgrade.level.mul(11)).sub(1))
+                    .withOrder(1),
             );
-        },
-        // maxLevel: new Decimal(1000), // Max level of 1000
-    },
-] as const satisfies UpgradeInit[];
+        }),
+);
 
-const items = [
-    {
-        id: "item1",
-        name: "Gold Coin",
-        description: "A coin made of gold. (Cosmetic)",
-        effect: (amount, _, currency): void => {
-            // currency.gain(amount);
-        },
-        cost: (): Decimal => new Decimal(1000),
-    },
-] as const satisfies ItemInit[];
-
-const coins = coinGame.addCurrency("coins", coinsUpgrades, items);
+coinGame.addData(coins);
 
 // Debug
 Object.assign(window, { coins });
-
-// Add item
-coins.addItem(items);
 
 // Initialize / Load game
 coinGame.init();
@@ -81,9 +88,7 @@ function updateDisplay(): void {
     coinsDisplay!.innerHTML = `
         Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.boost.calculate())})
         <br>
-        Upgrade 1 Level: ${coins.getUpgrade("upg1Coins").level.format()}
-        <br>
-        Item 1: ${coins.getItem("item1").amount.format()}
+        Upgrade 1 Level: ${coins.getUpgrade("upg1Coins")!.level.format()}
     `;
 }
 updateDisplay();
@@ -96,8 +101,7 @@ function gainCoins(): void {
     // Triggers when button is pressed
     coins.gain(); // Gain
     updateDisplay(); // Updates the display for the amount of coins
-    updateDisplayUpgrade();
-    updateDisplayItem();
+    updateDisplayUpgrade();;
 }
 gainButton!.addEventListener("click", gainCoins);
 
@@ -120,26 +124,6 @@ function buyUpgrades(): void {
 }
 buyUpgradesButton!.addEventListener("click", buyUpgrades);
 
-const buyItem1Button = document.getElementById("buyItem1Button");
-
-/**
- * Function to update the item display
- */
-function updateDisplayItem(): void {
-    const calculatedItem = coins.calculateItem("item1");
-
-    buyItem1Button!.innerHTML = `Buy ${calculatedItem[0].format()} Gold Coins for ${calculatedItem[1].format()} Coins`;
-}
-updateDisplayItem();
-
-/** Function to buy items */
-function buyItems(): void {
-    coins.buyItem("item1");
-    updateDisplayItem();
-    updateDisplay();
-}
-buyItem1Button?.addEventListener("click", buyItems);
-
 // Hotkeys
 coinGame.keyManager.addKey([
     {
@@ -151,12 +135,7 @@ coinGame.keyManager.addKey([
         id: "Buy Upgrades",
         key: "b",
         onDownContinuous: buyUpgrades,
-    },
-    {
-        id: "Buy Items",
-        key: "n",
-        onDownContinuous: buyItems,
-    },
+    }
 ]);
 
 // Saving and Loading
