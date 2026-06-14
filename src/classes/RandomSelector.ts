@@ -2,12 +2,11 @@
  * @file Declares the RandomSelector class
  */
 import type { Pointer } from "../common/types";
+import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
 import { LRUCache } from "../E/LRUCache";
 import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
-import type { DecimalJSONString } from "./Upgrade";
-import { decimalToJSONString } from "./Upgrade";
 
 /**
  * An entry when used to create a {@link RandomSelector}.
@@ -246,9 +245,9 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
          * - Index 2: 0.5 * (1 - (1 / 4)) = 0.375
          * - Index 3: 0.375 * (1 - (1 / 8)) = 0.328125
          */
-        let cumulativePreviousChanceMultiplier = new Decimal(1);
+        let cumulativePreviousChanceMultiplier = Decimal.dOne;
 
-        let sumOfOutputWeights = new Decimal(0);
+        let sumOfOutputWeights = Decimal.dZero;
 
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
@@ -319,9 +318,9 @@ class RandomSelector<TPossibleNames extends string = string> {
      * RandomSelector.getRandomBooleanWithChance(new Decimal(3.5)); // 1 in 3.5 chance (~28.57%)
      */
     public static getRandomBooleanWithChance(chance: DecimalSource): boolean {
-        chance = new Decimal(chance);
+        chance = Decimal.fromValue_noAlloc(chance);
 
-        if (chance.lte(1)) {
+        if (chance.lte(Decimal.dOne)) {
             return true;
         }
 
@@ -349,7 +348,7 @@ class RandomSelector<TPossibleNames extends string = string> {
         entries: WeightOptionEntry<T, RandomArraySortedState.unsorted, WeightOptionNormalizationState.unnormalized>[],
         totalWeight?: Decimal,
     ): WeightOptionEntry<T, RandomArraySortedState.unsorted, WeightOptionNormalizationState.normalized>[] {
-        totalWeight = totalWeight ?? entries.reduce((sum, entry) => sum.add(entry.weight), new Decimal(0));
+        totalWeight = totalWeight ?? entries.reduce((sum, entry) => sum.add(entry.weight), Decimal.dZero);
 
         return entries.map((entry) => ({
             ...entry,
@@ -378,8 +377,8 @@ class RandomSelector<TPossibleNames extends string = string> {
         // debug
         // console.log("Sorted entries:", entries);
 
-        randomValue = new Decimal(randomValue);
-        let cumulativeWeight = new Decimal(0);
+        randomValue = Decimal.fromValue_noAlloc(randomValue);
+        let cumulativeWeight = Decimal.dZero;
 
         // For each entry, add its weight to the cumulative weight and check if the random value is less than or equal to it
         for (const entry of entries) {
@@ -438,13 +437,13 @@ class RandomSelector<TPossibleNames extends string = string> {
                   numberOfSelections: Decimal.dZero,
               }));
 
-        let remainingTrials = new Decimal(numberOfSelections);
-        let remainingProbMass = new Decimal(1);
+        let remainingTrials = Decimal.fromValue_noAlloc(numberOfSelections);
+        let remainingProbMass = Decimal.dOne;
 
         // For each entry, do a binomial sampling based on the remaining trials and the adjusted probability mass
         for (let i = 0; i < k - 1; i++) {
             // If there are no remaining trials or probability mass, stop sampling
-            if (remainingTrials.lte(0) || remainingProbMass.lte(0)) break;
+            if (remainingTrials.lte(Decimal.dZero) || remainingProbMass.lte(Decimal.dZero)) break;
 
             // Calculate the adjusted probability for the current entry
             // and sample from the binomial distribution
@@ -454,7 +453,7 @@ class RandomSelector<TPossibleNames extends string = string> {
             // If onlyReturnNonZeroSelections is true, only add the entry if it has a non-zero number of selections
             if (!onlyReturnNonZeroSelections) {
                 out[i].numberOfSelections = x;
-            } else if (x.gt(0)) {
+            } else if (x.gt(Decimal.dZero)) {
                 out.push({
                     name: entries[i].name,
                     numberOfSelections: x,
@@ -469,7 +468,7 @@ class RandomSelector<TPossibleNames extends string = string> {
         // Assign remaining trials to the last bucket
         if (!onlyReturnNonZeroSelections) {
             out[k - 1].numberOfSelections = remainingTrials.max(Decimal.dZero);
-        } else if (remainingTrials.gt(0)) {
+        } else if (remainingTrials.gt(Decimal.dZero)) {
             out.push({
                 name: entries[k - 1].name,
                 numberOfSelections: remainingTrials.max(Decimal.dZero),
@@ -509,8 +508,7 @@ class RandomSelector<TPossibleNames extends string = string> {
      * A cache used to store normalized weights for different luck values.
      */
     private readonly weightCache:
-        | LRUCache<
-              DecimalJSONString,
+        | DecimalLRUCache<
               WeightOptionEntry<
                   TPossibleNames,
                   RandomArraySortedState.sortedLowestToHighestWeight,
@@ -534,10 +532,7 @@ class RandomSelector<TPossibleNames extends string = string> {
         this.getEntries = typeof options === "function" ? options : (): typeof options => options;
 
         if (cacheMaxSize > 0) {
-            this.weightCache = new LRUCache<
-                DecimalJSONString,
-                WeightOptionEntry<TPossibleNames, RandomArraySortedState.sortedLowestToHighestWeight>[]
-            >(cacheMaxSize);
+            this.weightCache = new DecimalLRUCache(cacheMaxSize);
         } else {
             this.weightCache = undefined;
         }
@@ -549,7 +544,7 @@ class RandomSelector<TPossibleNames extends string = string> {
      * @returns A randomly selected option from the entries, or undefined if no options are available.
      */
     public select(luck: DecimalSource = Decimal.dOne): TPossibleNames | undefined {
-        luck = new Decimal(luck);
+        luck = Decimal.fromValue_noAlloc(luck);
 
         return this.selectionMethod.select(this.entries, luck);
     }
@@ -569,7 +564,7 @@ class RandomSelector<TPossibleNames extends string = string> {
               WeightOptionNormalizationState.normalized
           >[]
         | undefined {
-        luck = new Decimal(luck);
+        luck = Decimal.fromValue_noAlloc(luck);
 
         // If there is no cache, just calculate and return the weights
         if (!this.weightCache) {
@@ -627,8 +622,7 @@ class RandomSelector<TPossibleNames extends string = string> {
         | undefined {
         if (!this.weightCache) return undefined;
 
-        const luckKey = decimalToJSONString(new Decimal(luck));
-        return this.weightCache.get(luckKey);
+        return this.weightCache.get(luck);
     }
 
     /**
@@ -640,20 +634,18 @@ class RandomSelector<TPossibleNames extends string = string> {
     public updateCache(luck: DecimalSource = Decimal.dOne): ReturnType<typeof this.getNormalizedWeights> {
         if (!this.weightCache) return undefined;
 
-        luck = new Decimal(luck);
-
-        const luckKey = decimalToJSONString(luck);
+        luck = Decimal.fromValue_noAlloc(luck);
 
         // If the key already exists, do nothing
         // TODO: Add way to change existing cache entries without first clearing the entire cache
-        if (this.weightCache.has(luckKey)) {
+        if (this.weightCache.has(luck)) {
             return undefined;
         }
 
         const normalizedWeights = this.selectionMethod.getNormalizedWeights(this.entries, luck);
 
         if (normalizedWeights) {
-            this.weightCache.set(luckKey, normalizedWeights);
+            this.weightCache.set(luck, normalizedWeights);
         }
 
         return normalizedWeights;
