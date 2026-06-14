@@ -2,14 +2,14 @@
  * @file Declares the auto buyer preset.
  */
 import type { Game } from "../game/Game";
-import type { UpgradeStatic } from "../classes/Upgrade";
-import type { CurrencyStatic } from "../classes/Currency";
+import type { Upgrade } from "../classes/Upgrade";
+import type { Currency } from "../classes/Currency";
 import type { Decimal } from "../E/e";
 interface AutoBuyerConfig {
     /**
      * Which upgrades to auto buy.
      */
-    upgradesToAutoBuy: UpgradeStatic[];
+    upgradesToAutoBuy: Upgrade[];
     /**
      * Whether the auto buyer is unlocked / active.
      * @default true
@@ -19,7 +19,7 @@ interface AutoBuyerConfig {
      * How much currency is available for the auto buyer to use.
      * @example (currency) => currency.value.mul(0.1)
      */
-    maxCurrencyAllocated: (currencyContext: CurrencyStatic) => Decimal;
+    maxCurrencyAllocated: (currencyContext: Currency) => Decimal;
     /**
      * How many milliseconds to wait before buying an upgrade.
      * - See {@link TimerEvent.delay} for more information.

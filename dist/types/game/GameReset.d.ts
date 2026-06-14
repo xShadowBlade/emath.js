@@ -1,9 +1,9 @@
 /**
  * @file This file contains all the reset layer related classes.
  */
-import type { GameCurrency } from "./GameCurrency";
+import type { Currency } from "../classes/Currency";
 type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
-    currenciesToReset: GameCurrency | GameCurrency[];
+    currenciesToReset: Currency | Currency[];
     extender?: GameReset | GameReset[];
 };
 /**
@@ -19,7 +19,7 @@ declare class GameReset {
     /** The unique identifier for the game reset to prevent infinite loops. */
     private readonly id;
     /** The currencies to reset. */
-    readonly currenciesToReset: GameCurrency[];
+    readonly currenciesToReset: Currency[];
     /** The extender for the game reset. */
     readonly extender: GameReset[];
     /**
@@ -38,7 +38,7 @@ declare class GameReset {
      * @param onReset Function to run during {@link reset}.
      * @param condition A condition that must be met for the reset to occur.
      */
-    constructor(currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset | GameReset[], onReset?: typeof GameReset.prototype.onReset, condition?: typeof GameReset.prototype.condition);
+    constructor(currenciesToReset: Currency | Currency[], extender?: GameReset | GameReset[], onReset?: typeof GameReset.prototype.onReset, condition?: typeof GameReset.prototype.condition);
     /**
      * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
      * @param force Whether to force the reset. Defaults to `false`.

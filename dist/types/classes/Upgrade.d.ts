@@ -3,10 +3,10 @@
  */
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../common/types";
-import { LRUCache } from "../E/lru-cache";
-import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
-import type { CurrencyStatic } from "./Currency";
+import { DecimalLRUCache } from "../E/DecimalLRUCache";
+import { type MeanMode } from "./numericalAnalysis/numericalAnalysis";
+import { Currency } from "./Currency";
+import { DataManager, StaticClassWithData } from "../game";
 /**
  * Calculates the cost and how many upgrades you can buy
  * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
@@ -22,40 +22,75 @@ import type { CurrencyStatic } from "./Currency";
  * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
  * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
  */
-declare function calculateUpgrade(value: DecimalSource, upgrade: UpgradeStatic, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
+declare function calculateUpgrade(value: DecimalSource, upgrade: Upgrade, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
 /**
- * Interface for initializing an upgrade.
- * @template TId - The ID of the upgrade. Defaults to `string`.
+ * Infers the id type of an upgrade array.
+ * @deprecated Infer using the array type directly instead.
+ * @template TUpgradeArray - The upgrade array.
+ * @example
+ * const testUpg = [
+ *     {
+ *         id: "upgId1",
+ *         cost: (level: Decimal): Decimal => level.mul(10),
+ *     },
+ *     {
+ *         id: "upgId2",
+ *         cost: (level: Decimal): Decimal => level.mul(20),
+ *     },
+ * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
+ *
+ * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
  */
-interface UpgradeInit<TId extends string = string> {
+/**
+ * Interface for an upgrade that is cached.
+ * We need a cache to reduce redundant calculations.
+ *
+ * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
+ * and the cost of the upgrade at those levels.
+ *
+ * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
+ */
+interface UpgradeCached extends Pick<Upgrade, "id" | "el"> {
+    el: boolean;
+    endLower: UpgradeCachedLevel;
+    end: UpgradeCachedLevel;
+    endUpper: UpgradeCachedLevel;
+}
+interface UpgradeCachedLevel {
+    level: Decimal;
+    cost: Decimal;
+}
+/**
+ * Represents the frontend for an upgrade.
+ * @template N - The ID of the upgrade. See {@link UpgradeInit}
+ */
+declare class UpgradeData {
+    static readonly defaultUpgradeData: Readonly<UpgradeData>;
+    level: Decimal;
+    /**
+     * Constructs a new upgrade object with an initial level of 1.
+     */
+    constructor();
+}
+/**
+ * Represents the backend for an upgrade.
+ */
+declare class Upgrade implements StaticClassWithData {
+    /**
+     * A helper function to generate a costBulk function for upgrades with a non-scaling cost (cost is independent of the level).
+     * @param cost - The cost of the upgrade.
+     * @returns A costBulk function that can be used in the upgrade object.
+     */
+    static getCostBulkForNonScalingUpgrade(cost: DecimalSource): typeof Upgrade.prototype.costBulk;
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
      */
-    readonly id: TId;
-    /** The name of the upgrade. Defaults to the ID. */
-    name?: string;
+    readonly id: string;
     /**
-     * The description of the upgrade.
-     * Can be a string or a function that returns a string.
-     * @param level - The current level of the upgrade.
-     * @param upgradeContext - The upgrade object that the description is being run on.
-     * @param currencyContext - The currency static class that the upgrade is being run on.
-     * @example
-     * // A dynamic description that returns a string
-     * const description = (level) => `This upgrade is at level ${level}`;
-     *
-     * // ... create upgrade here (see currencyStatic.addUpgrade)
-     *
-     * const upgrade = currencyStatic.getUpgrade("upgradeID");
-     *
-     * // Buy 1 level of the upgrade
-     * currencyStatic.buyUpgrade("upgradeID", 1);
-     *
-     * // Getter property
-     * console.log(upgrade.description); // "This upgrade is at level 1"
+     * The name of the upgrade. Defaults to the ID.
      */
-    description?: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => string) | string;
+    name: string;
     /**
      * The cost of upgrades at a certain level.
      * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
@@ -85,20 +120,26 @@ interface UpgradeInit<TId extends string = string> {
      * The maximum level of the upgrade.
      * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
      */
-    maxLevel?: Decimal;
+    maxLevel: Decimal;
     /**
      * The effect of the upgrade. This runs when the upgrade is bought, and instantly if `runEffectInstantly` is true.
      * @param level - The current level of the upgrade.
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    effect?: (level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void;
+    effect: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void;
+    /**
+     * The effect that runs when the upgrade is added to the data manager.
+     * This runs only once when the upgrade is added to the data manager.
+     * @param upgradeContext - The upgrade object that the effect is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
+     */
+    effectOnAdd: (upgradeContext: Upgrade, currencyContext: Currency) => void;
     /**
      * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
-     * (but you should use a getter function instead)
      */
-    el?: boolean | (() => boolean);
+    el: boolean | (() => boolean);
     /**
      * A function to provide the bounds of what level could be given `currency`.
      * By default, the lower bound is 0 and the upper bound is `currency`.
@@ -130,154 +171,99 @@ interface UpgradeInit<TId extends string = string> {
      * // So the bounds grows faster (y=x^0.75) than the inverse (y=x^0.5), but still slower than the currency (y=x).
      */
     bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
-    /**
-     * The default level of the upgrade.
-     * Automatically set to `1` if not provided.
-     */
-    level?: Decimal;
-}
-/**
- * Infers the id type of an upgrade array.
- * @deprecated Infer using the array type directly instead.
- * @template TUpgradeArray - The upgrade array.
- * @example
- * const testUpg = [
- *     {
- *         id: "upgId1",
- *         cost: (level: Decimal): Decimal => level.mul(10),
- *     },
- *     {
- *         id: "upgId2",
- *         cost: (level: Decimal): Decimal => level.mul(20),
- *     },
- * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
- *
- * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
- */
-type UpgradeInitArrayType<TUpgradeArray extends Readonly<UpgradeInit>[]> = TUpgradeArray[number]["id"] extends never ? string : TUpgradeArray[number]["id"];
-/**
- * Represents a decimal number in the form of a string. `sign/mag/layer`
- * @deprecated Use an object index instead.
- */
-type DecimalJSONString = `${number}/${number}/${number}`;
-/**
- * Represents the name of an upgrade (EL) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "el/${level: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedELName = `el/${DecimalJSONString}`;
-/**
- * Represents the name of an upgrade (Sum) that is cached (for map keys fast lookup instead of looping through all upgrades).
- * In the form of: "sum/${start: {@link DecimalJSONString}}/${end: {@link DecimalJSONString}}"
- * @deprecated Use an object index instead.
- */
-type UpgradeCachedSumName = `sum/${DecimalJSONString}/${DecimalJSONString}`;
-/**
- * Converts a decimal number to a JSON string.
- * @deprecated Use an object index instead.
- * @param n - The decimal number to convert.
- * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
- */
-declare function decimalToJSONString(n: DecimalSource): DecimalJSONString;
-/**
- * Converts an upgrade to a cache name (EL)
- * @deprecated Use an object index instead.
- * @param level - The level of the upgrade.
- * @returns The name of the upgrade (EL) that is cached. See {@link UpgradeCachedELName}
- */
-declare function upgradeToCacheNameEL(level: DecimalSource): UpgradeCachedELName;
-/**
- * Interface for an upgrade that is cached.
- * We need a cache to reduce redundant calculations.
- *
- * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
- * and the cost of the upgrade at those levels.
- *
- * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
- */
-interface UpgradeCached extends Pick<UpgradeInit, "id" | "el"> {
-    el: boolean;
-    endLower: UpgradeCachedLevel;
-    end: UpgradeCachedLevel;
-    endUpper: UpgradeCachedLevel;
-}
-interface UpgradeCachedLevel {
-    level: Decimal;
-    cost: Decimal;
-}
-/**
- * Interface for upgrade data.
- */
-type IUpgradeData = Pick<UpgradeInit, "id" | "level">;
-/**
- * Represents the frontend for an upgrade.
- * @template N - The ID of the upgrade. See {@link UpgradeInit}
- */
-declare class UpgradeData implements IUpgradeData {
-    id: string;
-    level: Decimal;
-    /**
-     * Constructs a new upgrade object with an initial level of 1 (or the provided level)
-     * @param init - The upgrade object to initialize.
-     */
-    constructor(init: IUpgradeData);
-}
-/**
- * Interface for an upgrade.
- */
-interface IUpgradeStatic extends Omit<UpgradeInit, "level"> {
-    maxLevel?: Decimal;
-    name: string;
-    readonly description: string;
     defaultLevel: Decimal;
-}
-/**
- * Represents the backend for an upgrade.
- */
-declare class UpgradeStatic implements IUpgradeStatic {
-    id: string;
-    name: string;
-    cost: (level: Decimal) => Decimal;
-    costBulk: ((currencyValue: Decimal, level: Decimal, target: Decimal) => [amount: Decimal, cost: Decimal]) | undefined;
-    maxLevel: Decimal | undefined;
-    effect: ((level: Decimal, upgradeContext: UpgradeStatic, currencyContext: CurrencyStatic) => void) | undefined;
-    el?: boolean | (() => boolean) | undefined;
-    defaultLevel: Decimal;
-    bounds?: ((currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal]) | undefined;
     /** The default size of the cache. Should be one less than a power of 2. */
-    static cacheSize: number;
+    static readonly defaultCacheSize = 15;
     /**
      * The cache to store the values of certain upgrade levels.
      * @deprecated Unfinished
      */
-    cache: LRUCache<UpgradeCachedELName | UpgradeCachedSumName, UpgradeCached>;
+    cache: DecimalLRUCache<UpgradeCached>;
     /** @returns The data of the upgrade. */
-    private dataPointerFn;
+    private dataSupplier;
     /** @returns The data of the upgrade. */
     get data(): UpgradeData;
-    protected currencyPointerFn: () => CurrencyStatic;
+    protected currencySupplier: () => Currency;
     /** @returns The currency static class that the upgrade is being run on. */
-    get currency(): CurrencyStatic;
-    /** The description of the upgrade as a function. */
-    private descriptionFn;
+    get currency(): Currency;
+    /**
+     * The description of the upgrade as a function that returns a string.
+     * @param upgradeContext - The upgrade object that the description is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @example
+     * // A dynamic description that returns a string
+     * const description = (upgrade) => `This upgrade is at level ${upgrade.level}`;
+     *
+     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     *
+     * const upgrade = currencyStatic.getUpgrade("upgradeID");
+     *
+     * // Buy 1 level of the upgrade
+     * currencyStatic.buyUpgrade("upgradeID", 1);
+     *
+     * // Getter property
+     * console.log(upgrade.description); // "This upgrade is at level 1"
+     */
+    private descriptionSupplier;
     get description(): string;
-    set description(value: Exclude<UpgradeInit["description"], undefined>);
     /**
      * The current level of the upgrade.
      * @returns The current level of the upgrade.
      */
     get level(): Decimal;
     set level(n: DecimalSource);
+    constructor(id: string);
+    onAddToDataManager(dataManager: DataManager, prefix?: string): void;
+    withName(name: typeof this.name): this;
+    withCost(cost: typeof this.cost): this;
+    withCostBulk(costBulk: typeof this.costBulk): this;
+    withMaxLevel(maxLevel: typeof this.maxLevel): this;
+    withEffect(effect: typeof this.effect): this;
+    withEffectOnAdd(effectOnAdd: typeof this.effectOnAdd): this;
+    withEl(el: typeof this.el): this;
+    withBounds(bounds: typeof this.bounds): this;
+    withDefaultLevel(defaultLevel: typeof this.defaultLevel): this;
+    withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): this;
     /**
-     * Constructs a new static upgrade object.
-     * @param init - The upgrade object to initialize.
-     * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-     * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
-     * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
+     * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
+     * @param cost - The cost of the upgrade.
+     * @returns The upgrade object with the cost and costBulk functions set. The costBulk function is generated using {@link getCostBulkForNonScalingUpgrade}.
      */
-    constructor(init: UpgradeInit, dataPointer: Pointer<UpgradeData>, currencyPointer: Pointer<CurrencyStatic>, cacheSize?: number);
+    asNonScalingUpgrade(cost: DecimalSource): this;
+    withCurrencySupplier(currencySupplier: typeof this.currencySupplier): this;
 }
-export type { IUpgradeStatic, IUpgradeData, UpgradeInit, UpgradeInitArrayType };
-export { UpgradeData, UpgradeStatic, calculateUpgrade };
-export type { DecimalJSONString, UpgradeCachedELName, UpgradeCachedSumName, UpgradeCached };
-export { decimalToJSONString, upgradeToCacheNameEL };
+/**
+ * The requirements for a skill tree node. Can be a {@link SkillNode} or an object with a skill and a level that is required.
+ */
+interface SkillRequirement {
+    /**
+     * The skill node that is required.
+     */
+    skill: SkillNode;
+    /**
+     * The level that is required for the skill node.
+     * If not specified, the skill node must be at least level 1.
+     */
+    level: DecimalSource;
+}
+/**
+ * Represents an upgrade in the skill tree.
+ * Each upgrade has its own id, name, description, cost, required skills, maximum level, and effect.
+ */
+declare class SkillNode extends Upgrade {
+    static fromUpgrade(upgrade: Upgrade): SkillNode;
+    /**
+     * The skill nodes that are required to unlock this skill node.
+     * See {@link SkillRequirement} for more information.
+     * - Can also be a function that takes the skill tree context and returns the required skills.
+     * - Can also be a function that takes the contexts and returns a boolean indicating if the skill is unlocked (`true` is unlocked, `false` is not unlocked).
+     */
+    requirements?: (SkillNode | SkillRequirement)[] | ((currencyContext: Currency, skillNodeContext: SkillNode) => (SkillNode | SkillRequirement)[]) | ((currencyContext: Currency, skillNodeContext: SkillNode) => boolean);
+    withRequirements(requirements: typeof this.requirements): this;
+    /**
+     * @returns If this skill is unlocked.
+     */
+    isUnlocked(): boolean;
+}
+export { UpgradeData, Upgrade, SkillNode, calculateUpgrade };
+export type { UpgradeCached, SkillRequirement };

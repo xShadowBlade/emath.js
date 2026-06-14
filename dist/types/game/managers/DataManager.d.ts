@@ -5,7 +5,7 @@
 import "reflect-metadata";
 import type { Game } from "../Game";
 import { eMathMetadata } from "../../metadata";
-import type { UnknownObject, Pointer } from "../../common/types";
+import type { UnknownObject } from "../../common/types";
 /**
  * Interface for the metadata of a save file.
  */
@@ -23,6 +23,23 @@ type SaveMetadata = typeof eMathMetadata & {
     };
 };
 /**
+ * An interface for static classes that have data in the data manager.
+ */
+interface StaticClassWithData {
+    /**
+     * The name of the data entry in the data manager.
+     */
+    /**
+     * Runs when {@link DataManager.loadData} is called and the data is loaded.
+     */
+    onLoadData?(): void;
+    /**
+     * Runs when the class is added to the data manager using {@link DataManager.addCustomData}.
+     * @param dataManager - A reference to the dataManager that was run on.
+     */
+    onAddToDataManager?(dataManager: DataManager): void;
+}
+/**
  * A class that manages game data, including saving, loading, and exporting data.
  *
  * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
@@ -30,27 +47,10 @@ type SaveMetadata = typeof eMathMetadata & {
  */
 declare class DataManager {
     /**
-     * Game data in its initial state.
-     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
-     * It is set when calling {@link DataManager.init}.
-     */
-    private normalData?;
-    /**
-     * Game data in its initial state, as a plain object.
-     * This is used to merge the loaded data with the default data, when calling {@link DataManager.parseData}.
-     * It is set when calling {@link DataManager.init}.
-     */
-    private normalDataPlain?;
-    /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
-    private data;
-    /**
-     * The static game data.
-     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-     */
-    private static;
+    private readonly data;
     /** A reference to the game instance. */
     private readonly gameRef;
     /** The local storage object. */
@@ -66,7 +66,7 @@ declare class DataManager {
      * @param gameRef - A function that returns the game instance.
      * @param localStorage - The local storage object. Defaults to `window.localStorage`.
      */
-    constructor(gameRef: Pointer<Game>, localStorage?: Storage);
+    constructor(gameRef: Game, localStorage?: Storage);
     /**
      * Adds an event to call when the game data is loaded.
      * @param event - The event to call when the game data is loaded.
@@ -88,11 +88,8 @@ declare class DataManager {
      * testData.value = 10; // Also sets the data
      * console.log(testData.value); // 10
      */
-    setData<S extends string, T>(key: S, value: T): {
-        value: T;
-        /** @deprecated Use the setter instead. */
-        setValue: (valueToSet: T) => void;
-    };
+    setData<T>(key: string, value: T): () => T;
+    useData<T>(key: string, value: T): [dataSupplier: () => T, dataSetter: ((newValue: T) => void) | ((callback: (previousValue: T) => T) => void)];
     /**
      * Gets the data for the given key.
      * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
@@ -100,42 +97,19 @@ declare class DataManager {
      * @returns The data for the given key.
      */
     getData(key: string): unknown;
-    /**
-     * Sets the static data for the given key.
-     * This data is not affected by data loading and saving, and is mainly used internally.
-     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-     * @param key - The key to set the static data for.
-     * @param value - The value to set the static data to.
-     * @returns A getter for the static data.
-     */
-    setStatic<T>(key: string, value: T): T;
-    /**
-     * Gets the static data for the given key.
-     * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
-     * @param key - The key to get the static data for.
-     * @returns The static data for the given key.
-     */
-    getStatic(key: string): unknown;
-    /**
-     * Initializes / sets data that is unmodified by the player.
-     * This is used to merge the loaded data with the default data.
-     * It should be called before you load data.
-     * Note: This should only be called once, and after it is called, you should not add new properties to data.
-     * @example dataManager.init(); // Call this after setting the initial data.
-     */
-    init(): void;
+    addCustomData(data: StaticClassWithData): void;
     /**
      * Compiles the given game data to a tuple containing the compressed game data and a hash.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    compileDataRaw(data?: UnknownObject): [SaveMetadata, object];
+    compileDataRaw(data?: Record<string, unknown>): [SaveMetadata, object];
     /**
      * Compresses the given game data to a base64-encoded using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
      * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    compileData(data?: UnknownObject): string;
+    compileData(data?: Record<string, unknown>): string;
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
@@ -168,11 +142,9 @@ declare class DataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
-     * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
      * @returns The loaded data.
      */
-    parseData(dataToParse?: [SaveMetadata, UnknownObject] | null, mergeData?: boolean): UnknownObject | null;
+    parseData(dataToParse?: [SaveMetadata, UnknownObject] | null): void;
     /**
      * Loads game data and processes it.
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
@@ -181,4 +153,4 @@ declare class DataManager {
     loadData(dataToLoad?: [SaveMetadata, UnknownObject] | null | string): null | boolean;
 }
 export { DataManager };
-export type { SaveMetadata };
+export type { SaveMetadata, StaticClassWithData };

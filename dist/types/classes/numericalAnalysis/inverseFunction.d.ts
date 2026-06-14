@@ -3,7 +3,7 @@
  */
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
-import type { MeanMode } from "./numericalAnalysis";
+import { MeanMode } from "./numericalAnalysis";
 /**
  * Represents the options for the {@link inverseFunctionApprox} function.
  */
@@ -19,7 +19,7 @@ interface InverseFunctionOptions {
     /**
      * The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
      */
-    tolerance: DecimalSource;
+    tolerance: number;
     /**
      * The lower bound to start the search from. Defaults to `1`.
      */
@@ -76,12 +76,15 @@ declare function calculateInverseFunction(f: (x: Decimal) => Decimal, n: Decimal
  * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
  * @param upperBound - The upper bound to start the search from. Defaults to `n`.
  * @param round - Whether to round the bound and search only through integers. Defaults to `false`.
+ * TODO: doc
+ * @param useNewtonIterations - boolean or derivative
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: DecimalSource, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean): InverseFunctionApproxResult;
+declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean, useNewtonIterations?: boolean, fPrime?: (x: Decimal) => Decimal): InverseFunctionApproxResult;
+declare function inverseFunctionApproxUsingNewtonRaphson(f: (x: Decimal) => Decimal, n: DecimalSource, fPrime?: (x: Decimal) => Decimal, initialGuess?: DecimalSource, iterations?: number, tolerance?: number): Decimal;
 export type { InverseFunctionOptions, InverseFunctionApproxResult };
-export { calculateInverseFunction, inverseFunctionApprox };
+export { calculateInverseFunction, inverseFunctionApprox, inverseFunctionApproxUsingNewtonRaphson };

@@ -12,7 +12,7 @@ var __decorateClass = (decorators, target, key, kind) => {
 // src/E/e.ts
 import { Exclude, Expose } from "class-transformer";
 
-// src/E/lru-cache.ts
+// src/E/LRUCache.ts
 var LRUCache = class {
   /**
    * Constructs a new instance of the LRUCache class.

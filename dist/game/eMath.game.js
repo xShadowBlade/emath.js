@@ -768,22 +768,19 @@ __export(game_exports, {
   EventManager: () => EventManager,
   EventTypes: () => EventTypes,
   Game: () => Game,
-  GameAttribute: () => GameAttribute,
-  GameCurrency: () => GameCurrency,
   GameReset: () => GameReset,
-  GameSkillTree: () => GameSkillTree,
   KeyManager: () => KeyManager,
   gameDefaultConfig: () => gameDefaultConfig,
   keys: () => keys,
   parseObject: () => parseObject
 });
 module.exports = __toCommonJS(game_exports);
-var import_reflect_metadata7 = require("reflect-metadata");
+var import_reflect_metadata2 = require("reflect-metadata");
 
 // src/E/e.ts
 var import_class_transformer = require("class-transformer");
 
-// src/E/lru-cache.ts
+// src/E/LRUCache.ts
 var LRUCache = class {
   /**
    * Constructs a new instance of the LRUCache class.
@@ -6106,1068 +6103,6 @@ Decimal = __decorateClass([
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
-// src/classes/Currency.ts
-var import_reflect_metadata3 = require("reflect-metadata");
-var import_class_transformer4 = require("class-transformer");
-
-// src/classes/Boost.ts
-var BoostObject = class {
-  /**
-   * @returns The description of the boost.
-   * @deprecated Use {@link description} instead
-   */
-  get desc() {
-    return this.description;
-  }
-  get description() {
-    return this.descriptionFn();
-  }
-  /**
-   * Constructs a new boost object.
-   * @param init - The initialization object.
-   */
-  constructor(init) {
-    this.id = init.id;
-    this.name = init.name ?? "";
-    this.value = init.value;
-    this.order = init.order ?? 99;
-    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
-  }
-};
-var Boost = class {
-  /**
-   * Constructs a new boost manager.
-   * @param baseEffect - The base effect value to which boosts are applied.
-   * @param boosts - An array of boost objects to initialize with.
-   */
-  constructor(baseEffect = 1, boosts) {
-    /**
-     * @alias setBoost
-     * @deprecated Use {@link setBoost} instead.
-     */
-    this.addBoost = this.setBoost.bind(this);
-    boosts = boosts ? Array.isArray(boosts) ? boosts : [boosts] : void 0;
-    this.baseEffect = new Decimal(baseEffect);
-    this.boostArray = [];
-    if (boosts) {
-      boosts.forEach((boostObj) => {
-        this.boostArray.push(new BoostObject(boostObj));
-      });
-    }
-  }
-  getBoosts(id, index) {
-    const boostList = [];
-    const indexList = [];
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
-        boostList.push(this.boostArray[i]);
-        indexList.push(i);
-      }
-    }
-    return index ? [boostList, indexList] : boostList;
-  }
-  /**
-   * Gets a boost object by its ID.
-   * @deprecated Use {@link getBoosts} instead.
-   * @param id - The ID of the boost to retrieve.
-   * @returns The boost object if found, or null if not found.
-   */
-  getBoost(id) {
-    return this.getBoosts(id)[0] ?? null;
-  }
-  /**
-   * Removes a boost by its ID. Only removes the first instance of the id.
-   * @param id - The ID of the boost to remove.
-   * @example
-   * // Remove the boost with the ID "healthBoost"
-   * boost.removeBoost("healthBoost");
-   */
-  removeBoost(id) {
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (id === this.boostArray[i].id) {
-        this.boostArray.splice(i, 1);
-        break;
-      }
-    }
-  }
-  setBoost(arg1, arg2, arg3, arg4, arg5) {
-    if (!arg1) return;
-    if (typeof arg1 === "string") {
-      const id = arg1;
-      const name = arg2 ?? "";
-      const description = arg3 ?? "";
-      const value = arg4 ?? ((e) => e);
-      const order = arg5;
-      const bCheck = this.getBoosts(id, true);
-      if (!bCheck[0][0]) {
-        this.boostArray.push(new BoostObject({ id, name, description, value, order }));
-      } else {
-        this.boostArray[bCheck[1][0]] = new BoostObject({
-          id,
-          name,
-          description,
-          value,
-          order
-        });
-      }
-    } else {
-      arg1 = Array.isArray(arg1) ? arg1 : [arg1];
-      for (const boost of arg1) {
-        const bCheck = this.getBoosts(boost.id, true);
-        if (!bCheck[0][0]) {
-          this.boostArray.push(new BoostObject(boost));
-        } else {
-          this.boostArray[bCheck[1][0]] = new BoostObject(boost);
-        }
-      }
-    }
-  }
-  /**
-   * Clears all boosts from the boost manager.
-   * @example
-   * // Clear all boosts
-   * boost.clearBoosts();
-   * // boostArray is now []
-   * // baseEffect is still the same
-   */
-  clearBoosts() {
-    this.boostArray.length = 0;
-  }
-  /**
-   * Calculates the cumulative effect of all boosts on the base effect.
-   * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
-   * @returns The calculated effect after applying boosts.
-   * @example
-   * // Calculate the effect of all boosts
-   * const finalEffect = boost.calculate();
-   */
-  calculate(base = this.baseEffect) {
-    let output = new Decimal(base);
-    let boosts = this.boostArray;
-    boosts = boosts.sort((a, b) => a.order - b.order);
-    for (const boost of boosts) {
-      output = boost.value(output);
-    }
-    return output;
-  }
-};
-
-// src/classes/Upgrade.ts
-var import_reflect_metadata = require("reflect-metadata");
-var import_class_transformer2 = require("class-transformer");
-
-// src/classes/numericalAnalysis/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 30;
-var DEFAULT_TOLERANCE = 1e-3;
-function mean(a, b, mode = "geometric") {
-  a = new Decimal(a);
-  b = new Decimal(b);
-  switch (mode) {
-    case "arithmetic":
-    case 1:
-      return a.add(b).div(2);
-    case "geometric":
-    case 2:
-    default:
-      return a.mul(b).sqrt();
-    case "harmonic":
-    case 3:
-      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-    case "logarithmic":
-    case 4:
-      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
-  }
-}
-
-// src/classes/numericalAnalysis/inverseFunction.ts
-function calculateInverseFunction(f, n, options = {}) {
-  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
-  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
-}
-function inverseFunctionApprox(f, n, mode = "geometric", iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = 1, upperBound = n, round = false) {
-  lowerBound = new Decimal(lowerBound);
-  lowerBound = round ? lowerBound.floor() : lowerBound;
-  upperBound = new Decimal(upperBound);
-  upperBound = round ? upperBound.ceil() : upperBound;
-  const BOUND_THRESHOLD = 5;
-  if (lowerBound.gt(upperBound)) {
-    [lowerBound, upperBound] = [upperBound, lowerBound];
-  }
-  if (f(upperBound).eq(0)) {
-    return {
-      value: Decimal.dZero,
-      lowerBound: Decimal.dZero,
-      upperBound: Decimal.dZero
-    };
-  }
-  if (f(lowerBound).gt(n)) {
-    console.warn("The interval does not contain the value. (f(lowerBound) > n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": f(lowerBound),
-      "f(upperBound)": f(upperBound)
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!lowerBound.eq(0)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, 0, upperBound, round);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  if (f(upperBound).lt(n)) {
-    console.warn("The interval does not contain the value. (f(upperBound) < n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": f(lowerBound),
-      "f(upperBound)": f(upperBound)
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!upperBound.eq(n)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  for (let i = 0; i < iterations; i++) {
-    let mid = mean(lowerBound, upperBound, mode);
-    mid = round ? mid.floor() : mid;
-    const midValue = f(mid);
-    if (midValue.lt(n)) {
-      lowerBound = mid;
-    } else {
-      upperBound = mid;
-    }
-    if (midValue.eq(n)) {
-      return {
-        value: mid,
-        lowerBound: mid,
-        upperBound: mid
-      };
-    }
-    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
-      let closest = upperBound;
-      let closestDiff = f(upperBound).sub(n).abs();
-      for (let j = lowerBound; j.lte(upperBound); j = j.add(1)) {
-        const diff = f(j).sub(n).abs();
-        if (diff.lt(closestDiff)) {
-          closest = new Decimal(j);
-          closestDiff = diff;
-        }
-      }
-      return {
-        value: closest,
-        lowerBound,
-        upperBound
-      };
-    }
-  }
-  const out = {
-    value: lowerBound,
-    lowerBound,
-    upperBound
-  };
-  return out;
-}
-
-// src/classes/numericalAnalysis/sum.ts
-function calculateSumLoop(f, b, a = 0, epsilon = DEFAULT_TOLERANCE) {
-  let sum = new Decimal();
-  let n = new Decimal(b);
-  for (; n.gte(a); n = n.sub(1)) {
-    const initSum = sum;
-    const value = f(n);
-    sum = sum.add(value);
-    const diff = initSum.div(sum);
-    if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
-  }
-  return sum;
-}
-function calculateSumApprox(f, b, a = 0, iterations = DEFAULT_ITERATIONS - 10) {
-  a = new Decimal(a);
-  b = new Decimal(b);
-  let sum = Decimal.dZero;
-  const intervalWidth = b.sub(a).div(iterations);
-  for (let i = iterations - 1; i >= 0; i--) {
-    sum = sum.add(f(a.add(intervalWidth.mul(i))));
-  }
-  return sum.mul(intervalWidth);
-}
-function calculateSum(f, b, a = 0, epsilon, iterations) {
-  a = new Decimal(a);
-  b = new Decimal(b);
-  if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
-    return calculateSumLoop(f, b, a, epsilon);
-  } else {
-    return calculateSumApprox(f, b, a, iterations);
-  }
-}
-
-// src/classes/Upgrade.ts
-function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, iterations, el = false) {
-  value = new Decimal(value);
-  start = new Decimal(start ?? upgrade.level);
-  end = new Decimal(end);
-  const target = end.sub(start);
-  if (target.lt(0)) {
-    console.warn("eMath.js: Invalid target for calculateItem: ", target);
-    return [Decimal.dZero, Decimal.dZero];
-  }
-  el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
-  if (target.eq(1)) {
-    const cost2 = upgrade.cost(upgrade.level);
-    const canAfford = value.gte(cost2);
-    let out = [Decimal.dZero, Decimal.dZero];
-    if (el) {
-      out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
-      return out;
-    } else {
-      out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost2 : Decimal.dZero];
-      return out;
-    }
-  }
-  if (upgrade.costBulk) {
-    const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
-    const canAfford = value.gte(cost2);
-    const out = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost2 : Decimal.dZero];
-    return out;
-  }
-  if (el) {
-    const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = Decimal.min(
-      end,
-      calculateInverseFunction(costTargetFn, value, {
-        mode,
-        iterations
-      }).value.floor()
-    );
-    const cost2 = Decimal.dZero;
-    return [maxLevelAffordable2, cost2];
-  }
-  const maxLevelAffordable = calculateInverseFunction((x) => calculateSum(upgrade.cost, x, start), value, {
-    mode,
-    iterations
-  }).value.floor().min(start.add(target).sub(1));
-  const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
-  const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
-  return [maxLevelAffordableActual, cost];
-}
-var UpgradeData = class {
-  /**
-   * Constructs a new upgrade object with an initial level of 1 (or the provided level)
-   * @param init - The upgrade object to initialize.
-   */
-  constructor(init) {
-    init = init ?? {};
-    this.id = init.id;
-    this.level = init.level ? new Decimal(init.level) : Decimal.dOne;
-  }
-};
-__decorateClass([
-  (0, import_class_transformer2.Expose)()
-], UpgradeData.prototype, "id", 2);
-__decorateClass([
-  (0, import_class_transformer2.Type)(() => Decimal)
-], UpgradeData.prototype, "level", 2);
-var UpgradeStatic = class _UpgradeStatic {
-  static {
-    /** The default size of the cache. Should be one less than a power of 2. */
-    this.cacheSize = 15;
-  }
-  /** @returns The data of the upgrade. */
-  get data() {
-    return this.dataPointerFn();
-  }
-  /** @returns The currency static class that the upgrade is being run on. */
-  get currency() {
-    return this.currencyPointerFn();
-  }
-  get description() {
-    return this.descriptionFn(this.level, this, this.currencyPointerFn());
-  }
-  set description(value) {
-    this.descriptionFn = typeof value === "function" ? value : () => value;
-  }
-  /**
-   * The current level of the upgrade.
-   * @returns The current level of the upgrade.
-   */
-  get level() {
-    return ((this ?? { data: { level: Decimal.dOne } }).data ?? {
-      level: Decimal.dOne
-    }).level;
-  }
-  set level(n) {
-    this.data.level = new Decimal(n);
-  }
-  /**
-   * Constructs a new static upgrade object.
-   * @param init - The upgrade object to initialize.
-   * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-   * @param currencyPointer - A function or reference that returns the pointer of the {@link CurrencyStatic} class.
-   * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
-   */
-  constructor(init, dataPointer, currencyPointer, cacheSize) {
-    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
-    this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
-    this.cache = new LRUCache(cacheSize ?? _UpgradeStatic.cacheSize);
-    this.id = init.id;
-    this.name = init.name ?? init.id;
-    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
-    this.cost = init.cost;
-    this.costBulk = init.costBulk;
-    this.maxLevel = init.maxLevel;
-    this.effect = init.effect;
-    this.el = init.el;
-    this.defaultLevel = init.level ?? Decimal.dOne;
-    this.bounds = init.bounds;
-  }
-  // /**
-  //  * Gets the cached data of the upgrade.
-  //  * @param type - The type of the cache. "sum" or "el"
-  //  * @param start - The starting level of the upgrade.
-  //  * @param end - The ending level or quantity to reach for the upgrade.
-  //  * @returns The data of the upgrade.
-  //  */
-  // public getCached (type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
-  // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
-  // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
-  //     if (type === "sum") {
-  //         return this.cache.get(upgradeToCacheNameSum(start, end ?? Decimal.dZero));
-  //     } else {
-  //         return this.cache.get(upgradeToCacheNameEL(start));
-  //     }
-  // }
-  // /**
-  //  * Sets the cached data of the upgrade.
-  //  * @param type - The type of the cache. "sum" or "el"
-  //  * @param start - The starting level of the upgrade.
-  //  * @param end - The ending level or quantity to reach for the upgrade.
-  //  * @param cost - The cost of the upgrade.
-  //  */
-  // public setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
-  // public setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
-  // public setCached (type: "sum" | "el", start: DecimalSource, endOrStart: DecimalSource, costSum?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum {
-  //     const data = type === "sum" ? {
-  //         id: this.id,
-  //         el: false,
-  //         start: new Decimal(start),
-  //         end: new Decimal(endOrStart),
-  //         cost: new Decimal(costSum),
-  //     } : {
-  //         id: this.id,
-  //         el: true,
-  //         level: new Decimal(start),
-  //         cost: new Decimal(endOrStart),
-  //     };
-  //     if (type === "sum") {
-  //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
-  //     } else {
-  //         this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
-  //     }
-  //     return data as UpgradeCachedEL | UpgradeCachedSum;
-  // }
-};
-
-// src/classes/Item.ts
-var import_reflect_metadata2 = require("reflect-metadata");
-var import_class_transformer3 = require("class-transformer");
-function calculateItem(value, item, tier = Decimal.dOne, target = Decimal.dInf) {
-  value = new Decimal(value);
-  tier = new Decimal(tier);
-  target = new Decimal(target);
-  if (target.lt(0)) {
-    console.warn("eMath.js: Invalid target for calculateItem: ", target);
-    return [Decimal.dZero, Decimal.dZero];
-  }
-  if (target.eq(1)) {
-    const cost2 = item.cost(tier);
-    return [value.gte(cost2) ? Decimal.dOne : Decimal.dZero, value.gte(cost2) ? cost2 : Decimal.dZero];
-  }
-  const maxLevelAffordable = value.div(item.cost(tier)).floor().min(target);
-  const cost = item.cost(tier).mul(maxLevelAffordable);
-  return [maxLevelAffordable, cost];
-}
-var Item = class {
-  /**
-   * Creates a new item.
-   * @param init - The initialization data for the item.
-   * @param dataPointer - The pointer to the data of the item.
-   * @param currencyPointer - The pointer to the currency static class that the item is being run on.
-   */
-  constructor(init, dataPointer, currencyPointer) {
-    this.defaultAmount = Decimal.dZero;
-    const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    this.dataPointerFn = typeof dataPointer === "function" ? dataPointer : () => data;
-    this.currencyPointerFn = typeof currencyPointer === "function" ? currencyPointer : () => currencyPointer;
-    this.id = init.id;
-    this.name = init.name ?? init.id;
-    this.cost = init.cost;
-    this.effect = init.effect;
-    this.descriptionFn = init.description ? typeof init.description === "function" ? init.description : () => init.description : () => "";
-    this.defaultAmount = init.amount ?? Decimal.dZero;
-  }
-  /** @returns The data of the item. */
-  get data() {
-    return this.dataPointerFn();
-  }
-  get description() {
-    return this.descriptionFn(this.amount, this, this.currencyPointerFn());
-  }
-  set description(value) {
-    this.descriptionFn = typeof value === "function" ? value : () => value;
-  }
-  /**
-   * The amount of the item that was bought.
-   * @deprecated This does not account for items that were bought on different tiers.
-   * @returns The amount of the item that was bought.
-   */
-  get amount() {
-    return ((this ?? { data: { amount: Decimal.dOne } }).data ?? {
-      amount: Decimal.dOne
-    }).amount;
-  }
-  set amount(n) {
-    this.data.amount = new Decimal(n);
-  }
-};
-var ItemData = class {
-  constructor(init) {
-    init = init ?? {};
-    this.id = init.id;
-    this.amount = init.amount ?? Decimal.dZero;
-  }
-};
-__decorateClass([
-  (0, import_class_transformer3.Expose)()
-], ItemData.prototype, "id", 2);
-__decorateClass([
-  (0, import_class_transformer3.Type)(() => Decimal)
-], ItemData.prototype, "amount", 2);
-
-// src/classes/Currency.ts
-var Currency = class {
-  /**
-   * Constructs a new currency object with an initial value of 0.
-   */
-  constructor() {
-    this.value = Decimal.dZero;
-    this.upgrades = {};
-    this.items = {};
-  }
-};
-__decorateClass([
-  (0, import_class_transformer4.Type)(() => Decimal)
-], Currency.prototype, "value", 2);
-__decorateClass([
-  (0, import_class_transformer4.Type)(() => UpgradeData)
-], Currency.prototype, "upgrades", 2);
-__decorateClass([
-  (0, import_class_transformer4.Type)(() => ItemData)
-], Currency.prototype, "items", 2);
-var CurrencyStatic = class {
-  /** @returns The pointer of the data. */
-  get pointer() {
-    return this.pointerFn();
-  }
-  /**
-   * The current value of the currency.
-   * Note: If you want to change the value, use {@link gain} instead.
-   * @returns The current value of the currency.
-   */
-  get value() {
-    return this.pointer.value;
-  }
-  set value(value) {
-    this.pointer.value = value;
-  }
-  /**
-   * Constructs a new currency
-   * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param upgrades - An array of upgrade objects.
-   * @param items - An array of item objects.
-   * @param defaults - The default value and boost of the currency.
-   * @example
-   * const currency = new CurrencyStatic(undefined, [
-   *     {
-   *         id: "upgId1",
-   *         cost: (level: Decimal): Decimal => level.mul(10),
-   *     },
-   *     {
-   *         id: "upgId2",
-   *         cost: (level: Decimal): Decimal => level.mul(20),
-   *     }
-   * ] as const satisfies UpgradeInit[]);
-   * // CurrencyStatic<["upgId1", "upgId2"]>
-   */
-  constructor(pointer = new Currency(), upgrades, items, defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne }) {
-    this.defaultVal = defaults.defaultVal;
-    this.defaultBoost = defaults.defaultBoost;
-    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = new Boost(this.defaultBoost);
-    this.pointer.value = this.defaultVal;
-    this.upgrades = {};
-    if (upgrades) this.addUpgrade(upgrades);
-    this.items = {};
-    if (items) this.addItem(items);
-  }
-  /**
-   * Updates / applies effects to the currency on load.
-   */
-  onLoadData() {
-    for (const upgrade of Object.values(this.upgrades)) {
-      this.runUpgradeEffect(upgrade);
-    }
-  }
-  reset(resetCurrencyOrResetObj, resetUpgradeLevels, runUpgradeEffect) {
-    const resetObj = {
-      resetCurrency: true,
-      resetUpgradeLevels: true,
-      resetItemAmounts: true,
-      runUpgradeEffect: true
-    };
-    if (typeof resetCurrencyOrResetObj === "object") {
-      Object.assign(resetObj, resetCurrencyOrResetObj);
-    } else {
-      Object.assign(resetObj, {
-        resetCurrency: resetCurrencyOrResetObj,
-        resetUpgradeLevels,
-        runUpgradeEffect
-      });
-    }
-    if (resetObj.resetCurrency) this.value = this.defaultVal;
-    if (resetObj.resetUpgradeLevels) {
-      for (const upgrade of Object.values(this.upgrades)) {
-        upgrade.level = new Decimal(upgrade.defaultLevel);
-        if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
-      }
-    }
-    if (resetObj.resetItemAmounts) {
-      for (const item of Object.values(this.items)) {
-        item.amount = new Decimal(item.defaultAmount);
-        if (resetObj.runUpgradeEffect) this.runItemEffect(item);
-      }
-    }
-  }
-  /**
-   * The new currency value after applying the boost.
-   * @param dt - Delta time / multiplier in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
-   * @returns What was gained, NOT the new value.
-   * @example
-   * // Gain a random number between 1 and 10, and return the amount gained.
-   * currency.gain(Math.random() * 10000);
-   */
-  gain(dt = 1e3) {
-    const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1e3));
-    this.pointer.value = this.pointer.value.add(toAdd);
-    return toAdd;
-  }
-  /**
-   * Adds an upgrade to the data class.
-   * @param upgrades - Upgrade to add
-   * @returns The upgrade object.
-   */
-  pointerAddUpgrade(upgrades) {
-    const upgradesToAdd = new UpgradeData(upgrades);
-    this.pointer.upgrades[upgradesToAdd.id] = upgradesToAdd;
-    return upgradesToAdd;
-  }
-  /**
-   * Retrieves an upgrade object from the data pointer based on the provided id.
-   * @param id - The id of the upgrade to retrieve.
-   * @returns The upgrade object if found, otherwise null.
-   */
-  pointerGetUpgrade(id) {
-    return this.pointer.upgrades[id] ?? null;
-  }
-  /**
-   * Retrieves an upgrade object based on the provided id.
-   * @template T - The type of the upgrade ID.
-   * @param id - The id of the upgrade to retrieve.
-   * @returns The upgrade object if found, otherwise null.
-   * @example
-   * const upgrade = currency.getUpgrade("healthBoost");
-   * console.log(upgrade); // upgrade object
-   */
-  getUpgrade(id) {
-    return this.upgrades[id] ?? null;
-  }
-  /**
-   * Queries upgrades based on the provided id. Returns an array of upgrades that match the id.
-   * @param id - The id of the upgrade to query.
-   * @returns An array of upgrades that match the id.
-   * @example
-   * const currency = new CurrencyStatic(undefined, [
-   *     { id: "healthBoostSmall", cost: (level) => level.mul(10) },
-   *     { id: "healthBoostLarge", cost: (level) => level.mul(20) },
-   *     { id: "damageBoostSmall", cost: (level) => level.mul(10) },
-   *     { id: "damageBoostLarge", cost: (level) => level.mul(20) },
-   * ] as const satisfies UpgradeInit[]);
-   *
-   * // Get all health upgrades
-   * const healthUpgrades = currency.queryUpgrade(/health/); // [{ id: "healthBoostSmall", ... }, { id: "healthBoostLarge", ... }]
-   *
-   * // Get all small upgrades
-   * const smallUpgrades = currency.queryUpgrade(["healthBoostSmall", "damageBoostSmall"]);
-   * // or
-   * const smallUpgrades2 = currency.queryUpgrade(/.*Small/);
-   */
-  queryUpgrade(id) {
-    const allUpgradeIds = Object.keys(this.upgrades);
-    if (id instanceof RegExp) {
-      const regex = id;
-      const matchedIds = allUpgradeIds.filter((upgrade) => regex.test(upgrade));
-      return matchedIds.map((matchedId) => this.upgrades[matchedId]);
-    }
-    if (typeof id === "string") {
-      id = [id];
-    }
-    const matchedUpgrades = allUpgradeIds.filter((upgrade) => id.includes(upgrade));
-    return matchedUpgrades.map((matchedId) => this.upgrades[matchedId]);
-  }
-  /**
-   * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
-   * @param upgrades - An array of upgrade objects.
-   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
-   * @returns The added upgrades.
-   * @example
-   * currency.addUpgrade({
-   *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
-   *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
-   *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
-   *     cost: (level) => level.mul(10), // Cost of the upgrade, 10 times the level
-   *     maxLevel: 10, // Maximum level of the upgrade (optional, defaults to 1)
-   *     // Effect of the upgrade (runs when the upgrade is bought, and instantly if runEffectInstantly is true)
-   *     effect: (level, context) => {
-   *         // Set / update the boost
-   *         // health: currencyStatic
-   *         health.boost.setBoost(
-   *             "healthBoost",
-   *             "Health Boost",
-   *             "Boosts health by 2x per level.",
-   *             n => n.mul(Decimal.pow(2, level.sub(1))),
-   *             2,
-   *         );
-   *     }
-   * });
-   */
-  addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades)) upgrades = [upgrades];
-    const addedUpgradeList = [];
-    for (const upgrade of upgrades) {
-      this.pointerAddUpgrade(upgrade);
-      const addedUpgradeStatic = new UpgradeStatic(
-        upgrade,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        () => this.pointerGetUpgrade(upgrade.id),
-        () => this
-      );
-      if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
-      this.upgrades[upgrade.id] = addedUpgradeStatic;
-      addedUpgradeList.push(addedUpgradeStatic);
-    }
-    return addedUpgradeList;
-  }
-  /**
-   * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
-   * @param id - The id of the upgrade to update.
-   * @param newUpgrade - The new upgrade object.
-   * @example
-   * currency.updateUpgrade("healthBoost", {
-   *     name: "New Health Boost".
-   *     cost: (level) => level.mul(20),
-   *     maxLevel: 20,
-   *     effect: (level, context) => {
-   *         console.log("Health Boost effect");
-   *     }
-   * });
-   */
-  updateUpgrade(id, newUpgrade) {
-    const oldUpgrade = this.getUpgrade(id);
-    if (oldUpgrade === null) return;
-    Object.assign(oldUpgrade, newUpgrade);
-  }
-  /**
-   * Runs the effect of an upgrade or item.
-   * @param upgrade - The upgrade to run the effect for.
-   */
-  runUpgradeEffect(upgrade) {
-    upgrade.effect?.(upgrade.level, upgrade, this);
-  }
-  /**
-   * Runs the effect of an upgrade or item.
-   * @param item - The item to run the effect for.
-   * @param tier - The tier of the item that was bought.
-   */
-  runItemEffect(item, tier = Decimal.dOne) {
-    tier = new Decimal(tier);
-    item.effect?.(item.amount, tier, item, this);
-  }
-  /**
-   * Calculates the cost and how many upgrades you can buy.
-   * See {@link calculateUpgrade} for more information.
-   * @param id - The upgrade ID or the upgrade to calculate.
-   * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-   * @example
-   * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
-   * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
-   */
-  calculateUpgrade(id, target = Infinity, mode, iterations, value = this.value) {
-    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-    if (upgrade === null) {
-      console.warn(`eMath.js: Upgrade "${id}" not found.`);
-      return [Decimal.dZero, Decimal.dZero];
-    }
-    target = upgrade.level.add(target);
-    if (upgrade.maxLevel !== void 0) {
-      target = Decimal.min(target, upgrade.maxLevel);
-    }
-    return calculateUpgrade(value, upgrade, upgrade.level, target, mode, iterations);
-  }
-  /**
-   * Calculates how much is needed for the next upgrade.
-   * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
-   * @param id - Index or ID of the upgrade
-   * @param target - How many before the next upgrade
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The cost of the next upgrade.
-   * @example
-   * // Calculate the cost of the next healthBoost upgrade
-   * const nextCost = currency.getNextCost("healthBoost");
-   */
-  getNextCost(id, target = 1, mode, iterations, value) {
-    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-    if (upgrade === null) {
-      console.warn(`eMath.js: Upgrade "${id}" not found.`);
-      return Decimal.dZero;
-    }
-    const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
-    const nextCost = upgrade.cost(upgrade.level.add(amount));
-    return nextCost;
-  }
-  /**
-   * Calculates the cost of the next upgrade after the maximum affordable quantity.
-   * @param id - Upgrade ID or upgrade object to calculate the next cost for.
-   * @param target - How many before the next upgrade.
-   * @param mode  - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The cost of the next upgrade.
-   * @example
-   * // Calculate the cost of the next healthBoost upgrade
-   * currency.gain(1e6); // Gain 1 thousand currency
-   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
-   * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
-   */
-  getNextCostMax(id, target = 1, mode, iterations, value) {
-    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-    if (upgrade === null) {
-      console.warn(`eMath.js: Upgrade "${id}" not found.`);
-      return Decimal.dZero;
-    }
-    const upgCalc = this.calculateUpgrade(id, target, mode, iterations, value);
-    const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
-    return nextCost;
-  }
-  /**
-   * Buys an upgrade based on its ID or array position if enough currency is available.
-   * @param id - The upgrade ID or the upgrade to buy.
-   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   * @example
-   * // Attempt to buy up to 10 healthBoost upgrades at once
-   * currency.buyUpgrade("healthBoost", 10);
-   */
-  buyUpgrade(id, target, mode, iterations, value) {
-    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-    if (upgrade === null) {
-      console.warn(`eMath.js: Upgrade "${id}" not found.`);
-      return false;
-    }
-    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
-    if (amount.lte(0)) {
-      return false;
-    }
-    this.pointer.value = this.pointer.value.sub(cost);
-    upgrade.level = upgrade.level.add(amount);
-    this.runUpgradeEffect(upgrade);
-    return true;
-  }
-  /**
-   * Adds an item to the data class.
-   * @param items - The items to add.
-   * @returns The added items.
-   */
-  pointerAddItem(items) {
-    const itemToAdd = new ItemData(items);
-    this.pointer.items[items.id] = itemToAdd;
-    return itemToAdd;
-  }
-  /**
-   * Retrieves an item object from the data pointer based on the provided id.
-   * @param id - The id of the item to retrieve.
-   * @returns The item object if found, otherwise null.
-   */
-  pointerGetItem(id) {
-    return this.pointer.items[id] ?? null;
-  }
-  /**
-   * Adds an item.
-   * @param items - The items to add.
-   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
-   */
-  addItem(items, runEffectInstantly = true) {
-    if (!Array.isArray(items)) items = [items];
-    for (const item of items) {
-      this.pointerAddItem(item);
-      const addedUpgradeStatic = new Item(
-        item,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        () => this.pointerGetItem(item.id),
-        () => this
-      );
-      if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
-      this.items[item.id] = addedUpgradeStatic;
-    }
-  }
-  /**
-   * Retrieves an item object based on the provided id.
-   * @param id - The id of the item to retrieve.
-   * @returns The item object if found, otherwise null.
-   */
-  getItem(id) {
-    return this.items[id] ?? null;
-  }
-  /**
-   * Calculates the cost and how many items you can buy.
-   * See {@link calculateItem} for more information.
-   * @param id - The ID or position of the item to calculate.
-   * @param tier - The tier of the item that to calculate.
-   * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-   */
-  calculateItem(id, tier, target, value = this.value) {
-    const item = typeof id === "string" ? this.getItem(id) : id;
-    if (item === null) {
-      console.warn(`eMath.js: Item "${id}" not found.`);
-      return [Decimal.dZero, Decimal.dZero];
-    }
-    return calculateItem(value, item, tier, target);
-  }
-  /**
-   * Buys an item based on its ID or array position if enough currency is available.
-   * @param id - The ID or position of the item to buy or upgrade.
-   * @param tier - The tier of the item that to calculate.
-   * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
-   */
-  buyItem(id, tier, target, value) {
-    const item = typeof id === "string" ? this.getItem(id) : id;
-    if (item === null) {
-      console.warn(`eMath.js: Item "${id}" not found.`);
-      return false;
-    }
-    const [amount, cost] = this.calculateItem(id, tier, target, value);
-    if (amount.lte(0)) {
-      return false;
-    }
-    this.pointer.value = this.pointer.value.sub(cost);
-    item.amount = item.amount.add(amount);
-    this.runItemEffect(item, tier);
-    return true;
-  }
-};
-
-// src/classes/Attribute.ts
-var import_reflect_metadata4 = require("reflect-metadata");
-var import_class_transformer5 = require("class-transformer");
-var Attribute = class {
-  /**
-   * Constructs a static attribute with an initial effect.
-   * @param initial - The initial value of the attribute.
-   */
-  constructor(initial = 0) {
-    this.value = new Decimal(initial);
-  }
-};
-__decorateClass([
-  (0, import_class_transformer5.Type)(() => Decimal)
-], Attribute.prototype, "value", 2);
-var AttributeStatic = class {
-  /** @returns The data for the attribute. */
-  get pointer() {
-    return this.pointerFn();
-  }
-  /**
-   * Constructs a new instance of the Attribute class.
-   * @param pointer - A function or an instance of the attribute class. Defaults to a new instance of the attribute class.
-   * @param useBoost - Indicates whether to use boost for the attribute. Defaults to true. (hint: if you don't use boost, don't use this class and use Decimal directly)
-   * @param initial - The initial value of the attribute. Defaults to 0.
-   */
-  constructor(pointer, useBoost = true, initial = 0) {
-    this.initial = new Decimal(initial);
-    pointer ??= new Attribute(this.initial);
-    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    this.boost = useBoost ? new Boost(this.initial) : null;
-  }
-  /**
-   * Updates the value of the attribute.
-   * NOTE: This method must be called every time the boost is updated, else the value stored will not be updated.
-   * @deprecated This is automatically called when the value is accessed. It will be removed in the future.
-   */
-  update() {
-    console.warn(
-      "eMath.js: AttributeStatic.update is deprecated and will be removed in the future. The value is automatically updated when accessed."
-    );
-    if (this.boost) {
-      this.pointer.value = this.boost.calculate();
-    }
-  }
-  /**
-   * Gets the value of the attribute, and also updates the value stored.
-   * NOTE: This getter must be called every time the boost is updated, else the value stored will not be updated.
-   * @returns The calculated value of the attribute.
-   */
-  get value() {
-    if (this.boost) {
-      this.pointer.value = this.boost.calculate();
-    }
-    return this.pointer.value;
-  }
-  /**
-   * Sets the value of the attribute.
-   * NOTE: This setter should not be used when boost is enabled.
-   * @param value - The value to set the attribute to.
-   */
-  set value(value) {
-    if (this.boost) {
-      throw new Error("Cannot set value of attributeStatic when boost is enabled.");
-    }
-    this.pointer.value = value;
-  }
-};
-
 // src/game/managers/ConfigManager.ts
 function parseObject(obj, template, recurse = true) {
   for (const key in template) {
@@ -7525,8 +6460,8 @@ var EventManager = class _EventManager {
 };
 
 // src/game/managers/DataManager.ts
-var import_reflect_metadata5 = require("reflect-metadata");
-var import_class_transformer6 = require("class-transformer");
+var import_reflect_metadata = require("reflect-metadata");
+var import_class_transformer2 = require("class-transformer");
 var import_lz_string = __toESM(require_lz_string());
 
 // src/metadata.ts
@@ -7557,99 +6492,6 @@ var eMathMetadata = {
 
 // src/game/managers/DataManager.ts
 var import_md5 = __toESM(require_md5());
-function isPlainObject(obj) {
-  return typeof obj === "object" && obj?.constructor === Object;
-}
-var objectHasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-function deepMerge(sourcePlain, source, target) {
-  if (!sourcePlain || !source || !target) {
-    console.warn("eMath.js: dataManager.deepMerge(): Missing arguments:", sourcePlain, source, target);
-    return target ?? {};
-  }
-  const out = target;
-  for (const key in sourcePlain) {
-    if (objectHasOwnProperty(sourcePlain, key) && !objectHasOwnProperty(target, key)) {
-      out[key] = sourcePlain[key];
-    }
-    if (source[key] instanceof Currency) {
-      const sourceCurrency = sourcePlain[key];
-      const targetCurrency = target[key];
-      if (Array.isArray(targetCurrency.upgrades)) {
-        const upgrades = targetCurrency.upgrades;
-        targetCurrency.upgrades = {};
-        for (const upgrade of upgrades) {
-          targetCurrency.upgrades[upgrade.id] = upgrade;
-        }
-      }
-      targetCurrency.upgrades = {
-        ...sourceCurrency.upgrades,
-        ...targetCurrency.upgrades
-      };
-      out[key] = targetCurrency;
-      targetCurrency.items = {
-        ...sourceCurrency.items,
-        ...targetCurrency.items
-      };
-    } else if (isPlainObject(sourcePlain[key]) && isPlainObject(target[key])) {
-      out[key] = deepMerge(
-        sourcePlain[key],
-        source[key],
-        target[key]
-      );
-    }
-  }
-  return out;
-}
-var upgradeDataProperties = Object.getOwnPropertyNames(new UpgradeData({ id: "", level: Decimal.dZero }));
-var itemDataProperties = Object.getOwnPropertyNames(new ItemData({ id: "", amount: Decimal.dZero }));
-function convertTemplateClass(templateClassToConvert, plain) {
-  const out = (0, import_class_transformer6.plainToInstance)(templateClassToConvert, plain);
-  if (out instanceof Currency) {
-    for (const upgradeName in out.upgrades) {
-      const upgrade = out.upgrades[upgradeName];
-      if (!upgrade || !upgradeDataProperties.every((prop) => Object.getOwnPropertyNames(upgrade).includes(prop))) {
-        delete out.upgrades[upgradeName];
-        continue;
-      }
-      out.upgrades[upgradeName] = (0, import_class_transformer6.plainToInstance)(UpgradeData, upgrade);
-    }
-    for (const itemName in out.items) {
-      const item = out.items[itemName];
-      if (!item || !itemDataProperties.every((prop) => Object.getOwnPropertyNames(item).includes(prop))) {
-        delete out.items[itemName];
-        continue;
-      }
-      out.items[itemName] = (0, import_class_transformer6.plainToInstance)(ItemData, item);
-    }
-  }
-  if (!out) {
-    throw new Error(`Failed to convert ${templateClassToConvert.name} to class instance.`);
-  }
-  return out;
-}
-function plainToInstanceRecursive(normal, plain) {
-  if (!normal || !plain) {
-    throw new Error("dataManager.plainToInstanceRecursive(): Missing arguments.");
-  }
-  const out = plain;
-  for (const key in normal) {
-    if (plain[key] === void 0) {
-      console.warn(`eMath.js: Missing property "${key}" in loaded data.`);
-      continue;
-    }
-    if (!isPlainObject(plain[key])) continue;
-    const normalDataClass = normal[key].constructor;
-    if (normalDataClass === Object) {
-      out[key] = plainToInstanceRecursive(
-        normal[key],
-        plain[key]
-      );
-      continue;
-    }
-    out[key] = convertTemplateClass(normalDataClass, plain[key]);
-  }
-  return out;
-}
 var DataManager = class {
   /**
    * Creates a new instance of the game class.
@@ -7663,17 +6505,12 @@ var DataManager = class {
      */
     this.data = {};
     /**
-     * The static game data.
-     * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-     */
-    this.static = {};
-    /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
      * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
      */
     this.eventsOnLoad = [];
-    this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+    this.gameRef = gameRef;
     this.localStorage = localStorage ?? (() => {
       if (typeof window === "undefined") {
         console.warn(
@@ -7708,22 +6545,21 @@ var DataManager = class {
    * console.log(testData.value); // 10
    */
   setData(key, value) {
-    if (typeof this.data[key] === "undefined" && this.normalData) {
-      console.warn("eMath.js: After initializing data, you should not add new properties to data.");
-    }
     this.data[key] = value;
-    const thisData = () => this.data;
-    return {
-      get value() {
-        return thisData()[key];
-      },
-      set value(valueToSet) {
-        thisData()[key] = valueToSet;
-      },
-      setValue(valueToSet) {
-        thisData()[key] = valueToSet;
+    return () => this.data[key];
+  }
+  useData(key, value) {
+    this.data[key] = value;
+    return [
+      () => this.data[key],
+      (newValueOrCallback) => {
+        if (typeof newValueOrCallback === "function") {
+          this.data[key] = newValueOrCallback(this.data[key]);
+          return;
+        }
+        this.data[key] = newValueOrCallback;
       }
-    };
+    ];
   }
   /**
    * Gets the data for the given key.
@@ -7734,46 +6570,10 @@ var DataManager = class {
   getData(key) {
     return this.data[key];
   }
-  /**
-   * Sets the static data for the given key.
-   * This data is not affected by data loading and saving, and is mainly used internally.
-   * @deprecated Static data is basically useless and should not be used. Use variables in local scope instead.
-   * @param key - The key to set the static data for.
-   * @param value - The value to set the static data to.
-   * @returns A getter for the static data.
-   */
-  setStatic(key, value) {
-    console.warn(
-      "eMath.js: setStatic: Static data is basically useless and should not be used. Use variables in local scope instead."
-    );
-    if (typeof this.static[key] === "undefined" && this.normalData) {
-      console.warn("eMath.js: After initializing data, you should not add new properties to staticData.");
-    }
-    this.static[key] = value;
-    return this.static[key];
-  }
-  /**
-   * Gets the static data for the given key.
-   * @deprecated Set the return value of {@link setStatic} to a variable instead, as that is a getter and provides type checking. Also, static data is basically useless and should not be used. Use variables in local scope instead.
-   * @param key - The key to get the static data for.
-   * @returns The static data for the given key.
-   */
-  getStatic(key) {
-    console.warn(
-      "eMath.js: Static data is basically useless and should not be used. Use variables in local scope instead."
-    );
-    return this.static[key];
-  }
-  /**
-   * Initializes / sets data that is unmodified by the player.
-   * This is used to merge the loaded data with the default data.
-   * It should be called before you load data.
-   * Note: This should only be called once, and after it is called, you should not add new properties to data.
-   * @example dataManager.init(); // Call this after setting the initial data.
-   */
-  init() {
-    this.normalData = this.data;
-    this.normalDataPlain = (0, import_class_transformer6.instanceToPlain)(this.data);
+  // TODO: jsdoc
+  addCustomData(data) {
+    data.onAddToDataManager?.(this);
+    this.addEventOnLoad(() => data.onLoadData?.());
   }
   /**
    * Compiles the given game data to a tuple containing the compressed game data and a hash.
@@ -7782,8 +6582,11 @@ var DataManager = class {
    */
   compileDataRaw(data = this.data) {
     this.gameRef.eventManager.dispatch("beforeCompileData");
-    const gameDataString = (0, import_class_transformer6.instanceToPlain)(data);
-    const hashedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataString)}`);
+    const plainGameData = {};
+    for (const key in data) {
+      plainGameData[key] = (0, import_class_transformer2.instanceToPlain)(data[key]);
+    }
+    const hashedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(plainGameData)}`);
     const saveMetadata = {
       hash: hashedData,
       game: {
@@ -7793,7 +6596,7 @@ var DataManager = class {
       },
       ...eMathMetadata
     };
-    return [saveMetadata, gameDataString];
+    return [saveMetadata, plainGameData];
   }
   /**
    * Compresses the given game data to a base64-encoded using lz-string.
@@ -7853,12 +6656,6 @@ var DataManager = class {
    * (Reloading may help with some issues with saving data)
    */
   resetData(reload = false) {
-    if (!this.normalData) {
-      throw new Error("dataManager.resetData(): You must call init() before writing to data.");
-    }
-    this.data = this.normalData;
-    this.saveData();
-    if (reload) window.location.reload();
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
@@ -7904,18 +6701,27 @@ var DataManager = class {
   /**
    * Loads game data and processes it.
    * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-   * @param mergeData - Whether to merge the loaded data with the normal data. Defaults to `true`.
-   * Warning: If set to `false`, the loaded data may have missing properties and may cause errors.
    * @returns The loaded data.
    */
-  parseData(dataToParse = this.decompileData(), mergeData = true) {
-    if ((!this.normalData || !this.normalDataPlain) && mergeData) {
-      throw new Error("dataManager.parseData(): You must call init() before writing to data.");
-    }
-    if (!dataToParse) return null;
+  parseData(dataToParse = this.decompileData()) {
+    if (!dataToParse) return;
     const [, loadedData] = dataToParse;
-    const loadedDataMerged = !mergeData ? loadedData : deepMerge(this.normalDataPlain, this.normalData, loadedData);
-    return plainToInstanceRecursive(this.normalData, loadedDataMerged);
+    for (const key in loadedData) {
+      if (typeof this.data[key] === "undefined") {
+        console.warn(
+          `eMath.js: Loaded data has a key "${key}" that does not exist in the current game data. Skipping this key.`
+        );
+        continue;
+      }
+      if (
+        // TODO: currently only exists to make compiler happy, might have side effects
+        this.data[key] == null || typeof this.data[key].constructor === "undefined"
+      ) {
+        this.data[key] = loadedData[key];
+        continue;
+      }
+      this.data[key] = (0, import_class_transformer2.plainToInstance)(this.data[key].constructor, loadedData[key]);
+    }
   }
   /**
    * Loads game data and processes it.
@@ -7925,359 +6731,13 @@ var DataManager = class {
   loadData(dataToLoad = this.decompileData()) {
     dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
     if (!dataToLoad) return null;
-    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer6.instanceToPlain)(dataToLoad[1])]);
-    const parsedData = this.parseData(dataToLoad);
-    if (!parsedData) return null;
-    this.data = parsedData;
+    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer2.instanceToPlain)(dataToLoad[1])]);
+    this.parseData(dataToLoad);
     for (const obj of this.eventsOnLoad) {
       obj();
     }
     this.gameRef.eventManager.dispatch("loadData");
     return isDataValid;
-  }
-};
-
-// src/game/GameCurrency.ts
-var GameCurrency = class extends CurrencyStatic {
-  /**
-   * @returns The data for the currency.
-   * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
-   */
-  get data() {
-    return this.pointer;
-  }
-  /**
-   * @returns The static data for the currency.
-   * @deprecated Use this class as a static class as it now has all the properties of {@link CurrencyStatic}. This property is only here for backwards compatibility.
-   */
-  get static() {
-    return this;
-  }
-  /**
-   * Creates a new instance of the game class.
-   * @param currencyStaticParams - The parameters for the currency static class.
-   * @param gamePointer A pointer to the game instance.
-   * @param name - The name of the currency. This is optional, and you can use it for display purposes.
-   */
-  constructor(currencyStaticParams, gamePointer, name) {
-    if (typeof currencyStaticParams === "function") {
-      throw new Error(
-        "GameCurrency constructor does not accept a function as the first parameter. Use the <Game>.addCurrency method instead."
-      );
-    }
-    super(...currencyStaticParams);
-    this.game = gamePointer;
-    this.name = name;
-    this.game.dataManager.addEventOnLoad(() => {
-      this.static.onLoadData();
-    });
-  }
-};
-
-// src/game/GameAttribute.ts
-var GameAttribute = class extends AttributeStatic {
-  /**
-   * @returns The data for the attribute.
-   * @deprecated Use {@link pointer} instead. This property is only here for backwards compatibility.
-   */
-  get data() {
-    return this.pointer;
-  }
-  /**
-   * @returns The static data for the attribute.
-   * @deprecated Use this class as a static. This property is only here for backwards compatibility.
-   */
-  get static() {
-    return this;
-  }
-  /**
-   * Creates a new instance of the attribute class.
-   * @param attributeStaticParams - The parameters for the attribute static class.
-   * @param gamePointer A pointer to the game instance.
-   */
-  constructor(attributeStaticParams, gamePointer) {
-    if (typeof attributeStaticParams === "function") {
-      throw new Error(
-        "GameAttribute constructor does not accept a function as the first parameter. Use the <Game>.addAttribute method instead."
-      );
-    }
-    super(...attributeStaticParams);
-    this.game = gamePointer;
-  }
-};
-
-// src/game/GameReset.ts
-var GameReset = class _GameReset {
-  /**
-   * Creates a new instance of the game reset from an object.
-   * @param object - The object to create the game reset from.
-   * @returns The newly created game reset.
-   */
-  static fromObject(object) {
-    return new _GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
-  }
-  /**
-   * Creates a new instance of the game reset.
-   * @param currenciesToReset The currencies to reset.
-   * @param extender The extender for the game reset.
-   * @param onReset Function to run during {@link reset}.
-   * @param condition A condition that must be met for the reset to occur.
-   */
-  constructor(currenciesToReset, extender, onReset, condition) {
-    this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
-    extender = extender ?? [];
-    this.extender = Array.isArray(extender) ? extender : [extender];
-    this.onReset = onReset;
-    this.condition = condition;
-    this.id = Symbol();
-  }
-  /**
-   * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
-   * @param force Whether to force the reset. Defaults to `false`.
-   * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
-   * @param cached The set of cached symbols to prevent infinite loops.
-   */
-  reset(force = false, forceExtenders = true, cached = /* @__PURE__ */ new Set()) {
-    if (force || (typeof this.condition === "function" ? !this.condition(this) : !this.condition) && typeof this.condition !== "undefined") {
-      return;
-    }
-    const resetThis = () => {
-      this.onReset?.(this);
-      this.currenciesToReset.forEach((currency) => {
-        currency.static.reset();
-      });
-    };
-    if (this.extender.length === 0) {
-      resetThis();
-      return;
-    }
-    this.extender.forEach((extender) => {
-      if (!cached.has(extender.id)) {
-        cached.add(extender.id);
-        extender.reset(forceExtenders || force, forceExtenders, cached);
-      }
-    });
-    resetThis();
-  }
-};
-
-// src/classes/SkillTree.ts
-var import_reflect_metadata6 = require("reflect-metadata");
-var import_class_transformer7 = require("class-transformer");
-var SkillNodeData = class extends UpgradeData {
-  /**
-   * Constructs a new skill node data.
-   * @param init - The skill node object initialization.
-   */
-  constructor(init) {
-    init = init ?? {};
-    super(init);
-  }
-};
-var SkillNodeStatic = class extends UpgradeStatic {
-  /**
-   * Represents a skill tree node.
-   * @param init - The skill tree node to initialize.
-   * @param dataPointer - The data of the skill tree node.
-   */
-  constructor(init, dataPointer = new SkillNodeData(init)) {
-    super(init, dataPointer, init.costCurrency);
-    this.costCurrency = init.costCurrency;
-    this.requirements = init.requirements ?? [];
-  }
-};
-var SkillTreeData = class {
-  constructor() {
-    this.skills = {};
-  }
-};
-__decorateClass([
-  (0, import_class_transformer7.Type)(() => SkillNodeData),
-  (0, import_class_transformer7.Expose)()
-], SkillTreeData.prototype, "skills", 2);
-var SkillTreeStatic = class {
-  /**
-   * Creates a new skill tree.
-   * @param skills - The skills in the skill tree.
-   * @param pointer - The pointer to the skill tree data.
-   */
-  constructor(skills, pointer = new SkillTreeData()) {
-    /**
-     * The skills in the skill tree.
-     */
-    this.skills = {};
-    this.pointerFn = typeof pointer === "function" ? pointer : () => pointer;
-    skills = Array.isArray(skills) ? skills : [skills];
-    this.addSkill(skills);
-  }
-  /** @returns The pointer of the data. */
-  get pointer() {
-    return this.pointerFn();
-  }
-  /**
-   * Adds an skill node to the data class.
-   * @param skill - Skill node to add
-   * @returns The skill node object.
-   */
-  pointerAddSkill(skill) {
-    const skillsToAdd = new SkillNodeData(skill);
-    this.pointer.skills[skillsToAdd.id] = skillsToAdd;
-    return skillsToAdd;
-  }
-  /**
-   * Adds a skill to the skill tree.
-   * Recommended to use the constructor instead of this method.
-   * @param skillNodeMember - The skill to add to the skill tree.
-   */
-  addSkill(skillNodeMember) {
-    skillNodeMember = Array.isArray(skillNodeMember) ? skillNodeMember : [skillNodeMember];
-    skillNodeMember.forEach((skillNode) => {
-      this.skills[skillNode.id] = new SkillNodeStatic(skillNode);
-    });
-  }
-  /**
-   * Gets a skill from the skill tree.
-   * @param id - The id of the skill to get.
-   * @returns The skill node.
-   */
-  getSkill(id) {
-    return this.skills[id] ?? null;
-  }
-  /**
-   * Checks if a skill is unlocked.
-   * @param id - The id of the skill to check.
-   * @returns If the skill is unlocked.
-   */
-  isSkillUnlocked(id) {
-    const skillToCheck = typeof id === "string" ? this.getSkill(id) : id;
-    if (!skillToCheck) {
-      return false;
-    }
-    if (!skillToCheck.requirements || skillToCheck.requirements.length === 0) {
-      return true;
-    }
-    const requiredSkills = typeof skillToCheck.requirements === "function" ? skillToCheck.requirements(this, skillToCheck) : skillToCheck.requirements;
-    if (typeof requiredSkills === "boolean") {
-      return requiredSkills;
-    }
-    return requiredSkills.every((requiredSkill) => {
-      if (typeof requiredSkill === "string") {
-        const skillNode = this.getSkill(requiredSkill);
-        if (!skillNode) {
-          console.warn(`eMath.js: Required skill "${requiredSkill}" not found in skill tree.`);
-          return false;
-        }
-        requiredSkill = skillNode;
-      }
-      if ("skill" in requiredSkill) {
-        return requiredSkill.skill.level.gte(requiredSkill.level) && this.isSkillUnlocked(requiredSkill.skill);
-      }
-      return this.isSkillUnlocked(requiredSkill);
-    });
-  }
-  /**
-   * Calculates the cost and how many upgrades you can buy. A wrapper around {@link CurrencyStatic.calculateUpgrade}.
-   * See {@link calculateUpgrade} and {@link CurrencyStatic.calculateUpgrade} for more information.
-   * @param id - The upgrade ID or the upgrade to calculate.
-   * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-   * @example
-   * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
-   * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
-   */
-  calculateSkill(id, target = Infinity, mode, iterations) {
-    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
-    if (!skillToCalculate) {
-      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
-      return [Decimal.dZero, Decimal.dZero];
-    }
-    if (!this.isSkillUnlocked(skillToCalculate)) {
-      return [Decimal.dZero, Decimal.dZero];
-    }
-    return skillToCalculate.costCurrency.calculateUpgrade(skillToCalculate, target, mode, iterations);
-  }
-  /**
-   * Calculates how much is needed for the next skill. A wrapper around {@link CurrencyStatic.getNextCost}.
-   * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
-   * @param id - Index or ID of the upgrade.
-   * @param target - How many before the next upgrade.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @returns The cost of the next upgrade.
-   */
-  getNextCost(id, target = 1, mode, iterations) {
-    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
-    if (!skillToCalculate) {
-      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
-      return Decimal.dZero;
-    }
-    if (!this.isSkillUnlocked(skillToCalculate)) {
-      return Decimal.dZero;
-    }
-    return skillToCalculate.costCurrency.getNextCost(skillToCalculate, target, mode, iterations);
-  }
-  /**
-   * Calculates the cost of the next upgrade after the maximum affordable quantity. A wrapper around {@link CurrencyStatic.getNextCostMax}.
-   * @param id - Upgrade ID or upgrade object to calculate the next cost for.
-   * @param target - How many before the next upgrade.
-   * @param mode  - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @returns The cost of the next upgrade.
-   * @example
-   * // Calculate the cost of the next healthBoost upgrade
-   * currency.gain(1e6); // Gain 1 thousand currency
-   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
-   * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
-   */
-  getNextCostMax(id, target = 1, mode, iterations) {
-    const skillToCalculate = typeof id === "string" ? this.getSkill(id) : id;
-    if (!skillToCalculate) {
-      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
-      return Decimal.dZero;
-    }
-    if (!this.isSkillUnlocked(skillToCalculate)) {
-      return Decimal.dZero;
-    }
-    return skillToCalculate.costCurrency.getNextCostMax(skillToCalculate, target, mode, iterations);
-  }
-  /**
-   * Buys an upgrade based on its ID or array position if enough currency is available.
-   * @param id - The upgrade ID or the upgrade to buy.
-   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   * @example
-   * // Attempt to buy up to 10 healthBoost upgrades at once
-   * currency.buyUpgrade("healthBoost", 10);
-   */
-  buySkill(id, target = Infinity, mode, iterations) {
-    const skillToBuy = typeof id === "string" ? this.getSkill(id) : id;
-    if (!skillToBuy) {
-      console.warn(`eMath.js: Skill "${id}" not found in skill tree.`);
-      return false;
-    }
-    if (!this.isSkillUnlocked(skillToBuy)) {
-      return false;
-    }
-    return skillToBuy.costCurrency.buyUpgrade(skillToBuy, target, mode, iterations);
-  }
-};
-
-// src/game/GameSkillTree.ts
-var GameSkillTree = class extends SkillTreeStatic {
-  /**
-   * Creates a new instance of the game skill tree class.
-   * @param skillTreeStaticParams - The parameters for the skill tree static class.
-   * @param gamePointer A pointer to the game instance.
-   * @param name - The name of the skill tree. This is optional, and you can use it for display purposes.
-   */
-  constructor(skillTreeStaticParams, gamePointer, name) {
-    super(...skillTreeStaticParams);
-    this.name = name;
-    this.game = gamePointer;
   }
 };
 
@@ -8330,7 +6790,6 @@ var Game = class _Game {
    * See {@link DataManager.init} for more information.
    */
   init() {
-    this.dataManager.init();
   }
   /**
    * Changes the framerate of the game.
@@ -8340,104 +6799,151 @@ var Game = class _Game {
     this.keyManager.changeFps(fps);
     this.eventManager.changeFps(fps);
   }
+  addData(dataToAdd) {
+    this.dataManager.addCustomData(dataToAdd);
+    return dataToAdd;
+  }
   // TODO: Implement clearTickers
   // public clearTickers(): void {
   // }
+  // /**
+  //  * Adds a new currency section to the game. {@link GameCurrency} is the class.
+  //  * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+  //  * @template TCurrencyName - The name
+  //  * @template U - The upgrade names for the currency. See {@link Currency} for more information.
+  //  * @template I - The item names for the currency. See {@link Currency} for more information.
+  //  * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+  //  * @param upgrades - The upgrades for the currency.
+  //  * @param items - The items for the currency.
+  //  * @returns A new instance of the gameCurrency class.
+  //  * @example
+  //  * const currency = game.addCurrency("currency");
+  //  * currency.static.gain();
+  //  * console.log(currency.value); // Decimal.dOne
+  //  */
+  // public addCurrency<
+  //     TCurrencyName extends string = string,
+  //     TUpgradeIds extends string = string,
+  //     TItemIds extends string = string,
+  // >(
+  //     name: TCurrencyName,
+  //     upgrades?: UpgradeInit<TUpgradeIds>[],
+  //     items?: ItemInit<TItemIds>[],
+  // ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
+  //     // Create the class instance
+  //     const classInstance = new GameCurrency(
+  //         [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
+  //             typeof Currency
+  //         >,
+  //         this,
+  //         name,
+  //     );
+  //     return classInstance;
+  // }
+  // /**
+  //  * Adds a new attribute to the game. {@link GameAttribute} is the class.
+  //  * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
+  //  * @param name - The name of the attribute.
+  //  * @param useBoost - Indicates whether to use boost for the attribute.
+  //  * @param initial - The initial value of the attribute.
+  //  * @returns The newly created attribute.
+  //  * @example
+  //  * const myAttribute = game.addAttribute("myAttribute");
+  //  */
+  // public addAttribute<TEnableBoost extends boolean = true>(
+  //     name: string,
+  //     useBoost: TEnableBoost = true as TEnableBoost,
+  //     initial: DecimalSource = 0,
+  // ): GameAttribute<TEnableBoost> {
+  //     const classInstance = new GameAttribute(
+  //         [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
+  //             typeof AttributeStatic
+  //         >,
+  //         this,
+  //     );
+  //     return classInstance;
+  // }
+  // /**
+  //  * Adds a new skill tree to the game.
+  //  * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+  //  * @template TSkillNames - The names of the skills in the skill tree.
+  //  * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+  //  * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+  //  * @returns A new instance of the game skill tree class.
+  //  */
+  // public addSkillTree<TSkillNames extends string = string>(
+  //     name: string,
+  //     skills: SkillInit<TSkillNames>[],
+  // ): GameSkillTree<TSkillNames> {
+  //     // Set the data and static objects
+  //     this.dataManager.setData(name, {
+  //         skillTree: new SkillTreeData(),
+  //     });
+  //     // Create the class instance
+  //     const classInstance = new GameSkillTree<TSkillNames>(
+  //         [
+  //             skills,
+  //             (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
+  //         ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
+  //         this,
+  //         name,
+  //     );
+  //     return classInstance;
+  // }
+};
+
+// src/game/GameReset.ts
+var GameReset = class _GameReset {
   /**
-   * Adds a new currency section to the game. {@link GameCurrency} is the class.
-   * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-   * @template TCurrencyName - The name
-   * @template U - The upgrade names for the currency. See {@link CurrencyStatic} for more information.
-   * @template I - The item names for the currency. See {@link CurrencyStatic} for more information.
-   * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
-   * @param upgrades - The upgrades for the currency.
-   * @param items - The items for the currency.
-   * @returns A new instance of the gameCurrency class.
-   * @example
-   * const currency = game.addCurrency("currency");
-   * currency.static.gain();
-   * console.log(currency.value); // Decimal.dOne
-   */
-  addCurrency(name, upgrades, items) {
-    this.dataManager.setData(name, {
-      currency: new Currency()
-    });
-    const classInstance = new GameCurrency(
-      [
-        () => this.dataManager.getData(name).currency,
-        upgrades,
-        items
-      ],
-      this,
-      name
-    );
-    return classInstance;
-  }
-  /**
-   * Adds a new attribute to the game. {@link GameAttribute} is the class.
-   * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
-   * @param name - The name of the attribute.
-   * @param useBoost - Indicates whether to use boost for the attribute.
-   * @param initial - The initial value of the attribute.
-   * @returns The newly created attribute.
-   * @example
-   * const myAttribute = game.addAttribute("myAttribute");
-   */
-  addAttribute(name, useBoost = true, initial = 0) {
-    this.dataManager.setData(name, new Attribute(initial));
-    const classInstance = new GameAttribute(
-      [this.dataManager.getData(name), useBoost, initial],
-      this
-    );
-    return classInstance;
-  }
-  /**
-   * Creates a new game reset object with the specified currencies to reset.
-   * @deprecated Use the class {@link GameReset} instead.
-   * This method is a wrapper for the class and does not provide any additional functionality.
-   * @param args - The arguments for the game reset. See {@link GameReset} for more information.
-   * @returns The newly created game reset object.
-   */
-  // public addReset (currenciesToReset: GameCurrency | GameCurrency[], extender?: GameReset): GameReset {
-  addReset(...args) {
-    console.warn("eMath.js: Game.addReset is deprecated. Use the GameReset class instead.");
-    const reset = new GameReset(...args);
-    return reset;
-  }
-  /**
-   * Creates a new game reset object from an object.
-   * @deprecated Use the static method {@link GameReset.fromObject} instead.
-   * This method is a wrapper for the static method and does not provide any additional functionality.
+   * Creates a new instance of the game reset from an object.
    * @param object - The object to create the game reset from.
-   * @returns The newly created game reset object.
+   * @returns The newly created game reset.
    */
-  addResetFromObject(object) {
-    console.warn(
-      "eMath.js: Game.addResetFromObject is deprecated. Use the GameReset.fromObject static method instead."
-    );
-    return GameReset.fromObject(object);
+  static fromObject(object) {
+    return new _GameReset(object.currenciesToReset, object.extender, object.onReset, object.condition);
   }
   /**
-   * Adds a new skill tree to the game.
-   * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
-   * @template TSkillNames - The names of the skills in the skill tree.
-   * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
-   * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
-   * @returns A new instance of the game skill tree class.
+   * Creates a new instance of the game reset.
+   * @param currenciesToReset The currencies to reset.
+   * @param extender The extender for the game reset.
+   * @param onReset Function to run during {@link reset}.
+   * @param condition A condition that must be met for the reset to occur.
    */
-  addSkillTree(name, skills) {
-    this.dataManager.setData(name, {
-      skillTree: new SkillTreeData()
+  constructor(currenciesToReset, extender, onReset, condition) {
+    this.currenciesToReset = Array.isArray(currenciesToReset) ? currenciesToReset : [currenciesToReset];
+    extender = extender ?? [];
+    this.extender = Array.isArray(extender) ? extender : [extender];
+    this.onReset = onReset;
+    this.condition = condition;
+    this.id = Symbol();
+  }
+  /**
+   * Resets the extenders (if any), then runs {@link onReset} and resets the currencies and upgrades.
+   * @param force Whether to force the reset. Defaults to `false`.
+   * @param forceExtenders Whether to force the reset of the extenders. Defaults to `true`.
+   * @param cached The set of cached symbols to prevent infinite loops.
+   */
+  reset(force = false, forceExtenders = true, cached = /* @__PURE__ */ new Set()) {
+    if (force || (typeof this.condition === "function" ? !this.condition(this) : !this.condition) && typeof this.condition !== "undefined") {
+      return;
+    }
+    const resetThis = () => {
+      this.onReset?.(this);
+      this.currenciesToReset.forEach((currency) => {
+        currency.reset();
+      });
+    };
+    if (this.extender.length === 0) {
+      resetThis();
+      return;
+    }
+    this.extender.forEach((extender) => {
+      if (!cached.has(extender.id)) {
+        cached.add(extender.id);
+        extender.reset(forceExtenders || force, forceExtenders, cached);
+      }
     });
-    const classInstance = new GameSkillTree(
-      [
-        skills,
-        () => this.dataManager.getData(name).skillTree
-      ],
-      this,
-      name
-    );
-    return classInstance;
+    resetThis();
   }
 };
 /*! Bundled license information:
