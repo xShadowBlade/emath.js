@@ -4,13 +4,12 @@
 import "reflect-metadata";
 import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
-import type { Pointer } from "../common/types";
 import { DecimalLRUCache } from "../E/DecimalLRUCache";
-import type { MeanMode } from "./numericalAnalysis/numericalAnalysis";
+import { DEFAULT_ITERATIONS, type MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
 import { calculateSum } from "./numericalAnalysis/sum";
-import type { Currency } from "./Currency";
-import { StaticClassWithData } from "../game";
+import { Currency } from "./Currency";
+import { DataManager, StaticClassWithData } from "../game";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -37,16 +36,16 @@ function calculateUpgrade(
     el = false,
 ): [amount: Decimal, cost: Decimal] {
     // Normalize the values
-    value = new Decimal(value);
-    start = new Decimal(start ?? upgrade.level);
-    end = new Decimal(end);
+    value = Decimal.fromValue_noAlloc(value);
+    start = Decimal.fromValue_noAlloc(start ?? upgrade.level);
+    end = Decimal.fromValue_noAlloc(end);
 
     const target = end.sub(start);
 
     // console.log("calculateUpgrade", { value, start, end, target, mode, iterations, el });
 
-    // Special case: If target is less than 1, just return 0
-    if (target.lt(0)) {
+    // Special case: If target is less than 0, just return 0
+    if (target.lt(Decimal.dZero)) {
         console.warn("eMath.js: Invalid target for calculateItem: ", target);
         return [Decimal.dZero, Decimal.dZero];
     }
@@ -71,7 +70,7 @@ function calculateUpgrade(
     // }
 
     // Special case: If target is 1, just check it manually
-    if (target.eq(1)) {
+    if (target.eq(Decimal.dOne)) {
         // console.log("target === 1");
         const cost = upgrade.cost(upgrade.level);
         const canAfford = value.gte(cost);
@@ -111,9 +110,8 @@ function calculateUpgrade(
         return out;
     }
 
-    // Special case for endless upgrades
+    // Special case for el upgrades
     if (el) {
-        // console.log("el");
         const costTargetFn = (level: Decimal): Decimal => upgrade.cost(level.add(start));
         const maxLevelAffordable = Decimal.min(
             end,
@@ -122,7 +120,6 @@ function calculateUpgrade(
                 iterations,
             }).value.floor(),
         );
-        // const cost = upgrade.cost(maxLevelAffordable);
         const cost = Decimal.dZero;
 
         // Set the cache
@@ -137,13 +134,13 @@ function calculateUpgrade(
         iterations,
     })
         .value.floor()
-        .min(start.add(target).sub(1));
+        .min(start.add(target).add(Decimal.dNegOne));
 
     // After finding the max level affordable, calculate the cost at that level
-    const cost = calculateSum(upgrade.cost, maxLevelAffordable, start);
+    const cost = calculateSum(upgrade.cost, maxLevelAffordable, start, undefined, DEFAULT_ITERATIONS);
 
     // console.log({ maxLevelAffordable, cost });
-    const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(1).max(0);
+    const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(Decimal.dOne).max(Decimal.dZero);
     // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
 
     // Set the cache
@@ -200,11 +197,13 @@ interface UpgradeCachedLevel {
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 class UpgradeData {
-    @Type(() => Decimal) public level;
+    public static readonly defaultUpgradeData: Readonly<UpgradeData> = new UpgradeData();
+
+    @Type(() => Decimal)
+    public level: Decimal;
 
     /**
-     * Constructs a new upgrade object with an initial level of 1 (or the provided level)
-     * @param init - The upgrade object to initialize.
+     * Constructs a new upgrade object with an initial level of 1.
      */
     constructor() {
         this.level = Decimal.dOne;
@@ -214,7 +213,22 @@ class UpgradeData {
 /**
  * Represents the backend for an upgrade.
  */
-class Upgrade {
+class Upgrade implements StaticClassWithData {
+    /**
+     * A helper function to generate a costBulk function for upgrades with a non-scaling cost (cost is independent of the level).
+     * @param cost - The cost of the upgrade.
+     * @returns A costBulk function that can be used in the upgrade object.
+     */
+    public static getCostBulkForNonScalingUpgrade(cost: DecimalSource): typeof Upgrade.prototype.costBulk {
+        cost = new Decimal(cost);
+
+        return (currencyValue: Decimal, level: Decimal, target: Decimal): [Decimal, Decimal] => {
+            const amountBuyable = currencyValue.div(cost).floor().clamp(Decimal.dZero, target);
+
+            return [amountBuyable, amountBuyable.mul(cost)];
+        };
+    }
+
     /**
      * The ID of the upgrade.
      * Used to retrieve the upgrade later.
@@ -266,6 +280,16 @@ class Upgrade {
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
     public effect: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void = () => {
+        // Empty effect placeholder
+    };
+
+    /**
+     * The effect that runs when the upgrade is added to the data manager.
+     * This runs only once when the upgrade is added to the data manager.
+     * @param upgradeContext - The upgrade object that the effect is being run on.
+     * @param currencyContext - The currency static class that the upgrade is being run on.
+     */
+    public effectOnAdd: (upgradeContext: Upgrade, currencyContext: Currency) => void = () => {
         // Empty effect placeholder
     };
 
@@ -331,7 +355,8 @@ class Upgrade {
     }
 
     protected currencySupplier: () => Currency = () => {
-        throw "emath.js: Upgrade currencySupplier has not set";
+        console.warn("emath.js: Upgrade currencySupplier has not set");
+        return new Currency("");
     };
     /** @returns The currency static class that the upgrade is being run on. */
     public get currency(): Currency {
@@ -369,7 +394,7 @@ class Upgrade {
         return this.data.level;
     }
     set level(n: DecimalSource) {
-        this.data.level = new Decimal(n);
+        this.data.level = Decimal.fromValue_noAlloc(n);
     }
 
     // /**
@@ -411,47 +436,70 @@ class Upgrade {
         this.id = id;
     }
 
+    public onAddToDataManager(dataManager: DataManager, prefix?: string): void {
+        const dataKey = `${prefix ? prefix + "_" : ""}${this.id}`;
+
+        this.dataSupplier = dataManager.setData(dataKey, new UpgradeData());
+    }
+
     // Chainable setters
     // TODO: jsdoc
-    public withName(name: typeof this.name): Upgrade {
+    public withName(name: typeof this.name): this {
         this.name = name;
         return this;
     }
-    public withCost(cost: typeof this.cost): Upgrade {
+    public withCost(cost: typeof this.cost): this {
         this.cost = cost;
         return this;
     }
-    public withMaxLevel(maxLevel: typeof this.maxLevel): Upgrade {
+    public withCostBulk(costBulk: typeof this.costBulk): this {
+        this.costBulk = costBulk;
+        return this;
+    }
+    public withMaxLevel(maxLevel: typeof this.maxLevel): this {
         this.maxLevel = maxLevel;
         return this;
     }
-    public withEffect(effect: typeof this.effect): Upgrade {
+    public withEffect(effect: typeof this.effect): this {
         this.effect = effect;
         return this;
     }
-    public withEl(el: typeof this.el): Upgrade {
+    public withEffectOnAdd(effectOnAdd: typeof this.effectOnAdd): this {
+        this.effectOnAdd = effectOnAdd;
+        return this;
+    }
+    public withEl(el: typeof this.el): this {
         this.el = el;
         return this;
     }
-    public withBounds(bounds: typeof this.bounds): Upgrade {
+    public withBounds(bounds: typeof this.bounds): this {
         this.bounds = bounds;
         return this;
     }
-    public withDefaultLevel(defaultLevel: typeof this.defaultLevel): Upgrade {
+    public withDefaultLevel(defaultLevel: typeof this.defaultLevel): this {
         this.defaultLevel = defaultLevel;
         return this;
     }
-    public withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): Upgrade {
+    public withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): this {
         this.descriptionSupplier = descriptionSupplier;
         return this;
     }
 
-    // Internal setters
-    public withDataSupplier(dataSupplier: typeof this.dataSupplier): Upgrade {
-        this.dataSupplier = dataSupplier;
+    /**
+     * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
+     * @param cost - The cost of the upgrade.
+     * @returns The upgrade object with the cost and costBulk functions set. The costBulk function is generated using {@link getCostBulkForNonScalingUpgrade}.
+     */
+    public asNonScalingUpgrade(cost: DecimalSource): this {
+        cost = Decimal.fromValue_noAlloc(cost);
+
+        this.cost = (): Decimal => cost;
+        this.costBulk = Upgrade.getCostBulkForNonScalingUpgrade(cost);
         return this;
     }
-    public withCurrencySupplier(currencySupplier: typeof this.currencySupplier): Upgrade {
+
+    // Internal setters
+    public withCurrencySupplier(currencySupplier: typeof this.currencySupplier): this {
         this.currencySupplier = currencySupplier;
         return this;
     }
@@ -508,6 +556,94 @@ class Upgrade {
     // }
 }
 
-// export type { UpgradeInitArrayType };
-export { UpgradeData, Upgrade, calculateUpgrade };
-export type { UpgradeCached };
+/**
+ * The requirements for a skill tree node. Can be a {@link SkillNode} or an object with a skill and a level that is required.
+ */
+interface SkillRequirement {
+    /**
+     * The skill node that is required.
+     */
+    skill: SkillNode;
+
+    /**
+     * The level that is required for the skill node.
+     * If not specified, the skill node must be at least level 1.
+     */
+    level: DecimalSource;
+}
+
+/**
+ * Represents an upgrade in the skill tree.
+ * Each upgrade has its own id, name, description, cost, required skills, maximum level, and effect.
+ */
+class SkillNode extends Upgrade {
+    public static fromUpgrade(upgrade: Upgrade): SkillNode {
+        const out = new SkillNode(upgrade.id);
+
+        Object.assign(out, upgrade);
+
+        return out;
+    }
+
+    /**
+     * The skill nodes that are required to unlock this skill node.
+     * See {@link SkillRequirement} for more information.
+     * - Can also be a function that takes the skill tree context and returns the required skills.
+     * - Can also be a function that takes the contexts and returns a boolean indicating if the skill is unlocked (`true` is unlocked, `false` is not unlocked).
+     */
+    public requirements?:
+        | (SkillNode | SkillRequirement)[]
+        | ((currencyContext: Currency, skillNodeContext: SkillNode) => (SkillNode | SkillRequirement)[])
+        | ((currencyContext: Currency, skillNodeContext: SkillNode) => boolean);
+
+    public withRequirements(requirements: typeof this.requirements): this {
+        this.requirements = requirements;
+        return this;
+    }
+
+    /**
+     * @returns If this skill is unlocked.
+     */
+    public isUnlocked(): boolean {
+        // If there are no required skills, the skill is unlocked
+        if (!this.requirements || this.requirements.length === 0) {
+            return true;
+        }
+
+        // If the required skills are a function, call it
+        const requiredSkills =
+            typeof this.requirements === "function" ? this.requirements(this.currency, this) : this.requirements;
+
+        // If the requirements is a boolean, return the boolean value
+        if (typeof requiredSkills === "boolean") {
+            return requiredSkills;
+        }
+
+        // Check if all the required skills are unlocked
+        return requiredSkills.every((requiredSkill) => {
+            // If the required skill is a string, get the skill node
+            // if (typeof requiredSkill === "string") {
+            //     const skillNode = this.currency.getUpgrade(requiredSkill);
+
+            //     // If the skill node is not found, return false
+            //     if (!skillNode) {
+            //         console.warn(`eMath.js: Required skill "${requiredSkill}" not found in skill tree.`);
+            //         return false;
+            //     }
+
+            //     requiredSkill = skillNode;
+            // }
+
+            // If the required skill is a skill node with extra levels, check if the level is high enough
+            if ("skill" in requiredSkill) {
+                return requiredSkill.skill.level.gte(requiredSkill.level) && requiredSkill.skill.isUnlocked();
+            }
+
+            // If the required skill is just a skill node, check if it is unlocked
+            return requiredSkill.isUnlocked();
+        });
+    }
+}
+
+export { UpgradeData, Upgrade, SkillNode, calculateUpgrade };
+export type { UpgradeCached, SkillRequirement };
