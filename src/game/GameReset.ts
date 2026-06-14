@@ -1,10 +1,10 @@
 /**
  * @file This file contains all the reset layer related classes.
  */
-import type { GameCurrency } from "./GameCurrency";
+import type { Currency } from "../classes/Currency";
 
 type GameResetFromObject = Pick<Partial<GameReset>, "currenciesToReset" | "extender" | "onReset" | "condition"> & {
-    currenciesToReset: GameCurrency | GameCurrency[];
+    currenciesToReset: Currency | Currency[];
     extender?: GameReset | GameReset[];
 };
 
@@ -25,7 +25,7 @@ class GameReset {
     private readonly id: symbol;
 
     /** The currencies to reset. */
-    public readonly currenciesToReset: GameCurrency[];
+    public readonly currenciesToReset: Currency[];
 
     /** The extender for the game reset. */
     public readonly extender: GameReset[];
@@ -49,7 +49,7 @@ class GameReset {
      * @param condition A condition that must be met for the reset to occur.
      */
     constructor(
-        currenciesToReset: GameCurrency | GameCurrency[],
+        currenciesToReset: Currency | Currency[],
         extender?: GameReset | GameReset[],
         onReset?: typeof GameReset.prototype.onReset,
         condition?: typeof GameReset.prototype.condition,
@@ -83,7 +83,7 @@ class GameReset {
             this.onReset?.(this);
 
             this.currenciesToReset.forEach((currency) => {
-                currency.static.reset();
+                currency.reset();
             });
         };
 
