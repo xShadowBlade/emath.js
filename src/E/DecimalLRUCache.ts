@@ -30,6 +30,12 @@ class DecimalLRUCache<V> extends LRUCache<DecimalKey, V> {
 
         super.set(DecimalLRUCache.decimalToKey(key), value);
     }
+
+    public has(key: DecimalSource): boolean {
+        key = new Decimal(key);
+
+        return super.has(DecimalLRUCache.decimalToKey(key));
+    }
 }
 
 export { DecimalLRUCache };
