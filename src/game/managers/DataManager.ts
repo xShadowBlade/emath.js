@@ -12,7 +12,7 @@ import { eMathMetadata } from "../../metadata";
 // Save validation
 import md5 from "md5";
 
-import type { UnknownObject, ConstructableObject, Pointer } from "../../common/types";
+import type { UnknownObject, ConstructableObject } from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -40,8 +40,15 @@ interface StaticClassWithData {
      */
     // id: string;
 
+    /**
+     * Runs when {@link DataManager.loadData} is called and the data is loaded.
+     */
     onLoadData?(): void;
 
+    /**
+     * Runs when the class is added to the data manager using {@link DataManager.addCustomData}.
+     * @param dataManager - A reference to the dataManager that was run on.
+     */
     onAddToDataManager?(dataManager: DataManager): void;
 }
 
@@ -56,7 +63,7 @@ class DataManager {
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
-    private data: UnknownObject = {};
+    private readonly data: Record<string, unknown> = {};
 
     /** A reference to the game instance. */
     private readonly gameRef: Game;
@@ -76,8 +83,8 @@ class DataManager {
      * @param gameRef - A function that returns the game instance.
      * @param localStorage - The local storage object. Defaults to `window.localStorage`.
      */
-    constructor(gameRef: Pointer<Game>, localStorage?: Storage) {
-        this.gameRef = typeof gameRef === "function" ? gameRef() : gameRef;
+    constructor(gameRef: Game, localStorage?: Storage) {
+        this.gameRef = gameRef;
 
         // Set the local storage object
         this.localStorage =
@@ -124,6 +131,38 @@ class DataManager {
     }
 
     /**
+     * Sets the data for the given key and returns a getter and setter for the data.
+     * @param key - The key to set the data for.
+     * @param value - The initial value to set the data to.
+     * @returns A tuple containing a getter and a setter for the data. The getter returns the current value of the data, and the setter can be used to update the value of the data. The setter can take either a new value or a callback function that receives the previous value and returns the new value.
+     * @example
+     * const [getTestData, setTestData] = dataManager.useData("test", 5);
+     * console.log(getTestData()); // 5
+     * setTestData(10); // Sets the data to 10
+     * console.log(getTestData()); // 10
+     * setTestData((prev) => prev + 5); // Updates the data to 15 using a callback
+     * console.log(getTestData()); // 15
+     */
+    public useData<T>(
+        key: string,
+        value: T,
+    ): [dataSupplier: () => T, dataSetter: ((newValue: T) => void) | ((callback: (previousValue: T) => T) => void)] {
+        this.data[key] = value;
+
+        return [
+            (): T => this.data[key] as T,
+            (newValueOrCallback: T | ((previousValue: T) => T)): void => {
+                if (typeof newValueOrCallback === "function") {
+                    this.data[key] = (newValueOrCallback as (previousValue: T) => T)(this.data[key] as T);
+                    return;
+                }
+
+                this.data[key] = newValueOrCallback;
+            },
+        ];
+    }
+
+    /**
      * Gets the data for the given key.
      * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
      * @param key - The key to get the data for.
@@ -133,9 +172,14 @@ class DataManager {
         return this.data[key];
     }
 
-    // TODO: jsdoc
-    public addCustomData(data: StaticClassWithData) {
+    /**
+     * Adds a static class with data to the data manager. The class will be added to the data manager and its `onAddToDataManager` method will be called if it exists. When the data is loaded using {@link DataManager.loadData}, the class's `onLoadData` method will be called if it exists.
+     * @param data - The static class with data to add to the data manager.
+     */
+    public addCustomData(data: StaticClassWithData): void {
         data.onAddToDataManager?.(this);
+
+        this.addEventOnLoad(() => data.onLoadData?.());
     }
 
     /**
@@ -251,41 +295,61 @@ class DataManager {
         // if (!this.normalData) {
         //     throw new Error("dataManager.resetData(): You must call init() before writing to data.");
         // }
-
         // // Reset the data
         // this.data = this.normalData;
-
         // // Save the data
         // this.saveData();
-
         // // Reload the page if specified
         // if (reload) window.location.reload();
 
-        // TODO: implement resetData
+        // TODO: implement resetData without reloading
+        if (!reload) {
+            console.warn(
+                "eMath.js: resetData(): Resetting data without reloading is not fully supported yet and may cause issues. It is recommended to set reload to true or implement a custom reset system by calling saveData() with the initial data.",
+            );
+        }
+
+        if (typeof window === "undefined") {
+            console.warn(
+                "eMath.js: resetData(): Window is not defined. You can implement a custom reset system by calling saveData() with the initial data.",
+            );
+            return;
+        }
+
+        this.saveData(null);
     }
 
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you don't want to save to local storage, use {@link compileData} instead.
-     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
+     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}. If the data is null, the save will be cleared instead.
      */
-    public saveData(dataToSave = this.compileData()): void {
-        // Call the `beforeSaveData` event on the game eventManager
-        this.gameRef.eventManager.dispatch("beforeSaveData");
-
+    public saveData(dataToSave: string | null = this.compileData()): void {
         // If the data is empty, throw
-        if (!dataToSave) {
-            throw new Error("dataManager.saveData(): Data to save is empty.");
+        if (typeof dataToSave === "undefined" || dataToSave === "") {
+            console.warn("dataManager.saveData(): Data to save is empty.");
+            return;
         }
 
         // If local storage is not supported, throw
         if (!this.localStorage) {
-            throw new Error(
+            console.warn(
                 "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
             );
+            return;
         }
 
+        // Call the `beforeSaveData` event on the game eventManager
+        this.gameRef.eventManager.dispatch("beforeSaveData");
+
         // Save the data to local storage
+
+        // If the data is null, remove the item from local storage instead of saving it as "null"
+        if (dataToSave === null) {
+            this.localStorage.removeItem(`${this.gameRef.config.name.id}-data`);
+            return;
+        }
+
         this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
 
         // Call the `saveData` event on the game eventManager
@@ -326,7 +390,6 @@ class DataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @returns The loaded data.
      */
     public parseData(dataToParse = this.decompileData()): void {
         // No data to parse
