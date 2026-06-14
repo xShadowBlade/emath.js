@@ -22,17 +22,18 @@ import { Decimal } from "../../E/e";
  * @default 30
  */
 declare const DEFAULT_ITERATIONS = 30;
+declare const DEFAULT_ITERATIONS_AS_DECIMAL: Readonly<Decimal>;
 /**
  * The default tolerance to compare the values with.
  * Can be overridden by passing a custom tolerance.
  *
  * Used by:
- * - {@link equalsTolerance}
+ * - {@link geometricEqualsTolerance}
  * - {@link calculateSum} and {@link calculateSumApprox}, the latter of which uses the tolerance * 2 for speed.
  * - {@link roundingBase}
- * @default 0.001
+ * @default 5e-5
  */
-declare const DEFAULT_TOLERANCE = 0.001;
+declare const DEFAULT_TOLERANCE = 0.0001;
 /**
  * Represents different methods to calculate the mean.
  *
@@ -41,7 +42,32 @@ declare const DEFAULT_TOLERANCE = 0.001;
  * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
  * - Mode 4 `"logarithmic"` `10^sqrt(log10(a)*log10(b))` is the most "accurate" and slightly slower.
  */
-type MeanMode = "arithmetic" | "geometric" | "harmonic" | "logarithmic" | 1 | 2 | 3 | 4;
+declare enum MeanMode {
+    /**
+     * The arithmetic mean of two values.
+     * @example (a + b) / 2
+     */
+    arithmetic = 1,
+    /**
+     * The geometric mean of two values.
+     * @example sqrt(a * b)
+     */
+    geometric = 2,
+    /**
+     * The harmonic mean of two values.
+     * @example 2 / (1/a + 1/b)
+     */
+    harmonic = 3,
+    /**
+     * The logarithmic mean of two values.
+     * @example 10^sqrt(log10(a) * log10(b))
+     */
+    logarithmic = 4,
+    /**
+     * See {@link decimalMagDifference}.
+     */
+    tetrational = 5
+}
 /**
  * Calculates the mean of two values using a specified method.
  * @param a - The first value.
@@ -51,7 +77,7 @@ type MeanMode = "arithmetic" | "geometric" | "harmonic" | "logarithmic" | 1 | 2 
  */
 export declare function mean(a: DecimalSource, b: DecimalSource, mode?: MeanMode): Decimal;
 /**
- * The configuration object for the {@link equalsTolerance} function.
+ * The configuration object for the {@link geometricEqualsTolerance} function.
  */
 interface EqualsToleranceConfig {
     /**
@@ -74,7 +100,9 @@ interface EqualsToleranceConfig {
  * @param config - The configuration object.
  * @returns Whether the values are equal within the tolerance.
  */
-declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: DecimalSource, config?: Partial<EqualsToleranceConfig>): boolean;
+declare function geometricEqualsTolerance(a: DecimalSource, b: DecimalSource, tolerance?: number, verbose?: boolean | "onlyOnFail"): boolean;
+declare function decimalMagDifference(a: DecimalSource, b: DecimalSource): number;
+declare function decimalMagGeometricMean(a: Decimal, b: Decimal): Decimal;
 /**
  * Function to round a number to the nearest power of a specified base.
  * @param x - The number to round.
@@ -89,5 +117,31 @@ declare function equalsTolerance(a: DecimalSource, b: DecimalSource, tolerance: 
  * roundingBase(245, 2); // 256
  */
 declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
-export { equalsTolerance, roundingBase, DEFAULT_ITERATIONS, DEFAULT_TOLERANCE, };
-export type { MeanMode, EqualsToleranceConfig };
+/**
+ * Approximates the derivative of a function at a given point using the difference quotient method.
+ * Assumes that the function is differentiable at the given point and the derivative is not zero.
+ * @param f - The function to differentiate. Must be a function that takes a Decimal and returns a Decimal.
+ * @param x - The point at which to approximate the derivative.
+ * @param epsilon - The small value to use for the difference quotient. Defaults to `1e-12`, which is a good balance between accuracy and avoiding numerical instability for most functions. Can be adjusted for specific functions or ranges of x.
+ * @returns The approximate derivative of the function at the given point, as a {@link Decimal}.
+ * @example
+ * const f = (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5);
+ * approximateDerivative(f, 10); // 23
+ */
+declare function approximateDerivative(f: (x: Decimal) => Decimal, x: DecimalSource, epsilon?: number): Decimal;
+/**
+ * Uses the Newton-Raphson method to find a root of the function f, starting from an initial guess.
+ * @param initialGuess - The initial guess for the root.
+ * @param f - The function for which to find the root.
+ * @param fPrime - The derivative of the function. If not provided, it will be approximated using the {@link approximateDerivative} function.
+ * @param tolerance - The tolerance for convergence. The method will stop when the difference between successive approximations is less than or equal to this value. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @param maxIterations - The maximum number of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @returns An approximation of the root of the function, as a {@link Decimal}.
+ * @example
+ * const f = (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5);
+ * const fPrime = (x: Decimal) => x.mul(4).add(3);
+ * newtonRaphson(10, f, fPrime); // Approximately -0.780776406404415
+ */
+declare function newtonRaphson(initialGuess: DecimalSource, f: (x: Decimal) => Decimal, fPrime?: (x: Decimal) => Decimal, tolerance?: number, maxIterations?: number): Decimal;
+export { geometricEqualsTolerance, approximateDerivative, newtonRaphson, decimalMagDifference, decimalMagGeometricMean, roundingBase, DEFAULT_ITERATIONS, DEFAULT_ITERATIONS_AS_DECIMAL, DEFAULT_TOLERANCE, MeanMode, };
+export type { EqualsToleranceConfig };

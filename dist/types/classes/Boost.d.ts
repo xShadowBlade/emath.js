@@ -3,17 +3,32 @@
  */
 import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
-import type { Pointer } from "../common/types";
 /**
- * An object representing a boost.
+ * Represents an individual boost object.
  */
-interface BoostsObjectInit {
-    /** The ID of the boost. */
-    id: string;
-    /** The name of the boost. */
-    name?: string;
-    /** @deprecated Use {@link description} instead. This will do nothing */
-    desc?: Pointer<string>;
+declare class BoostObject {
+    /**
+     * The ID of the boost.
+     */
+    readonly id: string;
+    /**
+     * The name of the boost.
+     */
+    name: string;
+    /**
+     * The function that calculates the value of the boost.
+     * @param input - The input value.
+     * @returns The calculated value.
+     * @example
+     * // A boost that adds 10 to the input value.
+     * (input) => input.add(10)
+     *
+     * // A boost that multiplies the input value by 2.
+     * (input) => input.mul(2)
+     */
+    value: (input: Decimal) => Decimal;
+    /** The order at which the boost is applied. Lower orders are applied first. */
+    order: number;
     /**
      * An optional description of the boost.
      * Can be a string or a function that returns a string.
@@ -30,46 +45,24 @@ interface BoostsObjectInit {
      * // Getter function
      * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
      */
-    description?: ((...args: any[]) => string) | string;
-    /**
-     * The function that calculates the value of the boost.
-     * @param input - The input value.
-     * @returns The calculated value.
-     * @example
-     * // A boost that adds 10 to the input value.
-     * (input) => input.add(10)
-     *
-     * // A boost that multiplies the input value by 2.
-     * (input) => input.mul(2)
-     */
-    value: (input: Decimal) => Decimal;
-    /** The order at which the boost is applied. Lower orders are applied first. */
-    order?: number;
-}
-/**
- * Represents an individual boost object.
- */
-declare class BoostObject implements BoostsObjectInit {
-    id: string;
-    name: string;
-    value: (input: Decimal) => Decimal;
-    order: number;
-    descriptionFn: (...args: any[]) => string;
+    private descriptionSupplier;
     /**
      * @returns The description of the boost.
-     * @deprecated Use {@link description} instead
      */
-    get desc(): string;
     get description(): string;
     /**
      * Constructs a new boost object.
-     * @param init - The initialization object.
      */
-    constructor(init: BoostsObjectInit);
+    constructor(id: string);
+    withName(name: typeof this.name): BoostObject;
+    withValue(value: typeof this.value): BoostObject;
+    withOrder(order: typeof this.order): BoostObject;
+    withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): BoostObject;
 }
 /**
- * Represents a boost manager that applies various effects to a base value.
- * Typically used in combination with Attribute or Currency classes.
+ * Calculates various effects to a base value.
+ * Each boost is represented by a {@link BoostObject} which contains the parameters of the boost, and the boost manager calculates the cumulative effect of all boosts on a base value.
+ * Typically used in combination with an Attribute or Currency.
  */
 declare class Boost {
     /** An array of boost objects. */
@@ -79,9 +72,8 @@ declare class Boost {
     /**
      * Constructs a new boost manager.
      * @param baseEffect - The base effect value to which boosts are applied.
-     * @param boosts - An array of boost objects to initialize with.
      */
-    constructor(baseEffect?: DecimalSource, boosts?: BoostsObjectInit | BoostsObjectInit[]);
+    constructor(baseEffect?: DecimalSource);
     /**
      * Gets all boosts with the given ID.
      * @param id - A string or regular expression to match the ID of the boosts.
@@ -116,19 +108,6 @@ declare class Boost {
     removeBoost(id: string): void;
     /**
      * Sets or updates a boost with the given parameters.
-     * @deprecated Use the other overload instead.
-     * @param id - The ID of the boost.
-     * @param name - The name of the boost.
-     * @param description - The description of the boost.
-     * @param value - The value of the boost (function).
-     * @param order - The order of the boost (lower order go first)
-     * @example
-     * // Set a boost that multiplies the input value by 2
-     * boost.setBoost("doubleBoost", "Double Boost", "Doubles the input value", (input) => input.mul(2));
-     */
-    setBoost(id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
-    /**
-     * Sets or updates a boost with the given parameters.
      * @param boostObj - The boost object containing the parameters.
      * @example
      * // Set a boost that multiplies the input value by 2
@@ -139,15 +118,8 @@ declare class Boost {
      *     value: (input) => input.mul(2),
      * });
      */
-    setBoost(boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
-    /**
-     * @alias setBoost
-     * @deprecated Use {@link setBoost} instead.
-     */
-    addBoost: {
-        (id: string, name: string, description: string, value: (input: Decimal) => Decimal, order?: number): void;
-        (boostObj: BoostsObjectInit | BoostsObjectInit[]): void;
-    };
+    addBoost(boostToAdd: BoostObject): void;
+    addBoosts(boostToAdd: BoostObject[]): void;
     /**
      * Clears all boosts from the boost manager.
      * @example
@@ -157,6 +129,7 @@ declare class Boost {
      * // baseEffect is still the same
      */
     clearBoosts(): void;
+    sortBoosts(): void;
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
      * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
@@ -167,5 +140,4 @@ declare class Boost {
      */
     calculate(base?: DecimalSource): Decimal;
 }
-export type { BoostsObjectInit };
 export { Boost, BoostObject };

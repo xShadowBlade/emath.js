@@ -53,7 +53,7 @@ module.exports = __toCommonJS(presets_exports);
 // src/E/e.ts
 var import_class_transformer = require("class-transformer");
 
-// src/E/lru-cache.ts
+// src/E/LRUCache.ts
 var LRUCache = class {
   /**
    * Constructs a new instance of the LRUCache class.
