@@ -11,7 +11,7 @@ import { Decimal } from "../../E/e";
  * @param standardDeviation - The standard deviation of the normal distribution.
  * @returns A random sample from the normal distribution.
  */
-function gaussianRandom(mean: DecimalSource = 0, standardDeviation: DecimalSource = 1): Decimal {
+function gaussianRandom(mean: DecimalSource = Decimal.dZero, standardDeviation: DecimalSource = Decimal.dOne): Decimal {
     // Convert [0, 1) to (0, 1]
     const u = 1 - Math.random();
     const v = Math.random();
@@ -27,16 +27,16 @@ function gaussianRandom(mean: DecimalSource = 0, standardDeviation: DecimalSourc
  * @returns A random sample from the Poisson distribution.
  */
 function poissonRandom(lambda: DecimalSource): Decimal {
-    const L = Decimal.dNegOne.mul(lambda).exp();
-    let k = new Decimal(0);
+    const L = Decimal.fromValue_noAlloc(lambda).negate().exp();
+    let k = Decimal.dZero;
     let prod = Decimal.dOne;
 
     do {
-        k = k.add(1);
+        k = k.add(Decimal.dOne);
         prod = prod.mul(Math.random());
     } while (prod.gt(L));
 
-    return k.sub(1);
+    return k.sub(Decimal.dOne);
 }
 
 /**
@@ -52,25 +52,25 @@ function sampleFromBinomialDistribution(
     probabilityOfSuccess: DecimalSource,
 ): Decimal | null {
     // Validate inputs
-    numberOfTrials = new Decimal(numberOfTrials);
-    probabilityOfSuccess = new Decimal(probabilityOfSuccess);
+    numberOfTrials = Decimal.fromValue_noAlloc(numberOfTrials);
+    probabilityOfSuccess = Decimal.fromValue_noAlloc(probabilityOfSuccess);
 
-    if (numberOfTrials.lt(0) || probabilityOfSuccess.lt(0) || probabilityOfSuccess.gt(1)) {
+    if (numberOfTrials.sign === -1 || probabilityOfSuccess.sign === -1 || probabilityOfSuccess.gt(Decimal.dOne)) {
         return null;
     }
 
     const np = numberOfTrials.mul(probabilityOfSuccess);
 
     // Use Gaussian approximation for large np
-    if (np.gt(10)) {
+    if (np.gt(Decimal.dTen)) {
         return gaussianRandom(np, Decimal.sqrt(np.mul(Decimal.dOne.sub(probabilityOfSuccess))))
             .round()
-            .clamp(0, numberOfTrials);
+            .clamp(Decimal.dZero, numberOfTrials);
     }
 
     // TODO: more checks for different values of np like small p and large n
     // Use poisson approximation for small np
-    return poissonRandom(np).round().clamp(0, numberOfTrials);
+    return poissonRandom(np).round().clamp(Decimal.dZero, numberOfTrials);
 }
 
 // Test gaussianRandom
