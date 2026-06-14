@@ -1,25 +1,13 @@
 /**
  * @file Declares the main game class.
  */
-
-import type { DecimalSource } from "../E/e";
-import type { Currency } from "../classes/Currency";
-import { CurrencyData } from "../classes/Currency";
-import type { AttributeStatic } from "../classes/Attribute";
-import { Attribute } from "../classes/Attribute";
 import { KeyManager } from "./managers/KeyManager";
 import { EventManager } from "./managers/EventManager";
-import { DataManager, StaticClassWithData } from "./managers/DataManager";
-import { GameCurrency } from "./GameCurrency";
-import { GameAttribute } from "./GameAttribute";
-import { GameReset } from "./GameReset";
+import type { StaticClassWithData } from "./managers/DataManager";
+import { DataManager } from "./managers/DataManager";
 
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
-import type { ItemInit } from "../classes/Item";
-import type { SkillInit, SkillTreeStatic } from "../classes/SkillTree";
-import { SkillTreeData } from "../classes/SkillTree";
-import { GameSkillTree } from "./GameSkillTree";
 
 /**
  * The game configuration interface. Some options are not used internally, but you can access them by using `game.config`.
