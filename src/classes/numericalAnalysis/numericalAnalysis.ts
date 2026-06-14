@@ -2,7 +2,7 @@
  * @file Declares the numerical analysis functions (inverse function approximation, sum calculation).
  */
 import type { DecimalSource } from "../../E/e";
-import { Decimal } from "../../E/e";
+import { Decimal, f_maglog10 } from "../../E/e";
 
 /**
  * The default amount of iterations to perform for the inverse function approximation and sum calculation.
@@ -23,18 +23,19 @@ import { Decimal } from "../../E/e";
  * @default 30
  */
 const DEFAULT_ITERATIONS = 30;
+const DEFAULT_ITERATIONS_AS_DECIMAL: Readonly<Decimal> = new Decimal(DEFAULT_ITERATIONS);
 
 /**
  * The default tolerance to compare the values with.
  * Can be overridden by passing a custom tolerance.
  *
  * Used by:
- * - {@link equalsTolerance}
+ * - {@link geometricEqualsTolerance}
  * - {@link calculateSum} and {@link calculateSumApprox}, the latter of which uses the tolerance * 2 for speed.
  * - {@link roundingBase}
- * @default 0.001
+ * @default 5e-5
  */
-const DEFAULT_TOLERANCE = 0.001;
+const DEFAULT_TOLERANCE = 1e-4;
 
 /**
  * Represents different methods to calculate the mean.
@@ -44,7 +45,36 @@ const DEFAULT_TOLERANCE = 0.001;
  * - Mode 3 `"harmonic"` `2/(1/a+1/b)` is the slowest. You probably don't need this.
  * - Mode 4 `"logarithmic"` `10^sqrt(log10(a)*log10(b))` is the most "accurate" and slightly slower.
  */
-type MeanMode = "arithmetic" | "geometric" | "harmonic" | "logarithmic" | 1 | 2 | 3 | 4;
+enum MeanMode {
+    /**
+     * The arithmetic mean of two values.
+     * @example (a + b) / 2
+     */
+    arithmetic = 1,
+
+    /**
+     * The geometric mean of two values.
+     * @example sqrt(a * b)
+     */
+    geometric = 2,
+
+    /**
+     * The harmonic mean of two values.
+     * @example 2 / (1/a + 1/b)
+     */
+    harmonic = 3,
+
+    /**
+     * The logarithmic mean of two values.
+     * @example 10^sqrt(log10(a) * log10(b))
+     */
+    logarithmic = 4,
+
+    /**
+     * See {@link decimalMagGeometricMean}.
+     */
+    // tetrational = 5,
+}
 
 /**
  * Calculates the mean of two values using a specified method.
@@ -53,34 +83,27 @@ type MeanMode = "arithmetic" | "geometric" | "harmonic" | "logarithmic" | 1 | 2 
  * @param mode - The mode/mean method to use. See {@link MeanMode}
  * @returns The mean of the two values, as a {@link Decimal}.
  */
-export function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = "geometric"): Decimal {
-    a = new Decimal(a);
-    b = new Decimal(b);
+export function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = MeanMode.geometric): Decimal {
+    a = Decimal.fromValue_noAlloc(a);
+    b = Decimal.fromValue_noAlloc(b);
 
     switch (mode) {
-        case "arithmetic":
-        case 1:
-            return a.add(b).div(2);
-        case "geometric":
-        case 2:
+        case MeanMode.arithmetic:
+            return a.add(b).mul(0.5);
+        case MeanMode.geometric:
         default:
             return a.mul(b).sqrt();
-        case "harmonic":
-        case 3:
+        case MeanMode.harmonic:
             return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-        case "logarithmic":
-        case 4:
+        case MeanMode.logarithmic:
             return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
+        // case MeanMode.tetrational:
+        //     return decimalMagGeometricMean(a, b);
     }
 }
 
-// interface EqualsToleranceBounds {
-//     lowerBound: DecimalSource;
-//     upperBound: DecimalSource;
-// }
-
 /**
- * The configuration object for the {@link equalsTolerance} function.
+ * The configuration object for the {@link geometricEqualsTolerance} function.
  */
 interface EqualsToleranceConfig {
     /**
@@ -98,52 +121,82 @@ interface EqualsToleranceConfig {
 }
 
 /**
- * Compares two values with a tolerance.
- * @param a - The lower bound.
- * @param b - The upper bound.
+ * Compares two values for equality within a specified tolerance, using a geometric comparison method that takes into account the magnitude of the values.
+ * @param a - The first value.
+ * @param b - The second value.
  * @param tolerance - The tolerance to compare the values with.
- * @param config - The configuration object.
+ * @param verbose - Whether to log the values (a, b, tolerance, config, diff, result) to the console. See {@link EqualsToleranceConfig.verbose}.
  * @returns Whether the values are equal within the tolerance.
  */
-function equalsTolerance(
+function geometricEqualsTolerance(
     a: DecimalSource,
     b: DecimalSource,
-    tolerance: DecimalSource,
-    config?: Partial<EqualsToleranceConfig>,
+    tolerance: number = DEFAULT_TOLERANCE,
+    verbose: boolean | "onlyOnFail" = false,
 ): boolean {
-    // Set the default values
-    config = Object.assign(
-        {},
-        {
-            verbose: false,
-            mode: "geometric",
-        } as EqualsToleranceConfig,
-        config,
-    );
-
     // Convert the values to Decimal instances
-    a = new Decimal(a);
-    b = new Decimal(b);
-    tolerance = new Decimal(tolerance);
+    a = Decimal.fromValue_noAlloc(a);
+    b = Decimal.fromValue_noAlloc(b);
 
-    let diff: Decimal;
-    let result: boolean;
+    const diff = decimalMagDifference(a, b) - 1;
 
-    // Compare the values
-    if (config.mode === "geometric") {
-        diff = a.sub(b).abs().div(a.abs().add(b.abs()).div(2));
-        result = diff.lte(tolerance);
-    } else {
-        diff = a.sub(b).abs();
-        result = diff.lte(tolerance);
-    }
-
-    if (config.verbose === true || (config.verbose === "onlyOnFail" && !result)) {
-        console.log({ a, b, tolerance, config, diff, result });
+    const result = Math.abs(diff) < tolerance;
+    if (verbose === true || (verbose === "onlyOnFail" && !result)) {
+        console.log({ a, b, tolerance, diff, result });
     }
 
     return result;
 }
+
+/**
+ * Calculates the difference in magnitude between two Decimal values.
+ * The difference is calculated as the ratio of the magnitudes of the two values, taking into account their layers.
+ * If the layers differ by 2 or more, the difference is considered infinite (if a is larger) or zero (if b is larger).
+ * @param a - The first Decimal value.
+ * @param b - The second Decimal value.
+ * @returns The difference in magnitude between the two Decimal values. A value of 1 means they are of the same magnitude, a value greater than 1 means a is larger, and a value less than 1 means b is larger.
+ */
+function decimalMagDifference(a: DecimalSource, b: DecimalSource): number {
+    a = Decimal.fromValue_noAlloc(a);
+    b = Decimal.fromValue_noAlloc(b);
+
+    // Same layer, just compare the magnitudes
+    if (a.layer === b.layer) {
+        return a.mag / b.mag;
+    }
+
+    // If differ by too much, consider the difference to be infinite or zero
+    if (a.layer - b.layer >= 2) {
+        return Infinity;
+    }
+    if (a.layer - b.layer <= -2) {
+        return 0;
+    }
+
+    // If they differ by 1 layer, compare the magnitude of the larger one to the log10 of the smaller one
+    // TODO: test negative mag
+    if (a.layer > b.layer) {
+        return a.mag / f_maglog10(b.mag);
+    } else {
+        return f_maglog10(a.mag) / b.mag;
+    }
+}
+
+// function decimalMagGeometricMean(a: Decimal, b: Decimal): Decimal {
+//     // if (a.layer === b.layer) {
+//     //     // No need to worry about a.mag * b.mag being infinity as normalization means the mag has to be < 9e15
+//     //     return Decimal.fromComponents(1, a.layer, Math.sqrt(a.mag * b.mag));
+//     // }
+
+//     // const averageLayer = (a.layer + b.layer) / 2;
+
+//     // return Decimal.dTen.tetrate(averageLayer, Math.sqrt(a.mag * b.mag));
+
+//     // return Decimal.fromComponents(1, a.layer, Math.sqrt(a.mag * b.mag));
+
+//     // test
+//     // return Decimal.dTen.tetrate((a.slog(10).toNumber() + b.slog(10).toNumber()) / 2);
+// }
 
 /**
  * Function to round a number to the nearest power of a specified base.
@@ -160,18 +213,18 @@ function equalsTolerance(
  */
 function roundingBase(
     x: DecimalSource,
-    base: DecimalSource = 10,
-    acc: DecimalSource = 0,
+    base: DecimalSource = Decimal.dTen,
+    acc: DecimalSource = Decimal.dZero,
     max: DecimalSource = 1000,
 ): Decimal {
     // Normalize the inputs
-    x = new Decimal(x);
-    base = new Decimal(base);
-    acc = new Decimal(acc);
-    max = new Decimal(max);
+    x = Decimal.fromValue_noAlloc(x);
+    base = Decimal.fromValue_noAlloc(base);
+    acc = Decimal.fromValue_noAlloc(acc);
+    max = Decimal.fromValue_noAlloc(max);
 
     // If base or acc is less than 1, return NaN
-    if (base.lt(1) || acc.lt(1)) return Decimal.dNaN;
+    if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
 
     // If the number is negative, round it as positive and then add the sign back
     const xSign = x.sign as -1 | 0 | 1;
@@ -201,15 +254,182 @@ function roundingBase(
     return out;
 }
 
+/**
+ * Approximates the derivative of a function at a given point using the difference quotient method.
+ * Assumes that the function is differentiable at the given point and the derivative is not zero.
+ * @param f - The function to differentiate. Must be a function that takes a Decimal and returns a Decimal.
+ * @param x - The point at which to approximate the derivative.
+ * @param epsilon - The small value to use for the difference quotient. Defaults to `1e-12`, which is a good balance between accuracy and avoiding numerical instability for most functions. Can be adjusted for specific functions or ranges of x.
+ * @returns The approximate derivative of the function at the given point, as a {@link Decimal}.
+ * @example
+ * const f = (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5);
+ * approximateDerivative(f, 10); // 23
+ */
+function approximateDerivative(f: (x: Decimal) => Decimal, x: DecimalSource, epsilon = 1e-12): Decimal {
+    x = Decimal.fromValue_noAlloc(x);
+    const fX = f(x);
+
+    // Choose a delta x that is small relative to x. Using a fixed small delta can cause issues with very large or very small x, so we can use a delta that is a small fraction of x.
+    let xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+    let fXPlusH = f(xPlusH);
+
+    // If f(x+h) = f(x), try a larger epsilon to avoid numerical instability
+    while (fXPlusH.equals(fX) && epsilon < 1) {
+        epsilon *= 10;
+        xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+        fXPlusH = f(xPlusH);
+    }
+
+    const deltaX = xPlusH.sub(x);
+
+    // debug
+    // console.log({ x, xPlusH, deltaX, f_x: f(x), f_xPlusH: f(xPlusH) });
+
+    return fXPlusH.sub(fX).div(deltaX);
+}
+
+/**
+ * Uses the Newton-Raphson method to find a root of the function f, starting from an initial guess.
+ * @param initialGuess - The initial guess for the root.
+ * @param f - The function for which to find the root.
+ * @param fPrime - The derivative of the function. If not provided, it will be approximated using the {@link approximateDerivative} function.
+ * @param tolerance - The tolerance for convergence. The method will stop when the difference between successive approximations is less than or equal to this value. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @param maxIterations - The maximum number of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @returns An approximation of the root of the function, as a {@link Decimal}.
+ * @example
+ * const f = (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5);
+ * const fPrime = (x: Decimal) => x.mul(4).add(3);
+ * newtonRaphson(10, f, fPrime); // Approximately -0.780776406404415
+ */
+function newtonRaphson(
+    initialGuess: DecimalSource,
+    f: (x: Decimal) => Decimal,
+    fPrime?: (x: Decimal) => Decimal,
+    tolerance: number = DEFAULT_TOLERANCE,
+    maxIterations: number = DEFAULT_ITERATIONS,
+): Decimal {
+    let x = Decimal.fromValue_noAlloc(initialGuess);
+
+    fPrime ??= (x): Decimal => approximateDerivative(f, x);
+
+    for (let i = 0; i < maxIterations; i++) {
+        const fx = f(x);
+        const fxPrime = fPrime(x);
+
+        // Check if derivative is 0 to avoid divide by 0
+        if (fxPrime.equals(Decimal.dZero)) {
+            console.warn("Derivative is zero. No solution found. Returning current approximation.");
+            return x;
+        }
+
+        const xNext = x.sub(fx.div(fxPrime));
+
+        // If the difference between successive approximations is less than or equal to the tolerance, we have converged to a solution
+        if (geometricEqualsTolerance(xNext, x)) {
+            return xNext;
+        }
+
+        // debug
+        // console.log({
+        //     i,
+        //     xNext,
+        //     fx,
+        //     fxPrime,
+        // });
+
+        x = xNext;
+    }
+
+    return x;
+}
+
 export {
-    equalsTolerance,
-    // calculateInverseFunction,
-    // inverseFunctionApprox,
-    // calculateSumLoop,
-    // calculateSumApprox,
-    // calculateSum,
+    geometricEqualsTolerance,
+    approximateDerivative,
+    newtonRaphson,
+    decimalMagDifference,
     roundingBase,
     DEFAULT_ITERATIONS,
+    DEFAULT_ITERATIONS_AS_DECIMAL,
     DEFAULT_TOLERANCE,
+    MeanMode,
 };
-export type { MeanMode, EqualsToleranceConfig };
+export type { EqualsToleranceConfig };
+
+// test
+// const testFunc = (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5);
+// const testFuncDerivative = (x: Decimal) => x.mul(4).add(3);
+
+// const testFunc = (x: Decimal) => Decimal.exp(x);
+// const testFuncDerivative = (x: Decimal) => Decimal.exp(x);
+
+// const testFunc = (x: Decimal) => Decimal.pow(x, x);
+// const testFuncDerivative = (x: Decimal) => Decimal.pow(x, x).mul(Decimal.ln(x).add(1));
+
+// const xTests: Decimal[] = Array.from({ length: 20 }, (_, i) => Decimal.dTwo.pow(i * 2));
+
+// const results = xTests.map((x) => ({
+//     x: x.toString(),
+//     approx: approximateDerivative(testFunc, x).toString(),
+//     actual: testFuncDerivative(x).toString(),
+//     differenceMult: approximateDerivative(testFunc, x).div(testFuncDerivative(x)).toString(),
+//     differenceMagMult: betterDifference(approximateDerivative(testFunc, x), testFuncDerivative(x)),
+// }));
+// console.table(results);
+
+// Test 2
+// const testFunctionsAndTheirDerivatives: [
+//     testFn: (x: Decimal) => Decimal,
+//     derivativeFn: (x: Decimal) => Decimal,
+//     name: string,
+// ][] = [
+//     /* eslint-disable prettier/prettier */
+//     [
+//         (x: Decimal) => x.pow(2).mul(2).add(x.mul(3)).add(5),
+//         (x: Decimal) => x.mul(4).add(3),
+//         "Quadratic Function",
+//     ],
+//     [
+//         (x: Decimal) => Decimal.exp(x),
+//         (x: Decimal) => Decimal.exp(x),
+//         "Exponential Function",
+//     ],
+//     [
+//         (x: Decimal) => Decimal.pow(x, x),
+//         (x: Decimal) => Decimal.pow(x, x).mul(Decimal.ln(x).add(1)),
+//         "Power Tower Function",
+//     ]
+//     /* eslint-enable prettier/prettier */
+// ];
+
+// const testEpsilons = Array.from({ length: 15 }, (_, i) => 10 ** (-i - 1));
+
+// function computeDifferenceBetweenApproxDerivativeAndActual(f: (x: Decimal) => Decimal, fPrime: (x: Decimal) => Decimal, x: DecimalSource, epsilon: number) {
+//     const approx = approximateDerivative(f, x, epsilon);
+//     const actual = fPrime(new Decimal(x));
+//     const differenceMult = approx.div(actual);
+//     const differenceMagMult = approx.mag / actual.mag;
+
+//     return { approx, actual, differenceMult, differenceMagMult };
+// }
+
+// const result = testFunctionsAndTheirDerivatives.map(([f, fPrime, name]) => {
+//     const xTests: Decimal[] = Array.from({ length: 20 }, (_, i) => Decimal.dTwo.pow(i * 2));
+//     const differenceMultForEpsilons = testEpsilons.map((epsilon) => xTests.map((x) => computeDifferenceBetweenApproxDerivativeAndActual(f, fPrime, x, epsilon).differenceMult));
+//     const averageDifferenceMultForEpsilons = differenceMultForEpsilons.map((differences) => differences.reduce((sum, val) => sum.add(val), Decimal.dZero).div(differences.length));
+
+//     return { name, averageDifferenceMultForEpsilons };
+// });
+// console.table(result);
+
+// Test 3 benchmark
+
+// const a = Decimal.dTwo;
+// const b = Decimal.dTwo.pow(1e6 + 3);
+
+// for (const mode of [MeanMode.arithmetic, MeanMode.geometric, MeanMode.harmonic, MeanMode.logarithmic, MeanMode.tetrational]) {
+//     console.time(MeanMode[mode]);
+//     // console.log(mean(a, b, mode).toString());
+//     for (let i = 0; i < 1e3; i++) mean(a, b, mode);
+//     console.timeEnd(MeanMode[mode]);
+// }

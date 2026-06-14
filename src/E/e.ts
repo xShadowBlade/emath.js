@@ -38,13 +38,13 @@ export type CompareResult = -1 | 0 | 1;
 
 const MAX_SIGNIFICANT_DIGITS = 17; // Maximum number of digits of precision to assume in Number
 
-const EXP_LIMIT = 9e15; // If we're ABOVE this value, increase a layer. (9e15 is close to the largest integer that can fit in a Number.)
+export const EXP_LIMIT = 9e15; // If we're ABOVE this value, increase a layer. (9e15 is close to the largest integer that can fit in a Number.)
 
-const LAYER_DOWN: number = Math.log10(9e15);
+export const LAYER_DOWN: number = Math.log10(9e15);
 
 const FIRST_NEG_LAYER = 1 / 9e15; // At layer 0, smaller non-zero numbers than this become layer 1 numbers with negative mag. After that the pattern continues as normal.
 
-const NUMBER_EXP_MAX = 308; // The largest exponent that can appear in a Number, though not all mantissas are valid here.
+export const NUMBER_EXP_MAX = 308; // The largest exponent that can appear in a Number, though not all mantissas are valid here.
 
 const NUMBER_EXP_MIN = -324; // The smallest exponent that can appear in a Number, though not all mantissas are valid here.
 
@@ -245,7 +245,7 @@ const decimalPlaces = function decimalPlaces (value: number, places: number): nu
     return parseFloat(rounded.toFixed(Math.max(len - numDigits, 0)));
 };
 
-const f_maglog10 = function (n: number) {
+export const f_maglog10 = function (n: number) {
     return Math.sign(n) * Math.log10(Math.abs(n));
 };
 

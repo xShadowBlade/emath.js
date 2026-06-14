@@ -3,7 +3,7 @@
  */
 import type { DecimalSource } from "../../E/e";
 import { Decimal } from "../../E/e";
-import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS } from "./numericalAnalysis";
+import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS, geometricEqualsTolerance, DEFAULT_ITERATIONS_AS_DECIMAL } from "./numericalAnalysis";
 
 /**
  * Calculates the sum of `f(n)` from `a` to `b` using a basic loop until the sum is less than or equal to `epsilon` geometrically.
@@ -17,72 +17,24 @@ import { DEFAULT_TOLERANCE, DEFAULT_ITERATIONS } from "./numericalAnalysis";
 function calculateSumLoop(
     f: (n: Decimal) => Decimal,
     b: DecimalSource,
-    a: DecimalSource = 0,
-    epsilon: DecimalSource = DEFAULT_TOLERANCE,
+    a: DecimalSource = Decimal.dZero,
+    epsilon: number = DEFAULT_TOLERANCE,
 ): Decimal {
     // Initialize the values
-    let sum: Decimal = new Decimal();
-    let n = new Decimal(b);
+    let sum: Decimal = Decimal.dZero;
+    let n = Decimal.fromValue_noAlloc(b);
 
     // Perform the loop (decrementing n to sometimes take advantage of epsilon)
-    for (; n.gte(a); n = n.sub(1)) {
+    for (; n.gte(a); n = n.add(Decimal.dNegOne)) {
         const initSum = sum;
         const value = f(n);
 
         sum = sum.add(value);
 
         // If the difference/quotient between the initial sum and the new sum is less than epsilon, break
-        const diff = initSum.div(sum);
-        if (diff.lte(1) && diff.gt(Decimal.dOne.sub(epsilon))) break;
+        if (geometricEqualsTolerance(initSum, sum, epsilon)) break;
     }
-    // console.log({ sum, iterations: new Decimal(b).sub(n).add(a) });
     return sum;
-}
-// TODO: this is a pretty terrible approximation ngl
-
-/**
- * Approximates the sum of `f(n)` from `a` to `b` using the trapezoidal rule.
- * See {@link calculateSum} for a more general function.
- * @param f - The function `f(n)` to calculate the sum.
- * @param b - The upper limit for the sum.
- * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
- * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
- * @param tolerance - The tolerance to approximate the sum with. Defaults to {@link DEFAULT_TOLERANCE} * 2 (to be more a bit faster).
- * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
- */
-function calculateSumApproxOld(
-    f: (n: Decimal) => Decimal,
-    b: DecimalSource,
-    a: DecimalSource = 0,
-    iterations: number = DEFAULT_ITERATIONS,
-    tolerance: DecimalSource = DEFAULT_TOLERANCE * 2,
-): Decimal {
-    // Initialize the values
-    a = new Decimal(a);
-    b = new Decimal(b);
-
-    let sum = Decimal.dZero;
-    const intervalWidth = b.sub(a).div(iterations);
-
-    // for (let i = 0; i < iterations; i++) {
-    for (let i = iterations - 1; i >= 0; i--) {
-        const x0 = a.add(intervalWidth.mul(i));
-        const x1 = a.add(intervalWidth.mul(i + 1));
-
-        sum = sum.add(f(x0).add(f(x1)));
-
-        // console.log({
-        //     oldSum: oldSum.format(),
-        //     sum: sum.format(),
-        //     delta: sum.sub(oldSum).format(),
-        //     x0: x0.format(),
-        //     x1: x1.format(),
-        //     i,
-        // });
-
-        // Stop the loop if the sums don't change much (removed, it is actually slower)
-    }
-    return sum.div(2).mul(intervalWidth);
 }
 
 /**
@@ -92,24 +44,30 @@ function calculateSumApproxOld(
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS} - 10.
+ * @param bSubA - The value of `b - a`. If not provided, it will be calculated as `b - a`. This is an optimization for when you want to calculate multiple sums with the same `b - a` but different `a` and `b`, so you don't have to calculate `b - a` every time.
  * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 function calculateSumApprox(
     f: (n: Decimal) => Decimal,
     b: DecimalSource,
-    a: DecimalSource = 0,
+    a: DecimalSource = Decimal.dZero,
     iterations: number = DEFAULT_ITERATIONS - 10,
+    bSubA?: Decimal,
 ): Decimal {
     // Initialize the values
-    a = new Decimal(a);
-    b = new Decimal(b);
+    a = Decimal.fromValue_noAlloc(a);
+    b = Decimal.fromValue_noAlloc(b);
 
     let sum = Decimal.dZero;
-    const intervalWidth = b.sub(a).div(iterations);
+    const intervalWidth = bSubA ? bSubA.div(iterations) : b.sub(a).div(iterations);
+
+    let currentSample = b;
 
     // w\sum_{n=0}^{i}f\left(a+nw\right)
     for (let i = iterations - 1; i >= 0; i--) {
-        sum = sum.add(f(a.add(intervalWidth.mul(i))));
+        const oldSum = sum;
+        currentSample = currentSample.sub(intervalWidth);
+        sum = sum.add(f(currentSample));
 
         // console.log({
         //     oldSum: oldSum.format(),
@@ -120,7 +78,8 @@ function calculateSumApprox(
         //     i,
         // });
 
-        // Stop the loop if the sums don't change much (removed, it is actually slower)
+        // Stop the loop if the sums don't change much
+        if (geometricEqualsTolerance(oldSum, sum)) break;
     }
 
     return sum.mul(intervalWidth);
@@ -162,17 +121,20 @@ function calculateSumApprox(
 function calculateSum(
     f: (n: Decimal) => Decimal,
     b: DecimalSource,
-    a: DecimalSource = 0,
-    epsilon?: DecimalSource,
+    a: DecimalSource = Decimal.dZero,
+    epsilon?: number,
     iterations?: number,
 ): Decimal {
-    a = new Decimal(a);
-    b = new Decimal(b);
-    if (b.sub(a).lte(DEFAULT_ITERATIONS)) {
+    a = Decimal.fromValue_noAlloc(a);
+    b = Decimal.fromValue_noAlloc(b);
+
+    const bMinusA = b.sub(a);
+
+    if (bMinusA.lte(DEFAULT_ITERATIONS_AS_DECIMAL)) {
         return calculateSumLoop(f, b, a, epsilon);
     } else {
-        return calculateSumApprox(f, b, a, iterations);
+        return calculateSumApprox(f, b, a, iterations, bMinusA);
     }
 }
 
-export { calculateSumLoop, calculateSumApprox, calculateSum, calculateSumApproxOld };
+export { calculateSumLoop, calculateSumApprox, calculateSum };
