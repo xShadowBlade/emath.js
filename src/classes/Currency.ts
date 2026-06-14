@@ -7,10 +7,7 @@ import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
-import { UpgradeData, Upgrade, calculateUpgrade } from "./Upgrade";
-import { ItemData, Item, calculateItem } from "./Item";
-
-import type { ItemInit } from "./Item";
+import { SkillNode, Upgrade, calculateUpgrade } from "./Upgrade";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
 import type { DataManager, StaticClassWithData } from "../game";
 
@@ -30,21 +27,11 @@ class CurrencyData {
     @Type(() => Decimal)
     public value: Decimal;
 
-    /** An array that represents upgrades and their levels. */
-    // @Type(() => UpgradeData)
-    // public upgrades: UpgradeData[];
-
-    /** An array that represents items and their effects. */
-    // @Type(() => ItemData)
-    // public items: ItemData[];
-
     /**
      * Constructs a new currency object with an initial value of 0.
      */
     constructor() {
         this.value = Decimal.dZero;
-        this.upgrades = [];
-        this.items = [];
     }
 }
 
@@ -64,11 +51,6 @@ class Currency implements StaticClassWithData {
      */
     public readonly upgrades: Upgrade[] = [];
 
-    /**
-     * Stores a list of each of this currency's items and their corresponding data.
-     */
-    public readonly items: Item[] = [];
-
     /** A function that returns the pointer of the data */
     protected dataSupplier: () => CurrencyData = () => {
         console.warn("emath.js: Currency dataSupplier has not set. Returning placeholder data.");
@@ -81,7 +63,7 @@ class Currency implements StaticClassWithData {
     }
 
     /** A boost object that affects the currency gain. */
-    public readonly boost: Boost = new Boost(Decimal.dOne);
+    public readonly boost: Boost = new Boost();
 
     /** The default value of the currency. */
     public readonly defaultValue: Decimal = Decimal.dZero;
@@ -94,59 +76,32 @@ class Currency implements StaticClassWithData {
     get value(): Decimal {
         return this.data.value;
     }
-    set value(value: Decimal) {
-        this.data.value = value;
+    set value(value: DecimalSource) {
+        this.data.value = Decimal.fromValue_noAlloc(value);
     }
 
     private dataManagerReference: DataManager | null = null;
 
-    // /**
-    //  * Constructs a new currency
-    //  * @param pointer - A function or reference that returns the pointer of the data / frontend.
-    //  * @param upgrades - An array of upgrade objects.
-    //  * @param items - An array of item objects.
-    //  * @param defaults - The default value and boost of the currency.
-    //  * @example
-    //  * const currency = new CurrencyStatic(undefined, [
-    //  *     {
-    //  *         id: "upgId1",
-    //  *         cost: (level: Decimal): Decimal => level.mul(10),
-    //  *     },
-    //  *     {
-    //  *         id: "upgId2",
-    //  *         cost: (level: Decimal): Decimal => level.mul(20),
-    //  *     }
-    //  * ] as const satisfies UpgradeInit[]);
-    //  * // CurrencyStatic<["upgId1", "upgId2"]>
-    //  */
-    // constructor(
-    //     pointer: Pointer<CurrencyData> = new CurrencyData(),
-    //     upgrades?: UpgradeInit<TUpgradeIds>[],
-    //     items?: ItemInit<TItemIds>[],
-    //     defaults = { defaultVal: Decimal.dZero, defaultBoost: Decimal.dOne },
-    // ) {
-    //     // Assign the default values
-    //     this.defaultValue = defaults.defaultVal;
-
-    //     // Assign the pointer function
-    //     this.dataSupplier = typeof pointer === "function" ? pointer : (): CurrencyData => pointer;
-
-    //     // Set the boost object
-    //     this.boost = new Boost(this.defaultBoost);
-
-    //     // Set the pointer value to the default value
-    //     this.data.value = this.defaultValue;
-
-    //     this.upgrades = [];
-
-    //     // Add upgrades
-    //     if (upgrades) this.addUpgrade(upgrades);
-
-    //     this.items = [];
-
-    //     // Add items
-    //     if (items) this.addItem(items);
-    // }
+    // TODO: redo this example
+    /**
+     * Constructs a new currency
+     * @param pointer - A function or reference that returns the pointer of the data / frontend.
+     * @param upgrades - An array of upgrade objects.
+     * @param items - An array of item objects.
+     * @param defaults - The default value and boost of the currency.
+     * @example
+     * const currency = new CurrencyStatic(undefined, [
+     *     {
+     *         id: "upgId1",
+     *         cost: (level: Decimal): Decimal => level.mul(10),
+     *     },
+     *     {
+     *         id: "upgId2",
+     *         cost: (level: Decimal): Decimal => level.mul(20),
+     *     }
+     * ] as const satisfies UpgradeInit[]);
+     * // CurrencyStatic<["upgId1", "upgId2"]>
+     */
     constructor(id: string) {
         this.id = id;
     }
@@ -165,7 +120,11 @@ class Currency implements StaticClassWithData {
         this.dataManagerReference = dataManager;
 
         this.dataSupplier = dataManager.setData(this.id, new CurrencyData());
-        // TODO: add upgrades to dataManager
+
+        // Add existing upgrades to the data manager
+        for (const upgrade of this.upgrades) {
+            upgrade.onAddToDataManager(dataManager, this.id);
+        }
     }
 
     /**
@@ -214,29 +173,18 @@ class Currency implements StaticClassWithData {
                 if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
             }
         }
-
-        // Reset the items
-        if (resetObj.resetItemAmounts) {
-            for (const item of this.items) {
-                // Reset the amount to the default amount
-                item.amount = new Decimal(item.defaultAmount);
-
-                // Call the effect function for each item
-                if (resetObj.runUpgradeEffect) this.runItemEffect(item);
-            }
-        }
     }
 
     /**
      * The new currency value after applying the boost.
-     * @param dt - Delta time / multiplier in milliseconds, assuming you gain once every second. Ex. 500 = 0.5 seconds = half gain.
+     * @param dt - Delta time / multiplier, assuming you gain once every second. Ex. 0.5 = half gain.
      * @returns What was gained, NOT the new value.
      * @example
      * // Gain a random number between 1 and 10, and return the amount gained.
-     * currency.gain(Math.random() * 10000);
+     * currency.gain(Math.random() * 10);
      */
-    public gain(dt: DecimalSource = 1000): Decimal {
-        const toAdd = this.boost.calculate().mul(new Decimal(dt).div(1000));
+    public gain(dt: DecimalSource = Decimal.dOne): Decimal {
+        const toAdd = this.boost.calculate().mul(dt);
         this.data.value = this.data.value.add(toAdd);
         return toAdd;
     }
@@ -250,12 +198,22 @@ class Currency implements StaticClassWithData {
      * const upgrade = currency.getUpgrade("healthBoost");
      * console.log(upgrade); // upgrade object
      */
-    public getUpgrade<T extends TUpgradeIds>(
-        id: T,
-    ): IsPrimitiveString<TUpgradeIds> extends false ? Upgrade : Upgrade | null {
-        // TODO: fix this
-        // @ts-expect-error
+    public getUpgrade(id: string): Upgrade | null {
         return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+    }
+
+    public getUpgradeAsSkillNode(id: string): SkillNode | null {
+        const upgrade = this.getUpgrade(id);
+
+        if (!upgrade) {
+            return null;
+        }
+
+        if (upgrade instanceof SkillNode) {
+            return upgrade;
+        }
+
+        return null;
     }
 
     /**
@@ -284,54 +242,25 @@ class Currency implements StaticClassWithData {
      *     }
      * });
      */
-    public addUpgrade(upgrades: UpgradeInit | UpgradeInit[], runEffectInstantly = true): Upgrade[] {
+    public addUpgrade(upgrades: Upgrade | Upgrade[], runEffectInstantly = true): void {
         // Convert to array if not already
         if (!Array.isArray(upgrades)) upgrades = [upgrades];
 
-        // Create an array to store the added upgrades
-        const addedUpgradeList: Upgrade[] = [];
-
         for (const upgrade of upgrades) {
-
-            // Create the upgrade object
-            const addedUpgradeStatic = new Upgrade(upgrade.id);
-
             // Run the effect instantly if needed
-            if (runEffectInstantly) this.runUpgradeEffect(addedUpgradeStatic);
+            if (runEffectInstantly) this.runUpgradeEffect(upgrade);
+            this.runUpgradeEffectOnAdd(upgrade);
+
+            upgrade.withCurrencySupplier(() => this);
 
             // Add the upgrade to this.upgrades
-            this.upgrades.push(addedUpgradeStatic);
+            this.upgrades.push(upgrade);
 
-            // Add the upgrade to the list
-            addedUpgradeList.push(addedUpgradeStatic);
+            // If the data manager reference exists, add the upgrade to the data manager
+            if (this.dataManagerReference) {
+                upgrade.onAddToDataManager(this.dataManagerReference, this.id);
+            }
         }
-
-        return addedUpgradeList;
-    }
-
-    /**
-     * Updates an upgrade. To create an upgrade, use {@link addUpgrade} instead.
-     * @param id - The id of the upgrade to update.
-     * @param newUpgrade - The new upgrade object.
-     * @example
-     * currency.updateUpgrade("healthBoost", {
-     *     name: "New Health Boost".
-     *     cost: (level) => level.mul(20),
-     *     maxLevel: 20,
-     *     effect: (level, context) => {
-     *         console.log("Health Boost effect");
-     *     }
-     * });
-     */
-    public updateUpgrade(id: TUpgradeIds, newUpgrade: Partial<UpgradeInit>): void {
-        // Get the upgrade
-        const oldUpgrade = this.getUpgrade(id) as Mutable<Upgrade> | null;
-
-        // If the upgrade doesn't exist, return
-        if (oldUpgrade === null) return;
-
-        // Update the upgrade
-        Object.assign(oldUpgrade, newUpgrade);
     }
 
     /**
@@ -343,14 +272,34 @@ class Currency implements StaticClassWithData {
     }
 
     /**
-     * Runs the effect of an upgrade or item.
-     * @param item - The item to run the effect for.
-     * @param tier - The tier of the item that was bought.
+     * Runs the effect on add of an upgrade or item.
+     * @param upgrade - The upgrade to run the effect on add for.
      */
-    public runItemEffect(item: Item, tier: DecimalSource = Decimal.dOne): void {
-        tier = new Decimal(tier);
+    public runUpgradeEffectOnAdd(upgrade: Upgrade): void {
+        upgrade.effectOnAdd?.(upgrade, this as Currency);
+    }
 
-        item.effect?.(item.amount, tier, item, this as Currency);
+    private getUpgradeOrElse<T>(
+        id: string | Upgrade,
+        elseValue: T,
+    ): [isFound: true, upgrade: Upgrade] | [isFound: false, elseValue: T] {
+        // Get the upgrade
+        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
+
+        // If the upgrade doesn't exist, return [0, 0]
+        if (upgrade === null) {
+            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
+            return [false, elseValue];
+        }
+
+        // If the upgrade is a skill, check if it is unlocked
+        if (upgrade instanceof SkillNode) {
+            if (!upgrade.isUnlocked()) {
+                return [false, elseValue];
+            }
+        }
+
+        return [true, upgrade];
     }
 
     /**
@@ -367,19 +316,16 @@ class Currency implements StaticClassWithData {
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
     public calculateUpgrade(
-        id: TUpgradeIds | Upgrade,
-        target: DecimalSource = Infinity,
+        id: string | Upgrade,
+        target: DecimalSource = Decimal.dInf,
         mode?: MeanMode,
         iterations?: number,
         value: DecimalSource = this.value,
     ): [amount: Decimal, cost: Decimal] {
         // Get the upgrade
-        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-
-        // If the upgrade doesn't exist, return [0, 0]
-        if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
-            return [Decimal.dZero, Decimal.dZero];
+        const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, [Decimal.dZero, Decimal.dZero] as const);
+        if (!upgradeExists) {
+            return upgrade as Mutable<typeof upgrade>;
         }
 
         // Calculate the target based on the maxLevel
@@ -407,19 +353,16 @@ class Currency implements StaticClassWithData {
      * const nextCost = currency.getNextCost("healthBoost");
      */
     public getNextCost(
-        id: TUpgradeIds | Upgrade,
-        target: DecimalSource = 1,
+        id: string | Upgrade,
+        target: DecimalSource = Decimal.dOne,
         mode?: MeanMode,
         iterations?: number,
         value?: DecimalSource,
     ): Decimal {
         // Get the upgrade
-        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-
-        // If the upgrade doesn't exist, return 0
-        if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
-            return Decimal.dZero;
+        const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
+        if (!upgradeExists) {
+            return upgrade;
         }
 
         // Calculate the amount of upgrades you can buy
@@ -445,19 +388,16 @@ class Currency implements StaticClassWithData {
      * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
     public getNextCostMax(
-        id: TUpgradeIds | Upgrade,
-        target: DecimalSource = 1,
+        id: string | Upgrade,
+        target: DecimalSource = Decimal.dOne,
         mode?: MeanMode,
         iterations?: number,
         value?: DecimalSource,
     ): Decimal {
         // Get the upgrade
-        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-
-        // If the upgrade doesn't exist, return 0
-        if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
-            return Decimal.dZero;
+        const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
+        if (!upgradeExists) {
+            return upgrade;
         }
 
         // Calculate the amount of upgrades you can buy
@@ -481,26 +421,23 @@ class Currency implements StaticClassWithData {
      * currency.buyUpgrade("healthBoost", 10);
      */
     public buyUpgrade(
-        id: TUpgradeIds | Upgrade,
+        id: string | Upgrade,
         target?: DecimalSource,
         mode?: MeanMode,
         iterations?: number,
         value?: DecimalSource,
     ): boolean {
         // Get the upgrade
-        const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-
-        // If the upgrade doesn't exist, return false
-        if (upgrade === null) {
-            console.warn(`eMath.js: Upgrade "${id as string}" not found.`);
-            return false;
+        const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, false);
+        if (!upgradeExists) {
+            return upgrade;
         }
 
         // Calculate the amount of upgrades you can buy
         const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
 
         // Check if affordable
-        if (amount.lte(0)) {
+        if (amount.lte(Decimal.dZero)) {
             return false;
         }
 
@@ -512,133 +449,6 @@ class Currency implements StaticClassWithData {
 
         // Call the effect function if it exists
         this.runUpgradeEffect(upgrade);
-
-        // Return true to indicate a successful upgrade
-        return true;
-    }
-
-    /**
-     * Adds an item to the data class.
-     * @param items - The items to add.
-     * @returns The added items.
-     */
-    private pointerAddItem(items: ItemInit): ItemData {
-        const itemToAdd = new ItemData(items);
-        // this.pointer.items[items.id] = itemToAdd;
-        this.data.items.push(itemToAdd);
-        return itemToAdd;
-    }
-
-    /**
-     * Retrieves an item object from the data pointer based on the provided id.
-     * @param id - The id of the item to retrieve.
-     * @returns The item object if found, otherwise null.
-     */
-    private pointerGetItem(id: string): ItemData | null {
-        // return this.pointer.items[id] ?? null;
-        return this.data.items.find((item) => item.id === id) ?? null;
-    }
-
-    /**
-     * Adds an item.
-     * @param items - The items to add.
-     * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
-     */
-    public addItem(items: ItemInit | ItemInit[], runEffectInstantly = true): void {
-        // Convert to array if not already
-        if (!Array.isArray(items)) items = [items];
-
-        for (const item of items) {
-            // Add the item to the data
-            this.pointerAddItem(item);
-
-            // Create the upgrade object
-            const addedUpgradeStatic = new Item(
-                item,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                () => this.pointerGetItem(item.id)!,
-                () => this as Currency,
-            );
-
-            // Run the effect instantly if needed
-            if (runEffectInstantly) this.runItemEffect(addedUpgradeStatic);
-
-            // Add the upgrade to this.item
-            this.items.push(addedUpgradeStatic);
-        }
-    }
-
-    /**
-     * Retrieves an item object based on the provided id.
-     * @param id - The id of the item to retrieve.
-     * @returns The item object if found, otherwise null.
-     */
-    public getItem<T extends TItemIds>(id: T): IsPrimitiveString<TItemIds> extends false ? Item : Item | null {
-        // @ts-expect-error - bandaid
-        return this.items.find((item) => item.id === id) ?? null;
-    }
-
-    /**
-     * Calculates the cost and how many items you can buy.
-     * See {@link calculateItem} for more information.
-     * @param id - The ID or position of the item to calculate.
-     * @param tier - The tier of the item that to calculate.
-     * @param target - The target level or quantity to reach for the item. If omitted, it calculates the maximum affordable quantity.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns The amount of items you can buy and the cost of the items. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-     */
-    public calculateItem(
-        id: TItemIds | Item,
-        tier?: DecimalSource,
-        target?: DecimalSource,
-        value: DecimalSource = this.value,
-    ): [amount: Decimal, cost: Decimal] {
-        // Get the item
-        const item = typeof id === "string" ? this.getItem(id) : id;
-
-        // If the item doesn't exist, return [0, 0]
-        if (item === null) {
-            console.warn(`eMath.js: Item "${id as string}" not found.`);
-            return [Decimal.dZero, Decimal.dZero];
-        }
-
-        return calculateItem(value, item, tier, target);
-    }
-
-    /**
-     * Buys an item based on its ID or array position if enough currency is available.
-     * @param id - The ID or position of the item to buy or upgrade.
-     * @param tier - The tier of the item that to calculate.
-     * @param target - The target level or quantity to reach for the item. See the argument in {@link calculateItem}.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the item does not exist.
-     */
-    public buyItem(id: TItemIds | Item, tier?: DecimalSource, target?: DecimalSource, value?: DecimalSource): boolean {
-        // Get the item
-        const item = typeof id === "string" ? this.getItem(id) : id;
-
-        // If the item doesn't exist, return false
-        if (item === null) {
-            console.warn(`eMath.js: Item "${id as string}" not found.`);
-            return false;
-        }
-
-        // Calculate the amount of items you can buy
-        const [amount, cost] = this.calculateItem(id, tier, target, value);
-
-        // Check if affordable
-        if (amount.lte(0)) {
-            return false;
-        }
-
-        // Deduct the cost from available currency
-        this.data.value = this.data.value.sub(cost);
-
-        // Set the item level
-        item.amount = item.amount.add(amount);
-
-        // Call the effect function if it exists
-        this.runItemEffect(item, tier);
 
         // Return true to indicate a successful upgrade
         return true;
