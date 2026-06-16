@@ -2798,6 +2798,13 @@ class Decimal {
     }
 
     /**
+     * Returns true if the Decimal is negative (less than 0).
+     */
+    public isNegative (): boolean {
+        return this.sign === -1;
+    }
+
+    /**
      * The Decimal equivalent of ==. Returns true if 'this' and 'value' have equal values.
      */
     public eq (value: DecimalSource): boolean {
