@@ -162,7 +162,7 @@ function inverseFunctionApprox(
     // If the interval does not contain the value, warn and return the upper bound
     // (Note: This assumes the function is monotonically increasing)
     if (fInitialLowerBound.gt(n)) {
-        console.warn("The interval does not contain the value. (f(lowerBound) > n)", {
+        console.warn("eMath.js: The interval does not contain the value. (f(lowerBound) > n)", {
             lowerBound,
             upperBound,
             n,
@@ -186,7 +186,7 @@ function inverseFunctionApprox(
         };
     }
     if (fInitialUpperBound.lt(n)) {
-        console.warn("The interval does not contain the value. (f(upperBound) < n)", {
+        console.warn("eMath.js: The interval does not contain the value. (f(upperBound) < n)", {
             lowerBound,
             upperBound,
             n,

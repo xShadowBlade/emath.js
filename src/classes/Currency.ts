@@ -10,6 +10,7 @@ import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { SkillNode, Upgrade, calculateUpgrade } from "./Upgrade";
 import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
 import type { DataManager, StaticClassWithData } from "../game";
+import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -69,6 +70,15 @@ class Currency implements StaticClassWithData {
     public readonly defaultValue: Decimal = Decimal.dZero;
 
     /**
+     * The protections for {@link value}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    public readonly valueProtections = new InvalidDecimalProtections({
+        allowNaN: false,
+        allowInfinite: false,
+    });
+
+    /**
      * The current value of the currency.
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
@@ -77,30 +87,19 @@ class Currency implements StaticClassWithData {
         return this.data.value;
     }
     set value(value: DecimalSource) {
-        this.data.value = Decimal.fromValue_noAlloc(value);
+        this.data.value = this.valueProtections.validateValueOrElse(
+            value,
+            this.data.value,
+            `Currency "${this.id}" value`,
+            this,
+        );
     }
 
     private dataManagerReference: DataManager | null = null;
 
-    // TODO: redo this example
     /**
-     * Constructs a new currency
-     * @param pointer - A function or reference that returns the pointer of the data / frontend.
-     * @param upgrades - An array of upgrade objects.
-     * @param items - An array of item objects.
-     * @param defaults - The default value and boost of the currency.
-     * @example
-     * const currency = new CurrencyStatic(undefined, [
-     *     {
-     *         id: "upgId1",
-     *         cost: (level: Decimal): Decimal => level.mul(10),
-     *     },
-     *     {
-     *         id: "upgId2",
-     *         cost: (level: Decimal): Decimal => level.mul(20),
-     *     }
-     * ] as const satisfies UpgradeInit[]);
-     * // CurrencyStatic<["upgId1", "upgId2"]>
+     * Creates a new currency with the given id.
+     * @param id - The id of the currency. See {@link id}.
      */
     constructor(id: string) {
         this.id = id;
@@ -110,6 +109,9 @@ class Currency implements StaticClassWithData {
      * Updates / applies effects to the currency on load.
      */
     public onLoadData(): void {
+        // Run setter method to run protections and other side effects of setting the value.
+        this.value = this.data.value;
+
         // Call the effect function for each upgrade
         for (const upgrade of this.upgrades) {
             this.runUpgradeEffect(upgrade);
@@ -183,9 +185,13 @@ class Currency implements StaticClassWithData {
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10);
      */
-    public gain(dt: DecimalSource = Decimal.dOne): Decimal {
-        const toAdd = this.boost.calculate().mul(dt);
-        this.data.value = this.data.value.add(toAdd);
+    public gain(dt?: DecimalSource): Decimal {
+        let toAdd = this.boost.calculate();
+        if (dt) {
+            toAdd = toAdd.mul(dt);
+        }
+
+        this.value = this.value.add(toAdd);
         return toAdd;
     }
 
@@ -442,7 +448,7 @@ class Currency implements StaticClassWithData {
         }
 
         // Deduct the cost from available currency
-        this.data.value = this.data.value.sub(cost);
+        this.value = this.value.sub(cost);
 
         // Set the upgrade level
         upgrade.level = upgrade.level.add(amount);
@@ -452,6 +458,14 @@ class Currency implements StaticClassWithData {
 
         // Return true to indicate a successful upgrade
         return true;
+    }
+
+    // Setters
+    public withValueProtectionOptions(
+        newValueProtections: Parameters<InvalidDecimalProtections["setProtections"]>[0],
+    ): this {
+        this.valueProtections.setProtections(newValueProtections);
+        return this;
     }
 }
 

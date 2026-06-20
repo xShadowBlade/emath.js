@@ -76,6 +76,8 @@ enum MeanMode {
     // tetrational = 5,
 }
 
+const oneHalf = Decimal.dTwo.recip();
+
 /**
  * Calculates the mean of two values using a specified method.
  * @param a - The first value.
@@ -89,7 +91,7 @@ export function mean(a: DecimalSource, b: DecimalSource, mode: MeanMode = MeanMo
 
     switch (mode) {
         case MeanMode.arithmetic:
-            return a.add(b).mul(0.5);
+            return a.add(b).mul(oneHalf);
         case MeanMode.geometric:
         default:
             return a.mul(b).sqrt();
@@ -318,7 +320,7 @@ function newtonRaphson(
 
         // Check if derivative is 0 to avoid divide by 0
         if (fxPrime.equals(Decimal.dZero)) {
-            console.warn("Derivative is zero. No solution found. Returning current approximation.");
+            console.warn("eMath.js: Derivative is zero. No solution found. Returning current approximation.");
             return x;
         }
 

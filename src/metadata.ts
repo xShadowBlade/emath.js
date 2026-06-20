@@ -2,21 +2,22 @@
  * @file Declares the metadata for the project.
  */
 
+declare const PKG_VERSION: string;
+
 /**
  * Metadata for the project.
  */
 const eMathMetadata = {
     /**
      * The version of the library
-     * @example "9.5.0"
+     * @example "10.0.0"
      */
     version: ((): string => {
         // Get the version
         try {
-            // @ts-expect-error - Replaced by esbuild
             return PKG_VERSION as string;
         } catch (error) {
-            return "9.5.0";
+            return "10.0.0";
         }
     })(),
 

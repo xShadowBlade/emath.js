@@ -2,7 +2,7 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import { DEFAULT_ITERATIONS, type MeanMode } from "./numericalAnalysis/numericalAnalysis";
@@ -10,6 +10,7 @@ import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnal
 import { calculateSum } from "./numericalAnalysis/sum";
 import { Currency } from "./Currency";
 import { DataManager, StaticClassWithData } from "../game";
+import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 
 /**
  * Calculates the cost and how many upgrades you can buy
@@ -332,7 +333,20 @@ class Upgrade implements StaticClassWithData {
     // TODO: Implement upgrade bounds in calculateUpgrade
     public bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
 
+    /**
+     * The level to set this upgrade when it is reset.
+     */
     public defaultLevel: Decimal = Decimal.dOne;
+
+    /**
+     * The protections for {@link level}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    public readonly levelProtections = new InvalidDecimalProtections({
+        allowNaN: false,
+        allowInfinite: false,
+        allowNegative: false,
+    });
 
     /** The default size of the cache. Should be one less than a power of 2. */
     public static readonly defaultCacheSize = 15;
@@ -345,17 +359,17 @@ class Upgrade implements StaticClassWithData {
 
     /** @returns The data of the upgrade. */
     private dataSupplier: () => UpgradeData = () => {
-        console.warn("emath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
+        console.warn("eMath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
         return new UpgradeData();
     };
 
     /** @returns The data of the upgrade. */
-    public get data(): UpgradeData {
+    protected get data(): UpgradeData {
         return this.dataSupplier();
     }
 
     protected currencySupplier: () => Currency = () => {
-        console.warn("emath.js: Upgrade currencySupplier has not set");
+        console.warn("eMath.js: Upgrade currencySupplier has not set");
         return new Currency("");
     };
     /** @returns The currency static class that the upgrade is being run on. */
@@ -393,53 +407,33 @@ class Upgrade implements StaticClassWithData {
     get level(): Decimal {
         return this.data.level;
     }
-    set level(n: DecimalSource) {
-        this.data.level = Decimal.fromValue_noAlloc(n);
+    set level(level: DecimalSource) {
+        this.data.level = this.levelProtections.validateValueOrElse(
+            level,
+            this.data.level,
+            `Upgrade "${this.id}" level`,
+            this,
+        );
     }
 
-    // /**
-    //  * Constructs a new static upgrade object.
-    //  * @param init - The upgrade object to initialize.
-    //  * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-    //  * @param currencyPointer - A function or reference that returns the pointer of the {@link Currency} class.
-    //  * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
-    //  */
-    // constructor(
-    //     init: UpgradeInit,
-    //     dataPointer: Pointer<UpgradeData>,
-    //     currencyPointer: Pointer<Currency>,
-    //     cacheSize?: number,
-    // ) {
-    //     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-    //     this.dataSupplier = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
-    //     this.currencySupplier =
-    //         typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
-
-    //     this.cache = new LRUCache(cacheSize ?? Upgrade.cacheSize);
-    //     this.id = init.id;
-    //     this.name = init.name ?? init.id;
-    //     this.descriptionSupplier = init.description
-    //         ? typeof init.description === "function"
-    //             ? init.description
-    //             : (): string => init.description as string
-    //         : (): string => "";
-    //     this.cost = init.cost;
-    //     this.costBulk = init.costBulk;
-    //     this.maxLevel = init.maxLevel;
-    //     this.effect = init.effect;
-    //     this.el = init.el;
-    //     this.defaultLevel = init.level ?? Decimal.dOne;
-    //     this.bounds = init.bounds;
-    // }
-
+    /**
+     * Creates a new upgrade object with the given ID.
+     * @param id - The ID of the upgrade. Used to retrieve the upgrade later. See {@link Upgrade.id}.
+     */
     constructor(id: string) {
         this.id = id;
     }
 
+    // Data manager functions
     public onAddToDataManager(dataManager: DataManager, prefix?: string): void {
         const dataKey = `${prefix ? prefix + "_" : ""}${this.id}`;
 
         this.dataSupplier = dataManager.setData(dataKey, new UpgradeData());
+    }
+
+    public onLoadData(): void {
+        // Run setter method to run protections and other side effects of setting the level.
+        this.level = this.data.level;
     }
 
     // Chainable setters
@@ -482,6 +476,12 @@ class Upgrade implements StaticClassWithData {
     }
     public withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): this {
         this.descriptionSupplier = descriptionSupplier;
+        return this;
+    }
+    public withLevelProtectionOptions(
+        newLevelProtections: Parameters<InvalidDecimalProtections["setProtections"]>[0],
+    ): this {
+        this.levelProtections.setProtections(newLevelProtections);
         return this;
     }
 
