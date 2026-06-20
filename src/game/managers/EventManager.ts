@@ -82,7 +82,7 @@ interface CallbackEvent {
     /**
      * The name of the event that will trigger the callback.
      */
-    type: string;
+    type: string | EventManagerInternalEvents;
 
     /**
      * The callback function to execute when the event triggers.
@@ -134,9 +134,9 @@ const eventManagerDefaultConfig: EventManagerConfig = {
 };
 
 /**
- * An interface that extends the event manager events so they have jsdoc comments.
+ * Special events that are automatically dispatched by the game internally.
  */
-interface EventManagerEventsWithComments {
+enum EventManagerInternalEvents {
     /**
      * The event that is called before data is loaded (before {@link DataManager.decompileData}, which is called before {@link DataManager.loadData} with no arguments).
      */
@@ -145,29 +145,23 @@ interface EventManagerEventsWithComments {
     /**
      * The event that is called before data is compiled ({@link DataManager.compileData}).
      */
-    beforeCompileData: true;
+    beforeCompileData,
 
     /**
      * The event that is called before data is saved ({@link DataManager.saveData}).
      */
-    beforeSaveData: true;
+    beforeSaveData,
 
     /**
      * The event that is called when (after) data is saved ({@link DataManager.saveData}).
      */
-    saveData: true;
+    saveData,
 
     /**
      * The event that is called when (after) data is loaded ({@link DataManager.loadData}).
      */
-    loadData: true;
+    loadData,
 }
-
-/**
- * Default event manager events.
- * For more information, see {@link EventManagerEventsWithComments}.
- */
-type EventManagerEvents = keyof EventManagerEventsWithComments & string;
 
 /**
  * The event manager class, used to manage events and execute them at the correct time.
@@ -178,13 +172,13 @@ class EventManager<TEvents extends string = string> {
     private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
 
     /** The timer events stored in the event manager. */
-    private readonly events: Record<string, IntervalEvent | TimeoutEvent>;
+    private readonly events: Record<string, IntervalEvent | TimeoutEvent> = {};
 
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Record<TEvents | EventManagerEvents, CallbackEvent[] | undefined>;
+    private readonly callbackEvents: Partial<Record<TEvents | EventManagerInternalEvents, CallbackEvent[]>> = {};
 
     /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;
@@ -201,10 +195,6 @@ class EventManager<TEvents extends string = string> {
      */
     constructor(config?: EventManagerConfig, events?: readonly TEvents[]) {
         this.config = EventManager.configManager.parse(config);
-        this.events = {};
-
-        // @ts-expect-error - callbackEvents is initialized later
-        this.callbackEvents = {};
 
         // Add the events to the callback events.
         if (events) {
@@ -227,7 +217,7 @@ class EventManager<TEvents extends string = string> {
      * @param event - The event to add the callback to.
      * @param callback - The callback to add to the event.
      */
-    public on(event: TEvents | EventManagerEvents, callback: () => void): void {
+    public on(event: TEvents | EventManagerInternalEvents, callback: () => void): void {
         // If the event does not exist, create it.
         if (!this.callbackEvents[event]) {
             this.callbackEvents[event] = [];
@@ -241,7 +231,7 @@ class EventManager<TEvents extends string = string> {
      * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
      * @param event - The event to dispatch.
      */
-    public dispatch(event: TEvents | EventManagerEvents): void {
+    public dispatch(event: TEvents | EventManagerInternalEvents): void {
         // If the event does not exist, return.
         if (!this.callbackEvents[event]) {
             return;
@@ -439,6 +429,6 @@ export type {
     Event,
     EventInit,
     CallbackEvent,
-    EventManagerEvents,
+    EventManagerInternalEvents as EventManagerEvents,
 };
 export { EventManager, EventTypes };
