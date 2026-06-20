@@ -4,7 +4,7 @@
  */
 import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
-import { compressToBase64, decompressFromBase64 } from "lz-string";
+import { compressToUTF16, decompressFromUTF16 } from "lz-string";
 import type { Game } from "../Game";
 
 import { eMathMetadata } from "../../metadata";
@@ -77,6 +77,8 @@ class DataManager {
      * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
      */
     private readonly eventsOnLoad: (() => void)[] = [];
+
+    private allowDataToBeSaved = true;
 
     /**
      * Creates a new instance of the game class.
@@ -216,13 +218,13 @@ class DataManager {
     }
 
     /**
-     * Compresses the given game data to a base64-encoded using lz-string.
+     * Compresses the given game data to a UTF-16-encoded string using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
-     * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
+     * @returns The compressed game data and a hash as a UTF-16-encoded string to use for saving.
      */
     public compileData(data = this.data): string {
         const dataRawString = JSON.stringify(this.compileDataRaw(data));
-        return compressToBase64(dataRawString);
+        return compressToUTF16(dataRawString);
     }
 
     /**
@@ -252,12 +254,12 @@ class DataManager {
 
         try {
             // Decompress the data, then JSON parse it
-            parsedData = JSON.parse(decompressFromBase64(data)) as [SaveMetadata, UnknownObject];
+            parsedData = JSON.parse(decompressFromUTF16(data)) as [SaveMetadata, UnknownObject];
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
             if (error instanceof SyntaxError) {
-                console.error(`Failed to decompile data (corrupted) "${data}":`, error);
+                console.error(`eMath.js: Failed to decompile data (corrupted) "${data}":`, error);
             } else {
                 throw error;
             }
@@ -317,6 +319,8 @@ class DataManager {
         }
 
         this.saveData(null);
+        this.allowDataToBeSaved = false;
+        window.location.reload();
     }
 
     /**
@@ -327,15 +331,21 @@ class DataManager {
     public saveData(dataToSave: string | null = this.compileData()): void {
         // If the data is empty, throw
         if (typeof dataToSave === "undefined" || dataToSave === "") {
-            console.warn("dataManager.saveData(): Data to save is empty.");
+            console.warn("eMath.js: saveData(): Data to save is empty.");
             return;
         }
 
         // If local storage is not supported, throw
         if (!this.localStorage) {
             console.warn(
-                "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
+                "eMath.js: saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system.",
             );
+            return;
+        }
+
+        // If saving data is currently not allowed, throw
+        if (!this.allowDataToBeSaved) {
+            console.warn("eMath.js: saveData(): Saving data is currently not allowed.");
             return;
         }
 
@@ -378,12 +388,13 @@ class DataManager {
 
             const downloadLink = document.createElement("a");
             downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = `${this.gameRef.config.name.id}-data.txt`; // Specify the file name
-            downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`; // Text shown on the link
+            downloadLink.download = `${this.gameRef.config.name.id}-save.data`;
 
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+
+            URL.revokeObjectURL(downloadLink.href);
         }
     }
 
