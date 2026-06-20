@@ -12,6 +12,7 @@ export * from "./classes/Upgrade";
 export * from "./classes/Currency";
 export * from "./classes/Grid";
 export * from "./classes/RandomSelector";
+export * from "./classes/InvalidDecimalProtections";
 export * from "./classes/numericalAnalysis/numericalAnalysis";
 export * from "./classes/numericalAnalysis/sum";
 export * from "./classes/numericalAnalysis/inverseFunction";
