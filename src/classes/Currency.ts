@@ -7,8 +7,8 @@ import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
 import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
-import { SkillNode, Upgrade, calculateUpgrade } from "./Upgrade";
-import type { Pointer, IsPrimitiveString, Mutable } from "../common/types";
+import { SkillNode, Upgrade } from "./Upgrade";
+import type { Mutable } from "../common/types";
 import type { DataManager, StaticClassWithData } from "../game";
 import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 
@@ -327,7 +327,7 @@ class Currency implements StaticClassWithData {
         mode?: MeanMode,
         iterations?: number,
         value: DecimalSource = this.value,
-    ): [amount: Decimal, cost: Decimal] {
+    ): [newLevelToSetTo: Decimal, cost: Decimal] {
         // Get the upgrade
         const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, [Decimal.dZero, Decimal.dZero] as const);
         if (!upgradeExists) {
@@ -342,7 +342,7 @@ class Currency implements StaticClassWithData {
             target = Decimal.min(target, upgrade.maxLevel);
         }
 
-        return calculateUpgrade(value, upgrade, upgrade.level, target, mode, iterations);
+        return upgrade.calculate(value, upgrade.level, target, mode, iterations);
     }
 
     /**
@@ -360,10 +360,10 @@ class Currency implements StaticClassWithData {
      */
     public getNextCost(
         id: string | Upgrade,
-        target: DecimalSource = Decimal.dOne,
-        mode?: MeanMode,
-        iterations?: number,
-        value?: DecimalSource,
+        // target: DecimalSource = Decimal.dOne,
+        // mode?: MeanMode,
+        // iterations?: number,
+        // value?: DecimalSource,
     ): Decimal {
         // Get the upgrade
         const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
@@ -371,12 +371,14 @@ class Currency implements StaticClassWithData {
             return upgrade;
         }
 
-        // Calculate the amount of upgrades you can buy
-        const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
+        // // Calculate the amount of upgrades you can buy
+        // const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
 
-        // Calculate the cost of the next upgrade
-        const nextCost = upgrade.cost(upgrade.level.add(amount));
-        return nextCost;
+        // // Calculate the cost of the next upgrade
+        // const nextCost = upgrade.cost(amount);
+        // return nextCost;
+
+        return upgrade.cost(upgrade.level);
     }
 
     /**
@@ -443,7 +445,7 @@ class Currency implements StaticClassWithData {
         const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
 
         // Check if affordable
-        if (amount.lte(Decimal.dZero)) {
+        if (amount.eq(upgrade.level)) {
             return false;
         }
 
@@ -451,7 +453,7 @@ class Currency implements StaticClassWithData {
         this.value = this.value.sub(cost);
 
         // Set the upgrade level
-        upgrade.level = upgrade.level.add(amount);
+        upgrade.level = amount;
 
         // Call the effect function if it exists
         this.runUpgradeEffect(upgrade);
