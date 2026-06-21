@@ -2,152 +2,15 @@
  * @file Declares the upgrade and upgradeStatic classes as well as the calculateUpgrade function.
  */
 import "reflect-metadata";
-import { Transform, Type } from "class-transformer";
+import { Type } from "class-transformer";
 import { Decimal, DecimalSource } from "../E/e";
-import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import { DEFAULT_ITERATIONS, type MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
 import { calculateSum } from "./numericalAnalysis/sum";
 import { Currency } from "./Currency";
 import { DataManager, StaticClassWithData } from "../game";
 import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
-
-/**
- * Calculates the cost and how many upgrades you can buy
- * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
- * The priority is: `target === 1` > `costBulk` > `el`.
- * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
- * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
- * @param value - The current value of the currency.
- * @param upgrade - The upgrade object to calculate.
- * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
- * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
- */
-function calculateUpgrade(
-    value: DecimalSource,
-    upgrade: Upgrade,
-    start?: DecimalSource,
-    end: DecimalSource = Decimal.dInf,
-    mode?: MeanMode,
-    iterations?: number,
-    el = false,
-): [amount: Decimal, cost: Decimal] {
-    // Normalize the values
-    value = Decimal.fromValue_noAlloc(value);
-    start = Decimal.fromValue_noAlloc(start ?? upgrade.level);
-    end = Decimal.fromValue_noAlloc(end);
-
-    const target = end.sub(start);
-
-    // console.log("calculateUpgrade", { value, start, end, target, mode, iterations, el });
-
-    // Special case: If target is less than 0, just return 0
-    if (target.lt(Decimal.dZero)) {
-        console.warn("eMath.js: Invalid target for calculateItem: ", target);
-        return [Decimal.dZero, Decimal.dZero];
-    }
-
-    // Set el from the upgrade object if it exists
-    el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
-
-    // Get the cache
-    // TODO: Fix cache
-    // const cached = el ? upgrade.getCached("el", start) : upgrade.getCached("sum", start, end);
-    // if (cached) {
-    //     console.log("cached", cached, el, start, end, upgrade.id, upgrade.level.toString());
-    //     const { cost } = cached;
-    //     if (value.gte(cost)) {
-    //         if (el) {
-    //             const cachedEL = cached as UpgradeCachedEL;
-    //             return [cachedEL.level, Decimal.dZero];
-    //         }
-    //         const cachedSum = cached as UpgradeCachedSum;
-    //         return [cachedSum.end.sub(cachedSum.start), cost];
-    //     }
-    // }
-
-    // Special case: If target is 1, just check it manually
-    if (target.eq(Decimal.dOne)) {
-        // console.log("target === 1");
-        const cost = upgrade.cost(upgrade.level);
-        const canAfford = value.gte(cost);
-        let out: [Decimal, Decimal] = [Decimal.dZero, Decimal.dZero];
-        if (el) {
-            // return [canAfford ? Decimal.dOne : Decimal.dZero, Decimal.dZero];
-            out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
-
-            // Set the cache
-            // upgrade.setCached("el", start, cost);
-            return out;
-        } else {
-            out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost : Decimal.dZero];
-
-            // Set the cache
-            // upgrade.setCached("sum", start, end, cost);
-            return out;
-        }
-    }
-
-    // Special case: If costBulk exists, use it
-    if (upgrade.costBulk) {
-        // console.log("costBulk");
-        const [amount, cost] = upgrade.costBulk(value, upgrade.level, target);
-        const canAfford = value.gte(cost);
-        const out: [Decimal, Decimal] = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost : Decimal.dZero];
-
-        // Set the cache
-
-        // TODO
-        // if (el) {
-        //     upgrade.setCached("el", start, cost);
-        // } else {
-        //     upgrade.setCached("sum", start, end, cost);
-        // }
-
-        return out;
-    }
-
-    // Special case for el upgrades
-    if (el) {
-        const costTargetFn = (level: Decimal): Decimal => upgrade.cost(level.add(start));
-        const maxLevelAffordable = Decimal.min(
-            end,
-            calculateInverseFunction(costTargetFn, value, {
-                mode,
-                iterations,
-            }).value.floor(),
-        );
-        const cost = Decimal.dZero;
-
-        // Set the cache
-        // upgrade.setCached("el", start, cost);
-        return [maxLevelAffordable, cost];
-    }
-
-    // Binary Search with sum calculation
-    // console.log("binary search");
-    const maxLevelAffordable = calculateInverseFunction((x: Decimal) => calculateSum(upgrade.cost, x, start), value, {
-        mode,
-        iterations,
-    })
-        .value.floor()
-        .min(start.add(target).add(Decimal.dNegOne));
-
-    // After finding the max level affordable, calculate the cost at that level
-    const cost = calculateSum(upgrade.cost, maxLevelAffordable, start, undefined, DEFAULT_ITERATIONS);
-
-    // console.log({ maxLevelAffordable, cost });
-    const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(Decimal.dOne).max(Decimal.dZero);
-    // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
-
-    // Set the cache
-    // upgrade.setCached("sum", start, end, cost);
-    return [maxLevelAffordableActual, cost];
-}
+import { CachedUpgradeLookupMode, LowerCachedUpgradeLookup } from "./UpgradeCostTreeMap";
 
 /**
  * Infers the id type of an upgrade array.
@@ -170,28 +33,6 @@ function calculateUpgrade(
 // type UpgradeInitArrayType<TUpgradeArray extends Readonly<UpgradeInit>[]> = TUpgradeArray[number]["id"] extends never
 //     ? string
 //     : TUpgradeArray[number]["id"];
-
-/**
- * Interface for an upgrade that is cached.
- * We need a cache to reduce redundant calculations.
- *
- * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
- * and the cost of the upgrade at those levels.
- *
- * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
- */
-interface UpgradeCached extends Pick<Upgrade, "id" | "el"> {
-    el: boolean;
-
-    endLower: UpgradeCachedLevel;
-    end: UpgradeCachedLevel;
-    endUpper: UpgradeCachedLevel;
-}
-
-interface UpgradeCachedLevel {
-    level: Decimal;
-    cost: Decimal;
-}
 
 /**
  * Represents the frontend for an upgrade.
@@ -336,7 +177,7 @@ class Upgrade implements StaticClassWithData {
     /**
      * The level to set this upgrade when it is reset.
      */
-    public defaultLevel: Decimal = Decimal.dOne;
+    public defaultLevel: Decimal = Decimal.dZero;
 
     /**
      * The protections for {@link level}.
@@ -348,14 +189,10 @@ class Upgrade implements StaticClassWithData {
         allowNegative: false,
     });
 
-    /** The default size of the cache. Should be one less than a power of 2. */
-    public static readonly defaultCacheSize = 15;
+    /** The default size of the cache. */
+    public static readonly defaultCacheSize = 10000;
 
-    /**
-     * The cache to store the values of certain upgrade levels.
-     * @deprecated Unfinished
-     */
-    public cache = new DecimalLRUCache<UpgradeCached>(Upgrade.defaultCacheSize);
+    private readonly lowerCache = new LowerCachedUpgradeLookup();
 
     /** @returns The data of the upgrade. */
     private dataSupplier: () => UpgradeData = () => {
@@ -429,11 +266,143 @@ class Upgrade implements StaticClassWithData {
         const dataKey = `${prefix ? prefix + "_" : ""}${this.id}`;
 
         this.dataSupplier = dataManager.setData(dataKey, new UpgradeData());
+
+        // Populate the cache if it hasn't been populated yet
+        if (!this.lowerCache.hasBeenPopulated()) {
+            this.withCacheSize(Upgrade.defaultCacheSize);
+        }
     }
 
     public onLoadData(): void {
         // Run setter method to run protections and other side effects of setting the level.
         this.level = this.data.level;
+    }
+
+    /**
+     * Calculates the cost and how many upgrades you can buy
+     * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
+     * The priority is: `target === 1` > `costBulk` > `el`.
+     * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
+     * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
+     * @param value - The current value of the currency.
+     * @param upgrade - The upgrade object to calculate.
+     * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
+     * @param mode - The mode/mean method to use. See {@link MeanMode}
+     * @param iterations - The amount of iterations to perform. Defaults to `15`.
+     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
+     * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+     */
+    public calculate(
+        value: DecimalSource,
+        start?: DecimalSource,
+        end: DecimalSource = Decimal.dInf,
+        mode?: MeanMode,
+        iterations?: number,
+        el = false,
+    ): [newLevelToSetTo: Decimal, cost: Decimal] {
+        // Normalize the values
+        value = Decimal.fromValue_noAlloc(value);
+        start = Decimal.fromValue_noAlloc(start ?? this.level);
+        end = Decimal.fromValue_noAlloc(end);
+
+        const currentLevel = this.level;
+
+        const target = end.sub(start);
+
+        // Special case: If target is less than 0, just return 0
+        if (target.lt(Decimal.dZero)) {
+            console.warn("eMath.js: Invalid target for calculateItem: ", target);
+            return [currentLevel, Decimal.dZero];
+        }
+
+        // Set el from the upgrade object if it exists
+        el = (typeof this.el === "function" ? this.el() : this.el) ?? el;
+
+        // Special case: If target is 1, just check it manually
+        if (target.eq(Decimal.dOne)) {
+            const cost = this.cost(this.level);
+            const canAfford = value.gte(cost);
+            let out: [Decimal, Decimal] = [Decimal.dZero, Decimal.dZero];
+
+            if (el) {
+                out[0] = canAfford ? currentLevel.add(Decimal.dOne) : currentLevel;
+                return out;
+            } else {
+                out = [canAfford ? currentLevel.add(Decimal.dOne) : currentLevel, canAfford ? cost : Decimal.dZero];
+                return out;
+            }
+        }
+
+        // Special case: If costBulk exists, use it
+        if (this.costBulk) {
+            // console.log("costBulk");
+            const [amount, cost] = this.costBulk(value, start, target);
+            const canAfford = value.gte(cost);
+            const out: [Decimal, Decimal] = [canAfford ? amount : currentLevel, canAfford && !el ? cost : Decimal.dZero];
+
+            return out;
+        }
+
+        const lookupMode = el ? CachedUpgradeLookupMode.costAtLevel : CachedUpgradeLookupMode.accumulatedCost;
+
+        if (this.lowerCache.isWithinBounds(value, lookupMode)) {
+            const adjustment = !el ? this.lowerCache.getCostAtLevel(start, lookupMode) : Decimal.dZero;
+
+            const adjustedCurrencyValue = !el ? value.add(adjustment) : value;
+
+            const lookupResult = this.lowerCache.lookUp(adjustedCurrencyValue, lookupMode);
+
+            const cost = el ? Decimal.dZero : this.lowerCache.getCostAtLevel(lookupResult.lowerNode).sub(adjustment);
+
+            // console.log({
+            //     value,
+            //     adjustment,
+            //     adjustedCurrencyValue,
+            //     lookupResult,
+            //     cost,
+            // })
+
+            return [lookupResult.lowerNode, cost];
+        }
+
+        // TODO: upper
+        return [currentLevel, Decimal.dZero];
+
+        // // Special case for el upgrades
+        // if (el) {
+        //     const costTargetFn = (level: Decimal): Decimal => this.cost(level.add(start));
+        //     const maxLevelAffordable = Decimal.min(
+        //         end,
+        //         calculateInverseFunction(costTargetFn, value, {
+        //             mode,
+        //             iterations,
+        //         }).value.floor(),
+        //     );
+        //     const cost = Decimal.dZero;
+
+        //     // Set the cache
+        //     // this.setCached("el", start, cost);
+        //     return [maxLevelAffordable, cost];
+        // }
+
+        // // Binary Search with sum calculation
+        // // console.log("binary search");
+        // const maxLevelAffordable = calculateInverseFunction((x: Decimal) => calculateSum(this.cost, x, start), value, {
+        //     mode,
+        //     iterations,
+        // })
+        //     .value.floor()
+        //     .min(start.add(target).add(Decimal.dNegOne));
+
+        // // After finding the max level affordable, calculate the cost at that level
+        // const cost = calculateSum(this.cost, maxLevelAffordable, start, undefined, DEFAULT_ITERATIONS);
+
+        // // console.log({ maxLevelAffordable, cost });
+        // const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(Decimal.dOne).max(Decimal.dZero);
+        // // console.log({ maxLevelAffordable, maxLevelAffordableActual, cost });
+
+        // return [maxLevelAffordableActual, cost];
     }
 
     // Chainable setters
@@ -485,6 +454,11 @@ class Upgrade implements StaticClassWithData {
         return this;
     }
 
+    public withCacheSize(cacheSize: number): this {
+        this.lowerCache.fill(cacheSize, this.cost, this.defaultLevel);
+        return this;
+    }
+
     /**
      * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
      * @param cost - The cost of the upgrade.
@@ -503,57 +477,6 @@ class Upgrade implements StaticClassWithData {
         this.currencySupplier = currencySupplier;
         return this;
     }
-
-    // TODO: setter for cache
-
-    // /**
-    //  * Gets the cached data of the upgrade.
-    //  * @param type - The type of the cache. "sum" or "el"
-    //  * @param start - The starting level of the upgrade.
-    //  * @param end - The ending level or quantity to reach for the upgrade.
-    //  * @returns The data of the upgrade.
-    //  */
-    // public getCached (type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
-    // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
-    // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
-    //     if (type === "sum") {
-    //         return this.cache.get(upgradeToCacheNameSum(start, end ?? Decimal.dZero));
-    //     } else {
-    //         return this.cache.get(upgradeToCacheNameEL(start));
-    //     }
-    // }
-
-    // /**
-    //  * Sets the cached data of the upgrade.
-    //  * @param type - The type of the cache. "sum" or "el"
-    //  * @param start - The starting level of the upgrade.
-    //  * @param end - The ending level or quantity to reach for the upgrade.
-    //  * @param cost - The cost of the upgrade.
-    //  */
-    // public setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
-    // public setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
-    // public setCached (type: "sum" | "el", start: DecimalSource, endOrStart: DecimalSource, costSum?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum {
-    //     const data = type === "sum" ? {
-    //         id: this.id,
-    //         el: false,
-    //         start: new Decimal(start),
-    //         end: new Decimal(endOrStart),
-    //         cost: new Decimal(costSum),
-    //     } : {
-    //         id: this.id,
-    //         el: true,
-    //         level: new Decimal(start),
-    //         cost: new Decimal(endOrStart),
-    //     };
-
-    //     if (type === "sum") {
-    //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
-    //     } else {
-    //         this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
-    //     }
-
-    //     return data as UpgradeCachedEL | UpgradeCachedSum;
-    // }
 }
 
 /**
@@ -645,5 +568,5 @@ class SkillNode extends Upgrade {
     }
 }
 
-export { UpgradeData, Upgrade, SkillNode, calculateUpgrade };
-export type { UpgradeCached, SkillRequirement };
+export { UpgradeData, Upgrade, SkillNode };
+export type { SkillRequirement };

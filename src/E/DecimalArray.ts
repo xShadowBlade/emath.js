@@ -1,6 +1,7 @@
 /**
  * @file Declares the DecimalArray class.
  */
+import type { CompareResult } from "./e";
 import { Decimal } from "./e";
 
 enum DecimalLayerArrayType {
@@ -46,26 +47,7 @@ class DecimalArray implements Iterable<Decimal> {
      * @param maxLayerThatCouldBeStored - The maximum layer that could be stored in the array.
      * This is used to determine the appropriate type for the layerAndSignArray.
      */
-    // constructor(size: number) {
-    //     this.layerAndSignArray = new Float64Array(size);
-    //     this.magArray = new Float64Array(size);
-    // }
     constructor(size: number, maxLayerThatCouldBeStored = Infinity) {
-        // Determine the appropriate type for the layerAndSignArray based on the maximum layer that could be stored
-        // if (maxLayerThatCouldBeStored <= DecimalLayerArrayType.int8Array) {
-        //     this.layerAndSignArray = new Int8Array(size);
-        //     this.layerAndSignArrayType = DecimalLayerArrayType.int8Array;
-        // } else if (maxLayerThatCouldBeStored <= DecimalLayerArrayType.int16Array) {
-        //     this.layerAndSignArray = new Int16Array(size);
-        //     this.layerAndSignArrayType = DecimalLayerArrayType.int16Array;
-        // } else if (maxLayerThatCouldBeStored <= DecimalLayerArrayType.int32Array) {
-        //     this.layerAndSignArray = new Int32Array(size);
-        //     this.layerAndSignArrayType = DecimalLayerArrayType.int32Array;
-        // } else {
-        //     this.layerAndSignArray = new Float64Array(size);
-        //     this.layerAndSignArrayType = DecimalLayerArrayType.float64Array;
-        // }
-
         this.length = size;
 
         // Temp assignments
@@ -151,6 +133,78 @@ class DecimalArray implements Iterable<Decimal> {
 
         this.layerAndSignArray[index] = decimal.sign * decimal.layer;
         this.magArray[index] = decimal.mag;
+    }
+
+    /**
+     * Compares the Decimal at the given index with the given Decimal.
+     * Equal to `this.get(index).cmp(decimalToCompare)`, but more efficient because it doesn't create a new Decimal instance.
+     * @param index - The index of the Decimal to compare.
+     * @param decimalToCompare - The Decimal to compare with.
+     * @returns -1 if the Decimal at the given index is less than the given Decimal, 0 if they are equal, and 1 if the Decimal at the given index is greater than the given Decimal.
+     */
+    public compareAt(index: number, decimalToCompare: Decimal): CompareResult {
+        const layerAndSign = this.layerAndSignArray[index];
+        const mag = this.magArray[index];
+
+        // Extract sign and layer
+        const layer = Math.abs(layerAndSign);
+        const sign = Object.is(layerAndSign, -0) ? -1 : layer === 0 && mag === 0 ? 0 : 1;
+
+        // Adapted from Decimal.prototype.cmp
+        if (sign > decimalToCompare.sign) {
+            return 1;
+        }
+        if (sign < decimalToCompare.sign) {
+            return -1;
+        }
+
+        // Adapted from Decimal.prototype.cmpabs
+        const normalizedSignedLayerA = mag > 0 ? layer : -layer;
+        const normalizedSignedLayerB = decimalToCompare.mag > 0 ? decimalToCompare.layer : -decimalToCompare.layer;
+
+        if (normalizedSignedLayerA > normalizedSignedLayerB) {
+            return sign;
+        }
+        if (normalizedSignedLayerA < normalizedSignedLayerB) {
+            return -sign as CompareResult;
+        }
+        if (mag > decimalToCompare.mag) {
+            return sign;
+        }
+        if (mag < decimalToCompare.mag) {
+            return -sign as CompareResult;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Binary searches for the given Decimal in the array.
+     * Assumes the array is sorted in ascending order.
+     * @param decimalToSearch - The Decimal to search for.
+     * @returns The index of the Decimal if found, or an `integerIndex` + 0.5 if not found, where the `integerIndex` is the index of the largest Decimal in the array that is less than the given Decimal.
+     */
+    public search(decimalToSearch: Decimal): number {
+        let low = 0;
+        let high = this.length - 1;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const comparison = this.compareAt(mid, decimalToSearch);
+
+            // Found an exact match, return the index
+            if (comparison === 0) {
+                return mid;
+            }
+
+            if (comparison < 0) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return low - 0.5;
     }
 
     /**
