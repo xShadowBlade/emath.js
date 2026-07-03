@@ -5,6 +5,50 @@ import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
 
 /**
+ * A list of recommended {@link BoostObject.prototype.order} values.
+ */
+enum OperationBoostOrder {
+    /**
+     * A boost value that sets a new value regardless of the previous accumulated value.
+     * Similar to overriding the base effect.
+     * @example (input) => new Decimal(10)
+     */
+    set = 0,
+
+    /**
+     * A boost value that adds to the base value/accumulated value
+     * @example (input) => input.add(4)
+     */
+    add = 1,
+
+    /**
+     * A boost value that multiplies to the base value/accumulated value
+     * @example (input) => input.mul(5)
+     */
+    multiply = 2,
+
+    /**
+     * A boost value that raises the accumulated value to the power of a value.
+     * @example (input) => input.pow(1.5)
+     */
+    polynomial = 2.9,
+
+    /**
+     * A boost value is a value raised to the power of the accumulated value.
+     * @example (input) => Decimal.pow(2, input)
+     */
+    exponential = 3,
+
+    /**
+     * A boost value relates to tetration.
+     * @example (input) => input.tetrate(2)
+     */
+    tetrate = 4,
+
+    unset = 99,
+}
+
+/**
  * Represents an individual boost object.
  */
 // TODO: rename this
@@ -33,7 +77,7 @@ class BoostObject {
     public value: (input: Decimal) => Decimal = (input) => input;
 
     /** The order at which the boost is applied. Lower orders are applied first. */
-    public order = 99;
+    public order: number = OperationBoostOrder.unset;
 
     // TODO: redo this example
     /**
@@ -62,7 +106,8 @@ class BoostObject {
     }
 
     /**
-     * Constructs a new boost object.
+     * Constructs a new boost object with the given id.
+     * @param id - The id to use.
      */
     constructor(id: string) {
         this.id = id;
@@ -232,4 +277,4 @@ class Boost {
     }
 }
 
-export { Boost, BoostObject };
+export { Boost, BoostObject, OperationBoostOrder };
