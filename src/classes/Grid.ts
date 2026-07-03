@@ -24,13 +24,13 @@ type GridDirection = GridDirectionCell | GridDirectionCollection;
  */
 class GridCell<TProperties extends object = UnknownObject> {
     /** The x-coordinate of the cell. */
-    public x: number;
+    public readonly x: number;
 
     /** The y-coordinate of the cell. */
-    public y: number;
+    public readonly y: number;
 
     /** The grid instance the cell belongs to. */
-    private gridSymbol: symbol;
+    private readonly gridSymbol: symbol;
 
     /** @returns The grid instance the cell belongs to. */
     public get grid(): Grid<TProperties> {
@@ -51,15 +51,15 @@ class GridCell<TProperties extends object = UnknownObject> {
     constructor(
         x: number,
         y: number,
-        props: TProperties | ((grid: GridCell<TProperties>) => TProperties) = {} as TProperties,
+        props: TProperties | ((grid: GridCell<never>) => TProperties) = {} as TProperties,
         gridSymbol: symbol,
     ) {
         this.x = x;
         this.y = y;
+        this.gridSymbol = gridSymbol;
 
         // Object destructuring to prevent reference sharing
-        this.properties = typeof props === "function" ? props(this) : { ...props };
-        this.gridSymbol = gridSymbol;
+        this.properties = typeof props === "function" ? props(this as unknown as GridCell<never>) : { ...props };
     }
 
     /**
@@ -68,7 +68,7 @@ class GridCell<TProperties extends object = UnknownObject> {
      * @param value - The value to set.
      * @returns The set value.
      */
-    public set(name: keyof TProperties, value: TProperties[keyof TProperties]): typeof value {
+    public set<T extends keyof TProperties>(name: T, value: TProperties[T]): typeof value {
         this.properties[name] = value;
         return value;
     }
@@ -80,7 +80,7 @@ class GridCell<TProperties extends object = UnknownObject> {
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    public get(name: keyof TProperties): TProperties[keyof TProperties] {
+    public get<T extends keyof TProperties>(name: T): TProperties[T] {
         return this.properties[name];
     }
     /** @deprecated Use {@link get} instead. */
@@ -354,7 +354,7 @@ class GridCellCollection<TProperties extends object = UnknownObject> extends Arr
 class Grid<TProperties extends object = UnknownObject> {
     /** A map of grid instances. */
     // private static instances = new Map<symbol, Grid>();
-    private static instances: Record<symbol, Grid> = {};
+    private static instances: Record<symbol, Grid<object>> = {};
 
     /**
      * Gets the grid instance with the specified key.
@@ -382,7 +382,7 @@ class Grid<TProperties extends object = UnknownObject> {
      * @param grid - The grid cell to initialize with.
      * @returns - The properties to initialize with.
      */
-    private readonly starterProps: TProperties | ((grid: GridCell<TProperties>) => TProperties);
+    private readonly starterProps: TProperties | ((grid: GridCell<never>) => TProperties);
 
     /**
      * Initializes a new instance of the grid.
@@ -390,13 +390,8 @@ class Grid<TProperties extends object = UnknownObject> {
      * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(
-        xSize: number,
-        ySize?: number,
-        starterProps?: TProperties | ((grid: GridCell<TProperties>) => TProperties),
-    ) {
+    constructor(xSize: number, ySize?: number, starterProps?: TProperties | ((grid: GridCell<never>) => TProperties)) {
         // Assign the instance symbol to the grid
-        // @ts-expect-error - Generic class type
         Grid.instances[this.gridSymbol] = this;
 
         this.starterProps = starterProps ?? ({} as TProperties);
@@ -754,6 +749,15 @@ class Grid<TProperties extends object = UnknownObject> {
         }
 
         return new GridCellCollection(output);
+    }
+
+    /**
+     * @returns A random cell from the grid.
+     */
+    public getRandomCell(): GridCell<TProperties> {
+        const x = Math.floor(Math.random() * this.xSize);
+        const y = Math.floor(Math.random() * this.ySize);
+        return this.getCell(x, y);
     }
 
     /**
