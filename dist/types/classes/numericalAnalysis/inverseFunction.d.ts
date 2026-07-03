@@ -76,15 +76,25 @@ declare function calculateInverseFunction(f: (x: Decimal) => Decimal, n: Decimal
  * @param lowerBound - The lower bound to start the search from. Defaults to `1`.
  * @param upperBound - The upper bound to start the search from. Defaults to `n`.
  * @param round - Whether to round the bound and search only through integers. Defaults to `false`.
- * TODO: doc
- * @param useNewtonIterations - boolean or derivative
+//  * @param useNewtonIterations - Whether to use Newton's method to calculate the next mid value instead of the mean. Defaults to `false`. If `true`, the function will use the derivative of `f` (or an approximation of it) to calculate the next mid value, which can speed up convergence for some functions.
+//  * @param fPrime - The derivative of `f`. If not provided and `useNewtonIterations` is `true`, the function will approximate the derivative using the `approximateDerivative` function.
  * @returns An object containing the approximate inverse value `"value"` (defaults to the lower bound), the lower bound `"lowerBound"`, and the upper bound `"upperBound"`, all as {@link Decimal} instances.
  * @example
  * const f = (x) => x.pow(2);
  * const inverse = inverseFunctionApprox(f, 16);
  * console.log(inverse.value); // ~3.9999999999999996
  */
-declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean, useNewtonIterations?: boolean, fPrime?: (x: Decimal) => Decimal): InverseFunctionApproxResult;
+declare function inverseFunctionApprox(f: (x: Decimal) => Decimal, n: DecimalSource, mode?: MeanMode, iterations?: number, tolerance?: number, lowerBound?: DecimalSource, upperBound?: DecimalSource, round?: boolean): InverseFunctionApproxResult;
+/**
+ * Approximates the inverse of a function at `n` using the Newton-Raphson method.
+ * @param f - The function to approximate the inverse of. It must be monotonically increasing and satisfy `f(n) >= n` for all `n >= 0`.
+ * @param n - The value to approximate the inverse at.
+ * @param fPrime - The derivative of `f`. If not provided, the function will approximate the derivative using the `approximateDerivative` function.
+ * @param initialGuess - The initial guess to start the search from. Defaults to the geometric mean of `1` and `n`.
+ * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS}.
+ * @param tolerance - The tolerance to approximate the inverse with. Defaults to {@link DEFAULT_TOLERANCE}.
+ * @returns An approximation of the inverse of `f` at `n` as a {@link Decimal} instance.
+ */
 declare function inverseFunctionApproxUsingNewtonRaphson(f: (x: Decimal) => Decimal, n: DecimalSource, fPrime?: (x: Decimal) => Decimal, initialGuess?: DecimalSource, iterations?: number, tolerance?: number): Decimal;
 export type { InverseFunctionOptions, InverseFunctionApproxResult };
 export { calculateInverseFunction, inverseFunctionApprox, inverseFunctionApproxUsingNewtonRaphson };

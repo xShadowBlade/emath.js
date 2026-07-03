@@ -4,6 +4,7 @@
  */
 import "reflect-metadata";
 import type { Game } from "../Game";
+import { DataManagerEntry } from "./DataEntry";
 import { eMathMetadata } from "../../metadata";
 import type { UnknownObject } from "../../common/types";
 /**
@@ -40,6 +41,17 @@ interface StaticClassWithData {
     onAddToDataManager?(dataManager: DataManager): void;
 }
 /**
+ * A tuple type for the return value of {@link DataManager.useData}.
+ * The first element is a function that returns the current value of the data.
+ * The second element is a function that can be used to update the value of the data.
+ * The second function can take either a new value or a callback function that receives the previous value and returns the new value.
+ * @template T - The type of the data.
+ */
+type UseDataReturnType<T> = [
+    dataSupplier: () => T,
+    dataSetter: (newValueOrCallback: T | ((previousValue: T) => T)) => void
+];
+/**
  * A class that manages game data, including saving, loading, and exporting data.
  *
  * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
@@ -51,6 +63,7 @@ declare class DataManager {
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
     private readonly data;
+    private readonly dataEntryInstances;
     /** A reference to the game instance. */
     private readonly gameRef;
     /** The local storage object. */
@@ -61,6 +74,7 @@ declare class DataManager {
      * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
      */
     private readonly eventsOnLoad;
+    private allowDataToBeSaved;
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
@@ -73,6 +87,7 @@ declare class DataManager {
      * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
      */
     addEventOnLoad(event: () => void): void;
+    private setDataInternal;
     /**
      * Sets the data for the given key.
      * The getter is a work in progress.
@@ -89,7 +104,21 @@ declare class DataManager {
      * console.log(testData.value); // 10
      */
     setData<T>(key: string, value: T): () => T;
-    useData<T>(key: string, value: T): [dataSupplier: () => T, dataSetter: ((newValue: T) => void) | ((callback: (previousValue: T) => T) => void)];
+    /**
+     * Sets the data for the given key and returns a getter and setter for the data.
+     * @param key - The key to set the data for.
+     * @param value - The initial value to set the data to.
+     * @returns A tuple containing a getter and a setter for the data. The getter returns the current value of the data, and the setter can be used to update the value of the data. The setter can take either a new value or a callback function that receives the previous value and returns the new value.
+     * @example
+     * const [getTestData, setTestData] = dataManager.useData("test", 5);
+     * console.log(getTestData()); // 5
+     * setTestData(10); // Sets the data to 10
+     * console.log(getTestData()); // 10
+     * setTestData((prev) => prev + 5); // Updates the data to 15 using a callback
+     * console.log(getTestData()); // 15
+     */
+    useData<T>(key: string, value: T): UseDataReturnType<T>;
+    useDataEntry<T>(key: string, value: T): DataManagerEntry<T>;
     /**
      * Gets the data for the given key.
      * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
@@ -97,6 +126,10 @@ declare class DataManager {
      * @returns The data for the given key.
      */
     getData(key: string): unknown;
+    /**
+     * Adds a static class with data to the data manager. The class will be added to the data manager and its `onAddToDataManager` method will be called if it exists. When the data is loaded using {@link DataManager.loadData}, the class's `onLoadData` method will be called if it exists.
+     * @param data - The static class with data to add to the data manager.
+     */
     addCustomData(data: StaticClassWithData): void;
     /**
      * Compiles the given game data to a tuple containing the compressed game data and a hash.
@@ -105,9 +138,9 @@ declare class DataManager {
      */
     compileDataRaw(data?: Record<string, unknown>): [SaveMetadata, object];
     /**
-     * Compresses the given game data to a base64-encoded using lz-string.
+     * Compresses the given game data to a UTF-16-encoded string using lz-string.
      * @param data The game data to be compressed. Defaults to the current game data.
-     * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
+     * @returns The compressed game data and a hash as a UTF-16-encoded string to use for saving.
      */
     compileData(data?: Record<string, unknown>): string;
     /**
@@ -131,9 +164,9 @@ declare class DataManager {
     /**
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you don't want to save to local storage, use {@link compileData} instead.
-     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
+     * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}. If the data is null, the save will be cleared instead.
      */
-    saveData(dataToSave?: string): void;
+    saveData(dataToSave?: string | null): void;
     /**
      * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
      * If you want to implement a custom data export, use {@link compileData} instead.
@@ -142,7 +175,6 @@ declare class DataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-     * @returns The loaded data.
      */
     parseData(dataToParse?: [SaveMetadata, UnknownObject] | null): void;
     /**
@@ -153,4 +185,4 @@ declare class DataManager {
     loadData(dataToLoad?: [SaveMetadata, UnknownObject] | null | string): null | boolean;
 }
 export { DataManager };
-export type { SaveMetadata, StaticClassWithData };
+export type { SaveMetadata, StaticClassWithData, UseDataReturnType };

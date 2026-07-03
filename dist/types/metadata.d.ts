@@ -1,13 +1,13 @@
 /**
- * @file Declares the metadata for the project.
- */
+ * @file Declares the metadata for
+
 /**
  * Metadata for the project.
  */
 declare const eMathMetadata: {
     /**
      * The version of the library
-     * @example "9.5.0"
+     * @example "10.0.0"
      */
     version: string;
     /**

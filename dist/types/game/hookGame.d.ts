@@ -25,6 +25,8 @@ declare const eMath: {
     EventManager: typeof eMathGame.EventManager;
     EventTypes: typeof eMathGame.EventTypes;
     DataManager: typeof eMathGame.DataManager;
+    SubscribableDataEntry: typeof eMathGame.SubscribableDataEntry;
+    DataManagerEntry: typeof eMathGame.DataManagerEntry;
     parseObject: typeof eMathGame.parseObject;
     ConfigManager: typeof eMathGame.ConfigManager;
     eMathMetadata: {
@@ -38,6 +40,7 @@ declare const eMath: {
     EXP_LIMIT: 9000000000000000;
     LAYER_DOWN: number;
     NUMBER_EXP_MAX: 308;
+    f_maglog10: (n: number) => number;
     formats: {
         toSubscript: (value: number) => string;
         toSuperscript: (value: number) => string;
@@ -164,12 +167,13 @@ declare const eMath: {
     ST_NAMES: string[][][];
     FormatTypeList: eMathMain.FormatType[];
     Decimal: typeof eMathMain.Decimal;
+    DecimalArray: typeof eMathMain.DecimalArray;
     Boost: typeof eMathMain.Boost;
     BoostObject: typeof eMathMain.BoostObject;
+    OperationBoostOrder: typeof eMathMain.OperationBoostOrder;
     UpgradeData: typeof eMathMain.UpgradeData;
     Upgrade: typeof eMathMain.Upgrade;
     SkillNode: typeof eMathMain.SkillNode;
-    calculateUpgrade: typeof eMathMain.calculateUpgrade;
     CurrencyData: typeof eMathMain.CurrencyData;
     Currency: typeof eMathMain.Currency;
     GridCell: typeof eMathMain.GridCell;
@@ -178,12 +182,15 @@ declare const eMath: {
     SelectionMethod: typeof eMathMain.SelectionMethod;
     RandomSelector: typeof eMathMain.RandomSelector;
     RarestFirstCascadeSelectionMethod: typeof eMathMain.RarestFirstCascadeSelectionMethod;
+    InvalidDecimalProtections: typeof eMathMain.InvalidDecimalProtections;
+    CachedUpgradeTreeNode: typeof eMathMain.CachedUpgradeTreeNode;
+    LowerCachedUpgradeLookup: typeof eMathMain.LowerCachedUpgradeLookup;
+    CachedUpgradeLookupMode: typeof eMathMain.CachedUpgradeLookupMode;
     mean(a: eMathMain.DecimalSource, b: eMathMain.DecimalSource, mode?: eMathMain.MeanMode): eMathMain.Decimal;
     geometricEqualsTolerance: typeof eMathMain.geometricEqualsTolerance;
     approximateDerivative: typeof eMathMain.approximateDerivative;
     newtonRaphson: typeof eMathMain.newtonRaphson;
     decimalMagDifference: typeof eMathMain.decimalMagDifference;
-    decimalMagGeometricMean: typeof eMathMain.decimalMagGeometricMean;
     roundingBase: typeof eMathMain.roundingBase;
     DEFAULT_ITERATIONS: 30;
     DEFAULT_ITERATIONS_AS_DECIMAL: Readonly<eMathMain.Decimal>;

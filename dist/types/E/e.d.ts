@@ -6,6 +6,7 @@ export type CompareResult = -1 | 0 | 1;
 export declare const EXP_LIMIT = 9000000000000000;
 export declare const LAYER_DOWN: number;
 export declare const NUMBER_EXP_MAX = 308;
+export declare const f_maglog10: (n: number) => number;
 export type DecimalSource = Decimal | number | string;
 /**
  * The value of the Decimal is sign * 10^10^10...^mag, with (layer) 10s. If the layer is not 0, then negative mag means it's the reciprocal of the corresponding number with positive mag.

@@ -8,4 +8,5 @@ export * from "./GameReset";
 export * from "./managers/KeyManager";
 export * from "./managers/EventManager";
 export * from "./managers/DataManager";
+export * from "./managers/DataEntry";
 export * from "./managers/ConfigManager";

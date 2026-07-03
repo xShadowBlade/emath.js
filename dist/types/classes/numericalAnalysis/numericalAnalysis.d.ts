@@ -62,11 +62,7 @@ declare enum MeanMode {
      * The logarithmic mean of two values.
      * @example 10^sqrt(log10(a) * log10(b))
      */
-    logarithmic = 4,
-    /**
-     * See {@link decimalMagDifference}.
-     */
-    tetrational = 5
+    logarithmic = 4
 }
 /**
  * Calculates the mean of two values using a specified method.
@@ -93,16 +89,23 @@ interface EqualsToleranceConfig {
     mode: MeanMode;
 }
 /**
- * Compares two values with a tolerance.
- * @param a - The lower bound.
- * @param b - The upper bound.
+ * Compares two values for equality within a specified tolerance, using a geometric comparison method that takes into account the magnitude of the values.
+ * @param a - The first value.
+ * @param b - The second value.
  * @param tolerance - The tolerance to compare the values with.
- * @param config - The configuration object.
+ * @param verbose - Whether to log the values (a, b, tolerance, config, diff, result) to the console. See {@link EqualsToleranceConfig.verbose}.
  * @returns Whether the values are equal within the tolerance.
  */
 declare function geometricEqualsTolerance(a: DecimalSource, b: DecimalSource, tolerance?: number, verbose?: boolean | "onlyOnFail"): boolean;
+/**
+ * Calculates the difference in magnitude between two Decimal values.
+ * The difference is calculated as the ratio of the magnitudes of the two values, taking into account their layers.
+ * If the layers differ by 2 or more, the difference is considered infinite (if a is larger) or zero (if b is larger).
+ * @param a - The first Decimal value.
+ * @param b - The second Decimal value.
+ * @returns The difference in magnitude between the two Decimal values. A value of 1 means they are of the same magnitude, a value greater than 1 means a is larger, and a value less than 1 means b is larger.
+ */
 declare function decimalMagDifference(a: DecimalSource, b: DecimalSource): number;
-declare function decimalMagGeometricMean(a: Decimal, b: Decimal): Decimal;
 /**
  * Function to round a number to the nearest power of a specified base.
  * @param x - The number to round.
@@ -116,7 +119,7 @@ declare function decimalMagGeometricMean(a: Decimal, b: Decimal): Decimal;
  * roundingBase(123456789, 10, 2); // 123000000
  * roundingBase(245, 2); // 256
  */
-declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource, max?: DecimalSource): Decimal;
+declare function roundingBase(x: DecimalSource, base?: DecimalSource, acc?: DecimalSource): Decimal;
 /**
  * Approximates the derivative of a function at a given point using the difference quotient method.
  * Assumes that the function is differentiable at the given point and the derivative is not zero.
@@ -143,5 +146,5 @@ declare function approximateDerivative(f: (x: Decimal) => Decimal, x: DecimalSou
  * newtonRaphson(10, f, fPrime); // Approximately -0.780776406404415
  */
 declare function newtonRaphson(initialGuess: DecimalSource, f: (x: Decimal) => Decimal, fPrime?: (x: Decimal) => Decimal, tolerance?: number, maxIterations?: number): Decimal;
-export { geometricEqualsTolerance, approximateDerivative, newtonRaphson, decimalMagDifference, decimalMagGeometricMean, roundingBase, DEFAULT_ITERATIONS, DEFAULT_ITERATIONS_AS_DECIMAL, DEFAULT_TOLERANCE, MeanMode, };
+export { geometricEqualsTolerance, approximateDerivative, newtonRaphson, decimalMagDifference, roundingBase, DEFAULT_ITERATIONS, DEFAULT_ITERATIONS_AS_DECIMAL, DEFAULT_TOLERANCE, MeanMode, };
 export type { EqualsToleranceConfig };
