@@ -1,8 +1,5 @@
 /**
- * @file Declares the metadata for the project.
- */
-
-declare const PKG_VERSION: string;
+ * @file Declares the metadata for
 
 /**
  * Metadata for the project.
@@ -15,6 +12,7 @@ const eMathMetadata = {
     version: ((): string => {
         // Get the version
         try {
+            // @ts-expect-error - Replaced by build
             return PKG_VERSION as string;
         } catch (error) {
             return "10.0.0";
