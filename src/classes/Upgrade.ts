@@ -8,13 +8,12 @@ import { DEFAULT_ITERATIONS, type MeanMode } from "./numericalAnalysis/numerical
 import { inverseFunctionApprox, calculateInverseFunction } from "./numericalAnalysis/inverseFunction";
 import { calculateSum } from "./numericalAnalysis/sum";
 import { Currency } from "./Currency";
-import { DataManager, StaticClassWithData } from "../game";
+import { DataManager, StaticClassWithData, SubscribableDataEntry } from "../game";
 import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 import { CachedUpgradeLookupMode, LowerCachedUpgradeLookup } from "./UpgradeCostTreeMap";
 
 /**
  * Infers the id type of an upgrade array.
- * @deprecated Infer using the array type directly instead.
  * @template TUpgradeArray - The upgrade array.
  * @example
  * const testUpg = [
@@ -34,23 +33,34 @@ import { CachedUpgradeLookupMode, LowerCachedUpgradeLookup } from "./UpgradeCost
 //     ? string
 //     : TUpgradeArray[number]["id"];
 
+class PlaceholderImmutableUpgradeData implements UpgradeData {
+    public get level(): Decimal {
+        return new Decimal(Decimal.dZero);
+    }
+
+    public set level(placeholder: Decimal) {
+        return;
+    }
+}
+
 /**
  * Represents the frontend for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 class UpgradeData {
-    public static readonly defaultUpgradeData: Readonly<UpgradeData> = new UpgradeData();
+    public static readonly defaultUpgradeData: UpgradeData = new PlaceholderImmutableUpgradeData();
 
     @Type(() => Decimal)
     public level: Decimal;
 
     /**
-     * Constructs a new upgrade object with an initial level of 1.
+     * Constructs a new upgrade object with an initial level of 0.
      */
     constructor() {
-        this.level = Decimal.dOne;
+        this.level = Decimal.dZero;
     }
 }
+
 
 /**
  * Represents the backend for an upgrade.
@@ -197,7 +207,7 @@ class Upgrade implements StaticClassWithData {
     /** @returns The data of the upgrade. */
     private dataSupplier: () => UpgradeData = () => {
         console.warn("eMath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
-        return new UpgradeData();
+        return UpgradeData.defaultUpgradeData;
     };
 
     /** @returns The data of the upgrade. */
@@ -252,6 +262,14 @@ class Upgrade implements StaticClassWithData {
             this,
         );
     }
+
+    public readonly levelDataEntry = SubscribableDataEntry.fromGetterSetter(
+        () => this.level,
+        (newLevel) => {
+            this.level = newLevel;
+        },
+        false,
+    );
 
     /**
      * Creates a new upgrade object with the given ID.
@@ -455,7 +473,7 @@ class Upgrade implements StaticClassWithData {
     }
 
     public withCacheSize(cacheSize: number): this {
-        this.lowerCache.fill(cacheSize, this.cost, this.defaultLevel);
+        this.lowerCache.fill(Math.min(this.maxLevel.toNumber(), cacheSize), this.cost, this.defaultLevel);
         return this;
     }
 
@@ -486,7 +504,7 @@ interface SkillRequirement {
     /**
      * The skill node that is required.
      */
-    skill: SkillNode;
+    skill: Upgrade;
 
     /**
      * The level that is required for the skill node.
@@ -559,7 +577,11 @@ class SkillNode extends Upgrade {
 
             // If the required skill is a skill node with extra levels, check if the level is high enough
             if ("skill" in requiredSkill) {
-                return requiredSkill.skill.level.gte(requiredSkill.level) && requiredSkill.skill.isUnlocked();
+                if (requiredSkill.skill instanceof SkillNode) {
+                    return requiredSkill.skill.level.gte(requiredSkill.level) && requiredSkill.skill.isUnlocked();
+                }
+
+                return requiredSkill.skill.level.gte(requiredSkill.level);
             }
 
             // If the required skill is just a skill node, check if it is unlocked
