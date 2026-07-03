@@ -217,42 +217,48 @@ function roundingBase(
     x: DecimalSource,
     base: DecimalSource = Decimal.dTen,
     acc: DecimalSource = Decimal.dZero,
-    max: DecimalSource = 1000,
+    // max: DecimalSource = 1000,
 ): Decimal {
     // Normalize the inputs
     x = Decimal.fromValue_noAlloc(x);
     base = Decimal.fromValue_noAlloc(base);
     acc = Decimal.fromValue_noAlloc(acc);
-    max = Decimal.fromValue_noAlloc(max);
+    // max = Decimal.fromValue_noAlloc(max);
 
     // If base or acc is less than 1, return NaN
     if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
 
     // If the number is negative, round it as positive and then add the sign back
-    const xSign = x.sign as -1 | 0 | 1;
+    const xSign = x.sign;
     x = x.abs();
 
+    const isBaseTen = base.equals(Decimal.dTen);
+
     // If the number is too large, don't round it
-    if (x.gte(Decimal.pow(base, max))) return x;
+    // if (x.gte(Decimal.pow(base, max))) return x;
 
     /**
      * The power of the number, rounded. acc^power = x.
      * It is the highest power of the base that is less than x.
      * For example, if x = 123 and base = 10, power = 2.
      */
-    const powerN = Decimal.floor(Decimal.log(x, base));
+    const powerN = isBaseTen ? x.log10().floor() : x.log(base).floor();
+
+    const highestSignificantNumber = isBaseTen ? powerN.pow10() : base.pow(powerN);
+    const factorToScaleWhenRounding = isBaseTen ? acc.pow10() : base.pow(acc);
 
     // First, divide the number by the base^powerN. This will give us a number between 1 and base, which we can round.
     // Example: 123 / 10^2 = 1.23
-    let out = x.div(Decimal.pow(base, powerN));
+    let out = x.div(highestSignificantNumber);
 
     // Round the number to the accuracy
     // Example, with an accuracy of 1: 1.23 -> 1.2
-    out = out.mul(Decimal.pow(base, acc)).round();
-    out = out.div(Decimal.pow(base, acc));
+    out = out.mul(factorToScaleWhenRounding).round().div(factorToScaleWhenRounding);
 
     // Multiply the number by the base^powerN and add the sign back
-    out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
+    out = out.mul(highestSignificantNumber);
+    out.sign = xSign;
+
     return out;
 }
 
