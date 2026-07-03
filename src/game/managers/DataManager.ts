@@ -6,6 +6,7 @@ import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToUTF16, decompressFromUTF16 } from "lz-string";
 import type { Game } from "../Game";
+import { DataManagerEntry } from "./DataEntry";
 
 import { eMathMetadata } from "../../metadata";
 
@@ -53,6 +54,19 @@ interface StaticClassWithData {
 }
 
 /**
+ * A tuple type for the return value of {@link DataManager.useData}.
+ * The first element is a function that returns the current value of the data.
+ * The second element is a function that can be used to update the value of the data.
+ * The second function can take either a new value or a callback function that receives the previous value and returns the new value.
+ * @template T - The type of the data.
+ */
+type UseDataReturnType<T> = [
+    dataSupplier: () => T,
+    // dataSetter: ((newValue: T) => void) | ((callback: (previousValue: T) => T) => void),
+    dataSetter: (newValueOrCallback: T | ((previousValue: T) => T)) => void,
+];
+
+/**
  * A class that manages game data, including saving, loading, and exporting data.
  *
  * The main methods are: {@link DataManager.saveData}, {@link DataManager.loadData}, and {@link DataManager.exportData}.
@@ -63,7 +77,9 @@ class DataManager {
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
-    private readonly data: Record<string, unknown> = {};
+    private readonly data: Record<string, unknown> = Object.create(null);
+
+    private readonly dataEntryInstances: Record<string, DataManagerEntry<unknown>> = Object.create(null);
 
     /** A reference to the game instance. */
     private readonly gameRef: Game;
@@ -111,6 +127,15 @@ class DataManager {
         this.eventsOnLoad.push(event);
     }
 
+    private setDataInternal<T>(key: string, value: T): void {
+        this.data[key] = value;
+
+        // Notify the data entry instance if it exists
+        if (this.dataEntryInstances[key]) {
+            (this.dataEntryInstances[key] as DataManagerEntry<T>).notifyListeners();
+        }
+    }
+
     /**
      * Sets the data for the given key.
      * The getter is a work in progress.
@@ -127,7 +152,8 @@ class DataManager {
      * console.log(testData.value); // 10
      */
     public setData<T>(key: string, value: T): () => T {
-        this.data[key] = value;
+        // this.data[key] = value;
+        this.setDataInternal(key, value);
 
         return () => this.data[key] as T;
     }
@@ -145,23 +171,38 @@ class DataManager {
      * setTestData((prev) => prev + 5); // Updates the data to 15 using a callback
      * console.log(getTestData()); // 15
      */
-    public useData<T>(
-        key: string,
-        value: T,
-    ): [dataSupplier: () => T, dataSetter: ((newValue: T) => void) | ((callback: (previousValue: T) => T) => void)] {
-        this.data[key] = value;
+    public useData<T>(key: string, value: T): UseDataReturnType<T> {
+        this.setDataInternal(key, value);
 
         return [
             (): T => this.data[key] as T,
-            (newValueOrCallback: T | ((previousValue: T) => T)): void => {
+            (newValueOrCallback): void => {
                 if (typeof newValueOrCallback === "function") {
-                    this.data[key] = (newValueOrCallback as (previousValue: T) => T)(this.data[key] as T);
+                    this.setDataInternal(key, (newValueOrCallback as (previousValue: T) => T)(this.data[key] as T));
                     return;
                 }
 
-                this.data[key] = newValueOrCallback;
+                this.setDataInternal(key, newValueOrCallback);
             },
         ];
+    }
+
+    public useDataEntry<T>(key: string, value: T): DataManagerEntry<T> {
+        if (this.dataEntryInstances[key]) {
+            return this.dataEntryInstances[key] as DataManagerEntry<T>;
+        }
+
+        if (typeof value === "function") {
+            console.warn(
+                `eMath.js: useDataEntry(): The value for key "${key}" is a function. This may cause issues with setting the data entry`,
+            );
+        }
+
+        this.data[key] = value;
+
+        const entry = new DataManagerEntry<T>(this, key);
+        this.dataEntryInstances[key] = entry;
+        return entry;
     }
 
     /**
@@ -424,12 +465,15 @@ class DataManager {
                 this.data[key] == null ||
                 typeof this.data[key].constructor === "undefined"
             ) {
-                this.data[key] = loadedData[key];
+                this.setDataInternal(key, loadedData[key]);
                 continue;
             }
 
             // If there is a constructor for the current key, use class-transformer to convert the loaded data to an instance of the correct class
-            this.data[key] = plainToInstance((this.data[key] as ConstructableObject).constructor, loadedData[key]);
+            this.setDataInternal(
+                key,
+                plainToInstance((this.data[key] as ConstructableObject).constructor, loadedData[key]),
+            );
         }
     }
 
@@ -462,4 +506,4 @@ class DataManager {
 }
 
 export { DataManager };
-export type { SaveMetadata, StaticClassWithData };
+export type { SaveMetadata, StaticClassWithData, UseDataReturnType };
