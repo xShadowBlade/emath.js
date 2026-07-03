@@ -11,6 +11,7 @@ import { SkillNode, Upgrade } from "./Upgrade";
 import type { Mutable } from "../common/types";
 import type { DataManager, StaticClassWithData } from "../game";
 import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
+import { SubscribableDataEntry } from "../game/managers/DataEntry";
 
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
@@ -93,7 +94,17 @@ class Currency implements StaticClassWithData {
             `Currency "${this.id}" value`,
             this,
         );
+
+        this.valueDataEntry.notifyListeners();
     }
+
+    public readonly valueDataEntry = SubscribableDataEntry.fromGetterSetter(
+        () => this.value,
+        (newValue) => {
+            this.value = newValue;
+        },
+        false,
+    );
 
     private dataManagerReference: DataManager | null = null;
 
@@ -248,25 +259,29 @@ class Currency implements StaticClassWithData {
      *     }
      * });
      */
-    public addUpgrade(upgrades: Upgrade | Upgrade[], runEffectInstantly = true): void {
-        // Convert to array if not already
-        if (!Array.isArray(upgrades)) upgrades = [upgrades];
+    public addUpgrade(upgrade: Upgrade, runEffectInstantly = true): Upgrade {
+        // Run the effect instantly if needed
+        if (runEffectInstantly) this.runUpgradeEffect(upgrade);
+        this.runUpgradeEffectOnAdd(upgrade);
 
-        for (const upgrade of upgrades) {
-            // Run the effect instantly if needed
-            if (runEffectInstantly) this.runUpgradeEffect(upgrade);
-            this.runUpgradeEffectOnAdd(upgrade);
+        upgrade.withCurrencySupplier(() => this);
 
-            upgrade.withCurrencySupplier(() => this);
+        // Add the upgrade to this.upgrades
+        this.upgrades.push(upgrade);
 
-            // Add the upgrade to this.upgrades
-            this.upgrades.push(upgrade);
-
-            // If the data manager reference exists, add the upgrade to the data manager
-            if (this.dataManagerReference) {
-                upgrade.onAddToDataManager(this.dataManagerReference, this.id);
-            }
+        // If the data manager reference exists, add the upgrade to the data manager
+        if (this.dataManagerReference) {
+            upgrade.onAddToDataManager(this.dataManagerReference, this.id);
         }
+
+        return upgrade;
+    }
+    public addUpgrades(upgrades: Upgrade[], runEffectInstantly = true): Upgrade[] {
+        for (const upgrade of upgrades) {
+            this.addUpgrade(upgrade, runEffectInstantly);
+        }
+
+        return upgrades;
     }
 
     /**
