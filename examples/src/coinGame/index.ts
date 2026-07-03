@@ -52,23 +52,23 @@ Object.assign(window, { coinGame });
 // const coins = coinGame.addCurrency("coins", coinsUpgrades, items);
 
 const coins = new Currency("coins");
-coins.addUpgrade(
-    new Upgrade("upg1Coins")
-        .withName("Basic Coin Boost")
-        .withCost((level) => level.mul(2).pow(1.1))
-        .withBounds((currency) => [
-            currency.pow(Decimal.reciprocal(1.2)).div(2),
-            currency.pow(Decimal.reciprocal(1.1)).mul(2),
-        ])
-        .withEffectOnAdd(function (upgrade, currency): void {
-            currency.boost.addBoost(
-                new BoostObject("boostUpg1Coins")
-                    .withName("Basic Coin Boost")
-                    .withValue((n) => n.plus(upgrade.level.mul(11)).sub(1))
-                    .withOrder(1),
-            );
-        }),
-);
+const upg1Coins = new Upgrade("upg1Coins")
+    .withName("Basic Coin Boost")
+    .withCost((level) => level.pow_base(1.5).pow(1.1).mul(3))
+    // .withBounds((currency) => [
+    //     currency.pow(Decimal.reciprocal(1.2)).div(2),
+    //     currency.pow(Decimal.reciprocal(1.1)).mul(2),
+    // ])
+    .withEffectOnAdd(function (upgrade, currency): void {
+        currency.boost.addBoost(
+            new BoostObject("boostUpg1Coins")
+                .withName("Basic Coin Boost")
+                .withValue((n) => n.plus(upgrade.level.pow_base(1.3).mul(11)).sub(1))
+                .withOrder(1),
+        );
+    });
+
+coins.addUpgrade(upg1Coins, true);
 
 coinGame.addData(coins);
 
@@ -88,7 +88,7 @@ function updateDisplay(): void {
     coinsDisplay!.innerHTML = `
         Coins: ${coins.value.format()} (${Decimal.formats.formatMult(coins.boost.calculate())})
         <br>
-        Upgrade 1 Level: ${coins.getUpgrade("upg1Coins")!.level.format()}
+        Upgrade 1 Level: ${upg1Coins.level.format()}
     `;
 }
 updateDisplay();
@@ -101,7 +101,7 @@ function gainCoins(): void {
     // Triggers when button is pressed
     coins.gain(); // Gain
     updateDisplay(); // Updates the display for the amount of coins
-    updateDisplayUpgrade();;
+    updateDisplayUpgrade();
 }
 gainButton!.addEventListener("click", gainCoins);
 
@@ -110,15 +110,16 @@ const buyUpgradesButton = document.getElementById("buyUpgradesButton");
 
 /** Function to update the upgrade display */
 function updateDisplayUpgrade(): void {
-    const calculatedUpg = coins.calculateUpgrade("upg1Coins");
+    const calculatedUpg = coins.calculateUpgrade(upg1Coins);
+    const nextCost = coins.getNextCost(upg1Coins);
 
-    buyUpgradesButton!.innerHTML = `Buy ${calculatedUpg[0].format()} Upgrades for ${calculatedUpg[1].format()} Coins (b)`;
+    buyUpgradesButton!.innerHTML = `Buy ${calculatedUpg[0].sub(upg1Coins.level).format()} upgrades for ${calculatedUpg[1].format()} coins (next at: ${nextCost.format()}) (b)`;
 }
 updateDisplayUpgrade();
 
 /** Function to buy upgrades */
 function buyUpgrades(): void {
-    coins.buyUpgrade("upg1Coins");
+    coins.buyUpgrade(upg1Coins);
     updateDisplayUpgrade();
     updateDisplay();
 }
@@ -135,7 +136,7 @@ coinGame.keyManager.addKey([
         id: "Buy Upgrades",
         key: "b",
         onDownContinuous: buyUpgrades,
-    }
+    },
 ]);
 
 // Saving and Loading
