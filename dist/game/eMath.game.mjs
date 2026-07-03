@@ -6280,6 +6280,13 @@ var EventManager = class _EventManager {
    * (though this is not recommended as you won't get type checking).
    */
   constructor(config, events) {
+    /** The timer events stored in the event manager. */
+    this.events = {};
+    /**
+     * The callback events stored in the event manager.
+     * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
+     */
+    this.callbackEvents = {};
     /**
      * Adds a new event.
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
@@ -6287,8 +6294,6 @@ var EventManager = class _EventManager {
      */
     this.addEvent = this.setEvent.bind(this);
     this.config = _EventManager.configManager.parse(config);
-    this.events = {};
-    this.callbackEvents = {};
     if (events) {
       for (const event of events) {
         this.callbackEvents[event] = [];
@@ -6431,17 +6436,103 @@ var import_lz_string = __toESM(require_lz_string());
 import "reflect-metadata";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
+// src/game/managers/DataEntry.ts
+var SubscribableDataEntry = class _SubscribableDataEntry {
+  constructor() {
+    /**
+     * A list of listeners that will be notified when the data changes.
+     * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
+     */
+    this.listeners = [];
+  }
+  /**
+   * Creates a entry based on a getter and setter.
+   * @template T - The type of the data in the entry.
+   * @param getter - A function that returns the current value of the data.
+   * @param setter - A function that sets the value of the data and notifies all listeners.
+   * @param shouldNotify - Whether to notify listeners after setting the value. Defaults to `true`.
+   * @returns A new instance of SubscribableDataEntry that uses the provided getter and setter.
+   */
+  static fromGetterSetter(getter, setter, shouldNotify = true) {
+    return new class extends _SubscribableDataEntry {
+      constructor() {
+        super();
+        this.get = this.get.bind(this);
+        this.set = this.set.bind(this);
+        this.subscribe = this.subscribe.bind(this);
+        this.notifyListeners = this.notifyListeners.bind(this);
+      }
+      get() {
+        return getter();
+      }
+      set(value) {
+        setter(value);
+        if (shouldNotify) {
+          this.notifyListeners();
+        }
+      }
+    }();
+  }
+  /**
+   * Notifies all listeners that the data has changed.
+   */
+  notifyListeners() {
+    for (const listener of this.listeners) {
+      listener();
+    }
+  }
+  /**
+   * Subscribes a listener to be notified when the data entry changes.
+   * See {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore}.
+   * @param listener - The listener function to subscribe.
+   * @returns A function that can be called to unsubscribe the listener.
+   */
+  subscribe(listener) {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index !== -1) {
+        this.listeners.splice(index, 1);
+      }
+    };
+  }
+  setCallback(callback) {
+    this.set(callback(this.get()));
+  }
+};
+var DataManagerEntry = class extends SubscribableDataEntry {
+  constructor(dataManager, dataKey) {
+    super();
+    this.dataManagerReference = dataManager;
+    this.dataKey = dataKey;
+    this.get = this.get.bind(this);
+    this.set = this.set.bind(this);
+    this.subscribe = this.subscribe.bind(this);
+  }
+  get() {
+    return this.dataManagerReference.data[this.dataKey];
+  }
+  /**
+   * Sets the value of the data entry and notifies all listeners.
+   * @param value - The new value to set.
+   */
+  set(value) {
+    this.dataManagerReference.data[this.dataKey] = value;
+    this.notifyListeners();
+  }
+};
+
 // src/metadata.ts
 var eMathMetadata = {
   /**
    * The version of the library
-   * @example "9.5.0"
+   * @example "10.0.0"
    */
   version: (() => {
     try {
       return "9.6.0";
     } catch (error) {
-      return "9.5.0";
+      return "10.0.0";
     }
   })(),
   /**
@@ -6470,13 +6561,15 @@ var DataManager = class {
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
-    this.data = {};
+    this.data = /* @__PURE__ */ Object.create(null);
+    this.dataEntryInstances = /* @__PURE__ */ Object.create(null);
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
      * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
      */
     this.eventsOnLoad = [];
+    this.allowDataToBeSaved = true;
     this.gameRef = gameRef;
     this.localStorage = localStorage ?? (() => {
       if (typeof window === "undefined") {
@@ -6496,6 +6589,12 @@ var DataManager = class {
   addEventOnLoad(event) {
     this.eventsOnLoad.push(event);
   }
+  setDataInternal(key, value) {
+    this.data[key] = value;
+    if (this.dataEntryInstances[key]) {
+      this.dataEntryInstances[key].notifyListeners();
+    }
+  }
   /**
    * Sets the data for the given key.
    * The getter is a work in progress.
@@ -6512,21 +6611,48 @@ var DataManager = class {
    * console.log(testData.value); // 10
    */
   setData(key, value) {
-    this.data[key] = value;
+    this.setDataInternal(key, value);
     return () => this.data[key];
   }
+  /**
+   * Sets the data for the given key and returns a getter and setter for the data.
+   * @param key - The key to set the data for.
+   * @param value - The initial value to set the data to.
+   * @returns A tuple containing a getter and a setter for the data. The getter returns the current value of the data, and the setter can be used to update the value of the data. The setter can take either a new value or a callback function that receives the previous value and returns the new value.
+   * @example
+   * const [getTestData, setTestData] = dataManager.useData("test", 5);
+   * console.log(getTestData()); // 5
+   * setTestData(10); // Sets the data to 10
+   * console.log(getTestData()); // 10
+   * setTestData((prev) => prev + 5); // Updates the data to 15 using a callback
+   * console.log(getTestData()); // 15
+   */
   useData(key, value) {
-    this.data[key] = value;
+    this.setDataInternal(key, value);
     return [
       () => this.data[key],
       (newValueOrCallback) => {
         if (typeof newValueOrCallback === "function") {
-          this.data[key] = newValueOrCallback(this.data[key]);
+          this.setDataInternal(key, newValueOrCallback(this.data[key]));
           return;
         }
-        this.data[key] = newValueOrCallback;
+        this.setDataInternal(key, newValueOrCallback);
       }
     ];
+  }
+  useDataEntry(key, value) {
+    if (this.dataEntryInstances[key]) {
+      return this.dataEntryInstances[key];
+    }
+    if (typeof value === "function") {
+      console.warn(
+        `eMath.js: useDataEntry(): The value for key "${key}" is a function. This may cause issues with setting the data entry`
+      );
+    }
+    this.data[key] = value;
+    const entry = new DataManagerEntry(this, key);
+    this.dataEntryInstances[key] = entry;
+    return entry;
   }
   /**
    * Gets the data for the given key.
@@ -6537,7 +6663,10 @@ var DataManager = class {
   getData(key) {
     return this.data[key];
   }
-  // TODO: jsdoc
+  /**
+   * Adds a static class with data to the data manager. The class will be added to the data manager and its `onAddToDataManager` method will be called if it exists. When the data is loaded using {@link DataManager.loadData}, the class's `onLoadData` method will be called if it exists.
+   * @param data - The static class with data to add to the data manager.
+   */
   addCustomData(data) {
     data.onAddToDataManager?.(this);
     this.addEventOnLoad(() => data.onLoadData?.());
@@ -6566,13 +6695,13 @@ var DataManager = class {
     return [saveMetadata, plainGameData];
   }
   /**
-   * Compresses the given game data to a base64-encoded using lz-string.
+   * Compresses the given game data to a UTF-16-encoded string using lz-string.
    * @param data The game data to be compressed. Defaults to the current game data.
-   * @returns The compressed game data and a hash as a base64-encoded string to use for saving.
+   * @returns The compressed game data and a hash as a UTF-16-encoded string to use for saving.
    */
   compileData(data = this.data) {
     const dataRawString = JSON.stringify(this.compileDataRaw(data));
-    return (0, import_lz_string.compressToBase64)(dataRawString);
+    return (0, import_lz_string.compressToUTF16)(dataRawString);
   }
   /**
    * Decompiles the data stored in localStorage and returns the corresponding object.
@@ -6592,11 +6721,11 @@ var DataManager = class {
     if (!data) return null;
     let parsedData;
     try {
-      parsedData = JSON.parse((0, import_lz_string.decompressFromBase64)(data));
+      parsedData = JSON.parse((0, import_lz_string.decompressFromUTF16)(data));
       return parsedData;
     } catch (error) {
       if (error instanceof SyntaxError) {
-        console.error(`Failed to decompile data (corrupted) "${data}":`, error);
+        console.error(`eMath.js: Failed to decompile data (corrupted) "${data}":`, error);
       } else {
         throw error;
       }
@@ -6623,21 +6752,45 @@ var DataManager = class {
    * (Reloading may help with some issues with saving data)
    */
   resetData(reload = false) {
+    if (!reload) {
+      console.warn(
+        "eMath.js: resetData(): Resetting data without reloading is not fully supported yet and may cause issues. It is recommended to set reload to true or implement a custom reset system by calling saveData() with the initial data."
+      );
+    }
+    if (typeof window === "undefined") {
+      console.warn(
+        "eMath.js: resetData(): Window is not defined. You can implement a custom reset system by calling saveData() with the initial data."
+      );
+      return;
+    }
+    this.saveData(null);
+    this.allowDataToBeSaved = false;
+    window.location.reload();
   }
   /**
    * Saves the game data to local storage under the key `${game.config.name.id}-data`.
    * If you don't want to save to local storage, use {@link compileData} instead.
-   * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}.
+   * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}. If the data is null, the save will be cleared instead.
    */
   saveData(dataToSave = this.compileData()) {
-    this.gameRef.eventManager.dispatch("beforeSaveData");
-    if (!dataToSave) {
-      throw new Error("dataManager.saveData(): Data to save is empty.");
+    if (typeof dataToSave === "undefined" || dataToSave === "") {
+      console.warn("eMath.js: saveData(): Data to save is empty.");
+      return;
     }
     if (!this.localStorage) {
-      throw new Error(
-        "dataManager.saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
+      console.warn(
+        "eMath.js: saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
       );
+      return;
+    }
+    if (!this.allowDataToBeSaved) {
+      console.warn("eMath.js: saveData(): Saving data is currently not allowed.");
+      return;
+    }
+    this.gameRef.eventManager.dispatch("beforeSaveData");
+    if (dataToSave === null) {
+      this.localStorage.removeItem(`${this.gameRef.config.name.id}-data`);
+      return;
     }
     this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
     this.gameRef.eventManager.dispatch("saveData");
@@ -6658,17 +6811,16 @@ var DataManager = class {
       const blob = new Blob([content], { type: "text/plain" });
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = `${this.gameRef.config.name.id}-data.txt`;
-      downloadLink.textContent = `Download ${this.gameRef.config.name.id}-data.txt file`;
+      downloadLink.download = `${this.gameRef.config.name.id}-save.data`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadLink.href);
     }
   }
   /**
    * Loads game data and processes it.
    * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
-   * @returns The loaded data.
    */
   parseData(dataToParse = this.decompileData()) {
     if (!dataToParse) return;
@@ -6684,10 +6836,13 @@ var DataManager = class {
         // TODO: currently only exists to make compiler happy, might have side effects
         this.data[key] == null || typeof this.data[key].constructor === "undefined"
       ) {
-        this.data[key] = loadedData[key];
+        this.setDataInternal(key, loadedData[key]);
         continue;
       }
-      this.data[key] = plainToInstance(this.data[key].constructor, loadedData[key]);
+      this.setDataInternal(
+        key,
+        plainToInstance(this.data[key].constructor, loadedData[key])
+      );
     }
   }
   /**
@@ -6916,11 +7071,13 @@ var GameReset = class _GameReset {
 export {
   ConfigManager,
   DataManager,
+  DataManagerEntry,
   EventManager,
   EventTypes,
   Game,
   GameReset,
   KeyManager,
+  SubscribableDataEntry,
   gameDefaultConfig,
   keys,
   parseObject

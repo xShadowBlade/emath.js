@@ -69,7 +69,7 @@ interface CallbackEvent {
     /**
      * The name of the event that will trigger the callback.
      */
-    type: string;
+    type: string | EventManagerInternalEvents;
     /**
      * The callback function to execute when the event triggers.
      */
@@ -106,34 +106,29 @@ interface EventManagerConfig {
     fps?: number;
 }
 /**
- * An interface that extends the event manager events so they have jsdoc comments.
+ * Special events that are automatically dispatched by the game internally.
  */
-interface EventManagerEventsWithComments {
+declare enum EventManagerInternalEvents {
     /**
      * The event that is called before data is loaded (before {@link DataManager.decompileData}, which is called before {@link DataManager.loadData} with no arguments).
      */
     /**
      * The event that is called before data is compiled ({@link DataManager.compileData}).
      */
-    beforeCompileData: true;
+    beforeCompileData = 0,
     /**
      * The event that is called before data is saved ({@link DataManager.saveData}).
      */
-    beforeSaveData: true;
+    beforeSaveData = 1,
     /**
      * The event that is called when (after) data is saved ({@link DataManager.saveData}).
      */
-    saveData: true;
+    saveData = 2,
     /**
      * The event that is called when (after) data is loaded ({@link DataManager.loadData}).
      */
-    loadData: true;
+    loadData = 3
 }
-/**
- * Default event manager events.
- * For more information, see {@link EventManagerEventsWithComments}.
- */
-type EventManagerEvents = keyof EventManagerEventsWithComments & string;
 /**
  * The event manager class, used to manage events and execute them at the correct time.
  * @template TEvents - Possible event names that can be used.
@@ -166,12 +161,12 @@ declare class EventManager<TEvents extends string = string> {
      * @param event - The event to add the callback to.
      * @param callback - The callback to add to the event.
      */
-    on(event: TEvents | EventManagerEvents, callback: () => void): void;
+    on(event: TEvents | EventManagerInternalEvents, callback: () => void): void;
     /**
      * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
      * @param event - The event to dispatch.
      */
-    dispatch(event: TEvents | EventManagerEvents): void;
+    dispatch(event: TEvents | EventManagerInternalEvents): void;
     /**
      * The function that is called every frame, executes all events.
      */
@@ -227,5 +222,5 @@ declare class EventManager<TEvents extends string = string> {
      */
     removeEvent(name: string): void;
 }
-export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent, Event, EventInit, CallbackEvent, EventManagerEvents, };
+export type { EventManagerConfig, IntervalEvent, TimeoutEvent, TimerEvent, Event, EventInit, CallbackEvent, EventManagerInternalEvents as EventManagerEvents, };
 export { EventManager, EventTypes };

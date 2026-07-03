@@ -20,11 +20,11 @@ type GridDirection = GridDirectionCell | GridDirectionCollection;
  */
 declare class GridCell<TProperties extends object = UnknownObject> {
     /** The x-coordinate of the cell. */
-    x: number;
+    readonly x: number;
     /** The y-coordinate of the cell. */
-    y: number;
+    readonly y: number;
     /** The grid instance the cell belongs to. */
-    private gridSymbol;
+    private readonly gridSymbol;
     /** @returns The grid instance the cell belongs to. */
     get grid(): Grid<TProperties>;
     /** The properties of the cell. */
@@ -37,24 +37,24 @@ declare class GridCell<TProperties extends object = UnknownObject> {
      * @param props - The properties to initialize with.
      * @param gridSymbol - The symbol of the grid the cell belongs to.
      */
-    constructor(x: number, y: number, props: (TProperties | ((grid: GridCell<TProperties>) => TProperties)) | undefined, gridSymbol: symbol);
+    constructor(x: number, y: number, props: (TProperties | ((grid: GridCell<never>) => TProperties)) | undefined, gridSymbol: symbol);
     /**
      * Sets the value of a property on the cell.
      * @param name - The name of the property.
      * @param value - The value to set.
      * @returns The set value.
      */
-    set(name: keyof TProperties, value: TProperties[keyof TProperties]): typeof value;
+    set<T extends keyof TProperties>(name: T, value: TProperties[T]): typeof value;
     /** @deprecated Use {@link set} instead. */
-    setValue: (name: keyof TProperties, value: TProperties[keyof TProperties]) => typeof value;
+    setValue: <T extends keyof TProperties>(name: T, value: TProperties[T]) => typeof value;
     /**
      * Gets the value of a property on the cell.
      * @param name - The name of the property.
      * @returns - The value of the property.
      */
-    get(name: keyof TProperties): TProperties[keyof TProperties];
+    get<T extends keyof TProperties>(name: T): TProperties[T];
     /** @deprecated Use {@link get} instead. */
-    getValue: (name: keyof TProperties) => TProperties[keyof TProperties];
+    getValue: <T extends keyof TProperties>(name: T) => TProperties[T];
     /**
      * Gets the cell a specified distance away from the current cell.
      * @param x - The x distance to move
@@ -207,7 +207,7 @@ declare class Grid<TProperties extends object = UnknownObject> {
      * @param ySize - The size of the grid along the y-axis. Defaults to `xSize`.
      * @param starterProps - The properties to initialize with.
      */
-    constructor(xSize: number, ySize?: number, starterProps?: TProperties | ((grid: GridCell<TProperties>) => TProperties));
+    constructor(xSize: number, ySize?: number, starterProps?: TProperties | ((grid: GridCell<never>) => TProperties));
     /**
      * Resizes the grid. Merges the cells if the new grid is bigger and truncates the cells if the new grid is smaller.
      * @param xSize - The new size of the grid along the x-axis.
@@ -296,6 +296,10 @@ declare class Grid<TProperties extends object = UnknownObject> {
      * @returns - An array of all cells.
      */
     getEncircling(x: number, y: number, distance?: number, fill?: boolean, overflow?: boolean): GridCellCollection<TProperties>;
+    /**
+     * @returns A random cell from the grid.
+     */
+    getRandomCell(): GridCell<TProperties>;
     /**
      * Calculates the distance between two points on the grid.
      * @deprecated Use your own distance function instead.

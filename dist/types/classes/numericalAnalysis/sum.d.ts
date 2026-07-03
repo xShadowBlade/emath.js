@@ -20,6 +20,7 @@ declare function calculateSumLoop(f: (n: Decimal) => Decimal, b: DecimalSource, 
  * @param b - The upper limit for the sum.
  * @param a - The lower limit for the sum. Defaults to `0`. The order is reversed because `a` is optional. Deal with it.
  * @param iterations - The amount of iterations to perform. Defaults to {@link DEFAULT_ITERATIONS} - 10.
+ * @param bSubA - The value of `b - a`. If not provided, it will be calculated as `b - a`. This is an optimization for when you want to calculate multiple sums with the same `b - a` but different `a` and `b`, so you don't have to calculate `b - a` every time.
  * @returns The calculated sum of `f(n)`, as a {@link Decimal}.
  */
 declare function calculateSumApprox(f: (n: Decimal) => Decimal, b: DecimalSource, a?: DecimalSource, iterations?: number, bSubA?: Decimal): Decimal;

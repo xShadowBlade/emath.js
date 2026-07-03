@@ -5513,6 +5513,13 @@ var EventManager = class _EventManager {
    * (though this is not recommended as you won't get type checking).
    */
   constructor(config, events) {
+    /** The timer events stored in the event manager. */
+    this.events = {};
+    /**
+     * The callback events stored in the event manager.
+     * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
+     */
+    this.callbackEvents = {};
     /**
      * Adds a new event.
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
@@ -5520,8 +5527,6 @@ var EventManager = class _EventManager {
      */
     this.addEvent = this.setEvent.bind(this);
     this.config = _EventManager.configManager.parse(config);
-    this.events = {};
-    this.callbackEvents = {};
     if (events) {
       for (const event of events) {
         this.callbackEvents[event] = [];

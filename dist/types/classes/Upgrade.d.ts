@@ -3,72 +3,19 @@
  */
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
-import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import { type MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { Currency } from "./Currency";
-import { DataManager, StaticClassWithData } from "../game";
-/**
- * Calculates the cost and how many upgrades you can buy
- * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
- * The priority is: `target === 1` > `costBulk` > `el`.
- * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
- * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
- * @param value - The current value of the currency.
- * @param upgrade - The upgrade object to calculate.
- * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
- * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
- * @param mode - The mode/mean method to use. See {@link MeanMode}
- * @param iterations - The amount of iterations to perform. Defaults to `15`.
- * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
- * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
- */
-declare function calculateUpgrade(value: DecimalSource, upgrade: Upgrade, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [amount: Decimal, cost: Decimal];
-/**
- * Infers the id type of an upgrade array.
- * @deprecated Infer using the array type directly instead.
- * @template TUpgradeArray - The upgrade array.
- * @example
- * const testUpg = [
- *     {
- *         id: "upgId1",
- *         cost: (level: Decimal): Decimal => level.mul(10),
- *     },
- *     {
- *         id: "upgId2",
- *         cost: (level: Decimal): Decimal => level.mul(20),
- *     },
- * ] as const satisfies UpgradeInit[] // Must be readonly and satisfy UpgradeInit
- *
- * type test = UpgradeInitArrayType<typeof testUpg> // "upgId1" | "upgId2"
- */
-/**
- * Interface for an upgrade that is cached.
- * We need a cache to reduce redundant calculations.
- *
- * We store the level, and the level +/- 1, or times/divided by 1 + 1e-3 if the level is larger than ~2e3.
- * and the cost of the upgrade at those levels.
- *
- * This approach might be useful for lower levels of upgrades, but it's not very useful for higher levels.
- */
-interface UpgradeCached extends Pick<Upgrade, "id" | "el"> {
-    el: boolean;
-    endLower: UpgradeCachedLevel;
-    end: UpgradeCachedLevel;
-    endUpper: UpgradeCachedLevel;
-}
-interface UpgradeCachedLevel {
-    level: Decimal;
-    cost: Decimal;
-}
+import { DataManager, StaticClassWithData, SubscribableDataEntry } from "../game";
+import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 /**
  * Represents the frontend for an upgrade.
  * @template N - The ID of the upgrade. See {@link UpgradeInit}
  */
 declare class UpgradeData {
-    static readonly defaultUpgradeData: Readonly<UpgradeData>;
+    static readonly defaultUpgradeData: UpgradeData;
     level: Decimal;
     /**
-     * Constructs a new upgrade object with an initial level of 1.
+     * Constructs a new upgrade object with an initial level of 0.
      */
     constructor();
 }
@@ -171,18 +118,22 @@ declare class Upgrade implements StaticClassWithData {
      * // So the bounds grows faster (y=x^0.75) than the inverse (y=x^0.5), but still slower than the currency (y=x).
      */
     bounds?: (currency: Decimal, start: Decimal, end: Decimal) => [min: Decimal, max: Decimal];
-    defaultLevel: Decimal;
-    /** The default size of the cache. Should be one less than a power of 2. */
-    static readonly defaultCacheSize = 15;
     /**
-     * The cache to store the values of certain upgrade levels.
-     * @deprecated Unfinished
+     * The level to set this upgrade when it is reset.
      */
-    cache: DecimalLRUCache<UpgradeCached>;
+    defaultLevel: Decimal;
+    /**
+     * The protections for {@link level}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    readonly levelProtections: InvalidDecimalProtections;
+    /** The default size of the cache. */
+    static readonly defaultCacheSize = 10000;
+    private readonly lowerCache;
     /** @returns The data of the upgrade. */
     private dataSupplier;
     /** @returns The data of the upgrade. */
-    get data(): UpgradeData;
+    protected get data(): UpgradeData;
     protected currencySupplier: () => Currency;
     /** @returns The currency static class that the upgrade is being run on. */
     get currency(): Currency;
@@ -211,9 +162,31 @@ declare class Upgrade implements StaticClassWithData {
      * @returns The current level of the upgrade.
      */
     get level(): Decimal;
-    set level(n: DecimalSource);
+    set level(level: DecimalSource);
+    readonly levelDataEntry: SubscribableDataEntry<Decimal>;
+    /**
+     * Creates a new upgrade object with the given ID.
+     * @param id - The ID of the upgrade. Used to retrieve the upgrade later. See {@link Upgrade.id}.
+     */
     constructor(id: string);
     onAddToDataManager(dataManager: DataManager, prefix?: string): void;
+    onLoadData(): void;
+    /**
+     * Calculates the cost and how many upgrades you can buy
+     * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
+     * The priority is: `target === 1` > `costBulk` > `el`.
+     * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
+     * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
+     * @param value - The current value of the currency.
+     * @param upgrade - The upgrade object to calculate.
+     * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
+     * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
+     * @param mode - The mode/mean method to use. See {@link MeanMode}
+     * @param iterations - The amount of iterations to perform. Defaults to `15`.
+     * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
+     * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+     */
+    calculate(value: DecimalSource, start?: DecimalSource, end?: DecimalSource, mode?: MeanMode, iterations?: number, el?: boolean): [newLevelToSetTo: Decimal, cost: Decimal];
     withName(name: typeof this.name): this;
     withCost(cost: typeof this.cost): this;
     withCostBulk(costBulk: typeof this.costBulk): this;
@@ -224,6 +197,8 @@ declare class Upgrade implements StaticClassWithData {
     withBounds(bounds: typeof this.bounds): this;
     withDefaultLevel(defaultLevel: typeof this.defaultLevel): this;
     withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): this;
+    withLevelProtectionOptions(newLevelProtections: Parameters<InvalidDecimalProtections["setProtections"]>[0]): this;
+    withCacheSize(cacheSize: number): this;
     /**
      * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
      * @param cost - The cost of the upgrade.
@@ -239,7 +214,7 @@ interface SkillRequirement {
     /**
      * The skill node that is required.
      */
-    skill: SkillNode;
+    skill: Upgrade;
     /**
      * The level that is required for the skill node.
      * If not specified, the skill node must be at least level 1.
@@ -265,5 +240,5 @@ declare class SkillNode extends Upgrade {
      */
     isUnlocked(): boolean;
 }
-export { UpgradeData, Upgrade, SkillNode, calculateUpgrade };
-export type { UpgradeCached, SkillRequirement };
+export { UpgradeData, Upgrade, SkillNode };
+export type { SkillRequirement };

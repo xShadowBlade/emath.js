@@ -12,10 +12,15 @@
   var exports = {};
   var module = { exports };
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -28,6 +33,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
@@ -38,17 +51,729 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
+// node_modules/lz-string/libs/lz-string.js
+var require_lz_string = __commonJS({
+  "node_modules/lz-string/libs/lz-string.js"(exports, module2) {
+    var LZString = function() {
+      var f = String.fromCharCode;
+      var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+      var baseReverseDic = {};
+      function getBaseValue(alphabet, character) {
+        if (!baseReverseDic[alphabet]) {
+          baseReverseDic[alphabet] = {};
+          for (var i = 0; i < alphabet.length; i++) {
+            baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+          }
+        }
+        return baseReverseDic[alphabet][character];
+      }
+      var LZString2 = {
+        compressToBase64: function(input) {
+          if (input == null) return "";
+          var res = LZString2._compress(input, 6, function(a) {
+            return keyStrBase64.charAt(a);
+          });
+          switch (res.length % 4) {
+            // To produce valid Base64
+            default:
+            // When could this happen ?
+            case 0:
+              return res;
+            case 1:
+              return res + "===";
+            case 2:
+              return res + "==";
+            case 3:
+              return res + "=";
+          }
+        },
+        decompressFromBase64: function(input) {
+          if (input == null) return "";
+          if (input == "") return null;
+          return LZString2._decompress(input.length, 32, function(index) {
+            return getBaseValue(keyStrBase64, input.charAt(index));
+          });
+        },
+        compressToUTF16: function(input) {
+          if (input == null) return "";
+          return LZString2._compress(input, 15, function(a) {
+            return f(a + 32);
+          }) + " ";
+        },
+        decompressFromUTF16: function(compressed) {
+          if (compressed == null) return "";
+          if (compressed == "") return null;
+          return LZString2._decompress(compressed.length, 16384, function(index) {
+            return compressed.charCodeAt(index) - 32;
+          });
+        },
+        //compress into uint8array (UCS-2 big endian format)
+        compressToUint8Array: function(uncompressed) {
+          var compressed = LZString2.compress(uncompressed);
+          var buf = new Uint8Array(compressed.length * 2);
+          for (var i = 0, TotalLen = compressed.length; i < TotalLen; i++) {
+            var current_value = compressed.charCodeAt(i);
+            buf[i * 2] = current_value >>> 8;
+            buf[i * 2 + 1] = current_value % 256;
+          }
+          return buf;
+        },
+        //decompress from uint8array (UCS-2 big endian format)
+        decompressFromUint8Array: function(compressed) {
+          if (compressed === null || compressed === void 0) {
+            return LZString2.decompress(compressed);
+          } else {
+            var buf = new Array(compressed.length / 2);
+            for (var i = 0, TotalLen = buf.length; i < TotalLen; i++) {
+              buf[i] = compressed[i * 2] * 256 + compressed[i * 2 + 1];
+            }
+            var result = [];
+            buf.forEach(function(c) {
+              result.push(f(c));
+            });
+            return LZString2.decompress(result.join(""));
+          }
+        },
+        //compress into a string that is already URI encoded
+        compressToEncodedURIComponent: function(input) {
+          if (input == null) return "";
+          return LZString2._compress(input, 6, function(a) {
+            return keyStrUriSafe.charAt(a);
+          });
+        },
+        //decompress from an output of compressToEncodedURIComponent
+        decompressFromEncodedURIComponent: function(input) {
+          if (input == null) return "";
+          if (input == "") return null;
+          input = input.replace(/ /g, "+");
+          return LZString2._decompress(input.length, 32, function(index) {
+            return getBaseValue(keyStrUriSafe, input.charAt(index));
+          });
+        },
+        compress: function(uncompressed) {
+          return LZString2._compress(uncompressed, 16, function(a) {
+            return f(a);
+          });
+        },
+        _compress: function(uncompressed, bitsPerChar, getCharFromInt) {
+          if (uncompressed == null) return "";
+          var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
+          for (ii = 0; ii < uncompressed.length; ii += 1) {
+            context_c = uncompressed.charAt(ii);
+            if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
+              context_dictionary[context_c] = context_dictSize++;
+              context_dictionaryToCreate[context_c] = true;
+            }
+            context_wc = context_w + context_c;
+            if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
+              context_w = context_wc;
+            } else {
+              if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+                if (context_w.charCodeAt(0) < 256) {
+                  for (i = 0; i < context_numBits; i++) {
+                    context_data_val = context_data_val << 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                  }
+                  value = context_w.charCodeAt(0);
+                  for (i = 0; i < 8; i++) {
+                    context_data_val = context_data_val << 1 | value & 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = value >> 1;
+                  }
+                } else {
+                  value = 1;
+                  for (i = 0; i < context_numBits; i++) {
+                    context_data_val = context_data_val << 1 | value;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = 0;
+                  }
+                  value = context_w.charCodeAt(0);
+                  for (i = 0; i < 16; i++) {
+                    context_data_val = context_data_val << 1 | value & 1;
+                    if (context_data_position == bitsPerChar - 1) {
+                      context_data_position = 0;
+                      context_data.push(getCharFromInt(context_data_val));
+                      context_data_val = 0;
+                    } else {
+                      context_data_position++;
+                    }
+                    value = value >> 1;
+                  }
+                }
+                context_enlargeIn--;
+                if (context_enlargeIn == 0) {
+                  context_enlargeIn = Math.pow(2, context_numBits);
+                  context_numBits++;
+                }
+                delete context_dictionaryToCreate[context_w];
+              } else {
+                value = context_dictionary[context_w];
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              }
+              context_enlargeIn--;
+              if (context_enlargeIn == 0) {
+                context_enlargeIn = Math.pow(2, context_numBits);
+                context_numBits++;
+              }
+              context_dictionary[context_wc] = context_dictSize++;
+              context_w = String(context_c);
+            }
+          }
+          if (context_w !== "") {
+            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+              if (context_w.charCodeAt(0) < 256) {
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 8; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              } else {
+                value = 1;
+                for (i = 0; i < context_numBits; i++) {
+                  context_data_val = context_data_val << 1 | value;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = 0;
+                }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 16; i++) {
+                  context_data_val = context_data_val << 1 | value & 1;
+                  if (context_data_position == bitsPerChar - 1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                  } else {
+                    context_data_position++;
+                  }
+                  value = value >> 1;
+                }
+              }
+              context_enlargeIn--;
+              if (context_enlargeIn == 0) {
+                context_enlargeIn = Math.pow(2, context_numBits);
+                context_numBits++;
+              }
+              delete context_dictionaryToCreate[context_w];
+            } else {
+              value = context_dictionary[context_w];
+              for (i = 0; i < context_numBits; i++) {
+                context_data_val = context_data_val << 1 | value & 1;
+                if (context_data_position == bitsPerChar - 1) {
+                  context_data_position = 0;
+                  context_data.push(getCharFromInt(context_data_val));
+                  context_data_val = 0;
+                } else {
+                  context_data_position++;
+                }
+                value = value >> 1;
+              }
+            }
+            context_enlargeIn--;
+            if (context_enlargeIn == 0) {
+              context_enlargeIn = Math.pow(2, context_numBits);
+              context_numBits++;
+            }
+          }
+          value = 2;
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+          while (true) {
+            context_data_val = context_data_val << 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data.push(getCharFromInt(context_data_val));
+              break;
+            } else context_data_position++;
+          }
+          return context_data.join("");
+        },
+        decompress: function(compressed) {
+          if (compressed == null) return "";
+          if (compressed == "") return null;
+          return LZString2._decompress(compressed.length, 32768, function(index) {
+            return compressed.charCodeAt(index);
+          });
+        },
+        _decompress: function(length, resetValue, getNextValue) {
+          var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c, data = { val: getNextValue(0), position: resetValue, index: 1 };
+          for (i = 0; i < 3; i += 1) {
+            dictionary[i] = i;
+          }
+          bits = 0;
+          maxpower = Math.pow(2, 2);
+          power = 1;
+          while (power != maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb > 0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+          switch (next = bits) {
+            case 0:
+              bits = 0;
+              maxpower = Math.pow(2, 8);
+              power = 1;
+              while (power != maxpower) {
+                resb = data.val & data.position;
+                data.position >>= 1;
+                if (data.position == 0) {
+                  data.position = resetValue;
+                  data.val = getNextValue(data.index++);
+                }
+                bits |= (resb > 0 ? 1 : 0) * power;
+                power <<= 1;
+              }
+              c = f(bits);
+              break;
+            case 1:
+              bits = 0;
+              maxpower = Math.pow(2, 16);
+              power = 1;
+              while (power != maxpower) {
+                resb = data.val & data.position;
+                data.position >>= 1;
+                if (data.position == 0) {
+                  data.position = resetValue;
+                  data.val = getNextValue(data.index++);
+                }
+                bits |= (resb > 0 ? 1 : 0) * power;
+                power <<= 1;
+              }
+              c = f(bits);
+              break;
+            case 2:
+              return "";
+          }
+          dictionary[3] = c;
+          w = c;
+          result.push(c);
+          while (true) {
+            if (data.index > length) {
+              return "";
+            }
+            bits = 0;
+            maxpower = Math.pow(2, numBits);
+            power = 1;
+            while (power != maxpower) {
+              resb = data.val & data.position;
+              data.position >>= 1;
+              if (data.position == 0) {
+                data.position = resetValue;
+                data.val = getNextValue(data.index++);
+              }
+              bits |= (resb > 0 ? 1 : 0) * power;
+              power <<= 1;
+            }
+            switch (c = bits) {
+              case 0:
+                bits = 0;
+                maxpower = Math.pow(2, 8);
+                power = 1;
+                while (power != maxpower) {
+                  resb = data.val & data.position;
+                  data.position >>= 1;
+                  if (data.position == 0) {
+                    data.position = resetValue;
+                    data.val = getNextValue(data.index++);
+                  }
+                  bits |= (resb > 0 ? 1 : 0) * power;
+                  power <<= 1;
+                }
+                dictionary[dictSize++] = f(bits);
+                c = dictSize - 1;
+                enlargeIn--;
+                break;
+              case 1:
+                bits = 0;
+                maxpower = Math.pow(2, 16);
+                power = 1;
+                while (power != maxpower) {
+                  resb = data.val & data.position;
+                  data.position >>= 1;
+                  if (data.position == 0) {
+                    data.position = resetValue;
+                    data.val = getNextValue(data.index++);
+                  }
+                  bits |= (resb > 0 ? 1 : 0) * power;
+                  power <<= 1;
+                }
+                dictionary[dictSize++] = f(bits);
+                c = dictSize - 1;
+                enlargeIn--;
+                break;
+              case 2:
+                return result.join("");
+            }
+            if (enlargeIn == 0) {
+              enlargeIn = Math.pow(2, numBits);
+              numBits++;
+            }
+            if (dictionary[c]) {
+              entry = dictionary[c];
+            } else {
+              if (c === dictSize) {
+                entry = w + w.charAt(0);
+              } else {
+                return null;
+              }
+            }
+            result.push(entry);
+            dictionary[dictSize++] = w + entry.charAt(0);
+            enlargeIn--;
+            w = entry;
+            if (enlargeIn == 0) {
+              enlargeIn = Math.pow(2, numBits);
+              numBits++;
+            }
+          }
+        }
+      };
+      return LZString2;
+    }();
+    if (typeof define === "function" && define.amd) {
+      define(function() {
+        return LZString;
+      });
+    } else if (typeof module2 !== "undefined" && module2 != null) {
+      module2.exports = LZString;
+    } else if (typeof angular !== "undefined" && angular != null) {
+      angular.module("LZString", []).factory("LZString", function() {
+        return LZString;
+      });
+    }
+  }
+});
+
+// node_modules/crypt/crypt.js
+var require_crypt = __commonJS({
+  "node_modules/crypt/crypt.js"(exports, module2) {
+    (function() {
+      var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", crypt = {
+        // Bit-wise rotation left
+        rotl: function(n, b) {
+          return n << b | n >>> 32 - b;
+        },
+        // Bit-wise rotation right
+        rotr: function(n, b) {
+          return n << 32 - b | n >>> b;
+        },
+        // Swap big-endian to little-endian and vice versa
+        endian: function(n) {
+          if (n.constructor == Number) {
+            return crypt.rotl(n, 8) & 16711935 | crypt.rotl(n, 24) & 4278255360;
+          }
+          for (var i = 0; i < n.length; i++)
+            n[i] = crypt.endian(n[i]);
+          return n;
+        },
+        // Generate an array of any length of random bytes
+        randomBytes: function(n) {
+          for (var bytes = []; n > 0; n--)
+            bytes.push(Math.floor(Math.random() * 256));
+          return bytes;
+        },
+        // Convert a byte array to big-endian 32-bit words
+        bytesToWords: function(bytes) {
+          for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+            words[b >>> 5] |= bytes[i] << 24 - b % 32;
+          return words;
+        },
+        // Convert big-endian 32-bit words to a byte array
+        wordsToBytes: function(words) {
+          for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+            bytes.push(words[b >>> 5] >>> 24 - b % 32 & 255);
+          return bytes;
+        },
+        // Convert a byte array to a hex string
+        bytesToHex: function(bytes) {
+          for (var hex = [], i = 0; i < bytes.length; i++) {
+            hex.push((bytes[i] >>> 4).toString(16));
+            hex.push((bytes[i] & 15).toString(16));
+          }
+          return hex.join("");
+        },
+        // Convert a hex string to a byte array
+        hexToBytes: function(hex) {
+          for (var bytes = [], c = 0; c < hex.length; c += 2)
+            bytes.push(parseInt(hex.substr(c, 2), 16));
+          return bytes;
+        },
+        // Convert a byte array to a base-64 string
+        bytesToBase64: function(bytes) {
+          for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+            var triplet = bytes[i] << 16 | bytes[i + 1] << 8 | bytes[i + 2];
+            for (var j = 0; j < 4; j++)
+              if (i * 8 + j * 6 <= bytes.length * 8)
+                base64.push(base64map.charAt(triplet >>> 6 * (3 - j) & 63));
+              else
+                base64.push("=");
+          }
+          return base64.join("");
+        },
+        // Convert a base-64 string to a byte array
+        base64ToBytes: function(base64) {
+          base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
+          for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
+            if (imod4 == 0) continue;
+            bytes.push((base64map.indexOf(base64.charAt(i - 1)) & Math.pow(2, -2 * imod4 + 8) - 1) << imod4 * 2 | base64map.indexOf(base64.charAt(i)) >>> 6 - imod4 * 2);
+          }
+          return bytes;
+        }
+      };
+      module2.exports = crypt;
+    })();
+  }
+});
+
+// node_modules/charenc/charenc.js
+var require_charenc = __commonJS({
+  "node_modules/charenc/charenc.js"(exports, module2) {
+    var charenc = {
+      // UTF-8 encoding
+      utf8: {
+        // Convert a string to a byte array
+        stringToBytes: function(str) {
+          return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
+        },
+        // Convert a byte array to a string
+        bytesToString: function(bytes) {
+          return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
+        }
+      },
+      // Binary encoding
+      bin: {
+        // Convert a string to a byte array
+        stringToBytes: function(str) {
+          for (var bytes = [], i = 0; i < str.length; i++)
+            bytes.push(str.charCodeAt(i) & 255);
+          return bytes;
+        },
+        // Convert a byte array to a string
+        bytesToString: function(bytes) {
+          for (var str = [], i = 0; i < bytes.length; i++)
+            str.push(String.fromCharCode(bytes[i]));
+          return str.join("");
+        }
+      }
+    };
+    module2.exports = charenc;
+  }
+});
+
+// node_modules/is-buffer/index.js
+var require_is_buffer = __commonJS({
+  "node_modules/is-buffer/index.js"(exports, module2) {
+    module2.exports = function(obj) {
+      return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer);
+    };
+    function isBuffer(obj) {
+      return !!obj.constructor && typeof obj.constructor.isBuffer === "function" && obj.constructor.isBuffer(obj);
+    }
+    function isSlowBuffer(obj) {
+      return typeof obj.readFloatLE === "function" && typeof obj.slice === "function" && isBuffer(obj.slice(0, 0));
+    }
+  }
+});
+
+// node_modules/md5/md5.js
+var require_md5 = __commonJS({
+  "node_modules/md5/md5.js"(exports, module2) {
+    (function() {
+      var crypt = require_crypt(), utf8 = require_charenc().utf8, isBuffer = require_is_buffer(), bin = require_charenc().bin, md52 = function(message, options) {
+        if (message.constructor == String)
+          if (options && options.encoding === "binary")
+            message = bin.stringToBytes(message);
+          else
+            message = utf8.stringToBytes(message);
+        else if (isBuffer(message))
+          message = Array.prototype.slice.call(message, 0);
+        else if (!Array.isArray(message) && message.constructor !== Uint8Array)
+          message = message.toString();
+        var m = crypt.bytesToWords(message), l = message.length * 8, a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+        for (var i = 0; i < m.length; i++) {
+          m[i] = (m[i] << 8 | m[i] >>> 24) & 16711935 | (m[i] << 24 | m[i] >>> 8) & 4278255360;
+        }
+        m[l >>> 5] |= 128 << l % 32;
+        m[(l + 64 >>> 9 << 4) + 14] = l;
+        var FF = md52._ff, GG = md52._gg, HH = md52._hh, II = md52._ii;
+        for (var i = 0; i < m.length; i += 16) {
+          var aa = a, bb = b, cc = c, dd = d;
+          a = FF(a, b, c, d, m[i + 0], 7, -680876936);
+          d = FF(d, a, b, c, m[i + 1], 12, -389564586);
+          c = FF(c, d, a, b, m[i + 2], 17, 606105819);
+          b = FF(b, c, d, a, m[i + 3], 22, -1044525330);
+          a = FF(a, b, c, d, m[i + 4], 7, -176418897);
+          d = FF(d, a, b, c, m[i + 5], 12, 1200080426);
+          c = FF(c, d, a, b, m[i + 6], 17, -1473231341);
+          b = FF(b, c, d, a, m[i + 7], 22, -45705983);
+          a = FF(a, b, c, d, m[i + 8], 7, 1770035416);
+          d = FF(d, a, b, c, m[i + 9], 12, -1958414417);
+          c = FF(c, d, a, b, m[i + 10], 17, -42063);
+          b = FF(b, c, d, a, m[i + 11], 22, -1990404162);
+          a = FF(a, b, c, d, m[i + 12], 7, 1804603682);
+          d = FF(d, a, b, c, m[i + 13], 12, -40341101);
+          c = FF(c, d, a, b, m[i + 14], 17, -1502002290);
+          b = FF(b, c, d, a, m[i + 15], 22, 1236535329);
+          a = GG(a, b, c, d, m[i + 1], 5, -165796510);
+          d = GG(d, a, b, c, m[i + 6], 9, -1069501632);
+          c = GG(c, d, a, b, m[i + 11], 14, 643717713);
+          b = GG(b, c, d, a, m[i + 0], 20, -373897302);
+          a = GG(a, b, c, d, m[i + 5], 5, -701558691);
+          d = GG(d, a, b, c, m[i + 10], 9, 38016083);
+          c = GG(c, d, a, b, m[i + 15], 14, -660478335);
+          b = GG(b, c, d, a, m[i + 4], 20, -405537848);
+          a = GG(a, b, c, d, m[i + 9], 5, 568446438);
+          d = GG(d, a, b, c, m[i + 14], 9, -1019803690);
+          c = GG(c, d, a, b, m[i + 3], 14, -187363961);
+          b = GG(b, c, d, a, m[i + 8], 20, 1163531501);
+          a = GG(a, b, c, d, m[i + 13], 5, -1444681467);
+          d = GG(d, a, b, c, m[i + 2], 9, -51403784);
+          c = GG(c, d, a, b, m[i + 7], 14, 1735328473);
+          b = GG(b, c, d, a, m[i + 12], 20, -1926607734);
+          a = HH(a, b, c, d, m[i + 5], 4, -378558);
+          d = HH(d, a, b, c, m[i + 8], 11, -2022574463);
+          c = HH(c, d, a, b, m[i + 11], 16, 1839030562);
+          b = HH(b, c, d, a, m[i + 14], 23, -35309556);
+          a = HH(a, b, c, d, m[i + 1], 4, -1530992060);
+          d = HH(d, a, b, c, m[i + 4], 11, 1272893353);
+          c = HH(c, d, a, b, m[i + 7], 16, -155497632);
+          b = HH(b, c, d, a, m[i + 10], 23, -1094730640);
+          a = HH(a, b, c, d, m[i + 13], 4, 681279174);
+          d = HH(d, a, b, c, m[i + 0], 11, -358537222);
+          c = HH(c, d, a, b, m[i + 3], 16, -722521979);
+          b = HH(b, c, d, a, m[i + 6], 23, 76029189);
+          a = HH(a, b, c, d, m[i + 9], 4, -640364487);
+          d = HH(d, a, b, c, m[i + 12], 11, -421815835);
+          c = HH(c, d, a, b, m[i + 15], 16, 530742520);
+          b = HH(b, c, d, a, m[i + 2], 23, -995338651);
+          a = II(a, b, c, d, m[i + 0], 6, -198630844);
+          d = II(d, a, b, c, m[i + 7], 10, 1126891415);
+          c = II(c, d, a, b, m[i + 14], 15, -1416354905);
+          b = II(b, c, d, a, m[i + 5], 21, -57434055);
+          a = II(a, b, c, d, m[i + 12], 6, 1700485571);
+          d = II(d, a, b, c, m[i + 3], 10, -1894986606);
+          c = II(c, d, a, b, m[i + 10], 15, -1051523);
+          b = II(b, c, d, a, m[i + 1], 21, -2054922799);
+          a = II(a, b, c, d, m[i + 8], 6, 1873313359);
+          d = II(d, a, b, c, m[i + 15], 10, -30611744);
+          c = II(c, d, a, b, m[i + 6], 15, -1560198380);
+          b = II(b, c, d, a, m[i + 13], 21, 1309151649);
+          a = II(a, b, c, d, m[i + 4], 6, -145523070);
+          d = II(d, a, b, c, m[i + 11], 10, -1120210379);
+          c = II(c, d, a, b, m[i + 2], 15, 718787259);
+          b = II(b, c, d, a, m[i + 9], 21, -343485551);
+          a = a + aa >>> 0;
+          b = b + bb >>> 0;
+          c = c + cc >>> 0;
+          d = d + dd >>> 0;
+        }
+        return crypt.endian([a, b, c, d]);
+      };
+      md52._ff = function(a, b, c, d, x, s, t) {
+        var n = a + (b & c | ~b & d) + (x >>> 0) + t;
+        return (n << s | n >>> 32 - s) + b;
+      };
+      md52._gg = function(a, b, c, d, x, s, t) {
+        var n = a + (b & d | c & ~d) + (x >>> 0) + t;
+        return (n << s | n >>> 32 - s) + b;
+      };
+      md52._hh = function(a, b, c, d, x, s, t) {
+        var n = a + (b ^ c ^ d) + (x >>> 0) + t;
+        return (n << s | n >>> 32 - s) + b;
+      };
+      md52._ii = function(a, b, c, d, x, s, t) {
+        var n = a + (c ^ (b | ~d)) + (x >>> 0) + t;
+        return (n << s | n >>> 32 - s) + b;
+      };
+      md52._blocksize = 16;
+      md52._digestsize = 16;
+      module2.exports = function(message, options) {
+        if (message === void 0 || message === null)
+          throw new Error("Illegal argument " + message);
+        var digestbytes = crypt.wordsToBytes(md52(message, options));
+        return options && options.asBytes ? digestbytes : options && options.asString ? bin.bytesToString(digestbytes) : crypt.bytesToHex(digestbytes);
+      };
+    })();
+  }
+});
+
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
   Boost: () => Boost,
   BoostObject: () => BoostObject,
+  CachedUpgradeLookupMode: () => CachedUpgradeLookupMode,
+  CachedUpgradeTreeNode: () => CachedUpgradeTreeNode,
   Currency: () => Currency,
   CurrencyData: () => CurrencyData,
   DEFAULT_ITERATIONS: () => DEFAULT_ITERATIONS,
   DEFAULT_ITERATIONS_AS_DECIMAL: () => DEFAULT_ITERATIONS_AS_DECIMAL,
   DEFAULT_TOLERANCE: () => DEFAULT_TOLERANCE,
   Decimal: () => Decimal,
+  DecimalArray: () => DecimalArray,
   E: () => E,
   EXP_LIMIT: () => EXP_LIMIT,
   FORMATS: () => FORMATS,
@@ -56,11 +781,14 @@ __export(src_exports, {
   Grid: () => Grid,
   GridCell: () => GridCell,
   GridCellCollection: () => GridCellCollection,
+  InvalidDecimalProtections: () => InvalidDecimalProtections,
   LAYER_DOWN: () => LAYER_DOWN,
   LRUCache: () => LRUCache,
   ListNode: () => ListNode,
+  LowerCachedUpgradeLookup: () => LowerCachedUpgradeLookup,
   MeanMode: () => MeanMode,
   NUMBER_EXP_MAX: () => NUMBER_EXP_MAX,
+  OperationBoostOrder: () => OperationBoostOrder,
   RandomSelector: () => RandomSelector,
   RarestFirstCascadeSelectionMethod: () => RarestFirstCascadeSelectionMethod,
   ST_NAMES: () => ST_NAMES,
@@ -73,10 +801,9 @@ __export(src_exports, {
   calculateSum: () => calculateSum,
   calculateSumApprox: () => calculateSumApprox,
   calculateSumLoop: () => calculateSumLoop,
-  calculateUpgrade: () => calculateUpgrade,
   decimalMagDifference: () => decimalMagDifference,
-  decimalMagGeometricMean: () => decimalMagGeometricMean,
   eMathMetadata: () => eMathMetadata,
+  f_maglog10: () => f_maglog10,
   formats: () => formats,
   gaussianRandom: () => gaussianRandom,
   geometricEqualsTolerance: () => geometricEqualsTolerance,
@@ -89,19 +816,19 @@ __export(src_exports, {
   sampleFromBinomialDistribution: () => sampleFromBinomialDistribution
 });
 module.exports = __toCommonJS(src_exports);
-var import_reflect_metadata3 = require("reflect-metadata");
+var import_reflect_metadata5 = require("reflect-metadata");
 
 // src/metadata.ts
 var eMathMetadata = {
   /**
    * The version of the library
-   * @example "9.5.0"
+   * @example "10.0.0"
    */
   version: (() => {
     try {
       return "9.6.0";
     } catch (error) {
-      return "9.5.0";
+      return "10.0.0";
     }
   })(),
   /**
@@ -5458,10 +6185,196 @@ Decimal = __decorateClass([
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
+// src/E/DecimalArray.ts
+var DecimalArray = class {
+  /**
+   * Creates a new DecimalArray with the specified size.
+   * @param size - The number of Decimals to store in the array.
+   * @param maxLayerThatCouldBeStored - The maximum layer that could be stored in the array.
+   * This is used to determine the appropriate type for the layerAndSignArray.
+   */
+  constructor(size, maxLayerThatCouldBeStored = Infinity) {
+    this.length = size;
+    this.layerAndSignArray = new Int8Array(0);
+    this.layerAndSignArrayType = 126 /* int8Array */;
+    this.resizeLayerAndSignArray(maxLayerThatCouldBeStored);
+    this.magArray = new Float64Array(size);
+  }
+  resizeLayerAndSignArray(maxLayerThatCouldBeStored = Infinity, fillFromExisting = true) {
+    let newLayerAndSignArray;
+    maxLayerThatCouldBeStored = Math.abs(maxLayerThatCouldBeStored);
+    if (maxLayerThatCouldBeStored <= 126 /* int8Array */) {
+      newLayerAndSignArray = new Int8Array(this.length);
+      this.layerAndSignArrayType = 126 /* int8Array */;
+    } else if (maxLayerThatCouldBeStored <= 32766 /* int16Array */) {
+      newLayerAndSignArray = new Int16Array(this.length);
+      this.layerAndSignArrayType = 32766 /* int16Array */;
+    } else if (maxLayerThatCouldBeStored <= 2147483646 /* int32Array */) {
+      newLayerAndSignArray = new Int32Array(this.length);
+      this.layerAndSignArrayType = 2147483646 /* int32Array */;
+    } else {
+      newLayerAndSignArray = new Float64Array(this.length);
+      this.layerAndSignArrayType = Infinity /* float64Array */;
+    }
+    if (fillFromExisting) {
+      newLayerAndSignArray.set(this.layerAndSignArray);
+    }
+    this.layerAndSignArray = newLayerAndSignArray;
+  }
+  // TODO: rename
+  resize(newSize) {
+    const wouldOverflow = newSize < this.length;
+    this.length = newSize;
+    const oldMagArray = this.magArray;
+    const oldLayerArray = this.layerAndSignArray;
+    this.magArray = new Float64Array(newSize);
+    this.resizeLayerAndSignArray(this.layerAndSignArrayType, !wouldOverflow);
+    if (!wouldOverflow) {
+      this.magArray.set(oldMagArray);
+    } else {
+      for (let i = 0; i < newSize; i++) {
+        this.magArray[i] = oldMagArray[i];
+        this.layerAndSignArray[i] = oldLayerArray[i];
+      }
+    }
+  }
+  /**
+   * Modifies the existing Decimal at the given index to have the same value as the Decimal at the given index.
+   * @param index - The index of the Decimal to get.
+   * @param existingDecimal - The Decimal to modify.
+   */
+  getIntoExisting(index, existingDecimal) {
+    if (index < 0 || index >= this.length) {
+      console.warn(
+        `eMath.js: Attempted to access index ${index} of DecimalArray of length ${this.length}. Returning NaN Decimal.`,
+        { index, length: this.length, array: this }
+      );
+      existingDecimal.fromDecimal(Decimal.dNaN);
+      return;
+    }
+    const layerAndSign = this.layerAndSignArray[index];
+    const mag = this.magArray[index];
+    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+    const sign = Math.sign(layerAndSign);
+    existingDecimal.fromComponents_noNormalize(sign, layer, mag);
+  }
+  /**
+   * Gets the Decimal at the given index.
+   * @param index - The index of the Decimal to get.
+   * @returns A new Decimal with the same value as the Decimal at the given index.
+   */
+  get(index) {
+    const out = new Decimal();
+    this.getIntoExisting(index, out);
+    return out;
+  }
+  /**
+   * Sets the Decimal at the given index to have the same value as the given Decimal.
+   * @param index - The index of the Decimal to set.
+   * @param decimal - The Decimal to set the value to.
+   */
+  set(index, decimal) {
+    if (Math.abs(decimal.layer) > this.layerAndSignArrayType) {
+      this.resizeLayerAndSignArray(decimal.layer);
+    }
+    this.layerAndSignArray[index] = decimal.sign === 0 ? 0 : (decimal.layer + 1) * decimal.sign;
+    this.magArray[index] = decimal.mag;
+  }
+  /**
+   * Compares the Decimal at the given index with the given Decimal.
+   * Equal to `this.get(index).cmp(decimalToCompare)`, but more efficient because it doesn't create a new Decimal instance.
+   * @param index - The index of the Decimal to compare.
+   * @param decimalToCompare - The Decimal to compare with.
+   * @returns -1 if the Decimal at the given index is less than the given Decimal, 0 if they are equal, and 1 if the Decimal at the given index is greater than the given Decimal.
+   */
+  compareAt(index, decimalToCompare) {
+    const layerAndSign = this.layerAndSignArray[index];
+    const mag = this.magArray[index];
+    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+    const sign = Math.sign(layerAndSign);
+    if (sign > decimalToCompare.sign) {
+      return 1;
+    }
+    if (sign < decimalToCompare.sign) {
+      return -1;
+    }
+    const normalizedSignedLayerA = mag > 0 ? layer : -layer;
+    const normalizedSignedLayerB = decimalToCompare.mag > 0 ? decimalToCompare.layer : -decimalToCompare.layer;
+    if (normalizedSignedLayerA > normalizedSignedLayerB) {
+      return sign;
+    }
+    if (normalizedSignedLayerA < normalizedSignedLayerB) {
+      return -sign;
+    }
+    if (mag > decimalToCompare.mag) {
+      return sign;
+    }
+    if (mag < decimalToCompare.mag) {
+      return -sign;
+    }
+    return 0;
+  }
+  /**
+   * Binary searches for the given Decimal in the array.
+   * Assumes the array is sorted in ascending order.
+   * @param decimalToSearch - The Decimal to search for.
+   * @returns The index of the Decimal if found, or an `integerIndex` + 0.5 if not found, where the `integerIndex` is the index of the largest Decimal in the array that is less than the given Decimal.
+   */
+  search(decimalToSearch) {
+    let low = 0;
+    let high = this.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const comparison = this.compareAt(mid, decimalToSearch);
+      if (comparison === 0) {
+        return mid;
+      }
+      if (comparison < 0) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return low - 0.5;
+  }
+  /**
+   * @returns An iterator over the Decimals in the array.
+  //  * Important: This method reuses the same Decimal instance for each value in the array.
+  //  * If a reference to a Decimal in the array needs to be stored, it should be cloned first before storing the reference.
+   */
+  [Symbol.iterator]() {
+    let index = 0;
+    const size = this.layerAndSignArray.length;
+    return {
+      next: () => {
+        if (index < size) {
+          return { value: this.get(index++), done: false };
+        } else {
+          return { value: void 0, done: true };
+        }
+      },
+      [Symbol.iterator]() {
+        return this;
+      }
+    };
+  }
+};
+
 // src/classes/Boost.ts
+var OperationBoostOrder = /* @__PURE__ */ ((OperationBoostOrder2) => {
+  OperationBoostOrder2[OperationBoostOrder2["set"] = 0] = "set";
+  OperationBoostOrder2[OperationBoostOrder2["add"] = 1] = "add";
+  OperationBoostOrder2[OperationBoostOrder2["multiply"] = 2] = "multiply";
+  OperationBoostOrder2[OperationBoostOrder2["polynomial"] = 2.9] = "polynomial";
+  OperationBoostOrder2[OperationBoostOrder2["exponential"] = 3] = "exponential";
+  OperationBoostOrder2[OperationBoostOrder2["tetrate"] = 4] = "tetrate";
+  OperationBoostOrder2[OperationBoostOrder2["unset"] = 99] = "unset";
+  return OperationBoostOrder2;
+})(OperationBoostOrder || {});
 var BoostObject = class {
   /**
-   * Constructs a new boost object.
+   * Constructs a new boost object with the given id.
+   * @param id - The id to use.
    */
   constructor(id) {
     /**
@@ -5481,7 +6394,7 @@ var BoostObject = class {
      */
     this.value = (input) => input;
     /** The order at which the boost is applied. Lower orders are applied first. */
-    this.order = 99;
+    this.order = 99 /* unset */;
     // TODO: redo this example
     /**
      * An optional description of the boost.
@@ -5622,294 +6535,240 @@ var Boost = class {
 };
 
 // src/classes/Upgrade.ts
-var import_reflect_metadata2 = require("reflect-metadata");
-var import_class_transformer3 = require("class-transformer");
-
-// src/E/DecimalLRUCache.ts
-var DecimalLRUCache = class _DecimalLRUCache extends LRUCache {
-  /**
-   * Converts a decimal number to a JSON string.
-   * @deprecated Use an object index instead.
-   * @param n - The decimal number to convert.
-   * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
-   */
-  static decimalToKey(n) {
-    n = new Decimal(n);
-    return `${n.sign}/${n.mag}/${n.layer}`;
-  }
-  get(key) {
-    key = new Decimal(key);
-    return super.get(_DecimalLRUCache.decimalToKey(key));
-  }
-  set(key, value) {
-    key = new Decimal(key);
-    super.set(_DecimalLRUCache.decimalToKey(key), value);
-  }
-  has(key) {
-    key = new Decimal(key);
-    return super.has(_DecimalLRUCache.decimalToKey(key));
-  }
-};
-
-// src/classes/numericalAnalysis/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 30;
-var DEFAULT_ITERATIONS_AS_DECIMAL = new Decimal(DEFAULT_ITERATIONS);
-var DEFAULT_TOLERANCE = 1e-4;
-var MeanMode = /* @__PURE__ */ ((MeanMode2) => {
-  MeanMode2[MeanMode2["arithmetic"] = 1] = "arithmetic";
-  MeanMode2[MeanMode2["geometric"] = 2] = "geometric";
-  MeanMode2[MeanMode2["harmonic"] = 3] = "harmonic";
-  MeanMode2[MeanMode2["logarithmic"] = 4] = "logarithmic";
-  MeanMode2[MeanMode2["tetrational"] = 5] = "tetrational";
-  return MeanMode2;
-})(MeanMode || {});
-function mean(a, b, mode = 2 /* geometric */) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  switch (mode) {
-    case 1 /* arithmetic */:
-      return a.add(b).div(2);
-    case 2 /* geometric */:
-    default:
-      return a.mul(b).sqrt();
-    case 3 /* harmonic */:
-      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-    case 4 /* logarithmic */:
-      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
-    case 5 /* tetrational */:
-      return decimalMagGeometricMean(a, b);
-  }
-}
-function geometricEqualsTolerance(a, b, tolerance = DEFAULT_TOLERANCE, verbose = false) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  const diff = decimalMagDifference(a, b) - 1;
-  const result = Math.abs(diff) < tolerance;
-  if (verbose === true || verbose === "onlyOnFail" && !result) {
-    console.log({ a, b, tolerance, diff, result });
-  }
-  return result;
-}
-function decimalMagDifference(a, b) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  if (a.layer === b.layer) {
-    return a.mag / b.mag;
-  }
-  if (a.layer - b.layer >= 2) {
-    return Infinity;
-  }
-  if (a.layer - b.layer <= -2) {
-    return 0;
-  }
-  if (a.layer > b.layer) {
-    return a.mag / Math.log10(b.mag);
-  } else {
-    return Math.log10(a.mag) / b.mag;
-  }
-}
-function decimalMagGeometricMean(a, b) {
-  return Decimal.dTen.tetrate((a.slog(10).toNumber() + b.slog(10).toNumber()) / 2);
-}
-function roundingBase(x, base = Decimal.dTen, acc = 0, max = 1e3) {
-  x = Decimal.fromValue_noAlloc(x);
-  base = Decimal.fromValue_noAlloc(base);
-  acc = Decimal.fromValue_noAlloc(acc);
-  max = Decimal.fromValue_noAlloc(max);
-  if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
-  const xSign = x.sign;
-  x = x.abs();
-  if (x.gte(Decimal.pow(base, max))) return x;
-  const powerN = Decimal.floor(Decimal.log(x, base));
-  let out = x.div(Decimal.pow(base, powerN));
-  out = out.mul(Decimal.pow(base, acc)).round();
-  out = out.div(Decimal.pow(base, acc));
-  out = out.mul(Decimal.pow(base, powerN)).mul(xSign);
-  return out;
-}
-function approximateDerivative(f, x, epsilon = 1e-12) {
-  x = Decimal.fromValue_noAlloc(x);
-  const fX = f(x);
-  let xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
-  let fXPlusH = f(xPlusH);
-  while (fXPlusH.equals(fX) && epsilon < 1) {
-    epsilon *= 10;
-    xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
-    fXPlusH = f(xPlusH);
-  }
-  const deltaX = xPlusH.sub(x);
-  return fXPlusH.sub(fX).div(deltaX);
-}
-function newtonRaphson(initialGuess, f, fPrime, tolerance = DEFAULT_TOLERANCE, maxIterations = DEFAULT_ITERATIONS) {
-  let x = Decimal.fromValue_noAlloc(initialGuess);
-  fPrime ??= (x2) => approximateDerivative(f, x2);
-  for (let i = 0; i < maxIterations; i++) {
-    const fx = f(x);
-    const fxPrime = fPrime(x);
-    if (fxPrime.equals(Decimal.dZero)) {
-      console.warn("Derivative is zero. No solution found. Returning current approximation.");
-      return x;
-    }
-    const xNext = x.sub(fx.div(fxPrime));
-    if (geometricEqualsTolerance(xNext, x)) {
-      return xNext;
-    }
-    x = xNext;
-  }
-  return x;
-}
-
-// src/classes/numericalAnalysis/inverseFunction.ts
-function calculateInverseFunction(f, n, options = {}) {
-  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
-  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
-}
-function inverseFunctionApprox(f, n, mode = 2 /* geometric */, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = Decimal.dOne, upperBound = n, round = false, useNewtonIterations = false, fPrime) {
-  lowerBound = Decimal.fromValue_noAlloc(lowerBound);
-  lowerBound = round ? lowerBound.floor() : lowerBound;
-  upperBound = Decimal.fromValue_noAlloc(upperBound);
-  upperBound = round ? upperBound.ceil() : upperBound;
-  n = Decimal.fromValue_noAlloc(n);
-  if (useNewtonIterations) {
-    fPrime ??= (x) => approximateDerivative(f, x);
-  }
-  const BOUND_THRESHOLD = 5;
-  if (lowerBound.gt(upperBound)) {
-    [lowerBound, upperBound] = [upperBound, lowerBound];
-  }
-  const fInitialLowerBound = f(lowerBound);
-  const fInitialUpperBound = f(upperBound);
-  if (fInitialUpperBound.eq(Decimal.dZero)) {
-    return {
-      value: Decimal.dZero,
-      lowerBound: Decimal.dZero,
-      upperBound: Decimal.dZero
-    };
-  }
-  if (fInitialLowerBound.gt(n)) {
-    console.warn("The interval does not contain the value. (f(lowerBound) > n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": fInitialLowerBound,
-      "f(upperBound)": fInitialUpperBound
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!lowerBound.eq(Decimal.dZero)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, Decimal.dZero, upperBound, round, useNewtonIterations, fPrime);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  if (fInitialUpperBound.lt(n)) {
-    console.warn("The interval does not contain the value. (f(upperBound) < n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": fInitialLowerBound,
-      "f(upperBound)": fInitialUpperBound
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!upperBound.eq(n)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round, useNewtonIterations, fPrime);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  let mid = Decimal.dZero;
-  let midValue = Decimal.dZero;
-  let nextMid = mean(lowerBound, upperBound, mode);
-  for (let i = 0; i < iterations; i++) {
-    mid = nextMid;
-    mid = round ? mid.floor() : mid;
-    midValue = f(mid);
-    if (midValue.lt(n)) {
-      lowerBound = mid;
-    } else {
-      upperBound = mid;
-    }
-    if (geometricEqualsTolerance(midValue, n, tolerance)) {
-      break;
-    }
-    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
-      let closest = upperBound;
-      let closestDiff = f(upperBound).sub(n).abs();
-      for (let j = lowerBound; j.lte(upperBound); j = j.add(Decimal.dOne)) {
-        const diff = f(j).sub(n).abs();
-        if (diff.lt(closestDiff)) {
-          closest = Decimal.fromValue_noAlloc(j);
-          closestDiff = diff;
-        }
-      }
-      return {
-        value: closest,
-        lowerBound,
-        upperBound
-      };
-    }
-    nextMid = mean(lowerBound, upperBound, mode);
-  }
-  const out = {
-    value: lowerBound,
-    lowerBound,
-    upperBound
-  };
-  return out;
-}
-function inverseFunctionApproxUsingNewtonRaphson(f, n, fPrime, initialGuess, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
-  initialGuess = initialGuess ? Decimal.fromValue_noAlloc(initialGuess) : mean(Decimal.dOne, n, 2 /* geometric */);
-  fPrime ??= (x) => approximateDerivative(f, x);
-  return newtonRaphson(initialGuess, (x) => f(x).sub(n), fPrime, tolerance, iterations);
-}
-
-// src/classes/numericalAnalysis/sum.ts
-function calculateSumLoop(f, b, a = Decimal.dZero, epsilon = DEFAULT_TOLERANCE) {
-  let sum = Decimal.dZero;
-  let n = Decimal.fromValue_noAlloc(b);
-  for (; n.gte(a); n = n.add(Decimal.dNegOne)) {
-    const initSum = sum;
-    const value = f(n);
-    sum = sum.add(value);
-    if (geometricEqualsTolerance(initSum, sum, epsilon)) break;
-  }
-  return sum;
-}
-function calculateSumApprox(f, b, a = Decimal.dZero, iterations = DEFAULT_ITERATIONS - 10, bSubA) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  let sum = Decimal.dZero;
-  const intervalWidth = bSubA ? bSubA.div(iterations) : b.sub(a).div(iterations);
-  let currentSample = b;
-  for (let i = iterations - 1; i >= 0; i--) {
-    const oldSum = sum;
-    currentSample = currentSample.sub(intervalWidth);
-    sum = sum.add(f(currentSample));
-    if (geometricEqualsTolerance(oldSum, sum)) break;
-  }
-  return sum.mul(intervalWidth);
-}
-function calculateSum(f, b, a = Decimal.dZero, epsilon, iterations) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  const bMinusA = b.sub(a);
-  if (bMinusA.lte(DEFAULT_ITERATIONS_AS_DECIMAL)) {
-    return calculateSumLoop(f, b, a, epsilon);
-  } else {
-    return calculateSumApprox(f, b, a, iterations, bMinusA);
-  }
-}
+var import_reflect_metadata4 = require("reflect-metadata");
+var import_class_transformer4 = require("class-transformer");
 
 // src/classes/Currency.ts
 var import_reflect_metadata = require("reflect-metadata");
 var import_class_transformer2 = require("class-transformer");
+
+// src/classes/InvalidDecimalProtections.ts
+var InvalidDecimalProtections = class _InvalidDecimalProtections {
+  /**
+   * @param initialProtections - The protections to use for this instance.
+   * Any properties not specified will default to {@link InvalidDecimalProtections.defaultProtections}.
+   */
+  constructor(initialProtections) {
+    /**
+     * The total number of warnings that have been issued by this instance. Once this reaches {@link InvalidDecimalProtections.maxTotalWarnings}, further warnings will be suppressed.
+     */
+    this.totalWarningCount = 0;
+    this.protections = { ..._InvalidDecimalProtections.defaultProtections, ...initialProtections };
+  }
+  static {
+    /**
+     * The maximum total number of warnings that can be issued by this instance. Once this is reached, further warnings will be suppressed.
+     */
+    this.maxTotalWarnings = 100;
+  }
+  /**
+   * Checks if the Decimal is negative. Assumes that the Decimal is already normalized, so it does not check for negative zero.
+   * @param decimal - The value to check.
+   * @returns true if the Decimal is negative, false otherwise.
+   */
+  static isDecimalNegative(decimal) {
+    return decimal.sign === -1;
+  }
+  /**
+   * Checks if the Decimal is zero. The Decimal does not need to be normalized.
+   * Adapted from the zero check in {@link Decimal.normalize}.
+   * Note that this also returns true for negative zero.
+   * @param decimal - The value to check.
+   * @returns true if the Decimal is zero, false otherwise.
+   */
+  static isDecimalZero(decimal) {
+    return decimal.sign === 0 || decimal.mag === 0 && decimal.layer === 0 || decimal.mag === Number.NEGATIVE_INFINITY && decimal.layer > 0 && Number.isFinite(decimal.layer);
+  }
+  static {
+    /**
+     * The default protections for invalid Decimal values.
+     * These can be overridden by passing a {@link DecimalProtectionsOptions} object to the constructor.
+     */
+    this.defaultProtections = {
+      allowNaN: false,
+      allowInfinite: false,
+      allowNegative: true,
+      allowZero: true,
+      allowNonInteger: true
+    };
+  }
+  fromDecimalSourceOrFailedToSerializeDecimal(value, context, ...toLogIfInvalid) {
+    if (value instanceof Decimal) {
+      return new Decimal(value).normalize();
+    }
+    if (typeof value === "number" || typeof value === "string") {
+      return new Decimal(value);
+    }
+    if (typeof value === "object" && value !== null && "sign" in value && "mag" in value && "layer" in value) {
+      const { sign, mag, layer } = value;
+      if (typeof sign === "number" && typeof mag === "number" && typeof layer === "number") {
+        this.warnInvalidValue(
+          value,
+          context,
+          "plain Decimal-like object" /* failedToSerializeDecimal */,
+          ...toLogIfInvalid
+        );
+        return Decimal.fromComponents(sign, layer, mag);
+      }
+    }
+    this.warnInvalidValue(value, context, "non-Decimal" /* nonDecimal */, ...toLogIfInvalid);
+    return void 0;
+  }
+  shouldWarn(context, type, ...toLog) {
+    this.totalWarningCount++;
+    if (this.totalWarningCount === _InvalidDecimalProtections.maxTotalWarnings) {
+      console.error(
+        `eMath.js: Maximum DecimalProtection total warnings reached. Further warnings will be suppressed for ${context}.`,
+        ...toLog
+      );
+    }
+    if (this.totalWarningCount >= _InvalidDecimalProtections.maxTotalWarnings) {
+      return false;
+    }
+    return true;
+  }
+  warnInvalidValue(theInvalidValue, context, type, ...toLogIfInvalid) {
+    if (!this.shouldWarn(context, type, ...toLogIfInvalid)) {
+      return;
+    }
+    console.warn(`eMath.js: Attempted to set a ${type} value to ${context}:`, theInvalidValue, ...toLogIfInvalid);
+  }
+  /**
+   * Checks if the value is valid according to the protections and warns if it is not.
+   *
+   * Intended to be used internally for setter methods in classes.
+   * @param value - The value to check.
+   * @param elseValue - The value to return if the value is invalid.
+   * @param context - The context in which the value is being assigned, used for warning messages.
+   * @param toLogIfInvalid - Additional values to log if the value is invalid.
+   * @returns A transformed {@link value} if it is valid, otherwise {@link elseValue}.
+   */
+  validateValueOrElse(value, elseValue, context = "", ...toLogIfInvalid) {
+    value = this.fromDecimalSourceOrFailedToSerializeDecimal(value, context, ...toLogIfInvalid);
+    elseValue = this.fromDecimalSourceOrFailedToSerializeDecimal(elseValue, `${context} (elseValue)`, ...toLogIfInvalid);
+    if (elseValue === void 0) {
+      elseValue = new Decimal(Decimal.dOne);
+    }
+    if (value === void 0) {
+      return elseValue;
+    }
+    if (!this.protections.allowNaN && value.isNan()) {
+      this.warnInvalidValue(value, context, "NaN" /* nan */, ...toLogIfInvalid);
+      return elseValue;
+    }
+    if (!this.protections.allowInfinite && !value.isFinite()) {
+      this.warnInvalidValue(value, context, "infinite" /* infinite */, ...toLogIfInvalid);
+      return elseValue;
+    }
+    if (!this.protections.allowNegative && _InvalidDecimalProtections.isDecimalNegative(value)) {
+      this.warnInvalidValue(value, context, "negative" /* negative */, ...toLogIfInvalid);
+      return elseValue;
+    }
+    if (!this.protections.allowZero && _InvalidDecimalProtections.isDecimalZero(value)) {
+      this.warnInvalidValue(value, context, "zero" /* zero */, ...toLogIfInvalid);
+      return elseValue;
+    }
+    if (!this.protections.allowNonInteger) {
+      value = value.trunc();
+    }
+    return value;
+  }
+  /**
+   * Modifies the protections for this instance. Any properties not specified will remain unchanged.
+   * @param newProtections - The new protections to use for this instance.
+   */
+  setProtections(newProtections) {
+    this.protections = { ...this.protections, ...newProtections };
+  }
+};
+
+// src/game/managers/DataEntry.ts
+var SubscribableDataEntry = class _SubscribableDataEntry {
+  constructor() {
+    /**
+     * A list of listeners that will be notified when the data changes.
+     * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
+     */
+    this.listeners = [];
+  }
+  /**
+   * Creates a entry based on a getter and setter.
+   * @template T - The type of the data in the entry.
+   * @param getter - A function that returns the current value of the data.
+   * @param setter - A function that sets the value of the data and notifies all listeners.
+   * @param shouldNotify - Whether to notify listeners after setting the value. Defaults to `true`.
+   * @returns A new instance of SubscribableDataEntry that uses the provided getter and setter.
+   */
+  static fromGetterSetter(getter, setter, shouldNotify = true) {
+    return new class extends _SubscribableDataEntry {
+      constructor() {
+        super();
+        this.get = this.get.bind(this);
+        this.set = this.set.bind(this);
+        this.subscribe = this.subscribe.bind(this);
+        this.notifyListeners = this.notifyListeners.bind(this);
+      }
+      get() {
+        return getter();
+      }
+      set(value) {
+        setter(value);
+        if (shouldNotify) {
+          this.notifyListeners();
+        }
+      }
+    }();
+  }
+  /**
+   * Notifies all listeners that the data has changed.
+   */
+  notifyListeners() {
+    for (const listener of this.listeners) {
+      listener();
+    }
+  }
+  /**
+   * Subscribes a listener to be notified when the data entry changes.
+   * See {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore}.
+   * @param listener - The listener function to subscribe.
+   * @returns A function that can be called to unsubscribe the listener.
+   */
+  subscribe(listener) {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index !== -1) {
+        this.listeners.splice(index, 1);
+      }
+    };
+  }
+  setCallback(callback) {
+    this.set(callback(this.get()));
+  }
+};
+var DataManagerEntry = class extends SubscribableDataEntry {
+  constructor(dataManager, dataKey) {
+    super();
+    this.dataManagerReference = dataManager;
+    this.dataKey = dataKey;
+    this.get = this.get.bind(this);
+    this.set = this.set.bind(this);
+    this.subscribe = this.subscribe.bind(this);
+  }
+  get() {
+    return this.dataManagerReference.data[this.dataKey];
+  }
+  /**
+   * Sets the value of the data entry and notifies all listeners.
+   * @param value - The new value to set.
+   */
+  set(value) {
+    this.dataManagerReference.data[this.dataKey] = value;
+    this.notifyListeners();
+  }
+};
+
+// src/classes/Currency.ts
 var CurrencyData = class {
   /**
    * Constructs a new currency object with an initial value of 0.
@@ -5922,25 +6781,9 @@ __decorateClass([
   (0, import_class_transformer2.Type)(() => Decimal)
 ], CurrencyData.prototype, "value", 2);
 var Currency = class {
-  // TODO: redo this example
   /**
-   * Constructs a new currency
-   * @param pointer - A function or reference that returns the pointer of the data / frontend.
-   * @param upgrades - An array of upgrade objects.
-   * @param items - An array of item objects.
-   * @param defaults - The default value and boost of the currency.
-   * @example
-   * const currency = new CurrencyStatic(undefined, [
-   *     {
-   *         id: "upgId1",
-   *         cost: (level: Decimal): Decimal => level.mul(10),
-   *     },
-   *     {
-   *         id: "upgId2",
-   *         cost: (level: Decimal): Decimal => level.mul(20),
-   *     }
-   * ] as const satisfies UpgradeInit[]);
-   * // CurrencyStatic<["upgId1", "upgId2"]>
+   * Creates a new currency with the given id.
+   * @param id - The id of the currency. See {@link id}.
    */
   constructor(id) {
     /**
@@ -5956,6 +6799,21 @@ var Currency = class {
     this.boost = new Boost();
     /** The default value of the currency. */
     this.defaultValue = Decimal.dZero;
+    /**
+     * The protections for {@link value}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    this.valueProtections = new InvalidDecimalProtections({
+      allowNaN: false,
+      allowInfinite: false
+    });
+    this.valueDataEntry = SubscribableDataEntry.fromGetterSetter(
+      () => this.value,
+      (newValue) => {
+        this.value = newValue;
+      },
+      false
+    );
     this.dataManagerReference = null;
     this.id = id;
   }
@@ -5972,12 +6830,19 @@ var Currency = class {
     return this.data.value;
   }
   set value(value) {
-    this.data.value = Decimal.fromValue_noAlloc(value);
+    this.data.value = this.valueProtections.validateValueOrElse(
+      value,
+      this.data.value,
+      `Currency "${this.id}" value`,
+      this
+    );
+    this.valueDataEntry.notifyListeners();
   }
   /**
    * Updates / applies effects to the currency on load.
    */
   onLoadData() {
+    this.value = this.data.value;
     for (const upgrade of this.upgrades) {
       this.runUpgradeEffect(upgrade);
     }
@@ -6021,9 +6886,12 @@ var Currency = class {
    * // Gain a random number between 1 and 10, and return the amount gained.
    * currency.gain(Math.random() * 10);
    */
-  gain(dt = Decimal.dOne) {
-    const toAdd = this.boost.calculate().mul(dt);
-    this.data.value = this.data.value.add(toAdd);
+  gain(dt) {
+    let toAdd = this.boost.calculate();
+    if (dt) {
+      toAdd = toAdd.mul(dt);
+    }
+    this.value = this.value.add(toAdd);
     return toAdd;
   }
   /**
@@ -6074,17 +6942,21 @@ var Currency = class {
    *     }
    * });
    */
-  addUpgrade(upgrades, runEffectInstantly = true) {
-    if (!Array.isArray(upgrades)) upgrades = [upgrades];
-    for (const upgrade of upgrades) {
-      if (runEffectInstantly) this.runUpgradeEffect(upgrade);
-      this.runUpgradeEffectOnAdd(upgrade);
-      upgrade.withCurrencySupplier(() => this);
-      this.upgrades.push(upgrade);
-      if (this.dataManagerReference) {
-        upgrade.onAddToDataManager(this.dataManagerReference, this.id);
-      }
+  addUpgrade(upgrade, runEffectInstantly = true) {
+    if (runEffectInstantly) this.runUpgradeEffect(upgrade);
+    this.runUpgradeEffectOnAdd(upgrade);
+    upgrade.withCurrencySupplier(() => this);
+    this.upgrades.push(upgrade);
+    if (this.dataManagerReference) {
+      upgrade.onAddToDataManager(this.dataManagerReference, this.id);
     }
+    return upgrade;
+  }
+  addUpgrades(upgrades, runEffectInstantly = true) {
+    for (const upgrade of upgrades) {
+      this.addUpgrade(upgrade, runEffectInstantly);
+    }
+    return upgrades;
   }
   /**
    * Runs the effect of an upgrade or item.
@@ -6135,7 +7007,7 @@ var Currency = class {
     if (upgrade.maxLevel !== void 0) {
       target = Decimal.min(target, upgrade.maxLevel);
     }
-    return calculateUpgrade(value, upgrade, upgrade.level, target, mode, iterations);
+    return upgrade.calculate(value, upgrade.level, target, mode, iterations);
   }
   /**
    * Calculates how much is needed for the next upgrade.
@@ -6150,14 +7022,12 @@ var Currency = class {
    * // Calculate the cost of the next healthBoost upgrade
    * const nextCost = currency.getNextCost("healthBoost");
    */
-  getNextCost(id, target = Decimal.dOne, mode, iterations, value) {
+  getNextCost(id) {
     const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
     if (!upgradeExists) {
       return upgrade;
     }
-    const amount = this.calculateUpgrade(id, target, mode, iterations, value)[0];
-    const nextCost = upgrade.cost(upgrade.level.add(amount));
-    return nextCost;
+    return upgrade.cost(upgrade.level);
   }
   /**
    * Calculates the cost of the next upgrade after the maximum affordable quantity.
@@ -6200,114 +7070,1028 @@ var Currency = class {
       return upgrade;
     }
     const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
-    if (amount.lte(Decimal.dZero)) {
+    if (amount.eq(upgrade.level)) {
       return false;
     }
-    this.data.value = this.data.value.sub(cost);
-    upgrade.level = upgrade.level.add(amount);
+    this.value = this.value.sub(cost);
+    upgrade.level = amount;
     this.runUpgradeEffect(upgrade);
     return true;
+  }
+  // Setters
+  withValueProtectionOptions(newValueProtections) {
+    this.valueProtections.setProtections(newValueProtections);
+    return this;
+  }
+};
+
+// src/game/index.ts
+var import_reflect_metadata3 = require("reflect-metadata");
+
+// src/game/managers/ConfigManager.ts
+function parseObject(obj, template, recurse = true) {
+  for (const key in template) {
+    if (typeof obj[key] === "undefined") {
+      obj[key] = template[key];
+    } else if (recurse && typeof obj[key] === "object" && typeof template[key] === "object" && !Array.isArray(obj[key]) && !Array.isArray(template[key])) {
+      obj[key] = parseObject(
+        obj[key],
+        template[key]
+      );
+    }
+  }
+  return obj;
+}
+var ConfigManager = class {
+  /**
+   * Constructs a new configuration manager.
+   * @param configOptionTemplate - The template to use for default values.
+   * @param isParsingRecursive - Whether or not the configuration is being parsed recursively. Defaults to `true`.
+   */
+  constructor(configOptionTemplate, isParsingRecursive = true) {
+    this.configOptionTemplate = configOptionTemplate;
+    this.isParsingRecursive = isParsingRecursive;
+  }
+  /**
+   * Parses the given configuration object and returns a new object with default values for any missing options.
+   * @param config - The configuration object to parse.
+   * @returns A new object with default values for any missing options.
+   */
+  parse(config) {
+    if (typeof config === "undefined") {
+      return this.configOptionTemplate;
+    }
+    return parseObject(
+      config,
+      this.configOptionTemplate,
+      this.isParsingRecursive
+    );
+  }
+  /**
+   * @returns The template to use for default values.
+   */
+  get options() {
+    return this.configOptionTemplate;
+  }
+};
+
+// src/game/managers/KeyManager.ts
+var keyManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30
+};
+var keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ".split("").concat(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+var KeyManager = class _KeyManager {
+  /**
+   * Creates a new key manager.
+   * @param config - The configuration for the key manager.
+   */
+  constructor(config) {
+    /** @deprecated Use {@link addKey} instead. */
+    this.addKeys = this.addKey.bind(this);
+    this.keysPressed = [];
+    this.binds = [];
+    this.tickers = [];
+    this.config = _KeyManager.configManager.parse(config);
+    if (this.config.autoAddInterval) {
+      const fps = this.config.fps ? this.config.fps : 30;
+      this.tickerInterval = setInterval(() => {
+        for (const ticker of this.tickers) {
+          ticker(1e3 / fps);
+        }
+      }, 1e3 / fps);
+    }
+    if (typeof document === "undefined") {
+      return;
+    }
+    this.tickers.push((dt) => {
+      for (const bind of this.binds) {
+        if ((typeof bind.onDownContinuous !== "undefined" || typeof bind.fn !== "undefined") && this.isPressing(bind.id)) {
+          bind.onDownContinuous?.(dt);
+          bind.fn?.(dt);
+        }
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      this.logKey(e, true);
+      this.onAll("down", e.key);
+    });
+    document.addEventListener("keyup", (e) => {
+      this.logKey(e, false);
+      this.onAll("up", e.key);
+    });
+    document.addEventListener("keypress", (e) => {
+      this.onAll("press", e.key);
+    });
+  }
+  static {
+    /** The configuration manager for the key manager */
+    this.configManager = new ConfigManager(keyManagerDefaultConfig);
+  }
+  /**
+   * Changes the framerate of the key manager.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.config.fps = fps;
+    if (this.tickerInterval) {
+      clearInterval(this.tickerInterval);
+      this.tickerInterval = setInterval(() => {
+        for (const ticker of this.tickers) {
+          ticker(1e3 / fps);
+        }
+      }, 1e3 / fps);
+    }
+  }
+  /**
+   * Adds keys to the list of keys pressed.
+   * @param event - The event to add the key from.
+   * @param type - Whether to add or remove the key. `true` to add, `false` to remove.
+   */
+  logKey(event, type) {
+    const key = event.key;
+    if (type && !this.keysPressed.includes(key)) {
+      this.keysPressed.push(key);
+    } else if (!type && this.keysPressed.includes(key)) {
+      this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+    }
+  }
+  /**
+   * Manages onDown, onPress, and onUp events for all key bindings.
+   * @param eventType - The type of event to call for.
+   * @param keypress - The key that was pressed.
+   */
+  onAll(eventType, keypress) {
+    for (const bind of this.binds) {
+      if (bind.key !== keypress) continue;
+      switch (eventType) {
+        case "down":
+          bind.onDown?.();
+          break;
+        case "press":
+        default:
+          bind.onPress?.();
+          break;
+        case "up":
+          bind.onUp?.();
+          break;
+      }
+    }
+  }
+  /**
+   * Checks if a specific key binding is currently being pressed.
+   * @param id - The name of the key binding to check.
+   * @returns True if the key binding is being pressed, otherwise false.
+   */
+  isPressing(id) {
+    for (const current of this.binds) {
+      if (current.id === id) {
+        return this.keysPressed.includes(current.key);
+      }
+    }
+    return false;
+  }
+  /**
+   * Gets a key binding by its id.
+   * @param id - The id of the key binding to get.
+   * @returns The key binding, if found.
+   */
+  getBind(id) {
+    return this.binds.find((current) => current.id === id);
+  }
+  addKey(nameOrKeysToAdd, key, fn) {
+    nameOrKeysToAdd = typeof nameOrKeysToAdd === "string" ? {
+      id: nameOrKeysToAdd,
+      name: nameOrKeysToAdd,
+      key: key ?? "",
+      fn
+    } : nameOrKeysToAdd;
+    nameOrKeysToAdd = Array.isArray(nameOrKeysToAdd) ? nameOrKeysToAdd : [nameOrKeysToAdd];
+    for (const keyBinding of nameOrKeysToAdd) {
+      keyBinding.id = keyBinding.id ?? keyBinding.name;
+      const existing = this.getBind(keyBinding.id);
+      if (existing) {
+        Object.assign(existing, keyBinding);
+        continue;
+      }
+      this.binds.push(keyBinding);
+    }
+  }
+};
+
+// src/game/managers/EventManager.ts
+var eventManagerDefaultConfig = {
+  autoAddInterval: true,
+  fps: 30
+};
+var EventManager = class _EventManager {
+  /**
+   * Creates a new event manager.
+   * @param config - The config to use for this event manager.
+   * @param events - The events to add to the event manager.
+   * These events will be added to the event manager's callback events, although you could omit this and add events manually
+   * (though this is not recommended as you won't get type checking).
+   */
+  constructor(config, events) {
+    /** The timer events stored in the event manager. */
+    this.events = {};
+    /**
+     * The callback events stored in the event manager.
+     * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
+     */
+    this.callbackEvents = {};
+    /**
+     * Adds a new event.
+     * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
+     * @deprecated Use {@link EventManager.setEvent} instead.
+     */
+    this.addEvent = this.setEvent.bind(this);
+    this.config = _EventManager.configManager.parse(config);
+    if (events) {
+      for (const event of events) {
+        this.callbackEvents[event] = [];
+      }
+    }
+    if (this.config.autoAddInterval) {
+      const fps = this.config.fps ?? 30;
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
+    }
+  }
+  static {
+    /** The static config manager for the event manager. */
+    this.configManager = new ConfigManager(eventManagerDefaultConfig);
+  }
+  /**
+   * Adds a callback to an event.
+   * If you want to use a timer event, use {@link EventManager.setEvent} instead.
+   * @param event - The event to add the callback to.
+   * @param callback - The callback to add to the event.
+   */
+  on(event, callback) {
+    if (!this.callbackEvents[event]) {
+      this.callbackEvents[event] = [];
+    }
+    this.callbackEvents[event].push({ type: event, callback });
+  }
+  /**
+   * Dispatches / calls all callbacks for an event added with {@link EventManager.on}.
+   * @param event - The event to dispatch.
+   */
+  dispatch(event) {
+    if (!this.callbackEvents[event]) {
+      return;
+    }
+    for (const callback of this.callbackEvents[event]) {
+      callback.callback();
+    }
+  }
+  /**
+   * The function that is called every frame, executes all events.
+   */
+  tickerFunction() {
+    const currentTime = Date.now();
+    for (const event of Object.values(this.events)) {
+      switch (event.type) {
+        // prettier-ignore
+        case "interval" /* interval */:
+          {
+            if (currentTime - event.intervalLast >= event.delay) {
+              const dt = currentTime - event.intervalLast;
+              event.callback(dt);
+              event.intervalLast = currentTime;
+            }
+          }
+          break;
+        // prettier-ignore
+        case "timeout" /* timeout */:
+          {
+            if (currentTime - event.timeCreated >= event.delay) {
+              const dt = currentTime - event.timeCreated;
+              event.callback(dt);
+              delete this.events[event.name];
+            }
+          }
+          break;
+      }
+    }
+  }
+  /**
+   * Changes the framerate of the event manager.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.config.fps = fps;
+    if (this.tickerInterval) {
+      clearInterval(this.tickerInterval);
+      this.tickerInterval = setInterval(() => {
+        this.tickerFunction();
+      }, 1e3 / fps);
+    }
+  }
+  /**
+   * Warps time by a certain amount.
+   * - Events will be triggered as if the time has passed.
+   * - The stored creation time of timeout events will be adjusted.
+   * @param dt - The time to warp by (in milliseconds).
+   */
+  timeWarp(dt) {
+    for (const event of Object.values(this.events)) {
+      switch (event.type) {
+        case "interval" /* interval */:
+          event.intervalLast -= dt;
+          break;
+        case "timeout" /* timeout */:
+          event.timeCreated -= dt;
+          break;
+      }
+    }
+  }
+  setEvent(nameOrEvent, type, delay, callbackFn) {
+    const isEventInit = typeof nameOrEvent !== "string";
+    const eventToAdd = {
+      // Default values
+      // name: Symbol(),
+      type: "timeout" /* timeout */,
+      delay: 0,
+      // callback: () => {},
+      // If the event is being initialized with an object, spread the object.
+      // Otherwise, assign the values from the arguments.
+      // prettier-ignore
+      ...isEventInit ? nameOrEvent : {
+        name: nameOrEvent,
+        type,
+        delay,
+        callback: callbackFn
+      },
+      // Assign the default values.
+      timeCreated: Date.now(),
+      // If the event is an interval event, set the last interval time to now.
+      intervalLast: type === "interval" ? Date.now() : 0
+    };
+    this.events[eventToAdd.name] = eventToAdd;
+  }
+  /**
+   * Removes a timer event from the event manager.
+   * Does not remove callback events.
+   * @param name - The name of the event to remove.
+   * @example
+   * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
+   */
+  removeEvent(name) {
+    delete this.events[name];
+  }
+};
+
+// src/game/managers/DataManager.ts
+var import_reflect_metadata2 = require("reflect-metadata");
+var import_class_transformer3 = require("class-transformer");
+var import_lz_string = __toESM(require_lz_string());
+var import_md5 = __toESM(require_md5());
+var DataManager = class {
+  /**
+   * Creates a new instance of the game class.
+   * @param gameRef - A function that returns the game instance.
+   * @param localStorage - The local storage object. Defaults to `window.localStorage`.
+   */
+  constructor(gameRef, localStorage) {
+    /**
+     * The current game data.
+     * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
+     */
+    this.data = /* @__PURE__ */ Object.create(null);
+    this.dataEntryInstances = /* @__PURE__ */ Object.create(null);
+    /**
+     * A queue of functions to call when the game data is loaded.
+     * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
+     * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
+     */
+    this.eventsOnLoad = [];
+    this.allowDataToBeSaved = true;
+    this.gameRef = gameRef;
+    this.localStorage = localStorage ?? (() => {
+      if (typeof window === "undefined") {
+        console.warn(
+          "eMath.js: Local storage is not supported. Methods that rely on local storage will not work. You can use compileData() and decompileData() instead to implement a custom save system."
+        );
+        return null;
+      }
+      return window.localStorage;
+    })();
+  }
+  /**
+   * Adds an event to call when the game data is loaded.
+   * @param event - The event to call when the game data is loaded.
+   * @example dataManager.addEventOnLoad(() => console.log("Data loaded!"));
+   */
+  addEventOnLoad(event) {
+    this.eventsOnLoad.push(event);
+  }
+  setDataInternal(key, value) {
+    this.data[key] = value;
+    if (this.dataEntryInstances[key]) {
+      this.dataEntryInstances[key].notifyListeners();
+    }
+  }
+  /**
+   * Sets the data for the given key.
+   * The getter is a work in progress.
+   * @template S - The key to set the data for.
+   * @template T - The value to set the data to.
+   * @param key - The key to set the data for.
+   * @param value - The value to set the data to.
+   * @returns An object with a single entry of the name of the key and the value of the data. This is a getter and setter.
+   * @example
+   * // ! WARNING: Do not destruct the `value` property, as it will remove the getter and setter.
+   * const testData = dataManager.setData("test", 5);
+   * console.log(testData.value); // 5
+   * testData.value = 10; // Also sets the data
+   * console.log(testData.value); // 10
+   */
+  setData(key, value) {
+    this.setDataInternal(key, value);
+    return () => this.data[key];
+  }
+  /**
+   * Sets the data for the given key and returns a getter and setter for the data.
+   * @param key - The key to set the data for.
+   * @param value - The initial value to set the data to.
+   * @returns A tuple containing a getter and a setter for the data. The getter returns the current value of the data, and the setter can be used to update the value of the data. The setter can take either a new value or a callback function that receives the previous value and returns the new value.
+   * @example
+   * const [getTestData, setTestData] = dataManager.useData("test", 5);
+   * console.log(getTestData()); // 5
+   * setTestData(10); // Sets the data to 10
+   * console.log(getTestData()); // 10
+   * setTestData((prev) => prev + 5); // Updates the data to 15 using a callback
+   * console.log(getTestData()); // 15
+   */
+  useData(key, value) {
+    this.setDataInternal(key, value);
+    return [
+      () => this.data[key],
+      (newValueOrCallback) => {
+        if (typeof newValueOrCallback === "function") {
+          this.setDataInternal(key, newValueOrCallback(this.data[key]));
+          return;
+        }
+        this.setDataInternal(key, newValueOrCallback);
+      }
+    ];
+  }
+  useDataEntry(key, value) {
+    if (this.dataEntryInstances[key]) {
+      return this.dataEntryInstances[key];
+    }
+    if (typeof value === "function") {
+      console.warn(
+        `eMath.js: useDataEntry(): The value for key "${key}" is a function. This may cause issues with setting the data entry`
+      );
+    }
+    this.data[key] = value;
+    const entry = new DataManagerEntry(this, key);
+    this.dataEntryInstances[key] = entry;
+    return entry;
+  }
+  /**
+   * Gets the data for the given key.
+   * @deprecated Set the return value of {@link setData} to a variable instead, as that is a getter and provides type checking.
+   * @param key - The key to get the data for.
+   * @returns The data for the given key.
+   */
+  getData(key) {
+    return this.data[key];
+  }
+  /**
+   * Adds a static class with data to the data manager. The class will be added to the data manager and its `onAddToDataManager` method will be called if it exists. When the data is loaded using {@link DataManager.loadData}, the class's `onLoadData` method will be called if it exists.
+   * @param data - The static class with data to add to the data manager.
+   */
+  addCustomData(data) {
+    data.onAddToDataManager?.(this);
+    this.addEventOnLoad(() => data.onLoadData?.());
+  }
+  /**
+   * Compiles the given game data to a tuple containing the compressed game data and a hash.
+   * @param data The game data to be compressed. Defaults to the current game data.
+   * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
+   */
+  compileDataRaw(data = this.data) {
+    this.gameRef.eventManager.dispatch("beforeCompileData");
+    const plainGameData = {};
+    for (const key in data) {
+      plainGameData[key] = (0, import_class_transformer3.instanceToPlain)(data[key]);
+    }
+    const hashedData = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(plainGameData)}`);
+    const saveMetadata = {
+      hash: hashedData,
+      game: {
+        title: this.gameRef.config.name.title,
+        id: this.gameRef.config.name.id,
+        version: this.gameRef.config.name.version
+      },
+      ...eMathMetadata
+    };
+    return [saveMetadata, plainGameData];
+  }
+  /**
+   * Compresses the given game data to a UTF-16-encoded string using lz-string.
+   * @param data The game data to be compressed. Defaults to the current game data.
+   * @returns The compressed game data and a hash as a UTF-16-encoded string to use for saving.
+   */
+  compileData(data = this.data) {
+    const dataRawString = JSON.stringify(this.compileDataRaw(data));
+    return (0, import_lz_string.compressToUTF16)(dataRawString);
+  }
+  /**
+   * Decompiles the data stored in localStorage and returns the corresponding object.
+   * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
+   * @returns The decompiled object, or null if the data is empty or invalid.
+   */
+  decompileData(data) {
+    if (!data) {
+      if (!this.localStorage) {
+        console.warn(
+          "eMath.js: Local storage is not supported. Methods that rely on local storage will not work: decompileData() requires the data to be passed as an argument."
+        );
+        return null;
+      }
+      data = this.localStorage.getItem(`${this.gameRef.config.name.id}-data`);
+    }
+    if (!data) return null;
+    let parsedData;
+    try {
+      parsedData = JSON.parse((0, import_lz_string.decompressFromUTF16)(data));
+      return parsedData;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.error(`eMath.js: Failed to decompile data (corrupted) "${data}":`, error);
+      } else {
+        throw error;
+      }
+      return null;
+    }
+  }
+  /**
+   * Validates the given data using a hashing algorithm (md5)
+   * @param data - [hash, data] The data to validate.
+   * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
+   */
+  validateData(data) {
+    const [saveMetadata, gameDataToValidate] = data;
+    if (typeof saveMetadata === "string") {
+      return (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`) === saveMetadata;
+    }
+    const hashSave = saveMetadata.hash;
+    const hashCheck = (0, import_md5.default)(`${this.gameRef.config.name.id}/${JSON.stringify(gameDataToValidate)}`);
+    return hashSave === hashCheck;
+  }
+  /**
+   * Resets the game data to its initial state and saves it.
+   * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
+   * (Reloading may help with some issues with saving data)
+   */
+  resetData(reload = false) {
+    if (!reload) {
+      console.warn(
+        "eMath.js: resetData(): Resetting data without reloading is not fully supported yet and may cause issues. It is recommended to set reload to true or implement a custom reset system by calling saveData() with the initial data."
+      );
+    }
+    if (typeof window === "undefined") {
+      console.warn(
+        "eMath.js: resetData(): Window is not defined. You can implement a custom reset system by calling saveData() with the initial data."
+      );
+      return;
+    }
+    this.saveData(null);
+    this.allowDataToBeSaved = false;
+    window.location.reload();
+  }
+  /**
+   * Saves the game data to local storage under the key `${game.config.name.id}-data`.
+   * If you don't want to save to local storage, use {@link compileData} instead.
+   * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}. If the data is null, the save will be cleared instead.
+   */
+  saveData(dataToSave = this.compileData()) {
+    if (typeof dataToSave === "undefined" || dataToSave === "") {
+      console.warn("eMath.js: saveData(): Data to save is empty.");
+      return;
+    }
+    if (!this.localStorage) {
+      console.warn(
+        "eMath.js: saveData(): Local storage is not supported. You can use compileData() instead to implement a custom save system."
+      );
+      return;
+    }
+    if (!this.allowDataToBeSaved) {
+      console.warn("eMath.js: saveData(): Saving data is currently not allowed.");
+      return;
+    }
+    this.gameRef.eventManager.dispatch("beforeSaveData");
+    if (dataToSave === null) {
+      this.localStorage.removeItem(`${this.gameRef.config.name.id}-data`);
+      return;
+    }
+    this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+    this.gameRef.eventManager.dispatch("saveData");
+  }
+  /**
+   * Compiles the game data and prompts the user to download it as a text file using {@link window.prompt}.
+   * If you want to implement a custom data export, use {@link compileData} instead.
+   */
+  exportData() {
+    if (typeof document === "undefined") {
+      console.warn(
+        "eMath.js: exportData(): Document is not defined. You can use compileData() instead to implement a custom save system."
+      );
+      return;
+    }
+    const content = this.compileData();
+    if (prompt("Download save data?:", content) != null) {
+      const blob = new Blob([content], { type: "text/plain" });
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = `${this.gameRef.config.name.id}-save.data`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadLink.href);
+    }
+  }
+  /**
+   * Loads game data and processes it.
+   * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+   */
+  parseData(dataToParse = this.decompileData()) {
+    if (!dataToParse) return;
+    const [, loadedData] = dataToParse;
+    for (const key in loadedData) {
+      if (typeof this.data[key] === "undefined") {
+        console.warn(
+          `eMath.js: Loaded data has a key "${key}" that does not exist in the current game data. Skipping this key.`
+        );
+        continue;
+      }
+      if (
+        // TODO: currently only exists to make compiler happy, might have side effects
+        this.data[key] == null || typeof this.data[key].constructor === "undefined"
+      ) {
+        this.setDataInternal(key, loadedData[key]);
+        continue;
+      }
+      this.setDataInternal(
+        key,
+        (0, import_class_transformer3.plainToInstance)(this.data[key].constructor, loadedData[key])
+      );
+    }
+  }
+  /**
+   * Loads game data and processes it.
+   * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+   * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
+   */
+  loadData(dataToLoad = this.decompileData()) {
+    dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
+    if (!dataToLoad) return null;
+    const isDataValid = this.validateData([dataToLoad[0], (0, import_class_transformer3.instanceToPlain)(dataToLoad[1])]);
+    this.parseData(dataToLoad);
+    for (const obj of this.eventsOnLoad) {
+      obj();
+    }
+    this.gameRef.eventManager.dispatch("loadData");
+    return isDataValid;
+  }
+};
+
+// src/game/Game.ts
+var gameDefaultConfig = {
+  mode: "production",
+  name: {
+    title: "",
+    id: "",
+    version: "0.0.0"
+  },
+  settings: {
+    framerate: 30
+  },
+  initIntervalBasedManagers: true,
+  localStorage: void 0
+};
+var Game = class _Game {
+  static {
+    /** The static config manager for the game. */
+    this.configManager = new ConfigManager(gameDefaultConfig);
+  }
+  /**
+   * Creates a new instance of the game class.
+   * @param config - The configuration object for the game.
+   * @example
+   * const myGame = new game({
+   *     name: {
+   *         title: "My Game",
+   *         id: "my-game",
+   *     },
+   *     // Additional options here
+   * });
+   */
+  constructor(config) {
+    this.config = _Game.configManager.parse(config);
+    this.dataManager = new DataManager(this, this.config.localStorage);
+    this.keyManager = new KeyManager({
+      autoAddInterval: this.config.initIntervalBasedManagers,
+      fps: this.config.settings.framerate
+    });
+    this.eventManager = new EventManager({
+      autoAddInterval: this.config.initIntervalBasedManagers,
+      fps: this.config.settings.framerate
+    });
+    this.tickers = [];
+  }
+  /**
+   * Initializes the game. Also initializes the data manager.
+   * See {@link DataManager.init} for more information.
+   */
+  init() {
+  }
+  /**
+   * Changes the framerate of the game.
+   * @param fps - The new framerate to use.
+   */
+  changeFps(fps) {
+    this.keyManager.changeFps(fps);
+    this.eventManager.changeFps(fps);
+  }
+  addData(dataToAdd) {
+    this.dataManager.addCustomData(dataToAdd);
+    return dataToAdd;
+  }
+  // TODO: Implement clearTickers
+  // public clearTickers(): void {
+  // }
+  // /**
+  //  * Adds a new currency section to the game. {@link GameCurrency} is the class.
+  //  * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
+  //  * @template TCurrencyName - The name
+  //  * @template U - The upgrade names for the currency. See {@link Currency} for more information.
+  //  * @template I - The item names for the currency. See {@link Currency} for more information.
+  //  * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
+  //  * @param upgrades - The upgrades for the currency.
+  //  * @param items - The items for the currency.
+  //  * @returns A new instance of the gameCurrency class.
+  //  * @example
+  //  * const currency = game.addCurrency("currency");
+  //  * currency.static.gain();
+  //  * console.log(currency.value); // Decimal.dOne
+  //  */
+  // public addCurrency<
+  //     TCurrencyName extends string = string,
+  //     TUpgradeIds extends string = string,
+  //     TItemIds extends string = string,
+  // >(
+  //     name: TCurrencyName,
+  //     upgrades?: UpgradeInit<TUpgradeIds>[],
+  //     items?: ItemInit<TItemIds>[],
+  // ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
+  //     // Create the class instance
+  //     const classInstance = new GameCurrency(
+  //         [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
+  //             typeof Currency
+  //         >,
+  //         this,
+  //         name,
+  //     );
+  //     return classInstance;
+  // }
+  // /**
+  //  * Adds a new attribute to the game. {@link GameAttribute} is the class.
+  //  * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
+  //  * @param name - The name of the attribute.
+  //  * @param useBoost - Indicates whether to use boost for the attribute.
+  //  * @param initial - The initial value of the attribute.
+  //  * @returns The newly created attribute.
+  //  * @example
+  //  * const myAttribute = game.addAttribute("myAttribute");
+  //  */
+  // public addAttribute<TEnableBoost extends boolean = true>(
+  //     name: string,
+  //     useBoost: TEnableBoost = true as TEnableBoost,
+  //     initial: DecimalSource = 0,
+  // ): GameAttribute<TEnableBoost> {
+  //     const classInstance = new GameAttribute(
+  //         [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
+  //             typeof AttributeStatic
+  //         >,
+  //         this,
+  //     );
+  //     return classInstance;
+  // }
+  // /**
+  //  * Adds a new skill tree to the game.
+  //  * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
+  //  * @template TSkillNames - The names of the skills in the skill tree.
+  //  * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
+  //  * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
+  //  * @returns A new instance of the game skill tree class.
+  //  */
+  // public addSkillTree<TSkillNames extends string = string>(
+  //     name: string,
+  //     skills: SkillInit<TSkillNames>[],
+  // ): GameSkillTree<TSkillNames> {
+  //     // Set the data and static objects
+  //     this.dataManager.setData(name, {
+  //         skillTree: new SkillTreeData(),
+  //     });
+  //     // Create the class instance
+  //     const classInstance = new GameSkillTree<TSkillNames>(
+  //         [
+  //             skills,
+  //             (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
+  //         ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
+  //         this,
+  //         name,
+  //     );
+  //     return classInstance;
+  // }
+};
+
+// src/classes/UpgradeCostTreeMap.ts
+var CachedUpgradeTreeNode = class _CachedUpgradeTreeNode {
+  /**
+   * Creates a new CachedUpgradeTreeNode with the given level and cost.
+   * @param level - The level of the upgrade at this node.
+   * @param cost - The cost of the upgrade at this node.
+   * @param costAtLevel - The cost of the upgrade at this node, calculated at the given level.
+   */
+  constructor(level = Decimal.dZero, cost = Decimal.dZero, costAtLevel = Decimal.dZero) {
+    this.level = Decimal.fromValue_noAlloc(level);
+    this.accumulatedCost = Decimal.fromValue_noAlloc(cost);
+    this.costAtLevel = Decimal.fromValue_noAlloc(costAtLevel);
+  }
+  populate(targetDepth, generatorCostFn, lowerBound, upperBound, currentDepth = 1) {
+    if (currentDepth >= targetDepth) {
+      generatorCostFn.next(this);
+      return;
+    }
+    this.left = new _CachedUpgradeTreeNode();
+    this.left.populate(targetDepth, generatorCostFn, lowerBound, this, currentDepth + 1);
+    generatorCostFn.next(this);
+    this.right = new _CachedUpgradeTreeNode();
+    this.right.populate(targetDepth, generatorCostFn, this, upperBound, currentDepth + 1);
+  }
+  /**
+   * @param lookupMode - The mode to use for looking up the value.
+   * @returns The value to look up based on the given lookup mode.
+   */
+  getLookupValue(lookupMode) {
+    switch (lookupMode) {
+      // case LookupMode.level:
+      // default:
+      //     return this.level;
+      case 0 /* accumulatedCost */:
+        return this.accumulatedCost;
+      case 1 /* costAtLevel */:
+        return this.costAtLevel;
+    }
+  }
+};
+var CachedUpgradeLookupMode = /* @__PURE__ */ ((CachedUpgradeLookupMode2) => {
+  CachedUpgradeLookupMode2[CachedUpgradeLookupMode2["accumulatedCost"] = 0] = "accumulatedCost";
+  CachedUpgradeLookupMode2[CachedUpgradeLookupMode2["costAtLevel"] = 1] = "costAtLevel";
+  return CachedUpgradeLookupMode2;
+})(CachedUpgradeLookupMode || {});
+var LowerCachedUpgradeLookup = class _LowerCachedUpgradeLookup {
+  constructor() {
+    /**
+     * Stores the accumulated cost to reach each level from the default level.
+     */
+    this.accumulatedCostArray = _LowerCachedUpgradeLookup.initialPlaceholderDecimalArray;
+    /**
+     * Stores the cost at each level from the default level. The cost at index 0 corresponds to the cost at defaultLevel + 1, index 1 corresponds to defaultLevel + 2, and so on.
+     */
+    this.costAtLevelArray = _LowerCachedUpgradeLookup.initialPlaceholderDecimalArray;
+    /**
+     * The level at which to start caching. The cost at index 0 of the arrays corresponds to the cost at this level + 1.
+     */
+    this.defaultLevel = Decimal.dZero;
+  }
+  static {
+    /**
+     * A placeholder DecimalArray used to initialize the accumulatedCostArray and costAtLevelArray properties before they are populated with actual values in the fill method.
+     */
+    this.initialPlaceholderDecimalArray = new DecimalArray(0);
+  }
+  /**
+   * Fills the cache with the accumulated costs and costs at each level for a given size, cost function, and default level.
+   * @param size - The number of levels to cache.
+   * @param costFn - A function that takes a level and returns the cost to reach that level.
+   * @param defaultLevel - The level at which to start caching. Defaults to 0.
+   */
+  fill(size, costFn, defaultLevel = Decimal.dZero) {
+    defaultLevel = Decimal.fromValue_noAlloc(defaultLevel);
+    this.defaultLevel = defaultLevel;
+    const upperBoundCost = costFn(defaultLevel.add(size));
+    this.accumulatedCostArray = new DecimalArray(size, upperBoundCost.layer);
+    this.costAtLevelArray = new DecimalArray(size, upperBoundCost.layer);
+    let currentAccumulatedCost = Decimal.dZero;
+    for (let i = 0; i < size; i++) {
+      const level = defaultLevel.add(i);
+      const costAtLevel = costFn(level);
+      currentAccumulatedCost = currentAccumulatedCost.add(costAtLevel);
+      this.accumulatedCostArray.set(i, currentAccumulatedCost);
+      this.costAtLevelArray.set(i, costAtLevel);
+    }
+  }
+  /**
+   * @returns Whether the cache has been populated with values (ie {@link fill} has been called).
+   */
+  hasBeenPopulated() {
+    return this.accumulatedCostArray.length > 0 && this.costAtLevelArray.length > 0;
+  }
+  /**
+   * @param index - The index of the level to get. 0 corresponds to the default level + 1.
+   * @returns The level at the given index.
+   */
+  getLevelFromIndex(index) {
+    return this.defaultLevel.add(index + 1);
+  }
+  /**
+   * Looks up the cache for the given level or cost and returns the closest levels that are less than or equal to and greater than or equal to the given value.
+   * @param x - The level or cost to look up.
+   * @param lookupMode - The mode to use for looking up the value. Defaults to {@link CachedUpgradeLookupMode.accumulatedCost}.
+   * @returns An object containing the closest levels that are less than or equal to and greater than or equal to the given value.
+   */
+  lookUp(x, lookupMode = 0 /* accumulatedCost */) {
+    x = Decimal.fromValue_noAlloc(x);
+    const arrayToSearch = lookupMode === 0 /* accumulatedCost */ ? this.accumulatedCostArray : this.costAtLevelArray;
+    const result = arrayToSearch.search(x);
+    return {
+      lowerNode: this.getLevelFromIndex(Math.floor(result)),
+      upperNode: this.getLevelFromIndex(Math.ceil(result))
+    };
+  }
+  /**
+   * Looks up the cache for the cost at the given level.
+   * @param level - The level to look up the cost for.
+   * @param lookupMode - The mode to use for looking up the value. Defaults to {@link CachedUpgradeLookupMode.accumulatedCost}.
+   * @returns The cost at the given level, or 0 if the level is out of bounds of the cache.
+   */
+  getCostAtLevel(level, lookupMode = 0 /* accumulatedCost */) {
+    level = Decimal.fromValue_noAlloc(level);
+    const index = level.sub(this.defaultLevel).toNumber() - 1;
+    if (index < 0 || index >= this.costAtLevelArray.length) {
+      return Decimal.dZero;
+    }
+    if (lookupMode === 0 /* accumulatedCost */) {
+      return this.accumulatedCostArray.get(index);
+    } else {
+      return this.costAtLevelArray.get(index);
+    }
+  }
+  /**
+   * Checks if the given level or cost is within the bounds of the cache.
+   * @param x - The level or cost to check.
+   * @param lookupMode - The mode to use for looking up the value. Defaults to {@link CachedUpgradeLookupMode.accumulatedCost}.
+   * @returns Whether the given level or cost is within the bounds of the cache.
+   */
+  isWithinBounds(x, lookupMode = 0 /* accumulatedCost */) {
+    x = Decimal.fromValue_noAlloc(x);
+    if (lookupMode === 0 /* accumulatedCost */) {
+      const accumulatedCostAtLevel = this.accumulatedCostArray.get(this.accumulatedCostArray.length - 1);
+      return x.lte(accumulatedCostAtLevel);
+    } else {
+      const costAtLevelAtLevel = this.costAtLevelArray.get(this.costAtLevelArray.length - 1);
+      return x.lte(costAtLevelAtLevel);
+    }
   }
 };
 
 // src/classes/Upgrade.ts
-function calculateUpgrade(value, upgrade, start, end = Decimal.dInf, mode, iterations, el = false) {
-  value = Decimal.fromValue_noAlloc(value);
-  start = Decimal.fromValue_noAlloc(start ?? upgrade.level);
-  end = Decimal.fromValue_noAlloc(end);
-  const target = end.sub(start);
-  if (target.lt(Decimal.dZero)) {
-    console.warn("eMath.js: Invalid target for calculateItem: ", target);
-    return [Decimal.dZero, Decimal.dZero];
+var PlaceholderImmutableUpgradeData = class {
+  get level() {
+    return new Decimal(Decimal.dZero);
   }
-  el = (typeof upgrade.el === "function" ? upgrade.el() : upgrade.el) ?? el;
-  if (target.eq(Decimal.dOne)) {
-    const cost2 = upgrade.cost(upgrade.level);
-    const canAfford = value.gte(cost2);
-    let out = [Decimal.dZero, Decimal.dZero];
-    if (el) {
-      out[0] = canAfford ? Decimal.dOne : Decimal.dZero;
-      return out;
-    } else {
-      out = [canAfford ? Decimal.dOne : Decimal.dZero, canAfford ? cost2 : Decimal.dZero];
-      return out;
-    }
+  set level(placeholder) {
+    return;
   }
-  if (upgrade.costBulk) {
-    const [amount, cost2] = upgrade.costBulk(value, upgrade.level, target);
-    const canAfford = value.gte(cost2);
-    const out = [canAfford ? amount : Decimal.dZero, canAfford && !el ? cost2 : Decimal.dZero];
-    return out;
-  }
-  if (el) {
-    const costTargetFn = (level) => upgrade.cost(level.add(start));
-    const maxLevelAffordable2 = Decimal.min(
-      end,
-      calculateInverseFunction(costTargetFn, value, {
-        mode,
-        iterations
-      }).value.floor()
-    );
-    const cost2 = Decimal.dZero;
-    return [maxLevelAffordable2, cost2];
-  }
-  const maxLevelAffordable = calculateInverseFunction((x) => calculateSum(upgrade.cost, x, start), value, {
-    mode,
-    iterations
-  }).value.floor().min(start.add(target).add(Decimal.dNegOne));
-  const cost = calculateSum(upgrade.cost, maxLevelAffordable, start, void 0, DEFAULT_ITERATIONS);
-  const maxLevelAffordableActual = maxLevelAffordable.sub(start).add(Decimal.dOne).max(Decimal.dZero);
-  return [maxLevelAffordableActual, cost];
-}
-var _UpgradeData = class _UpgradeData {
+};
+var UpgradeData = class {
   static {
-    this.defaultUpgradeData = new _UpgradeData();
+    this.defaultUpgradeData = new PlaceholderImmutableUpgradeData();
   }
   /**
-   * Constructs a new upgrade object with an initial level of 1.
+   * Constructs a new upgrade object with an initial level of 0.
    */
   constructor() {
-    this.level = Decimal.dOne;
+    this.level = Decimal.dZero;
   }
 };
 __decorateClass([
-  (0, import_class_transformer3.Type)(() => Decimal)
-], _UpgradeData.prototype, "level", 2);
-var UpgradeData = _UpgradeData;
+  (0, import_class_transformer4.Type)(() => Decimal)
+], UpgradeData.prototype, "level", 2);
 var Upgrade2 = class _Upgrade {
-  // /**
-  //  * Constructs a new static upgrade object.
-  //  * @param init - The upgrade object to initialize.
-  //  * @param dataPointer - A function or reference that returns the pointer of the data / frontend.
-  //  * @param currencyPointer - A function or reference that returns the pointer of the {@link Currency} class.
-  //  * @param cacheSize - The size of the cache. Should be one less than a power of 2. See {@link cache}. Set to `0` to disable caching.
-  //  */
-  // constructor(
-  //     init: UpgradeInit,
-  //     dataPointer: Pointer<UpgradeData>,
-  //     currencyPointer: Pointer<Currency>,
-  //     cacheSize?: number,
-  // ) {
-  //     const data = typeof dataPointer === "function" ? dataPointer() : dataPointer;
-  //     this.dataSupplier = typeof dataPointer === "function" ? dataPointer : (): UpgradeData => data;
-  //     this.currencySupplier =
-  //         typeof currencyPointer === "function" ? currencyPointer : (): Currency => currencyPointer;
-  //     this.cache = new LRUCache(cacheSize ?? Upgrade.cacheSize);
-  //     this.id = init.id;
-  //     this.name = init.name ?? init.id;
-  //     this.descriptionSupplier = init.description
-  //         ? typeof init.description === "function"
-  //             ? init.description
-  //             : (): string => init.description as string
-  //         : (): string => "";
-  //     this.cost = init.cost;
-  //     this.costBulk = init.costBulk;
-  //     this.maxLevel = init.maxLevel;
-  //     this.effect = init.effect;
-  //     this.el = init.el;
-  //     this.defaultLevel = init.level ?? Decimal.dOne;
-  //     this.bounds = init.bounds;
-  // }
+  /**
+   * Creates a new upgrade object with the given ID.
+   * @param id - The ID of the upgrade. Used to retrieve the upgrade later. See {@link Upgrade.id}.
+   */
   constructor(id) {
     /**
      * The name of the upgrade. Defaults to the ID.
@@ -6350,19 +8134,27 @@ var Upgrade2 = class _Upgrade {
      * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
      */
     this.el = false;
-    this.defaultLevel = Decimal.dOne;
     /**
-     * The cache to store the values of certain upgrade levels.
-     * @deprecated Unfinished
+     * The level to set this upgrade when it is reset.
      */
-    this.cache = new DecimalLRUCache(_Upgrade.defaultCacheSize);
+    this.defaultLevel = Decimal.dZero;
+    /**
+     * The protections for {@link level}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    this.levelProtections = new InvalidDecimalProtections({
+      allowNaN: false,
+      allowInfinite: false,
+      allowNegative: false
+    });
+    this.lowerCache = new LowerCachedUpgradeLookup();
     /** @returns The data of the upgrade. */
     this.dataSupplier = () => {
-      console.warn("emath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
-      return new UpgradeData();
+      console.warn("eMath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
+      return UpgradeData.defaultUpgradeData;
     };
     this.currencySupplier = () => {
-      console.warn("emath.js: Upgrade currencySupplier has not set");
+      console.warn("eMath.js: Upgrade currencySupplier has not set");
       return new Currency("");
     };
     /**
@@ -6384,6 +8176,13 @@ var Upgrade2 = class _Upgrade {
      * console.log(upgrade.description); // "This upgrade is at level 1"
      */
     this.descriptionSupplier = () => "";
+    this.levelDataEntry = SubscribableDataEntry.fromGetterSetter(
+      () => this.level,
+      (newLevel) => {
+        this.level = newLevel;
+      },
+      false
+    );
     this.id = id;
   }
   /**
@@ -6399,8 +8198,8 @@ var Upgrade2 = class _Upgrade {
     };
   }
   static {
-    /** The default size of the cache. Should be one less than a power of 2. */
-    this.defaultCacheSize = 15;
+    /** The default size of the cache. */
+    this.defaultCacheSize = 1e4;
   }
   /** @returns The data of the upgrade. */
   get data() {
@@ -6420,12 +8219,78 @@ var Upgrade2 = class _Upgrade {
   get level() {
     return this.data.level;
   }
-  set level(n) {
-    this.data.level = Decimal.fromValue_noAlloc(n);
+  set level(level) {
+    this.data.level = this.levelProtections.validateValueOrElse(
+      level,
+      this.data.level,
+      `Upgrade "${this.id}" level`,
+      this
+    );
   }
+  // Data manager functions
   onAddToDataManager(dataManager, prefix) {
     const dataKey = `${prefix ? prefix + "_" : ""}${this.id}`;
     this.dataSupplier = dataManager.setData(dataKey, new UpgradeData());
+    if (!this.lowerCache.hasBeenPopulated()) {
+      this.withCacheSize(_Upgrade.defaultCacheSize);
+    }
+  }
+  onLoadData() {
+    this.level = this.data.level;
+  }
+  /**
+   * Calculates the cost and how many upgrades you can buy
+   * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
+   * The priority is: `target === 1` > `costBulk` > `el`.
+   * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
+   * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
+   * @param value - The current value of the currency.
+   * @param upgrade - The upgrade object to calculate.
+   * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
+   * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
+   * @param mode - The mode/mean method to use. See {@link MeanMode}
+   * @param iterations - The amount of iterations to perform. Defaults to `15`.
+   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
+   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+   */
+  calculate(value, start, end = Decimal.dInf, mode, iterations, el = false) {
+    value = Decimal.fromValue_noAlloc(value);
+    start = Decimal.fromValue_noAlloc(start ?? this.level);
+    end = Decimal.fromValue_noAlloc(end);
+    const currentLevel = this.level;
+    const target = end.sub(start);
+    if (target.lt(Decimal.dZero)) {
+      console.warn("eMath.js: Invalid target for calculateItem: ", target);
+      return [currentLevel, Decimal.dZero];
+    }
+    el = (typeof this.el === "function" ? this.el() : this.el) ?? el;
+    if (target.eq(Decimal.dOne)) {
+      const cost = this.cost(this.level);
+      const canAfford = value.gte(cost);
+      let out = [Decimal.dZero, Decimal.dZero];
+      if (el) {
+        out[0] = canAfford ? currentLevel.add(Decimal.dOne) : currentLevel;
+        return out;
+      } else {
+        out = [canAfford ? currentLevel.add(Decimal.dOne) : currentLevel, canAfford ? cost : Decimal.dZero];
+        return out;
+      }
+    }
+    if (this.costBulk) {
+      const [amount, cost] = this.costBulk(value, start, target);
+      const canAfford = value.gte(cost);
+      const out = [canAfford ? amount : currentLevel, canAfford && !el ? cost : Decimal.dZero];
+      return out;
+    }
+    const lookupMode = el ? 1 /* costAtLevel */ : 0 /* accumulatedCost */;
+    if (this.lowerCache.isWithinBounds(value, lookupMode)) {
+      const adjustment = !el ? this.lowerCache.getCostAtLevel(start, lookupMode) : Decimal.dZero;
+      const adjustedCurrencyValue = !el ? value.add(adjustment) : value;
+      const lookupResult = this.lowerCache.lookUp(adjustedCurrencyValue, lookupMode);
+      const cost = el ? Decimal.dZero : this.lowerCache.getCostAtLevel(lookupResult.lowerNode).sub(adjustment);
+      return [lookupResult.lowerNode, cost];
+    }
+    return [currentLevel, Decimal.dZero];
   }
   // Chainable setters
   // TODO: jsdoc
@@ -6469,6 +8334,14 @@ var Upgrade2 = class _Upgrade {
     this.descriptionSupplier = descriptionSupplier;
     return this;
   }
+  withLevelProtectionOptions(newLevelProtections) {
+    this.levelProtections.setProtections(newLevelProtections);
+    return this;
+  }
+  withCacheSize(cacheSize) {
+    this.lowerCache.fill(Math.min(this.maxLevel.toNumber(), cacheSize), this.cost, this.defaultLevel);
+    return this;
+  }
   /**
    * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
    * @param cost - The cost of the upgrade.
@@ -6485,52 +8358,6 @@ var Upgrade2 = class _Upgrade {
     this.currencySupplier = currencySupplier;
     return this;
   }
-  // TODO: setter for cache
-  // /**
-  //  * Gets the cached data of the upgrade.
-  //  * @param type - The type of the cache. "sum" or "el"
-  //  * @param start - The starting level of the upgrade.
-  //  * @param end - The ending level or quantity to reach for the upgrade.
-  //  * @returns The data of the upgrade.
-  //  */
-  // public getCached (type: "sum", start: DecimalSource, end: DecimalSource): UpgradeCachedSum | undefined;
-  // public getCached (type: "el", start: DecimalSource): UpgradeCachedEL | undefined;
-  // public getCached (type: "sum" | "el", start: DecimalSource, end?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum | undefined {
-  //     if (type === "sum") {
-  //         return this.cache.get(upgradeToCacheNameSum(start, end ?? Decimal.dZero));
-  //     } else {
-  //         return this.cache.get(upgradeToCacheNameEL(start));
-  //     }
-  // }
-  // /**
-  //  * Sets the cached data of the upgrade.
-  //  * @param type - The type of the cache. "sum" or "el"
-  //  * @param start - The starting level of the upgrade.
-  //  * @param end - The ending level or quantity to reach for the upgrade.
-  //  * @param cost - The cost of the upgrade.
-  //  */
-  // public setCached(type: "sum", start: DecimalSource, end: DecimalSource, cost: DecimalSource): UpgradeCachedSum;
-  // public setCached(type: "el", level: DecimalSource, cost: DecimalSource): UpgradeCachedEL;
-  // public setCached (type: "sum" | "el", start: DecimalSource, endOrStart: DecimalSource, costSum?: DecimalSource): UpgradeCachedEL | UpgradeCachedSum {
-  //     const data = type === "sum" ? {
-  //         id: this.id,
-  //         el: false,
-  //         start: new Decimal(start),
-  //         end: new Decimal(endOrStart),
-  //         cost: new Decimal(costSum),
-  //     } : {
-  //         id: this.id,
-  //         el: true,
-  //         level: new Decimal(start),
-  //         cost: new Decimal(endOrStart),
-  //     };
-  //     if (type === "sum") {
-  //         this.cache.set(upgradeToCacheNameSum(start, endOrStart), data as UpgradeCachedSum);
-  //     } else {
-  //         this.cache.set(upgradeToCacheNameEL(start), data as UpgradeCachedEL);
-  //     }
-  //     return data as UpgradeCachedEL | UpgradeCachedSum;
-  // }
 };
 var SkillNode = class _SkillNode extends Upgrade2 {
   static fromUpgrade(upgrade) {
@@ -6555,7 +8382,10 @@ var SkillNode = class _SkillNode extends Upgrade2 {
     }
     return requiredSkills.every((requiredSkill) => {
       if ("skill" in requiredSkill) {
-        return requiredSkill.skill.level.gte(requiredSkill.level) && requiredSkill.skill.isUnlocked();
+        if (requiredSkill.skill instanceof _SkillNode) {
+          return requiredSkill.skill.level.gte(requiredSkill.level) && requiredSkill.skill.isUnlocked();
+        }
+        return requiredSkill.skill.level.gte(requiredSkill.level);
       }
       return requiredSkill.isUnlocked();
     });
@@ -6579,8 +8409,8 @@ var GridCell = class {
     this.getValue = this.get.bind(this);
     this.x = x;
     this.y = y;
-    this.properties = typeof props === "function" ? props(this) : { ...props };
     this.gridSymbol = gridSymbol;
+    this.properties = typeof props === "function" ? props(this) : { ...props };
   }
   /** @returns The grid instance the cell belongs to. */
   get grid() {
@@ -7077,6 +8907,14 @@ var Grid = class _Grid {
     return new GridCellCollection(output);
   }
   /**
+   * @returns A random cell from the grid.
+   */
+  getRandomCell() {
+    const x = Math.floor(Math.random() * this.xSize);
+    const y = Math.floor(Math.random() * this.ySize);
+    return this.getCell(x, y);
+  }
+  /**
    * Calculates the distance between two points on the grid.
    * @deprecated Use your own distance function instead.
    * @param x1 - The x-coordinate of the first point.
@@ -7087,6 +8925,32 @@ var Grid = class _Grid {
    */
   static getDistance(x1, y1, x2, y2) {
     return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+  }
+};
+
+// src/E/DecimalLRUCache.ts
+var DecimalLRUCache = class _DecimalLRUCache extends LRUCache {
+  /**
+   * Converts a decimal number to a JSON string.
+   * @deprecated Use an object index instead.
+   * @param n - The decimal number to convert.
+   * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
+   */
+  static decimalToKey(n) {
+    n = new Decimal(n);
+    return `${n.sign}/${n.mag}/${n.layer}`;
+  }
+  get(key) {
+    key = new Decimal(key);
+    return super.get(_DecimalLRUCache.decimalToKey(key));
+  }
+  set(key, value) {
+    key = new Decimal(key);
+    super.set(_DecimalLRUCache.decimalToKey(key), value);
+  }
+  has(key) {
+    key = new Decimal(key);
+    return super.has(_DecimalLRUCache.decimalToKey(key));
   }
 };
 
@@ -7419,6 +9283,255 @@ var testEntries = [
 ];
 var randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
+// src/classes/numericalAnalysis/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 30;
+var DEFAULT_ITERATIONS_AS_DECIMAL = new Decimal(DEFAULT_ITERATIONS);
+var DEFAULT_TOLERANCE = 1e-4;
+var MeanMode = /* @__PURE__ */ ((MeanMode2) => {
+  MeanMode2[MeanMode2["arithmetic"] = 1] = "arithmetic";
+  MeanMode2[MeanMode2["geometric"] = 2] = "geometric";
+  MeanMode2[MeanMode2["harmonic"] = 3] = "harmonic";
+  MeanMode2[MeanMode2["logarithmic"] = 4] = "logarithmic";
+  return MeanMode2;
+})(MeanMode || {});
+var oneHalf = Decimal.dTwo.recip();
+function mean(a, b, mode = 2 /* geometric */) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  switch (mode) {
+    case 1 /* arithmetic */:
+      return a.add(b).mul(oneHalf);
+    case 2 /* geometric */:
+    default:
+      return a.mul(b).sqrt();
+    case 3 /* harmonic */:
+      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
+    case 4 /* logarithmic */:
+      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
+  }
+}
+function geometricEqualsTolerance(a, b, tolerance = DEFAULT_TOLERANCE, verbose = false) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  const diff = decimalMagDifference(a, b) - 1;
+  const result = Math.abs(diff) < tolerance;
+  if (verbose === true || verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, diff, result });
+  }
+  return result;
+}
+function decimalMagDifference(a, b) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  if (a.layer === b.layer) {
+    return a.mag / b.mag;
+  }
+  if (a.layer - b.layer >= 2) {
+    return Infinity;
+  }
+  if (a.layer - b.layer <= -2) {
+    return 0;
+  }
+  if (a.layer > b.layer) {
+    return a.mag / f_maglog10(b.mag);
+  } else {
+    return f_maglog10(a.mag) / b.mag;
+  }
+}
+function roundingBase(x, base = Decimal.dTen, acc = Decimal.dZero) {
+  x = Decimal.fromValue_noAlloc(x);
+  base = Decimal.fromValue_noAlloc(base);
+  acc = Decimal.fromValue_noAlloc(acc);
+  if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
+  const xSign = x.sign;
+  x = x.abs();
+  const isBaseTen = base.equals(Decimal.dTen);
+  const powerN = isBaseTen ? x.log10().floor() : x.log(base).floor();
+  const highestSignificantNumber = isBaseTen ? powerN.pow10() : base.pow(powerN);
+  const factorToScaleWhenRounding = isBaseTen ? acc.pow10() : base.pow(acc);
+  let out = x.div(highestSignificantNumber);
+  out = out.mul(factorToScaleWhenRounding).round().div(factorToScaleWhenRounding);
+  out = out.mul(highestSignificantNumber);
+  out.sign = xSign;
+  return out;
+}
+function approximateDerivative(f, x, epsilon = 1e-12) {
+  x = Decimal.fromValue_noAlloc(x);
+  const fX = f(x);
+  let xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+  let fXPlusH = f(xPlusH);
+  while (fXPlusH.equals(fX) && epsilon < 1) {
+    epsilon *= 10;
+    xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+    fXPlusH = f(xPlusH);
+  }
+  const deltaX = xPlusH.sub(x);
+  return fXPlusH.sub(fX).div(deltaX);
+}
+function newtonRaphson(initialGuess, f, fPrime, tolerance = DEFAULT_TOLERANCE, maxIterations = DEFAULT_ITERATIONS) {
+  let x = Decimal.fromValue_noAlloc(initialGuess);
+  fPrime ??= (x2) => approximateDerivative(f, x2);
+  for (let i = 0; i < maxIterations; i++) {
+    const fx = f(x);
+    const fxPrime = fPrime(x);
+    if (fxPrime.equals(Decimal.dZero)) {
+      console.warn("eMath.js: Derivative is zero. No solution found. Returning current approximation.");
+      return x;
+    }
+    const xNext = x.sub(fx.div(fxPrime));
+    if (geometricEqualsTolerance(xNext, x)) {
+      return xNext;
+    }
+    x = xNext;
+  }
+  return x;
+}
+
+// src/classes/numericalAnalysis/sum.ts
+function calculateSumLoop(f, b, a = Decimal.dZero, epsilon = DEFAULT_TOLERANCE) {
+  let sum = Decimal.dZero;
+  let n = Decimal.fromValue_noAlloc(b);
+  for (; n.gte(a); n = n.add(Decimal.dNegOne)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    if (geometricEqualsTolerance(initSum, sum, epsilon)) break;
+  }
+  return sum;
+}
+function calculateSumApprox(f, b, a = Decimal.dZero, iterations = DEFAULT_ITERATIONS - 10, bSubA) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  let sum = Decimal.dZero;
+  const intervalWidth = bSubA ? bSubA.div(iterations) : b.sub(a).div(iterations);
+  let currentSample = b;
+  for (let i = iterations - 1; i >= 0; i--) {
+    const oldSum = sum;
+    currentSample = currentSample.sub(intervalWidth);
+    sum = sum.add(f(currentSample));
+    if (geometricEqualsTolerance(oldSum, sum)) break;
+  }
+  return sum.mul(intervalWidth);
+}
+function calculateSum(f, b, a = Decimal.dZero, epsilon, iterations) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  const bMinusA = b.sub(a);
+  if (bMinusA.lte(DEFAULT_ITERATIONS_AS_DECIMAL)) {
+    return calculateSumLoop(f, b, a, epsilon);
+  } else {
+    return calculateSumApprox(f, b, a, iterations, bMinusA);
+  }
+}
+
+// src/classes/numericalAnalysis/inverseFunction.ts
+function calculateInverseFunction(f, n, options = {}) {
+  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
+  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
+}
+function inverseFunctionApprox(f, n, mode = 2 /* geometric */, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = Decimal.dOne, upperBound = n, round = false) {
+  lowerBound = Decimal.fromValue_noAlloc(lowerBound);
+  lowerBound = round ? lowerBound.floor() : lowerBound;
+  upperBound = Decimal.fromValue_noAlloc(upperBound);
+  upperBound = round ? upperBound.ceil() : upperBound;
+  n = Decimal.fromValue_noAlloc(n);
+  const BOUND_THRESHOLD = 5;
+  if (lowerBound.gt(upperBound)) {
+    [lowerBound, upperBound] = [upperBound, lowerBound];
+  }
+  const fInitialLowerBound = f(lowerBound);
+  const fInitialUpperBound = f(upperBound);
+  if (fInitialUpperBound.eq(Decimal.dZero)) {
+    return {
+      value: Decimal.dZero,
+      lowerBound: Decimal.dZero,
+      upperBound: Decimal.dZero
+    };
+  }
+  if (fInitialLowerBound.gt(n)) {
+    console.warn("eMath.js: The interval does not contain the value. (f(lowerBound) > n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": fInitialLowerBound,
+      "f(upperBound)": fInitialUpperBound
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!lowerBound.eq(Decimal.dZero)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, Decimal.dZero, upperBound, round);
+    }
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  if (fInitialUpperBound.lt(n)) {
+    console.warn("eMath.js: The interval does not contain the value. (f(upperBound) < n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": fInitialLowerBound,
+      "f(upperBound)": fInitialUpperBound
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!upperBound.eq(n)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
+    }
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  let mid = Decimal.dZero;
+  let midValue = Decimal.dZero;
+  let nextMid = mean(lowerBound, upperBound, mode);
+  for (let i = 0; i < iterations; i++) {
+    mid = nextMid;
+    mid = round ? mid.floor() : mid;
+    midValue = f(mid);
+    if (midValue.lt(n)) {
+      lowerBound = mid;
+    } else {
+      upperBound = mid;
+    }
+    if (geometricEqualsTolerance(midValue, n, tolerance)) {
+      break;
+    }
+    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
+      let closest = upperBound;
+      let closestDiff = f(upperBound).sub(n).abs();
+      for (let j = lowerBound; j.lte(upperBound); j = j.add(Decimal.dOne)) {
+        const diff = f(j).sub(n).abs();
+        if (diff.lt(closestDiff)) {
+          closest = Decimal.fromValue_noAlloc(j);
+          closestDiff = diff;
+        }
+      }
+      return {
+        value: closest,
+        lowerBound,
+        upperBound
+      };
+    }
+    nextMid = mean(lowerBound, upperBound, mode);
+  }
+  const out = {
+    value: lowerBound,
+    lowerBound,
+    upperBound
+  };
+  return out;
+}
+function inverseFunctionApproxUsingNewtonRaphson(f, n, fPrime, initialGuess, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
+  initialGuess = initialGuess ? Decimal.fromValue_noAlloc(initialGuess) : mean(Decimal.dOne, n, 2 /* geometric */);
+  fPrime ??= (x) => approximateDerivative(f, x);
+  return newtonRaphson(initialGuess, (x) => f(x).sub(n), fPrime, tolerance, iterations);
+}
+
 // src/E/eMain.ts
 var E = (() => {
   let shownWarning = false;
@@ -7435,6 +9548,16 @@ var E = (() => {
   });
   return out;
 })();
+/*! Bundled license information:
+
+is-buffer/index.js:
+  (*!
+   * Determine if an object is a Buffer
+   *
+   * @author   Feross Aboukhadijeh <https://feross.org>
+   * @license  MIT
+   *)
+*/
 if (typeof module.exports == "object" && typeof exports == "object") {
     var __cp = (to, from, except, desc) => {
       if ((from && typeof from === "object") || typeof from === "function") {

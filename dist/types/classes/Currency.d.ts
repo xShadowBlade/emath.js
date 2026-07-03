@@ -7,6 +7,8 @@ import { Boost } from "./Boost";
 import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
 import { SkillNode, Upgrade } from "./Upgrade";
 import type { DataManager, StaticClassWithData } from "../game";
+import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
+import { SubscribableDataEntry } from "../game/managers/DataEntry";
 interface CurrencyStaticResetOptions {
     resetCurrency: boolean;
     resetUpgradeLevels: boolean;
@@ -48,31 +50,22 @@ declare class Currency implements StaticClassWithData {
     /** The default value of the currency. */
     readonly defaultValue: Decimal;
     /**
+     * The protections for {@link value}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    readonly valueProtections: InvalidDecimalProtections;
+    /**
      * The current value of the currency.
      * Note: If you want to change the value, use {@link gain} instead.
      * @returns The current value of the currency.
      */
     get value(): Decimal;
     set value(value: DecimalSource);
+    readonly valueDataEntry: SubscribableDataEntry<Decimal>;
     private dataManagerReference;
     /**
-     * Constructs a new currency
-     * @param pointer - A function or reference that returns the pointer of the data / frontend.
-     * @param upgrades - An array of upgrade objects.
-     * @param items - An array of item objects.
-     * @param defaults - The default value and boost of the currency.
-     * @example
-     * const currency = new CurrencyStatic(undefined, [
-     *     {
-     *         id: "upgId1",
-     *         cost: (level: Decimal): Decimal => level.mul(10),
-     *     },
-     *     {
-     *         id: "upgId2",
-     *         cost: (level: Decimal): Decimal => level.mul(20),
-     *     }
-     * ] as const satisfies UpgradeInit[]);
-     * // CurrencyStatic<["upgId1", "upgId2"]>
+     * Creates a new currency with the given id.
+     * @param id - The id of the currency. See {@link id}.
      */
     constructor(id: string);
     /**
@@ -137,7 +130,8 @@ declare class Currency implements StaticClassWithData {
      *     }
      * });
      */
-    addUpgrade(upgrades: Upgrade | Upgrade[], runEffectInstantly?: boolean): void;
+    addUpgrade(upgrade: Upgrade, runEffectInstantly?: boolean): Upgrade;
+    addUpgrades(upgrades: Upgrade[], runEffectInstantly?: boolean): Upgrade[];
     /**
      * Runs the effect of an upgrade or item.
      * @param upgrade - The upgrade to run the effect for.
@@ -162,7 +156,7 @@ declare class Currency implements StaticClassWithData {
      * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
      * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
      */
-    calculateUpgrade(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): [amount: Decimal, cost: Decimal];
+    calculateUpgrade(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): [newLevelToSetTo: Decimal, cost: Decimal];
     /**
      * Calculates how much is needed for the next upgrade.
      * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
@@ -176,7 +170,7 @@ declare class Currency implements StaticClassWithData {
      * // Calculate the cost of the next healthBoost upgrade
      * const nextCost = currency.getNextCost("healthBoost");
      */
-    getNextCost(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): Decimal;
+    getNextCost(id: string | Upgrade): Decimal;
     /**
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param id - Upgrade ID or upgrade object to calculate the next cost for.
@@ -205,5 +199,6 @@ declare class Currency implements StaticClassWithData {
      * currency.buyUpgrade("healthBoost", 10);
      */
     buyUpgrade(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): boolean;
+    withValueProtectionOptions(newValueProtections: Parameters<InvalidDecimalProtections["setProtections"]>[0]): this;
 }
 export { CurrencyData, Currency };
