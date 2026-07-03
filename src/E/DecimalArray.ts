@@ -5,9 +5,9 @@ import type { CompareResult } from "./e";
 import { Decimal } from "./e";
 
 enum DecimalLayerArrayType {
-    int8Array = 127,
-    int16Array = 32767,
-    int32Array = 2147483647,
+    int8Array = 126,
+    int16Array = 32766,
+    int32Array = 2147483646,
     // eslint-disable-next-line @typescript-eslint/prefer-literal-enum-member
     float64Array = Infinity,
 }
@@ -20,26 +20,27 @@ enum DecimalLayerArrayType {
 class DecimalArray implements Iterable<Decimal> {
     /**
      * Stores the layer and sign of each Decimal in a Float64Array.
-     * Because layer is normally always positive, we can use the sign bit of the layer to store the sign of the Decimal.
+     * Because layer is normally always positive, we can use the sign of the layer to store the sign of the Decimal.
      * In this array, negative layers are used to represent negative Decimals, and positive layers are used to represent positive Decimals.
-     * In this array, a layer of `-0` represents a Decimal with a layer of 0 and a negative sign.
+     * In this array, a layer of `0` represents a Decimal that is exactly `0`.
+     * A positive value in this array represents a positive Decimal with layer `value - 1`, and a negative value in this array represents a negative Decimal with layer `-value - 1`.
      *
      * The array type changes based on the maximum layer that could be stored in the array to save memory.
-     * - Layers from -128 to 127 can be stored in an Int8Array.
-     * - Layers from -32768 to 32767 can be stored in an Int16Array.
-     * - Layers from -2147483648 to 2147483647 can be stored in an Int32Array.
+     * - Layers from -127 to 126 can be stored in an Int8Array.
+     * - Layers from -32767 to 32766 can be stored in an Int16Array.
+     * - Layers from -2147483647 to 2147483646 can be stored in an Int32Array.
      * - Layers outside of that range are stored in a Float64Array.
      */
-    private readonly layerAndSignArray: Int8Array | Int16Array | Int32Array | Float64Array;
+    private layerAndSignArray: Int8Array | Int16Array | Int32Array | Float64Array;
 
     /**
      * Stores the mag of each Decimal in a Float64Array.
      */
-    private readonly magArray: Float64Array;
+    private magArray: Float64Array;
 
     private layerAndSignArrayType: DecimalLayerArrayType;
 
-    public readonly length: number;
+    public length: number;
 
     /**
      * Creates a new DecimalArray with the specified size.
@@ -59,7 +60,7 @@ class DecimalArray implements Iterable<Decimal> {
         this.magArray = new Float64Array(size);
     }
 
-    public resizeLayerAndSignArray(maxLayerThatCouldBeStored = Infinity): void {
+    public resizeLayerAndSignArray(maxLayerThatCouldBeStored = Infinity, fillFromExisting = true): void {
         let newLayerAndSignArray: Int8Array | Int16Array | Int32Array | Float64Array;
         maxLayerThatCouldBeStored = Math.abs(maxLayerThatCouldBeStored);
 
@@ -77,10 +78,33 @@ class DecimalArray implements Iterable<Decimal> {
             this.layerAndSignArrayType = DecimalLayerArrayType.float64Array;
         }
 
-        newLayerAndSignArray.set(this.layerAndSignArray);
+        if (fillFromExisting) {
+            newLayerAndSignArray.set(this.layerAndSignArray);
+        }
 
-        // @ts-expect-error - Temporarily disable readonly to allow resizing the array
         this.layerAndSignArray = newLayerAndSignArray;
+    }
+
+    // TODO: rename
+    public resize(newSize: number): void {
+        const wouldOverflow = newSize < this.length;
+
+        this.length = newSize;
+
+        const oldMagArray = this.magArray;
+        const oldLayerArray = this.layerAndSignArray;
+
+        this.magArray = new Float64Array(newSize);
+        this.resizeLayerAndSignArray(this.layerAndSignArrayType, !wouldOverflow);
+
+        if (!wouldOverflow) {
+            this.magArray.set(oldMagArray);
+        } else {
+            for (let i = 0; i < newSize; i++) {
+                this.magArray[i] = oldMagArray[i];
+                this.layerAndSignArray[i] = oldLayerArray[i];
+            }
+        }
     }
 
     /**
@@ -103,8 +127,8 @@ class DecimalArray implements Iterable<Decimal> {
         const mag = this.magArray[index];
 
         // Extract sign and layer
-        const layer = Math.abs(layerAndSign);
-        const sign = Object.is(layerAndSign, -0) ? -1 : layer === 0 && mag === 0 ? 0 : 1;
+        const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+        const sign = Math.sign(layerAndSign);
 
         existingDecimal.fromComponents_noNormalize(sign, layer, mag);
     }
@@ -131,7 +155,7 @@ class DecimalArray implements Iterable<Decimal> {
             this.resizeLayerAndSignArray(decimal.layer);
         }
 
-        this.layerAndSignArray[index] = decimal.sign * decimal.layer;
+        this.layerAndSignArray[index] = decimal.sign === 0 ? 0 : (decimal.layer + 1) * decimal.sign;
         this.magArray[index] = decimal.mag;
     }
 
@@ -147,8 +171,8 @@ class DecimalArray implements Iterable<Decimal> {
         const mag = this.magArray[index];
 
         // Extract sign and layer
-        const layer = Math.abs(layerAndSign);
-        const sign = Object.is(layerAndSign, -0) ? -1 : layer === 0 && mag === 0 ? 0 : 1;
+        const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+        const sign = Math.sign(layerAndSign);
 
         // Adapted from Decimal.prototype.cmp
         if (sign > decimalToCompare.sign) {
@@ -163,13 +187,13 @@ class DecimalArray implements Iterable<Decimal> {
         const normalizedSignedLayerB = decimalToCompare.mag > 0 ? decimalToCompare.layer : -decimalToCompare.layer;
 
         if (normalizedSignedLayerA > normalizedSignedLayerB) {
-            return sign;
+            return sign as CompareResult;
         }
         if (normalizedSignedLayerA < normalizedSignedLayerB) {
             return -sign as CompareResult;
         }
         if (mag > decimalToCompare.mag) {
-            return sign;
+            return sign as CompareResult;
         }
         if (mag < decimalToCompare.mag) {
             return -sign as CompareResult;
@@ -209,20 +233,21 @@ class DecimalArray implements Iterable<Decimal> {
 
     /**
      * @returns An iterator over the Decimals in the array.
-     * Important: This method reuses the same Decimal instance for each value in the array.
-     * If a reference to a Decimal in the array needs to be stored, it should be cloned first before storing the reference.
+    //  * Important: This method reuses the same Decimal instance for each value in the array.
+    //  * If a reference to a Decimal in the array needs to be stored, it should be cloned first before storing the reference.
      */
     public [Symbol.iterator](): IterableIterator<Decimal> {
         let index = 0;
         const size = this.layerAndSignArray.length;
-        const existingDecimal = new Decimal();
+        // const existingDecimal = new Decimal();
 
         return {
             next: (): IteratorResult<Decimal> => {
                 if (index < size) {
-                    this.getIntoExisting(index, existingDecimal);
-                    index++;
-                    return { value: existingDecimal, done: false };
+                    // this.getIntoExisting(index, existingDecimal);
+                    // index++;
+                    // return { value: existingDecimal, done: false };
+                    return { value: this.get(index++), done: false };
                 } else {
                     return { value: undefined, done: true };
                 }
