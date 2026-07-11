@@ -4,8 +4,18 @@
 import type { DataManager } from "./DataManager";
 
 /**
- * A class that represents a subscribable data entry.
+ * A data entry that can be {@link subscribe}d to for changes.
  * Useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
+ * @template T - The type of the data in the entry.
+ * @example
+ * const exampleDataEntry: SubscribableDataEntry<number> = SubscribableDataEntry.fromGetterSetter(...);
+ *
+ * const example = React.useSyncExternalStore(
+ *     exampleDataEntry.subscribe,
+ *     exampleDataEntry.get,
+ * );
+ *
+ * <>{example}</>
  */
 abstract class SubscribableDataEntry<T> {
     /**
@@ -95,9 +105,9 @@ abstract class SubscribableDataEntry<T> {
 }
 
 /**
- * A class that represents a single entry in the data manager.
- * It is used to get and set the value of the entry, and to subscribe to changes in the entry.
+ * An entry in the data manager that can be {@link subscribe}d to for changes.
  * @template T - The type of the data in the entry.
+ * @see {@link DataManager.useDataEntry}
  */
 class DataManagerEntry<T> extends SubscribableDataEntry<T> {
     private readonly dataManagerReference: DataManager;
@@ -132,4 +142,4 @@ class DataManagerEntry<T> extends SubscribableDataEntry<T> {
     }
 }
 
-export { SubscribableDataEntry, DataManagerEntry };
+export { DataManagerEntry, SubscribableDataEntry };
