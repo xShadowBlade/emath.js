@@ -18,7 +18,7 @@
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  */
-import type { Decimal as DecimalType, DecimalSource } from "./e";
+import type { DecimalSource, Decimal as DecimalType } from "./e";
 type Decimal = DecimalType;
 type FormatType = "st" | "sc" | "scientific" | "omega" | "omega_short" | "elemental" | "old_sc" | "eng" | "mixed_sc" | "layer" | "standard" | "inf" | "alphabet";
 /** A list of names for the standard notation */
@@ -170,7 +170,7 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         formatTimeLong: (ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;
         formatReduction: (ex: DecimalSource) => string;
         formatPercent: (ex: DecimalSource) => string;
-        formatMult: (ex: DecimalSource, acc?: number) => string;
+        formatMult: (ex: DecimalSource, acc?: number, max?: number) => string;
         expMult: (a: DecimalSource, b: DecimalSource, base?: number) => DecimalType;
         metric: (num: DecimalSource, type?: 0 | 1 | 2 | 3) => string;
         ev: (num: DecimalSource, c2?: boolean) => string;
@@ -304,5 +304,5 @@ declare function decimalFormatGenerator(Decimal: typeof DecimalType): {
         };
     };
 };
+export { decimalFormatGenerator, formatTypeList as FormatTypeList, ST_NAMES };
 export type { FormatType };
-export { decimalFormatGenerator, ST_NAMES, formatTypeList as FormatTypeList };

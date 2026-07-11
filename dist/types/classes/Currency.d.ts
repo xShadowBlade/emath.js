@@ -1,53 +1,70 @@
-/**
- * @file Declares the currency class and its related classes (upgrade)
- */
 import "reflect-metadata";
 import { Decimal, DecimalSource } from "../E/e";
-import { Boost } from "./Boost";
-import { MeanMode } from "./numericalAnalysis/numericalAnalysis";
-import { SkillNode, Upgrade } from "./Upgrade";
 import type { DataManager, StaticClassWithData } from "../game";
-import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
 import { SubscribableDataEntry } from "../game/managers/DataEntry";
-interface CurrencyStaticResetOptions {
+import { Boost } from "./Boost";
+import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
+import { SkillNode, Upgrade } from "./Upgrade";
+interface CurrencyResetOptions {
     resetCurrency: boolean;
     resetUpgradeLevels: boolean;
     resetItemAmounts: boolean;
     runUpgradeEffect: boolean;
 }
 /**
- * Represents the frontend READONLY for a currency. Useful for saving / data management.
- * Note: This class is created by default when creating a {@link Currency} class. Use that instead as there are no methods here.
+ * Stores the data for a currency.
  */
 declare class CurrencyData {
-    /** The current value of the currency. */
-    value: Decimal;
     /**
-     * Constructs a new currency object with an initial value of 0.
+     * A placeholder readonly currency data object that returns a value of 0.
      */
-    constructor();
+    static readonly placeholderCurrencyData: CurrencyData;
+    /**
+     * The current value of the currency.
+     */
+    value: Decimal;
 }
 /**
- * Represents the backend for a currency in the game.
- * All the functions are here instead of the `currency` class.
+ * A currency that has a value that can be gained and spent, and can have upgrades that have various effects.
  * @example
  * const currency = new Currency();
  * currency.gain();
- * console.log(currency.value); // Decimal.dOne
+ * console.log(currency.value); // 1
  */
 declare class Currency implements StaticClassWithData {
+    /**
+     * A placeholder currency object that returns a value of 0.
+     * Note: This is used for upgrades that are created before the currency is added to the data manager.
+     */
+    static readonly placeholderCurrency: Currency;
+    /**
+     * The id of the currency.
+     * Used to retrieve the currency when its data is stored in the data manager.
+     */
     readonly id: string;
     /**
      * Stores a list of each of this currency's upgrades and their corresponding data.
+     * To get an upgrade, either store a reference to the upgrade when it is created (recommended), or use {@link getUpgrade} to retrieve it by id.
      */
     readonly upgrades: Upgrade[];
-    /** A function that returns the pointer of the data */
+    /**
+     * @returns A reference to the data.
+     */
     protected dataSupplier: () => CurrencyData;
-    /** @returns The pointer of the data. */
+    /**
+     * @returns The pointer of the data.
+     */
     protected get data(): CurrencyData;
-    /** A boost object that affects the currency gain. */
+    /**
+     * A boost that affects the currency gain in {@link gain}.
+     * @see {@link Boost}
+     */
     readonly boost: Boost;
-    /** The default value of the currency. */
+    /**
+     * The default value of the currency when it is {@link reset}.
+     * Note: This is not the same as the default value of the currency when it is created, which is always `0`.
+     * @see {@link reset}
+     */
     readonly defaultValue: Decimal;
     /**
      * The protections for {@link value}.
@@ -56,46 +73,56 @@ declare class Currency implements StaticClassWithData {
     readonly valueProtections: InvalidDecimalProtections;
     /**
      * The current value of the currency.
-     * Note: If you want to change the value, use {@link gain} instead.
+     * To add value to the currency based on its boost, use {@link gain} instead.
      * @returns The current value of the currency.
      */
     get value(): Decimal;
     set value(value: DecimalSource);
+    /**
+     * A {@link SubscribableDataEntry} for the {@link value} of this currency.
+     * @see {@link SubscribableDataEntry}
+     */
     readonly valueDataEntry: SubscribableDataEntry<Decimal>;
-    private dataManagerReference;
+    /**
+     * A reference to the {@link DataManager} that this currency is added to and where its data is stored.
+     * Set when {@link onAddToDataManager} is called.
+     */
+    protected dataManagerReference: DataManager | null;
     /**
      * Creates a new currency with the given id.
-     * @param id - The id of the currency. See {@link id}.
+     * @param id - The {@link id} of the currency.
      */
     constructor(id: string);
-    /**
-     * Updates / applies effects to the currency on load.
-     */
     onLoadData(): void;
     onAddToDataManager(dataManager: DataManager): void;
     /**
      * Resets the currency and upgrade levels.
-     * @param resetCurrency - Whether to reset the currency value. Default is true.
-     * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is true.
-     * @param runUpgradeEffect - Whether to run the upgrade effect. Default is true.
+     * @param resetCurrency - Whether to reset the currency value. Default is `true`.
+     * @param resetUpgradeLevels - Whether to reset the upgrade levels. Default is `true`.
+     * @param runUpgradeEffect - Whether to run the upgrade effect. Default is `true`.
      * @example
      * currency.reset();
-     * console.log(currency.value); // Decimal.dZero, or the default value
+     * console.log(currency.value); // 0, or the default value
      */
     reset(resetCurrency?: boolean, resetUpgradeLevels?: boolean, runUpgradeEffect?: boolean): void;
-    reset(reset?: Partial<CurrencyStaticResetOptions>): void;
     /**
-     * The new currency value after applying the boost.
-     * @param dt - Delta time / multiplier, assuming you gain once every second. Ex. 0.5 = half gain.
+     * Resets the currency and upgrade levels with the given options.
+     * @param reset - An object containing the reset options.
+     * @see {@link CurrencyResetOptions}
+     */
+    reset(reset?: Partial<CurrencyResetOptions>): void;
+    /**
+     * Adds to the currency value based on the {@link boost}'s {@link Boost.calculate}d value.
+     * @param dtMultiplier - Delta time / multiplier, assuming you gain once every second. Ex. 0.5 = half gain.
      * @returns What was gained, NOT the new value.
      * @example
      * // Gain a random number between 1 and 10, and return the amount gained.
      * currency.gain(Math.random() * 10);
      */
-    gain(dt?: DecimalSource): Decimal;
+    gain(dtMultiplier?: DecimalSource): Decimal;
     /**
      * Retrieves an upgrade object based on the provided id.
-     * @template T - The type of the upgrade ID.
+     * It is recommended to store a reference to the upgrade when it is created instead of using this method.
      * @param id - The id of the upgrade to retrieve.
      * @returns The upgrade object if found, otherwise null.
      * @example
@@ -103,102 +130,55 @@ declare class Currency implements StaticClassWithData {
      * console.log(upgrade); // upgrade object
      */
     getUpgrade(id: string): Upgrade | null;
+    /**
+     * Retrieves an upgrade object as a {@link SkillNode} based on the provided id.
+     * If the upgrade is not a {@link SkillNode}, it will return null.
+     * It is recommended to store a reference to the skill node when it is created instead of using this method.
+     * @param id - The id of the upgrade to retrieve.
+     * @returns The upgrade object as a {@link SkillNode} if found and is a {@link SkillNode}, otherwise null.
+     */
     getUpgradeAsSkillNode(id: string): SkillNode | null;
     /**
-     * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
-     * @param upgrades - An array of upgrade objects.
+     * Adds an upgrade to the currency and runs its effect if specified.
+     * @param upgrade - The upgrade to add.
      * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
      * @returns The added upgrades.
      * @example
-     * currency.addUpgrade({
-     *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
-     *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
-     *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
-     *     cost: (level) => level.mul(10), // Cost of the upgrade, 10 times the level
-     *     maxLevel: 10, // Maximum level of the upgrade (optional, defaults to 1)
-     *     // Effect of the upgrade (runs when the upgrade is bought, and instantly if runEffectInstantly is true)
-     *     effect: (level, context) => {
-     *         // Set / update the boost
-     *         // health: currencyStatic
-     *         health.boost.setBoost(
-     *             "healthBoost",
-     *             "Health Boost",
-     *             "Boosts health by 2x per level.",
-     *             n => n.mul(Decimal.pow(2, level.sub(1))),
-     *             2,
-     *         );
-     *     }
-     * });
+     * const healthBoostUpgrade = currency.addUpgrade(
+     *     new Upgrade("healthBoost")
+     *         .withName("Health Boost")
+     *         .withDescriptionSupplier((upgradeContext) => `Increases health by ${upgradeContext.level.mul(10).format()}.`)
+     *         .withCost((level) => level.mul(10))
+     *         .withMaxLevel(10)
+     *         .withEffect((level, upgradeContext, currencyContext) => {
+     *             // Set / update the boost
+     *             // health: Currency
+     *             health.boost.setBoost(
+     *                 new BoostObject("healthBoost")
+     *                     .withName("Health Boost")
+     *                     .withDescriptionSupplier(() => `Boosts health by x${Decimal.pow(2, level.sub(1)).format()}.`)
+     *                     .withValue((n) => n.mul(Decimal.pow(2, level.sub(1))))
+     *                     .withOrder(OperationBoostOrder.multiply)
+     *             );
+     *         }
+     * );
      */
     addUpgrade(upgrade: Upgrade, runEffectInstantly?: boolean): Upgrade;
+    /**
+     * Adds multiple upgrades to the currency and runs their effects if specified.
+     * @param upgrades - The upgrades to add.
+     * @param runEffectInstantly - Whether to run the effects immediately. Defaults to `true`.
+     * @returns The added upgrades.
+     * @see {@link addUpgrade}
+     */
     addUpgrades(upgrades: Upgrade[], runEffectInstantly?: boolean): Upgrade[];
     /**
-     * Runs the effect of an upgrade or item.
-     * @param upgrade - The upgrade to run the effect for.
+     * Changes the {@link valueProtections} options for this currency.
+     * Equivalent to calling {@link InvalidDecimalProtections.setProtections} on the {@link valueProtections} object.
+     * @param newValueProtections - The new value protections to set.
+     * @returns this
      */
-    runUpgradeEffect(upgrade: Upgrade): void;
-    /**
-     * Runs the effect on add of an upgrade or item.
-     * @param upgrade - The upgrade to run the effect on add for.
-     */
-    runUpgradeEffectOnAdd(upgrade: Upgrade): void;
-    private getUpgradeOrElse;
-    /**
-     * Calculates the cost and how many upgrades you can buy.
-     * See {@link calculateUpgrade} for more information.
-     * @param id - The upgrade ID or the upgrade to calculate.
-     * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
-     * @param mode - See the argument in {@link calculateUpgrade}.
-     * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-     * @example
-     * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
-     * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
-     */
-    calculateUpgrade(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): [newLevelToSetTo: Decimal, cost: Decimal];
-    /**
-     * Calculates how much is needed for the next upgrade.
-     * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
-     * @param id - Index or ID of the upgrade
-     * @param target - How many before the next upgrade
-     * @param mode - See the argument in {@link calculateUpgrade}.
-     * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns The cost of the next upgrade.
-     * @example
-     * // Calculate the cost of the next healthBoost upgrade
-     * const nextCost = currency.getNextCost("healthBoost");
-     */
-    getNextCost(id: string | Upgrade): Decimal;
-    /**
-     * Calculates the cost of the next upgrade after the maximum affordable quantity.
-     * @param id - Upgrade ID or upgrade object to calculate the next cost for.
-     * @param target - How many before the next upgrade.
-     * @param mode  - See the argument in {@link calculateUpgrade}.
-     * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns The cost of the next upgrade.
-     * @example
-     * // Calculate the cost of the next healthBoost upgrade
-     * currency.gain(1e6); // Gain 1 thousand currency
-     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
-     * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
-     */
-    getNextCostMax(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): Decimal;
-    /**
-     * Buys an upgrade based on its ID or array position if enough currency is available.
-     * @param id - The upgrade ID or the upgrade to buy.
-     * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
-     * @param mode - See the argument in {@link calculateUpgrade}.
-     * @param iterations - See the argument in {@link calculateUpgrade}.
-     * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-     * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-     * @example
-     * // Attempt to buy up to 10 healthBoost upgrades at once
-     * currency.buyUpgrade("healthBoost", 10);
-     */
-    buyUpgrade(id: string | Upgrade, target?: DecimalSource, mode?: MeanMode, iterations?: number, value?: DecimalSource): boolean;
     withValueProtectionOptions(newValueProtections: Parameters<InvalidDecimalProtections["setProtections"]>[0]): this;
 }
-export { CurrencyData, Currency };
+export { Currency, CurrencyData };
+export type { CurrencyResetOptions };

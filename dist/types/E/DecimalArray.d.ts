@@ -27,7 +27,13 @@ declare class DecimalArray implements Iterable<Decimal> {
      * Stores the mag of each Decimal in a Float64Array.
      */
     private magArray;
+    /**
+     * The type of the {@link layerAndSignArray}.
+     */
     private layerAndSignArrayType;
+    /**
+     * The number of Decimals stored in the array.
+     */
     length: number;
     /**
      * Creates a new DecimalArray with the specified size.

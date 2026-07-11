@@ -1,10 +1,11 @@
 /**
  * @file Declares the boost class and other helper classes and interfaces.
  */
-import { Decimal } from "../E/e";
 import type { DecimalSource } from "../E/e";
+import { Decimal } from "../E/e";
 /**
  * A list of recommended {@link BoostObject.prototype.order} values.
+ * In general, these orders are based on the hyperoperation hierarchy.
  */
 declare enum OperationBoostOrder {
     /**
@@ -38,6 +39,14 @@ declare enum OperationBoostOrder {
      * @example (input) => input.tetrate(2)
      */
     tetrate = 4,
+    /**
+     * A boost value relates to pentation.
+     */
+    pentate = 5,
+    /**
+     * A boost value that is not set.
+     * Default value for {@link BoostObject.prototype.order} if not set.
+     */
     unset = 99
 }
 /**
@@ -64,117 +73,101 @@ declare class BoostObject {
      * (input) => input.mul(2)
      */
     value: (input: Decimal) => Decimal;
-    /** The order at which the boost is applied. Lower orders are applied first. */
+    /**
+     * The order at which the boost is applied.
+     * Lower orders are applied first.
+     */
     order: number;
     /**
-     * An optional description of the boost.
-     * Can be a string or a function that returns a string.
-     * Made into a getter function to allow for dynamic descriptions.
-     * @example
-     * // A dynamic description that returns a string
-     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
-     * // ... create boost
-     * const boost = boost.getBoost("boostID");
-     *
-     * // Getter property
-     * console.log(boost.description); // "This is a undefined that returns a undefined"
-     *
-     * // Getter function
-     * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     * @returns The description of the boost based on this boost object.
+     * @param boostContext - The boost object that this description is based on.
+     * @example (boostContext) => `Increases health by x${boostContext.value(new Decimal(0)).format()}`
      */
-    private descriptionSupplier;
+    protected descriptionSupplier: (boostContext: BoostObject) => string;
     /**
      * @returns The description of the boost.
      */
     get description(): string;
     /**
      * Constructs a new boost object with the given id.
-     * @param id - The id to use.
+     * @param id - The {@link id} to use.
      */
     constructor(id: string);
+    /** @see {@link BoostObject.prototype.name} */
     withName(name: typeof this.name): BoostObject;
+    /** @see {@link BoostObject.value} */
     withValue(value: typeof this.value): BoostObject;
+    /** @see {@link BoostObject.order} */
     withOrder(order: typeof this.order): BoostObject;
+    /** @see {@link BoostObject.descriptionSupplier} */
     withDescriptionSupplier(descriptionSupplier: typeof this.descriptionSupplier): BoostObject;
 }
 /**
  * Calculates various effects to a base value.
- * Each boost is represented by a {@link BoostObject} which contains the parameters of the boost, and the boost manager calculates the cumulative effect of all boosts on a base value.
- * Typically used in combination with an Attribute or Currency.
+ * Each boost is represented by a {@link BoostObject} which contains the parameters of the boost,
+ * and this boost manager calculates the cumulative effect of all boosts on a base value.
  */
 declare class Boost {
-    /** An array of boost objects. */
+    /**
+     * A list of all boost objects that have been added to this boost manager.
+     */
     readonly boostArray: BoostObject[];
-    /** The base effect value. */
+    /**
+     * The base effect value that the first boost is applied to.
+     */
     readonly baseEffect: Decimal;
     /**
      * Constructs a new boost manager.
-     * @param baseEffect - The base effect value to which boosts are applied.
+     * @param baseEffect - The {@link baseEffect} value to use. Defaults to `1`.
      */
     constructor(baseEffect?: DecimalSource);
     /**
-     * Gets all boosts with the given ID.
-     * @param id - A string or regular expression to match the ID of the boosts.
-     * @param index - Whether to return the index of the boosts as well.
-     * @returns An array of boost objects with the given ID, or a tuple of the array and the index of the boosts.
-     * @example
-     * // Get all boosts with the ID "healthBoost"
-     * const healthBoosts = boost.getBoosts("healthBoost");
-     *
-     * // Get all boosts with the ID "healthBoost" and their index
-     * const [healthBoosts, healthBoostIndexes] = boost.getBoosts("healthBoost", true);
-     *
-     * // Get all boosts with the ID "healthBoost" or "manaBoost"
-     * const healthAndManaBoosts = boost.getBoosts(/(health|mana)Boost/);
-     */
-    getBoosts(id: string | RegExp): BoostObject[];
-    getBoosts(id: string | RegExp, index: boolean): [BoostObject[], number[]];
-    /**
-     * Gets a boost object by its ID.
-     * @deprecated Use {@link getBoosts} instead.
-     * @param id - The ID of the boost to retrieve.
-     * @returns The boost object if found, or null if not found.
+     * Retrieves a boost object based on the provided id.
+     * It is recommended to store a reference to the boost when it is created instead of using this method.
+     * @param id - The id of the boost to retrieve.
+     * @returns The boost object if found, otherwise null.
      */
     getBoost(id: string): BoostObject | null;
     /**
-     * Removes a boost by its ID. Only removes the first instance of the id.
-     * @param id - The ID of the boost to remove.
-     * @example
-     * // Remove the boost with the ID "healthBoost"
-     * boost.removeBoost("healthBoost");
+     * Removes a boost by its ID or reference. Only removes the first instance found.
+     * @param id - The ID or reference of the boost to remove.
      */
-    removeBoost(id: string): void;
+    removeBoost(id: BoostObject | string): void;
     /**
-     * Sets or updates a boost with the given parameters.
-     * @param boostObj - The boost object containing the parameters.
+     * Adds a boost with the given parameters.
+     * @param boostToAdd - The boost object to add.
+     * @returns The boost object that was added.
      * @example
-     * // Set a boost that multiplies the input value by 2
-     * boost.setBoost({
-     *     id: "doubleBoost",
-     *     name: "Double Boost",
-     *     desc: "Doubles the input value",
-     *     value: (input) => input.mul(2),
-     * });
+     * boost.setBoost(
+     *     new BoostObject("healthBoost")
+     *         .withName("Health Boost")
+     *         .withDescriptionSupplier(() => `Boosts health by x${Decimal.pow(2, level.sub(1)).format()}.`)
+     *         .withValue((n) => n.mul(Decimal.pow(2, level.sub(1))))
+     *         .withOrder(OperationBoostOrder.multiply)
+     * );
      */
-    addBoost(boostToAdd: BoostObject): void;
-    addBoosts(boostToAdd: BoostObject[]): void;
+    addBoost(boostToAdd: BoostObject): BoostObject;
+    /**
+     * Adds multiple boosts to the boost manager.
+     * @param boostToAdd - An array of boost objects to add.
+     * @returns The array of boost objects that were added.
+     * @see {@link addBoost}
+     */
+    addBoosts(boostToAdd: BoostObject[]): BoostObject[];
     /**
      * Clears all boosts from the boost manager.
-     * @example
-     * // Clear all boosts
-     * boost.clearBoosts();
-     * // boostArray is now []
-     * // baseEffect is still the same
      */
     clearBoosts(): void;
+    /**
+     * Sorts the boosts in the boost manager by their order from lowest to highest.
+     * Called automatically when a boost is added or removed,
+     * but can be called manually if needed or if a boost object's order is changed after being added to the boost manager.
+     */
     sortBoosts(): void;
     /**
      * Calculates the cumulative effect of all boosts on the base effect.
-     * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
+     * @param base - The base effect value to calculate with. Defaults to the {@link baseEffect} of the boost manager.
      * @returns The calculated effect after applying boosts.
-     * @example
-     * // Calculate the effect of all boosts
-     * const finalEffect = boost.calculate();
      */
     calculate(base?: DecimalSource): Decimal;
 }
