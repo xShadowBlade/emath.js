@@ -1453,7 +1453,7 @@ declare const formats: {
     formatTimeLong: (ex: DecimalSource, ms?: boolean, acc?: number, max?: number, type?: FormatType) => string;
     formatReduction: (ex: DecimalSource) => string;
     formatPercent: (ex: DecimalSource) => string;
-    formatMult: (ex: DecimalSource, acc?: number) => string;
+    formatMult: (ex: DecimalSource, acc?: number, max?: number) => string;
     expMult: (a: DecimalSource, b: DecimalSource, base?: number) => Decimal;
     metric: (num: DecimalSource, type?: 0 | 1 | 2 | 3) => string;
     ev: (num: DecimalSource, c2?: boolean) => string;

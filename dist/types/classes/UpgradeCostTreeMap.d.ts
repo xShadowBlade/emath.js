@@ -1,9 +1,9 @@
 /**
  * @file Declares classes related to caching and looking up upgrade costs.
  */
+import { DecimalArray } from "../E/DecimalArray";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
-import { DecimalArray } from "../E/DecimalArray";
 /**
  *
  */
@@ -37,6 +37,8 @@ declare enum CachedUpgradeLookupMode {
 }
 /**
  * Contains a cache of upgrade levels and their corresponding costs for lookups when buying upgrades in bulk.
+ * Stores a precomputed map of the cost and the accumulated cost of the upgrade at each level up to a certain size
+ * to use for lookups when buying upgrades in bulk without having to recalculate the cost each time.
  */
 declare class LowerCachedUpgradeLookup {
     /**
@@ -92,5 +94,9 @@ declare class LowerCachedUpgradeLookup {
      * @returns Whether the given level or cost is within the bounds of the cache.
      */
     isWithinBounds(x: DecimalSource, lookupMode?: CachedUpgradeLookupMode): boolean;
+    /**
+     * @returns The maximum level that can be reached with the current cache based on the {@link defaultLevel} and the length of the {@link costAtLevelArray}.
+     */
+    getMaxLevel(): Decimal;
 }
-export { CachedUpgradeTreeNode, LowerCachedUpgradeLookup, CachedUpgradeLookupMode };
+export { CachedUpgradeLookupMode, CachedUpgradeTreeNode, LowerCachedUpgradeLookup };

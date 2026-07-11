@@ -770,6 +770,9 @@ var eMathMetadata = {
   }
 };
 
+// src/E/e.ts
+import { Exclude, Expose } from "class-transformer";
+
 // src/E/LRUCache.ts
 var LRUCache = class {
   /**
@@ -887,9 +890,6 @@ var ListNode = class {
     this.value = value;
   }
 };
-
-// src/E/e.ts
-import { Exclude, Expose } from "class-transformer";
 
 // src/E/format.ts
 var ST_NAMES = [
@@ -1540,9 +1540,9 @@ function decimalFormatGenerator(Decimal2) {
     ex = new Decimal2(ex);
     return format(ex.mul(100)) + "%";
   }
-  function formatMult(ex, acc = 2) {
+  function formatMult(ex, acc = 2, max = 9) {
     ex = new Decimal2(ex);
-    return ex.gte(1) ? "\xD7" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
+    return ex.gte(1) ? "\xD7" + ex.format(acc, max) : "/" + ex.recip().format(acc, max);
   }
   function expMult(a, b, base = 10) {
     return Decimal2.gte(a, 10) ? Decimal2.pow(base, Decimal2.log(a, base).pow(b)) : new Decimal2(a);
@@ -6111,181 +6111,6 @@ Decimal = __decorateClass([
 var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
-// src/E/DecimalArray.ts
-var DecimalArray = class {
-  /**
-   * Creates a new DecimalArray with the specified size.
-   * @param size - The number of Decimals to store in the array.
-   * @param maxLayerThatCouldBeStored - The maximum layer that could be stored in the array.
-   * This is used to determine the appropriate type for the layerAndSignArray.
-   */
-  constructor(size, maxLayerThatCouldBeStored = Infinity) {
-    this.length = size;
-    this.layerAndSignArray = new Int8Array(0);
-    this.layerAndSignArrayType = 126 /* int8Array */;
-    this.resizeLayerAndSignArray(maxLayerThatCouldBeStored);
-    this.magArray = new Float64Array(size);
-  }
-  resizeLayerAndSignArray(maxLayerThatCouldBeStored = Infinity, fillFromExisting = true) {
-    let newLayerAndSignArray;
-    maxLayerThatCouldBeStored = Math.abs(maxLayerThatCouldBeStored);
-    if (maxLayerThatCouldBeStored <= 126 /* int8Array */) {
-      newLayerAndSignArray = new Int8Array(this.length);
-      this.layerAndSignArrayType = 126 /* int8Array */;
-    } else if (maxLayerThatCouldBeStored <= 32766 /* int16Array */) {
-      newLayerAndSignArray = new Int16Array(this.length);
-      this.layerAndSignArrayType = 32766 /* int16Array */;
-    } else if (maxLayerThatCouldBeStored <= 2147483646 /* int32Array */) {
-      newLayerAndSignArray = new Int32Array(this.length);
-      this.layerAndSignArrayType = 2147483646 /* int32Array */;
-    } else {
-      newLayerAndSignArray = new Float64Array(this.length);
-      this.layerAndSignArrayType = Infinity /* float64Array */;
-    }
-    if (fillFromExisting) {
-      newLayerAndSignArray.set(this.layerAndSignArray);
-    }
-    this.layerAndSignArray = newLayerAndSignArray;
-  }
-  // TODO: rename
-  resize(newSize) {
-    const wouldOverflow = newSize < this.length;
-    this.length = newSize;
-    const oldMagArray = this.magArray;
-    const oldLayerArray = this.layerAndSignArray;
-    this.magArray = new Float64Array(newSize);
-    this.resizeLayerAndSignArray(this.layerAndSignArrayType, !wouldOverflow);
-    if (!wouldOverflow) {
-      this.magArray.set(oldMagArray);
-    } else {
-      for (let i = 0; i < newSize; i++) {
-        this.magArray[i] = oldMagArray[i];
-        this.layerAndSignArray[i] = oldLayerArray[i];
-      }
-    }
-  }
-  /**
-   * Modifies the existing Decimal at the given index to have the same value as the Decimal at the given index.
-   * @param index - The index of the Decimal to get.
-   * @param existingDecimal - The Decimal to modify.
-   */
-  getIntoExisting(index, existingDecimal) {
-    if (index < 0 || index >= this.length) {
-      console.warn(
-        `eMath.js: Attempted to access index ${index} of DecimalArray of length ${this.length}. Returning NaN Decimal.`,
-        { index, length: this.length, array: this }
-      );
-      existingDecimal.fromDecimal(Decimal.dNaN);
-      return;
-    }
-    const layerAndSign = this.layerAndSignArray[index];
-    const mag = this.magArray[index];
-    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
-    const sign = Math.sign(layerAndSign);
-    existingDecimal.fromComponents_noNormalize(sign, layer, mag);
-  }
-  /**
-   * Gets the Decimal at the given index.
-   * @param index - The index of the Decimal to get.
-   * @returns A new Decimal with the same value as the Decimal at the given index.
-   */
-  get(index) {
-    const out = new Decimal();
-    this.getIntoExisting(index, out);
-    return out;
-  }
-  /**
-   * Sets the Decimal at the given index to have the same value as the given Decimal.
-   * @param index - The index of the Decimal to set.
-   * @param decimal - The Decimal to set the value to.
-   */
-  set(index, decimal) {
-    if (Math.abs(decimal.layer) > this.layerAndSignArrayType) {
-      this.resizeLayerAndSignArray(decimal.layer);
-    }
-    this.layerAndSignArray[index] = decimal.sign === 0 ? 0 : (decimal.layer + 1) * decimal.sign;
-    this.magArray[index] = decimal.mag;
-  }
-  /**
-   * Compares the Decimal at the given index with the given Decimal.
-   * Equal to `this.get(index).cmp(decimalToCompare)`, but more efficient because it doesn't create a new Decimal instance.
-   * @param index - The index of the Decimal to compare.
-   * @param decimalToCompare - The Decimal to compare with.
-   * @returns -1 if the Decimal at the given index is less than the given Decimal, 0 if they are equal, and 1 if the Decimal at the given index is greater than the given Decimal.
-   */
-  compareAt(index, decimalToCompare) {
-    const layerAndSign = this.layerAndSignArray[index];
-    const mag = this.magArray[index];
-    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
-    const sign = Math.sign(layerAndSign);
-    if (sign > decimalToCompare.sign) {
-      return 1;
-    }
-    if (sign < decimalToCompare.sign) {
-      return -1;
-    }
-    const normalizedSignedLayerA = mag > 0 ? layer : -layer;
-    const normalizedSignedLayerB = decimalToCompare.mag > 0 ? decimalToCompare.layer : -decimalToCompare.layer;
-    if (normalizedSignedLayerA > normalizedSignedLayerB) {
-      return sign;
-    }
-    if (normalizedSignedLayerA < normalizedSignedLayerB) {
-      return -sign;
-    }
-    if (mag > decimalToCompare.mag) {
-      return sign;
-    }
-    if (mag < decimalToCompare.mag) {
-      return -sign;
-    }
-    return 0;
-  }
-  /**
-   * Binary searches for the given Decimal in the array.
-   * Assumes the array is sorted in ascending order.
-   * @param decimalToSearch - The Decimal to search for.
-   * @returns The index of the Decimal if found, or an `integerIndex` + 0.5 if not found, where the `integerIndex` is the index of the largest Decimal in the array that is less than the given Decimal.
-   */
-  search(decimalToSearch) {
-    let low = 0;
-    let high = this.length - 1;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const comparison = this.compareAt(mid, decimalToSearch);
-      if (comparison === 0) {
-        return mid;
-      }
-      if (comparison < 0) {
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-    return low - 0.5;
-  }
-  /**
-   * @returns An iterator over the Decimals in the array.
-  //  * Important: This method reuses the same Decimal instance for each value in the array.
-  //  * If a reference to a Decimal in the array needs to be stored, it should be cloned first before storing the reference.
-   */
-  [Symbol.iterator]() {
-    let index = 0;
-    const size = this.layerAndSignArray.length;
-    return {
-      next: () => {
-        if (index < size) {
-          return { value: this.get(index++), done: false };
-        } else {
-          return { value: void 0, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      }
-    };
-  }
-};
-
 // src/classes/Boost.ts
 var OperationBoostOrder = /* @__PURE__ */ ((OperationBoostOrder2) => {
   OperationBoostOrder2[OperationBoostOrder2["set"] = 0] = "set";
@@ -6294,13 +6119,14 @@ var OperationBoostOrder = /* @__PURE__ */ ((OperationBoostOrder2) => {
   OperationBoostOrder2[OperationBoostOrder2["polynomial"] = 2.9] = "polynomial";
   OperationBoostOrder2[OperationBoostOrder2["exponential"] = 3] = "exponential";
   OperationBoostOrder2[OperationBoostOrder2["tetrate"] = 4] = "tetrate";
+  OperationBoostOrder2[OperationBoostOrder2["pentate"] = 5] = "pentate";
   OperationBoostOrder2[OperationBoostOrder2["unset"] = 99] = "unset";
   return OperationBoostOrder2;
 })(OperationBoostOrder || {});
 var BoostObject = class {
   /**
    * Constructs a new boost object with the given id.
-   * @param id - The id to use.
+   * @param id - The {@link id} to use.
    */
   constructor(id) {
     /**
@@ -6319,24 +6145,15 @@ var BoostObject = class {
      * (input) => input.mul(2)
      */
     this.value = (input) => input;
-    /** The order at which the boost is applied. Lower orders are applied first. */
-    this.order = 99 /* unset */;
-    // TODO: redo this example
     /**
-     * An optional description of the boost.
-     * Can be a string or a function that returns a string.
-     * Made into a getter function to allow for dynamic descriptions.
-     * @example
-     * // A dynamic description that returns a string
-     * const description = (a, b) => `This is a ${a} that returns a ${b}`;
-     * // ... create boost
-     * const boost = boost.getBoost("boostID");
-     *
-     * // Getter property
-     * console.log(boost.description); // "This is a undefined that returns a undefined"
-     *
-     * // Getter function
-     * console.log(boost.descriptionFn("dynamic", "string")); // "This is a dynamic that returns a string"
+     * The order at which the boost is applied.
+     * Lower orders are applied first.
+     */
+    this.order = 99 /* unset */;
+    /**
+     * @returns The description of the boost based on this boost object.
+     * @param boostContext - The boost object that this description is based on.
+     * @example (boostContext) => `Increases health by x${boostContext.value(new Decimal(0)).format()}`
      */
     this.descriptionSupplier = () => "";
     this.id = id;
@@ -6348,125 +6165,214 @@ var BoostObject = class {
     return this.descriptionSupplier(this);
   }
   // Setters
+  /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
+  /** @see {@link BoostObject.prototype.name} */
   withName(name) {
     this.name = name;
     return this;
   }
+  /** @see {@link BoostObject.value} */
   withValue(value) {
     this.value = value;
     return this;
   }
+  /** @see {@link BoostObject.order} */
   withOrder(order) {
     this.order = order;
     return this;
   }
+  /** @see {@link BoostObject.descriptionSupplier} */
   withDescriptionSupplier(descriptionSupplier) {
     this.descriptionSupplier = descriptionSupplier;
     return this;
   }
+  /* eslint-enable jsdoc/require-param, jsdoc/require-returns */
 };
 var Boost = class {
   /**
    * Constructs a new boost manager.
-   * @param baseEffect - The base effect value to which boosts are applied.
+   * @param baseEffect - The {@link baseEffect} value to use. Defaults to `1`.
    */
   constructor(baseEffect = Decimal.dOne) {
-    this.baseEffect = new Decimal(baseEffect);
+    /**
+     * A list of all boost objects that have been added to this boost manager.
+     */
     this.boostArray = [];
-  }
-  getBoosts(id, index) {
-    const boostList = [];
-    const indexList = [];
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (typeof id === "string" && id === this.boostArray[i].id || id instanceof RegExp && id.test(this.boostArray[i].id)) {
-        boostList.push(this.boostArray[i]);
-        indexList.push(i);
-      }
-    }
-    return index ? [boostList, indexList] : boostList;
+    this.baseEffect = new Decimal(baseEffect);
   }
   /**
-   * Gets a boost object by its ID.
-   * @deprecated Use {@link getBoosts} instead.
-   * @param id - The ID of the boost to retrieve.
-   * @returns The boost object if found, or null if not found.
+   * Retrieves a boost object based on the provided id.
+   * It is recommended to store a reference to the boost when it is created instead of using this method.
+   * @param id - The id of the boost to retrieve.
+   * @returns The boost object if found, otherwise null.
    */
   getBoost(id) {
-    return this.getBoosts(id)[0] ?? null;
+    return this.boostArray.find((boost) => boost.id === id) ?? null;
   }
   /**
-   * Removes a boost by its ID. Only removes the first instance of the id.
-   * @param id - The ID of the boost to remove.
-   * @example
-   * // Remove the boost with the ID "healthBoost"
-   * boost.removeBoost("healthBoost");
+   * Removes a boost by its ID or reference. Only removes the first instance found.
+   * @param id - The ID or reference of the boost to remove.
    */
   removeBoost(id) {
-    for (let i = 0; i < this.boostArray.length; i++) {
-      if (id === this.boostArray[i].id) {
-        this.boostArray.splice(i, 1);
-        break;
-      }
+    if (typeof id === "string") {
+      this.boostArray.splice(
+        this.boostArray.findIndex((boost) => boost.id === id),
+        1
+      );
+    } else {
+      this.boostArray.splice(
+        this.boostArray.findIndex((boost) => boost === id),
+        1
+      );
     }
     this.sortBoosts();
   }
   /**
-   * Sets or updates a boost with the given parameters.
-   * @param boostObj - The boost object containing the parameters.
+   * Adds a boost with the given parameters.
+   * @param boostToAdd - The boost object to add.
+   * @returns The boost object that was added.
    * @example
-   * // Set a boost that multiplies the input value by 2
-   * boost.setBoost({
-   *     id: "doubleBoost",
-   *     name: "Double Boost",
-   *     desc: "Doubles the input value",
-   *     value: (input) => input.mul(2),
-   * });
+   * boost.setBoost(
+   *     new BoostObject("healthBoost")
+   *         .withName("Health Boost")
+   *         .withDescriptionSupplier(() => `Boosts health by x${Decimal.pow(2, level.sub(1)).format()}.`)
+   *         .withValue((n) => n.mul(Decimal.pow(2, level.sub(1))))
+   *         .withOrder(OperationBoostOrder.multiply)
+   * );
    */
   addBoost(boostToAdd) {
     this.boostArray.push(boostToAdd);
     this.sortBoosts();
+    return boostToAdd;
   }
+  /**
+   * Adds multiple boosts to the boost manager.
+   * @param boostToAdd - An array of boost objects to add.
+   * @returns The array of boost objects that were added.
+   * @see {@link addBoost}
+   */
   addBoosts(boostToAdd) {
     this.boostArray.push(...boostToAdd);
     this.sortBoosts();
+    return boostToAdd;
   }
   /**
    * Clears all boosts from the boost manager.
-   * @example
-   * // Clear all boosts
-   * boost.clearBoosts();
-   * // boostArray is now []
-   * // baseEffect is still the same
    */
   clearBoosts() {
     this.boostArray.length = 0;
   }
+  /**
+   * Sorts the boosts in the boost manager by their order from lowest to highest.
+   * Called automatically when a boost is added or removed,
+   * but can be called manually if needed or if a boost object's order is changed after being added to the boost manager.
+   */
   sortBoosts() {
     this.boostArray.sort((a, b) => a.order - b.order);
   }
   /**
    * Calculates the cumulative effect of all boosts on the base effect.
-   * @param base - The base effect value to calculate with. Defaults to the base effect of the boost manager.
+   * @param base - The base effect value to calculate with. Defaults to the {@link baseEffect} of the boost manager.
    * @returns The calculated effect after applying boosts.
-   * @example
-   * // Calculate the effect of all boosts
-   * const finalEffect = boost.calculate();
    */
   calculate(base = this.baseEffect) {
     return this.boostArray.reduce(
       (accumulatedValue, currentBoost) => currentBoost.value(accumulatedValue),
+      // Use a new Decimal instance to avoid mutating the original base value if the user supplied value function mutates the input.
       new Decimal(base)
     );
   }
 };
 
-// src/classes/Upgrade.ts
-import "reflect-metadata";
-import { Type as Type2 } from "class-transformer";
-
 // src/classes/Currency.ts
+import { Type as Type2 } from "class-transformer";
 import "reflect-metadata";
-import { Type } from "class-transformer";
+
+// src/game/managers/DataEntry.ts
+var SubscribableDataEntry = class _SubscribableDataEntry {
+  constructor() {
+    /**
+     * A list of listeners that will be notified when the data changes.
+     * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
+     */
+    this.listeners = [];
+  }
+  /**
+   * Creates a entry based on a getter and setter.
+   * @template T - The type of the data in the entry.
+   * @param getter - A function that returns the current value of the data.
+   * @param setter - A function that sets the value of the data and notifies all listeners.
+   * @param shouldNotify - Whether to notify listeners after setting the value. Defaults to `true`.
+   * @returns A new instance of SubscribableDataEntry that uses the provided getter and setter.
+   */
+  static fromGetterSetter(getter, setter, shouldNotify = true) {
+    return new class extends _SubscribableDataEntry {
+      constructor() {
+        super();
+        this.get = this.get.bind(this);
+        this.set = this.set.bind(this);
+        this.subscribe = this.subscribe.bind(this);
+        this.notifyListeners = this.notifyListeners.bind(this);
+      }
+      get() {
+        return getter();
+      }
+      set(value) {
+        setter(value);
+        if (shouldNotify) {
+          this.notifyListeners();
+        }
+      }
+    }();
+  }
+  /**
+   * Notifies all listeners that the data has changed.
+   */
+  notifyListeners() {
+    for (const listener of this.listeners) {
+      listener();
+    }
+  }
+  /**
+   * Subscribes a listener to be notified when the data entry changes.
+   * See {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore}.
+   * @param listener - The listener function to subscribe.
+   * @returns A function that can be called to unsubscribe the listener.
+   */
+  subscribe(listener) {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index !== -1) {
+        this.listeners.splice(index, 1);
+      }
+    };
+  }
+  setCallback(callback) {
+    this.set(callback(this.get()));
+  }
+};
+var DataManagerEntry = class extends SubscribableDataEntry {
+  constructor(dataManager, dataKey) {
+    super();
+    this.dataManagerReference = dataManager;
+    this.dataKey = dataKey;
+    this.get = this.get.bind(this);
+    this.set = this.set.bind(this);
+    this.subscribe = this.subscribe.bind(this);
+  }
+  get() {
+    return this.dataManagerReference.data[this.dataKey];
+  }
+  /**
+   * Sets the value of the data entry and notifies all listeners.
+   * @param value - The new value to set.
+   */
+  set(value) {
+    this.dataManagerReference.data[this.dataKey] = value;
+    this.notifyListeners();
+  }
+};
 
 // src/classes/InvalidDecimalProtections.ts
 var InvalidDecimalProtections = class _InvalidDecimalProtections {
@@ -6608,408 +6514,9 @@ var InvalidDecimalProtections = class _InvalidDecimalProtections {
   }
 };
 
-// src/game/managers/DataEntry.ts
-var SubscribableDataEntry = class _SubscribableDataEntry {
-  constructor() {
-    /**
-     * A list of listeners that will be notified when the data changes.
-     * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
-     */
-    this.listeners = [];
-  }
-  /**
-   * Creates a entry based on a getter and setter.
-   * @template T - The type of the data in the entry.
-   * @param getter - A function that returns the current value of the data.
-   * @param setter - A function that sets the value of the data and notifies all listeners.
-   * @param shouldNotify - Whether to notify listeners after setting the value. Defaults to `true`.
-   * @returns A new instance of SubscribableDataEntry that uses the provided getter and setter.
-   */
-  static fromGetterSetter(getter, setter, shouldNotify = true) {
-    return new class extends _SubscribableDataEntry {
-      constructor() {
-        super();
-        this.get = this.get.bind(this);
-        this.set = this.set.bind(this);
-        this.subscribe = this.subscribe.bind(this);
-        this.notifyListeners = this.notifyListeners.bind(this);
-      }
-      get() {
-        return getter();
-      }
-      set(value) {
-        setter(value);
-        if (shouldNotify) {
-          this.notifyListeners();
-        }
-      }
-    }();
-  }
-  /**
-   * Notifies all listeners that the data has changed.
-   */
-  notifyListeners() {
-    for (const listener of this.listeners) {
-      listener();
-    }
-  }
-  /**
-   * Subscribes a listener to be notified when the data entry changes.
-   * See {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore}.
-   * @param listener - The listener function to subscribe.
-   * @returns A function that can be called to unsubscribe the listener.
-   */
-  subscribe(listener) {
-    this.listeners.push(listener);
-    return () => {
-      const index = this.listeners.indexOf(listener);
-      if (index !== -1) {
-        this.listeners.splice(index, 1);
-      }
-    };
-  }
-  setCallback(callback) {
-    this.set(callback(this.get()));
-  }
-};
-var DataManagerEntry = class extends SubscribableDataEntry {
-  constructor(dataManager, dataKey) {
-    super();
-    this.dataManagerReference = dataManager;
-    this.dataKey = dataKey;
-    this.get = this.get.bind(this);
-    this.set = this.set.bind(this);
-    this.subscribe = this.subscribe.bind(this);
-  }
-  get() {
-    return this.dataManagerReference.data[this.dataKey];
-  }
-  /**
-   * Sets the value of the data entry and notifies all listeners.
-   * @param value - The new value to set.
-   */
-  set(value) {
-    this.dataManagerReference.data[this.dataKey] = value;
-    this.notifyListeners();
-  }
-};
-
-// src/classes/Currency.ts
-var CurrencyData = class {
-  /**
-   * Constructs a new currency object with an initial value of 0.
-   */
-  constructor() {
-    this.value = Decimal.dZero;
-  }
-};
-__decorateClass([
-  Type(() => Decimal)
-], CurrencyData.prototype, "value", 2);
-var Currency = class {
-  /**
-   * Creates a new currency with the given id.
-   * @param id - The id of the currency. See {@link id}.
-   */
-  constructor(id) {
-    /**
-     * Stores a list of each of this currency's upgrades and their corresponding data.
-     */
-    this.upgrades = [];
-    /** A function that returns the pointer of the data */
-    this.dataSupplier = () => {
-      console.warn("emath.js: Currency dataSupplier has not set. Returning placeholder data.");
-      return new CurrencyData();
-    };
-    /** A boost object that affects the currency gain. */
-    this.boost = new Boost();
-    /** The default value of the currency. */
-    this.defaultValue = Decimal.dZero;
-    /**
-     * The protections for {@link value}.
-     * See {@link InvalidDecimalProtections}.
-     */
-    this.valueProtections = new InvalidDecimalProtections({
-      allowNaN: false,
-      allowInfinite: false
-    });
-    this.valueDataEntry = SubscribableDataEntry.fromGetterSetter(
-      () => this.value,
-      (newValue) => {
-        this.value = newValue;
-      },
-      false
-    );
-    this.dataManagerReference = null;
-    this.id = id;
-  }
-  /** @returns The pointer of the data. */
-  get data() {
-    return this.dataSupplier();
-  }
-  /**
-   * The current value of the currency.
-   * Note: If you want to change the value, use {@link gain} instead.
-   * @returns The current value of the currency.
-   */
-  get value() {
-    return this.data.value;
-  }
-  set value(value) {
-    this.data.value = this.valueProtections.validateValueOrElse(
-      value,
-      this.data.value,
-      `Currency "${this.id}" value`,
-      this
-    );
-    this.valueDataEntry.notifyListeners();
-  }
-  /**
-   * Updates / applies effects to the currency on load.
-   */
-  onLoadData() {
-    this.value = this.data.value;
-    for (const upgrade of this.upgrades) {
-      this.runUpgradeEffect(upgrade);
-    }
-  }
-  onAddToDataManager(dataManager) {
-    this.dataManagerReference = dataManager;
-    this.dataSupplier = dataManager.setData(this.id, new CurrencyData());
-    for (const upgrade of this.upgrades) {
-      upgrade.onAddToDataManager(dataManager, this.id);
-    }
-  }
-  reset(resetCurrencyOrResetObj, resetUpgradeLevels, runUpgradeEffect) {
-    const resetObj = {
-      resetCurrency: true,
-      resetUpgradeLevels: true,
-      resetItemAmounts: true,
-      runUpgradeEffect: true
-    };
-    if (typeof resetCurrencyOrResetObj === "object") {
-      Object.assign(resetObj, resetCurrencyOrResetObj);
-    } else {
-      Object.assign(resetObj, {
-        resetCurrency: resetCurrencyOrResetObj,
-        resetUpgradeLevels,
-        runUpgradeEffect
-      });
-    }
-    if (resetObj.resetCurrency) this.value = this.defaultValue;
-    if (resetObj.resetUpgradeLevels) {
-      for (const upgrade of Object.values(this.upgrades)) {
-        upgrade.level = new Decimal(upgrade.defaultLevel);
-        if (resetObj.runUpgradeEffect) this.runUpgradeEffect(upgrade);
-      }
-    }
-  }
-  /**
-   * The new currency value after applying the boost.
-   * @param dt - Delta time / multiplier, assuming you gain once every second. Ex. 0.5 = half gain.
-   * @returns What was gained, NOT the new value.
-   * @example
-   * // Gain a random number between 1 and 10, and return the amount gained.
-   * currency.gain(Math.random() * 10);
-   */
-  gain(dt) {
-    let toAdd = this.boost.calculate();
-    if (dt) {
-      toAdd = toAdd.mul(dt);
-    }
-    this.value = this.value.add(toAdd);
-    return toAdd;
-  }
-  /**
-   * Retrieves an upgrade object based on the provided id.
-   * @template T - The type of the upgrade ID.
-   * @param id - The id of the upgrade to retrieve.
-   * @returns The upgrade object if found, otherwise null.
-   * @example
-   * const upgrade = currency.getUpgrade("healthBoost");
-   * console.log(upgrade); // upgrade object
-   */
-  getUpgrade(id) {
-    return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-  }
-  getUpgradeAsSkillNode(id) {
-    const upgrade = this.getUpgrade(id);
-    if (!upgrade) {
-      return null;
-    }
-    if (upgrade instanceof SkillNode) {
-      return upgrade;
-    }
-    return null;
-  }
-  /**
-   * Creates upgrades. To update an upgrade, use {@link updateUpgrade} instead.
-   * @param upgrades - An array of upgrade objects.
-   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
-   * @returns The added upgrades.
-   * @example
-   * currency.addUpgrade({
-   *     id: "healthBoost", // The ID of the upgrade, used to retrieve it later
-   *     name: "Health Boost", // The name of the upgrade, for display purposes (optional, defaults to the ID)
-   *     description: "Increases health by 10.", // The description of the upgrade, for display purposes (optional, defaults to "")
-   *     cost: (level) => level.mul(10), // Cost of the upgrade, 10 times the level
-   *     maxLevel: 10, // Maximum level of the upgrade (optional, defaults to 1)
-   *     // Effect of the upgrade (runs when the upgrade is bought, and instantly if runEffectInstantly is true)
-   *     effect: (level, context) => {
-   *         // Set / update the boost
-   *         // health: currencyStatic
-   *         health.boost.setBoost(
-   *             "healthBoost",
-   *             "Health Boost",
-   *             "Boosts health by 2x per level.",
-   *             n => n.mul(Decimal.pow(2, level.sub(1))),
-   *             2,
-   *         );
-   *     }
-   * });
-   */
-  addUpgrade(upgrade, runEffectInstantly = true) {
-    if (runEffectInstantly) this.runUpgradeEffect(upgrade);
-    this.runUpgradeEffectOnAdd(upgrade);
-    upgrade.withCurrencySupplier(() => this);
-    this.upgrades.push(upgrade);
-    if (this.dataManagerReference) {
-      upgrade.onAddToDataManager(this.dataManagerReference, this.id);
-    }
-    return upgrade;
-  }
-  addUpgrades(upgrades, runEffectInstantly = true) {
-    for (const upgrade of upgrades) {
-      this.addUpgrade(upgrade, runEffectInstantly);
-    }
-    return upgrades;
-  }
-  /**
-   * Runs the effect of an upgrade or item.
-   * @param upgrade - The upgrade to run the effect for.
-   */
-  runUpgradeEffect(upgrade) {
-    upgrade.effect?.(upgrade.level, upgrade, this);
-  }
-  /**
-   * Runs the effect on add of an upgrade or item.
-   * @param upgrade - The upgrade to run the effect on add for.
-   */
-  runUpgradeEffectOnAdd(upgrade) {
-    upgrade.effectOnAdd?.(upgrade, this);
-  }
-  getUpgradeOrElse(id, elseValue) {
-    const upgrade = typeof id === "string" ? this.getUpgrade(id) : id;
-    if (upgrade === null) {
-      console.warn(`eMath.js: Upgrade "${id}" not found.`);
-      return [false, elseValue];
-    }
-    if (upgrade instanceof SkillNode) {
-      if (!upgrade.isUnlocked()) {
-        return [false, elseValue];
-      }
-    }
-    return [true, upgrade];
-  }
-  /**
-   * Calculates the cost and how many upgrades you can buy.
-   * See {@link calculateUpgrade} for more information.
-   * @param id - The upgrade ID or the upgrade to calculate.
-   * @param target - The target level or quantity to reach for the upgrade. If omitted, it calculates the maximum affordable quantity.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
-   * @example
-   * // Calculate how many healthBoost upgrades you can buy and the cost of the upgrades
-   * const [amount, cost] = currency.calculateUpgrade("healthBoost", 10);
-   */
-  calculateUpgrade(id, target = Decimal.dInf, mode, iterations, value = this.value) {
-    const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, [Decimal.dZero, Decimal.dZero]);
-    if (!upgradeExists) {
-      return upgrade;
-    }
-    target = upgrade.level.add(target);
-    if (upgrade.maxLevel !== void 0) {
-      target = Decimal.min(target, upgrade.maxLevel);
-    }
-    return upgrade.calculate(value, upgrade.level, target, mode, iterations);
-  }
-  /**
-   * Calculates how much is needed for the next upgrade.
-   * @deprecated Use {@link getNextCostMax} instead as it is more versatile.
-   * @param id - Index or ID of the upgrade
-   * @param target - How many before the next upgrade
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The cost of the next upgrade.
-   * @example
-   * // Calculate the cost of the next healthBoost upgrade
-   * const nextCost = currency.getNextCost("healthBoost");
-   */
-  getNextCost(id) {
-    const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
-    if (!upgradeExists) {
-      return upgrade;
-    }
-    return upgrade.cost(upgrade.level);
-  }
-  /**
-   * Calculates the cost of the next upgrade after the maximum affordable quantity.
-   * @param id - Upgrade ID or upgrade object to calculate the next cost for.
-   * @param target - How many before the next upgrade.
-   * @param mode  - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns The cost of the next upgrade.
-   * @example
-   * // Calculate the cost of the next healthBoost upgrade
-   * currency.gain(1e6); // Gain 1 thousand currency
-   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
-   * console.log(currency.getNextCostMax("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
-   */
-  getNextCostMax(id, target = Decimal.dOne, mode, iterations, value) {
-    const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, Decimal.dZero);
-    if (!upgradeExists) {
-      return upgrade;
-    }
-    const upgCalc = this.calculateUpgrade(id, target, mode, iterations, value);
-    const nextCost = upgrade.cost(upgrade.level.add(upgCalc[0])).add(upgCalc[1]);
-    return nextCost;
-  }
-  /**
-   * Buys an upgrade based on its ID or array position if enough currency is available.
-   * @param id - The upgrade ID or the upgrade to buy.
-   * @param target - The target level or quantity to reach for the upgrade. See the argument in {@link calculateUpgrade}.
-   * @param mode - See the argument in {@link calculateUpgrade}.
-   * @param iterations - See the argument in {@link calculateUpgrade}.
-   * @param value - The value of the currency to use for the calculation. Defaults to the current value of the currency.
-   * @returns Returns true if the purchase or upgrade is successful, or false if there is not enough currency or the upgrade does not exist.
-   * @example
-   * // Attempt to buy up to 10 healthBoost upgrades at once
-   * currency.buyUpgrade("healthBoost", 10);
-   */
-  buyUpgrade(id, target, mode, iterations, value) {
-    const [upgradeExists, upgrade] = this.getUpgradeOrElse(id, false);
-    if (!upgradeExists) {
-      return upgrade;
-    }
-    const [amount, cost] = this.calculateUpgrade(id, target, mode, iterations, value);
-    if (amount.eq(upgrade.level)) {
-      return false;
-    }
-    this.value = this.value.sub(cost);
-    upgrade.level = amount;
-    this.runUpgradeEffect(upgrade);
-    return true;
-  }
-  // Setters
-  withValueProtectionOptions(newValueProtections) {
-    this.valueProtections.setProtections(newValueProtections);
-    return this;
-  }
-};
+// src/classes/Upgrade.ts
+import { Type } from "class-transformer";
+import "reflect-metadata";
 
 // src/game/index.ts
 import "reflect-metadata";
@@ -7220,12 +6727,12 @@ var EventManager = class _EventManager {
    */
   constructor(config, events) {
     /** The timer events stored in the event manager. */
-    this.events = {};
+    this.events = /* @__PURE__ */ Object.create(null);
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    this.callbackEvents = {};
+    this.callbackEvents = /* @__PURE__ */ Object.create(null);
     /**
      * Adds a new event.
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
@@ -7839,6 +7346,430 @@ var Game = class _Game {
   // }
 };
 
+// src/classes/numericalAnalysis/numericalAnalysis.ts
+var DEFAULT_ITERATIONS = 30;
+var DEFAULT_ITERATIONS_AS_DECIMAL = new Decimal(DEFAULT_ITERATIONS);
+var DEFAULT_TOLERANCE = 1e-4;
+var MeanMode = /* @__PURE__ */ ((MeanMode2) => {
+  MeanMode2[MeanMode2["arithmetic"] = 1] = "arithmetic";
+  MeanMode2[MeanMode2["geometric"] = 2] = "geometric";
+  MeanMode2[MeanMode2["harmonic"] = 3] = "harmonic";
+  MeanMode2[MeanMode2["logarithmic"] = 4] = "logarithmic";
+  return MeanMode2;
+})(MeanMode || {});
+var oneHalf = Decimal.dTwo.recip();
+function mean(a, b, mode = 2 /* geometric */) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  switch (mode) {
+    case 1 /* arithmetic */:
+      return a.add(b).mul(oneHalf);
+    case 2 /* geometric */:
+    default:
+      return a.mul(b).sqrt();
+    case 3 /* harmonic */:
+      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
+    case 4 /* logarithmic */:
+      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
+  }
+}
+function geometricEqualsTolerance(a, b, tolerance = DEFAULT_TOLERANCE, verbose = false) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  const diff = decimalMagDifference(a, b) - 1;
+  const result = Math.abs(diff) < tolerance;
+  if (verbose === true || verbose === "onlyOnFail" && !result) {
+    console.log({ a, b, tolerance, diff, result });
+  }
+  return result;
+}
+function decimalMagDifference(a, b) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  if (a.layer === b.layer) {
+    return a.mag / b.mag;
+  }
+  if (a.layer - b.layer >= 2) {
+    return Infinity;
+  }
+  if (a.layer - b.layer <= -2) {
+    return 0;
+  }
+  if (a.layer > b.layer) {
+    return a.mag / f_maglog10(b.mag);
+  } else {
+    return f_maglog10(a.mag) / b.mag;
+  }
+}
+function roundingBase(x, base = Decimal.dTen, acc = Decimal.dZero) {
+  x = Decimal.fromValue_noAlloc(x);
+  base = Decimal.fromValue_noAlloc(base);
+  acc = Decimal.fromValue_noAlloc(acc);
+  if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
+  const xSign = x.sign;
+  x = x.abs();
+  const isBaseTen = base.equals(Decimal.dTen);
+  const powerN = isBaseTen ? x.log10().floor() : x.log(base).floor();
+  const highestSignificantNumber = isBaseTen ? powerN.pow10() : base.pow(powerN);
+  const factorToScaleWhenRounding = isBaseTen ? acc.pow10() : base.pow(acc);
+  let out = x.div(highestSignificantNumber);
+  out = out.mul(factorToScaleWhenRounding).round().div(factorToScaleWhenRounding);
+  out = out.mul(highestSignificantNumber);
+  out.sign = xSign;
+  return out;
+}
+function approximateDerivative(f, x, epsilon = 1e-12) {
+  x = Decimal.fromValue_noAlloc(x);
+  const fX = f(x);
+  let xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+  let fXPlusH = f(xPlusH);
+  while (fXPlusH.equals(fX) && epsilon < 1) {
+    epsilon *= 10;
+    xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
+    fXPlusH = f(xPlusH);
+  }
+  const deltaX = xPlusH.sub(x);
+  return fXPlusH.sub(fX).div(deltaX);
+}
+function newtonRaphson(initialGuess, f, fPrime, tolerance = DEFAULT_TOLERANCE, maxIterations = DEFAULT_ITERATIONS) {
+  let x = Decimal.fromValue_noAlloc(initialGuess);
+  fPrime ??= (x2) => approximateDerivative(f, x2);
+  for (let i = 0; i < maxIterations; i++) {
+    const fx = f(x);
+    const fxPrime = fPrime(x);
+    if (fxPrime.equals(Decimal.dZero)) {
+      console.warn("eMath.js: Derivative is zero. No solution found. Returning current approximation.");
+      return x;
+    }
+    const xNext = x.sub(fx.div(fxPrime));
+    if (geometricEqualsTolerance(xNext, x)) {
+      return xNext;
+    }
+    x = xNext;
+  }
+  return x;
+}
+
+// src/classes/numericalAnalysis/inverseFunction.ts
+function calculateInverseFunction(f, n, options = {}) {
+  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
+  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
+}
+function inverseFunctionApprox(f, n, mode = 2 /* geometric */, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = Decimal.dOne, upperBound = n, round = false) {
+  lowerBound = Decimal.fromValue_noAlloc(lowerBound);
+  lowerBound = round ? lowerBound.floor() : lowerBound;
+  upperBound = Decimal.fromValue_noAlloc(upperBound);
+  upperBound = round ? upperBound.ceil() : upperBound;
+  n = Decimal.fromValue_noAlloc(n);
+  const BOUND_THRESHOLD = 5;
+  if (lowerBound.gt(upperBound)) {
+    [lowerBound, upperBound] = [upperBound, lowerBound];
+  }
+  const fInitialLowerBound = f(lowerBound);
+  const fInitialUpperBound = f(upperBound);
+  if (fInitialUpperBound.eq(Decimal.dZero)) {
+    return {
+      value: Decimal.dZero,
+      lowerBound: Decimal.dZero,
+      upperBound: Decimal.dZero
+    };
+  }
+  if (fInitialLowerBound.gt(n)) {
+    console.warn("eMath.js: The interval does not contain the value. (f(lowerBound) > n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": fInitialLowerBound,
+      "f(upperBound)": fInitialUpperBound
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!lowerBound.eq(Decimal.dZero)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, Decimal.dZero, upperBound, round);
+    }
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  if (fInitialUpperBound.lt(n)) {
+    console.warn("eMath.js: The interval does not contain the value. (f(upperBound) < n)", {
+      lowerBound,
+      upperBound,
+      n,
+      /* eslint-disable @typescript-eslint/naming-convention */
+      "f(lowerBound)": fInitialLowerBound,
+      "f(upperBound)": fInitialUpperBound
+      /* eslint-enable @typescript-eslint/naming-convention */
+    });
+    if (!upperBound.eq(n)) {
+      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
+    }
+    return {
+      value: upperBound,
+      lowerBound: upperBound,
+      upperBound
+    };
+  }
+  let mid = Decimal.dZero;
+  let midValue = Decimal.dZero;
+  let nextMid = mean(lowerBound, upperBound, mode);
+  for (let i = 0; i < iterations; i++) {
+    mid = nextMid;
+    mid = round ? mid.floor() : mid;
+    midValue = f(mid);
+    if (midValue.lt(n)) {
+      lowerBound = mid;
+    } else {
+      upperBound = mid;
+    }
+    if (geometricEqualsTolerance(midValue, n, tolerance)) {
+      break;
+    }
+    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
+      let closest = upperBound;
+      let closestDiff = f(upperBound).sub(n).abs();
+      for (let j = lowerBound; j.lte(upperBound); j = j.add(Decimal.dOne)) {
+        const diff = f(j).sub(n).abs();
+        if (diff.lt(closestDiff)) {
+          closest = Decimal.fromValue_noAlloc(j);
+          closestDiff = diff;
+        }
+      }
+      return {
+        value: closest,
+        lowerBound,
+        upperBound
+      };
+    }
+    nextMid = mean(lowerBound, upperBound, mode);
+  }
+  const out = {
+    value: lowerBound,
+    lowerBound,
+    upperBound
+  };
+  return out;
+}
+function inverseFunctionApproxUsingNewtonRaphson(f, n, fPrime, initialGuess, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
+  initialGuess = initialGuess ? Decimal.fromValue_noAlloc(initialGuess) : mean(Decimal.dOne, n, 2 /* geometric */);
+  fPrime ??= (x) => approximateDerivative(f, x);
+  return newtonRaphson(initialGuess, (x) => f(x).sub(n), fPrime, tolerance, iterations);
+}
+
+// src/classes/numericalAnalysis/sum.ts
+function calculateSumLoop(f, b, a = Decimal.dZero, epsilon = DEFAULT_TOLERANCE) {
+  let sum = Decimal.dZero;
+  let n = Decimal.fromValue_noAlloc(b);
+  for (; n.gte(a); n = n.add(Decimal.dNegOne)) {
+    const initSum = sum;
+    const value = f(n);
+    sum = sum.add(value);
+    if (geometricEqualsTolerance(initSum, sum, epsilon)) break;
+  }
+  return sum;
+}
+function calculateSumApprox(f, b, a = Decimal.dZero, iterations = DEFAULT_ITERATIONS - 10, bSubA) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  let sum = Decimal.dZero;
+  const intervalWidth = bSubA ? bSubA.div(iterations) : b.sub(a).div(iterations);
+  let currentSample = b;
+  for (let i = iterations - 1; i >= 0; i--) {
+    const oldSum = sum;
+    currentSample = currentSample.sub(intervalWidth);
+    sum = sum.add(f(currentSample));
+    if (geometricEqualsTolerance(oldSum, sum)) break;
+  }
+  return sum.mul(intervalWidth);
+}
+function calculateSum(f, b, a = Decimal.dZero, epsilon, iterations) {
+  a = Decimal.fromValue_noAlloc(a);
+  b = Decimal.fromValue_noAlloc(b);
+  const bMinusA = b.sub(a);
+  if (bMinusA.lte(DEFAULT_ITERATIONS_AS_DECIMAL)) {
+    return calculateSumLoop(f, b, a, epsilon);
+  } else {
+    return calculateSumApprox(f, b, a, iterations, bMinusA);
+  }
+}
+
+// src/E/DecimalArray.ts
+var DecimalArray = class {
+  /**
+   * Creates a new DecimalArray with the specified size.
+   * @param size - The number of Decimals to store in the array.
+   * @param maxLayerThatCouldBeStored - The maximum layer that could be stored in the array.
+   * This is used to determine the appropriate type for the layerAndSignArray.
+   */
+  constructor(size, maxLayerThatCouldBeStored = Infinity) {
+    this.length = size;
+    this.layerAndSignArray = new Int8Array(0);
+    this.layerAndSignArrayType = 126 /* int8Array */;
+    this.resizeLayerAndSignArray(maxLayerThatCouldBeStored);
+    this.magArray = new Float64Array(size);
+  }
+  resizeLayerAndSignArray(maxLayerThatCouldBeStored = Infinity, fillFromExisting = true) {
+    let newLayerAndSignArray;
+    maxLayerThatCouldBeStored = Math.abs(maxLayerThatCouldBeStored);
+    if (maxLayerThatCouldBeStored <= 126 /* int8Array */) {
+      newLayerAndSignArray = new Int8Array(this.length);
+      this.layerAndSignArrayType = 126 /* int8Array */;
+    } else if (maxLayerThatCouldBeStored <= 32766 /* int16Array */) {
+      newLayerAndSignArray = new Int16Array(this.length);
+      this.layerAndSignArrayType = 32766 /* int16Array */;
+    } else if (maxLayerThatCouldBeStored <= 2147483646 /* int32Array */) {
+      newLayerAndSignArray = new Int32Array(this.length);
+      this.layerAndSignArrayType = 2147483646 /* int32Array */;
+    } else {
+      newLayerAndSignArray = new Float64Array(this.length);
+      this.layerAndSignArrayType = Infinity /* float64Array */;
+    }
+    if (fillFromExisting) {
+      newLayerAndSignArray.set(this.layerAndSignArray);
+    }
+    this.layerAndSignArray = newLayerAndSignArray;
+  }
+  // TODO: rename
+  resize(newSize) {
+    const wouldOverflow = newSize < this.length;
+    this.length = newSize;
+    const oldMagArray = this.magArray;
+    const oldLayerArray = this.layerAndSignArray;
+    this.magArray = new Float64Array(newSize);
+    this.resizeLayerAndSignArray(this.layerAndSignArrayType, !wouldOverflow);
+    if (!wouldOverflow) {
+      this.magArray.set(oldMagArray);
+    } else {
+      for (let i = 0; i < newSize; i++) {
+        this.magArray[i] = oldMagArray[i];
+        this.layerAndSignArray[i] = oldLayerArray[i];
+      }
+    }
+  }
+  /**
+   * Modifies the existing Decimal at the given index to have the same value as the Decimal at the given index.
+   * @param index - The index of the Decimal to get.
+   * @param existingDecimal - The Decimal to modify.
+   */
+  getIntoExisting(index, existingDecimal) {
+    if (index < 0 || index >= this.length) {
+      console.warn(
+        `eMath.js: Attempted to access index ${index} of DecimalArray of length ${this.length}. Returning NaN Decimal.`,
+        { index, length: this.length, array: this }
+      );
+      existingDecimal.fromDecimal(Decimal.dNaN);
+      return;
+    }
+    const layerAndSign = this.layerAndSignArray[index];
+    const mag = this.magArray[index];
+    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+    const sign = Math.sign(layerAndSign);
+    existingDecimal.fromComponents_noNormalize(sign, layer, mag);
+  }
+  /**
+   * Gets the Decimal at the given index.
+   * @param index - The index of the Decimal to get.
+   * @returns A new Decimal with the same value as the Decimal at the given index.
+   */
+  get(index) {
+    const out = new Decimal();
+    this.getIntoExisting(index, out);
+    return out;
+  }
+  /**
+   * Sets the Decimal at the given index to have the same value as the given Decimal.
+   * @param index - The index of the Decimal to set.
+   * @param decimal - The Decimal to set the value to.
+   */
+  set(index, decimal) {
+    if (Math.abs(decimal.layer) > this.layerAndSignArrayType) {
+      this.resizeLayerAndSignArray(decimal.layer);
+    }
+    this.layerAndSignArray[index] = decimal.sign === 0 ? 0 : (decimal.layer + 1) * decimal.sign;
+    this.magArray[index] = decimal.mag;
+  }
+  /**
+   * Compares the Decimal at the given index with the given Decimal.
+   * Equal to `this.get(index).cmp(decimalToCompare)`, but more efficient because it doesn't create a new Decimal instance.
+   * @param index - The index of the Decimal to compare.
+   * @param decimalToCompare - The Decimal to compare with.
+   * @returns -1 if the Decimal at the given index is less than the given Decimal, 0 if they are equal, and 1 if the Decimal at the given index is greater than the given Decimal.
+   */
+  compareAt(index, decimalToCompare) {
+    const layerAndSign = this.layerAndSignArray[index];
+    const mag = this.magArray[index];
+    const layer = layerAndSign === 0 ? 0 : Math.abs(layerAndSign) - 1;
+    const sign = Math.sign(layerAndSign);
+    if (sign > decimalToCompare.sign) {
+      return 1;
+    }
+    if (sign < decimalToCompare.sign) {
+      return -1;
+    }
+    const normalizedSignedLayerA = mag > 0 ? layer : -layer;
+    const normalizedSignedLayerB = decimalToCompare.mag > 0 ? decimalToCompare.layer : -decimalToCompare.layer;
+    if (normalizedSignedLayerA > normalizedSignedLayerB) {
+      return sign;
+    }
+    if (normalizedSignedLayerA < normalizedSignedLayerB) {
+      return -sign;
+    }
+    if (mag > decimalToCompare.mag) {
+      return sign;
+    }
+    if (mag < decimalToCompare.mag) {
+      return -sign;
+    }
+    return 0;
+  }
+  /**
+   * Binary searches for the given Decimal in the array.
+   * Assumes the array is sorted in ascending order.
+   * @param decimalToSearch - The Decimal to search for.
+   * @returns The index of the Decimal if found, or an `integerIndex` + 0.5 if not found, where the `integerIndex` is the index of the largest Decimal in the array that is less than the given Decimal.
+   */
+  search(decimalToSearch) {
+    let low = 0;
+    let high = this.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const comparison = this.compareAt(mid, decimalToSearch);
+      if (comparison === 0) {
+        return mid;
+      }
+      if (comparison < 0) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return low - 0.5;
+  }
+  /**
+   * @returns An iterator over the Decimals in the array.
+  //  * Important: This method reuses the same Decimal instance for each value in the array.
+  //  * If a reference to a Decimal in the array needs to be stored, it should be cloned first before storing the reference.
+   */
+  [Symbol.iterator]() {
+    let index = 0;
+    const size = this.layerAndSignArray.length;
+    return {
+      next: () => {
+        if (index < size) {
+          return { value: this.get(index++), done: false };
+        } else {
+          return { value: void 0, done: true };
+        }
+      },
+      [Symbol.iterator]() {
+        return this;
+      }
+    };
+  }
+};
+
 // src/classes/UpgradeCostTreeMap.ts
 var CachedUpgradeTreeNode = class _CachedUpgradeTreeNode {
   /**
@@ -7988,35 +7919,42 @@ var LowerCachedUpgradeLookup = class _LowerCachedUpgradeLookup {
       return x.lte(costAtLevelAtLevel);
     }
   }
+  /**
+   * @returns The maximum level that can be reached with the current cache based on the {@link defaultLevel} and the length of the {@link costAtLevelArray}.
+   */
+  getMaxLevel() {
+    return this.getLevelFromIndex(this.costAtLevelArray.length - 1);
+  }
 };
 
 // src/classes/Upgrade.ts
-var PlaceholderImmutableUpgradeData = class {
-  get level() {
-    return new Decimal(Decimal.dZero);
-  }
-  set level(placeholder) {
-    return;
-  }
-};
 var UpgradeData = class {
-  static {
-    this.defaultUpgradeData = new PlaceholderImmutableUpgradeData();
-  }
-  /**
-   * Constructs a new upgrade object with an initial level of 0.
-   */
   constructor() {
-    this.level = Decimal.dZero;
+    this.level = new Decimal(Decimal.dZero);
+  }
+  static {
+    /**
+     * A placeholder readonly upgrade data object that returns a level of 0.
+     */
+    this.placeholderUpgradeData = new class {
+      get level() {
+        return new Decimal(Decimal.dZero);
+      }
+      set level(level) {
+        console.warn(
+          "eMath.js: Attempted to set level on placeholder upgrade data. Possibly Upgrade dataSupplier has not been set yet."
+        );
+      }
+    }();
   }
 };
 __decorateClass([
-  Type2(() => Decimal)
+  Type(() => Decimal)
 ], UpgradeData.prototype, "level", 2);
-var Upgrade2 = class _Upgrade {
+var Upgrade = class _Upgrade {
   /**
-   * Creates a new upgrade object with the given ID.
-   * @param id - The ID of the upgrade. Used to retrieve the upgrade later. See {@link Upgrade.id}.
+   * Creates a new upgrade object with the given id.
+   * @param id - The {@link id} of the upgrade.
    */
   constructor(id) {
     /**
@@ -8025,10 +7963,13 @@ var Upgrade2 = class _Upgrade {
     this.name = "";
     /**
      * The cost of upgrades at a certain level.
-     * This function should evaluate to a non-negative number, and should be deterministic and continuous for all levels above 0.
+     * - Should evaluate to a non-negative number for all levels above 0.
+     * - Should be continuous for all levels above {@link lowerCache}'s {@link LowerCachedUpgradeLookup.getMaxLevel}. Non integer arguments to {@link level} will be passed to this function when calculating above the lower cache levels.
+     * - Should be deterministic for cache calculations to work. If the cost function is not deterministic (not recommended), you should disable the cache by calling {@link withCacheSize} with `null` as the argument.
+     *
      * Also, if you do not set your own `costBulk` function, the function should always be greater than the level.
-     * @param level - The CURRENT (not next) level of the upgrade. It will always be a positive integer.
-     * @returns The cost of the upgrade. It should be a non-negative integer greater than or equal to 0.
+     * @param level - The CURRENT (not next) level of the upgrade.
+     * @returns The cost of the upgrade.
      * @example
      * // A cost function that returns twice the level.
      * (level) => level.mul(2)
@@ -8036,7 +7977,7 @@ var Upgrade2 = class _Upgrade {
     this.cost = () => Decimal.dOne;
     /**
      * The maximum level of the upgrade.
-     * Warning: If not set, the upgrade will not have a maximum level and can continue to increase indefinitely.
+     * If not set, the upgrade will have a maximum level of `Infinity` and can continue to increase indefinitely.
      */
     this.maxLevel = Decimal.dInf;
     /**
@@ -8048,60 +7989,70 @@ var Upgrade2 = class _Upgrade {
     this.effect = () => {
     };
     /**
-     * The effect that runs when the upgrade is added to the data manager.
-     * This runs only once when the upgrade is added to the data manager.
+     * The effect that runs only once when the upgrade is added to the data manager.
      * @param upgradeContext - The upgrade object that the effect is being run on.
-     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @param currencyContext - The currency object that the upgrade is being run on.
      */
     this.effectOnAdd = () => {
     };
     /**
-     * Endless / Everlasting: Flag to exclude the sum calculation and only perform binary search.
-     * Note: A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
+     * Endless / Everlasting: Flag for this upgrade to not take away currency when bought.
+     * When buying max, the level would be set to the highest level that can be bought with the current currency.
+     *
+     * A function value is also allowed, and will be evaluated when the upgrade is bought or calculated.
      */
     this.el = false;
     /**
-     * The level to set this upgrade when it is reset.
+     * The level to set this upgrade when it is reset in {@link Currency.reset}.
      */
     this.defaultLevel = Decimal.dZero;
     /**
      * The protections for {@link level}.
-     * See {@link InvalidDecimalProtections}.
+     * @see {@link InvalidDecimalProtections}.
      */
     this.levelProtections = new InvalidDecimalProtections({
       allowNaN: false,
       allowInfinite: false,
       allowNegative: false
     });
-    this.lowerCache = new LowerCachedUpgradeLookup();
-    /** @returns The data of the upgrade. */
-    this.dataSupplier = () => {
-      console.warn("eMath.js: Upgrade dataSupplier has not set. Returning placeholder data.");
-      return UpgradeData.defaultUpgradeData;
-    };
-    this.currencySupplier = () => {
-      console.warn("eMath.js: Upgrade currencySupplier has not set");
-      return new Currency("");
-    };
     /**
-     * The description of the upgrade as a function that returns a string.
+     * The lower cache for the upgrade.
+     * @see {@link LowerCachedUpgradeLookup}.
+     */
+    this.lowerCache = new LowerCachedUpgradeLookup();
+    /**
+     * @returns A reference to the data of the upgrade.
+     * Before this upgrade is added to the data manager ({@link onAddToDataManager}) (can occur when the upgrade is initialized/{@link effectOnAdd} is called),
+     * this will return the {@link UpgradeData.placeholderUpgradeData} object.
+     */
+    this.dataSupplier = () => UpgradeData.placeholderUpgradeData;
+    /**
+     * @returns A reference to the currency object that the upgrade is being run on.
+     * Before this upgrade is added to the data manager ({@link onAddToDataManager}) (can occur when the upgrade is initialized/{@link effectOnAdd} is called),
+     * this will return the {@link Currency.placeholderCurrency} object.
+     */
+    this.currencySupplier = () => Currency.placeholderCurrency;
+    /**
+     * @returns A description of the upgrade based on this upgrade and its currency.
+     * Not used internally, but you can use it to display a description.
      * @param upgradeContext - The upgrade object that the description is being run on.
-     * @param currencyContext - The currency static class that the upgrade is being run on.
+     * @param currencyContext - The currency object that the upgrade is being run on.
      * @example
-     * // A dynamic description that returns a string
      * const description = (upgrade) => `This upgrade is at level ${upgrade.level}`;
      *
-     * // ... create upgrade here (see currencyStatic.addUpgrade)
+     * const upgrade = new Upgrade(...);
      *
-     * const upgrade = currencyStatic.getUpgrade("upgradeID");
-     *
-     * // Buy 1 level of the upgrade
-     * currencyStatic.buyUpgrade("upgradeID", 1);
+     * // Buy a level of the upgrade
+     * upgrade.buyOne();
      *
      * // Getter property
      * console.log(upgrade.description); // "This upgrade is at level 1"
      */
     this.descriptionSupplier = () => "";
+    /**
+     * A {@link SubscribableDataEntry} for the {@link level} of this upgrade.
+     * @see {@link SubscribableDataEntry}
+     */
     this.levelDataEntry = SubscribableDataEntry.fromGetterSetter(
       () => this.level,
       (newLevel) => {
@@ -8110,6 +8061,7 @@ var Upgrade2 = class _Upgrade {
       false
     );
     this.id = id;
+    this.name = id;
   }
   /**
    * A helper function to generate a costBulk function for upgrades with a non-scaling cost (cost is independent of the level).
@@ -8124,17 +8076,30 @@ var Upgrade2 = class _Upgrade {
     };
   }
   static {
-    /** The default size of the cache. */
+    /**
+     * The default size of the {@link lowerCache} when it is first created. Can be changed with {@link withCacheSize}.
+     * @default 10000
+     */
     this.defaultCacheSize = 1e4;
   }
-  /** @returns The data of the upgrade. */
+  /**
+   * @returns A reference to the data of the upgrade.
+   * @see {@link dataSupplier}
+   */
   get data() {
     return this.dataSupplier();
   }
-  /** @returns The currency static class that the upgrade is being run on. */
+  /**
+   * @returns A reference to the currency object that the upgrade is being run on.
+   * @see {@link currencySupplier}
+   */
   get currency() {
     return this.currencySupplier();
   }
+  /**
+   * @returns A description of the upgrade.
+   * @see {@link descriptionSupplier}
+   */
   get description() {
     return this.descriptionSupplier(this, this.currencySupplier());
   }
@@ -8153,139 +8118,293 @@ var Upgrade2 = class _Upgrade {
       this
     );
   }
-  // Data manager functions
+  /**
+   * @returns Whether this upgrade is currently el.
+   * @see {@link el}
+   */
+  isEl() {
+    return typeof this.el === "function" ? this.el() : this.el;
+  }
+  /**
+   * Calls the {@link effect} function with the arguments for this and the currency.
+   */
+  runEffect() {
+    this.effect(this.level, this, this.currency);
+  }
+  /**
+   * Calls the {@link runEffectOnAdd} function with the arguments for this and the currency.
+   */
+  runEffectOnAdd() {
+    this.effectOnAdd(this, this.currency);
+  }
+  /**
+   * Called when the upgrade is added to the data manager.
+   * Sets the {@link dataSupplier} and {@link currencySupplier} functions to return the correct data and currency.
+   * @param dataManager - The data manager that the upgrade is being added to.
+   * @param prefix - An optional prefix to add to the data key. If not provided, the data key will be the same as the upgrade id. If provided, the data key will be `${prefix}_${id}`.
+   */
   onAddToDataManager(dataManager, prefix) {
     const dataKey = `${prefix ? prefix + "_" : ""}${this.id}`;
     this.dataSupplier = dataManager.setData(dataKey, new UpgradeData());
-    if (!this.lowerCache.hasBeenPopulated()) {
+    if (this.lowerCache && !this.lowerCache.hasBeenPopulated()) {
       this.withCacheSize(_Upgrade.defaultCacheSize);
     }
   }
+  /**
+   * Called when the upgrade data is loaded from the data manager.
+   */
   onLoadData() {
     this.level = this.data.level;
   }
   /**
-   * Calculates the cost and how many upgrades you can buy
-   * Uses {@link inverseFunctionApprox} to calculate the maximum affordable quantity.
-   * The priority is: `target === 1` > `costBulk` > `el`.
-   * For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations.
-   * For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations.
-   * @param value - The current value of the currency.
-   * @param upgrade - The upgrade object to calculate.
-   * @param start - The starting level of the upgrade. Defaults the current level of the upgrade.
-   * @param end - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
-   * @param mode - The mode/mean method to use. See {@link MeanMode}
-   * @param iterations - The amount of iterations to perform. Defaults to `15`.
-   * @param el - ie Endless: Flag to exclude the sum calculation and only perform binary search. (DEPRECATED, use `el` in the upgrade object instead)
-   * @returns [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [Decimal.dZero, Decimal.dZero].
+   * @returns The cost to buy the next upgrade. Equal to the {@link cost} evaluated at the current {@link level}.
    */
-  calculate(value, start, end = Decimal.dInf, mode, iterations, el = false) {
+  getNextCost() {
+    return this.cost(this.level);
+  }
+  /**
+   * Calculates the cost and how many upgrades you can buy.
+   * If the {@link endLevel} is within the {@link lowerCache} bounds, it will use the {@link lowerCache} to calculate the cost and amount significantly faster.
+   * Otherwise, it will use {@link calculateInverseFunction} and {@link calculateSum} (if applicable) to calculate the cost and amount.
+   *
+   * The priority is:
+   * 1. `target === 1`: buy one, manual check next cost
+   * 2. {@link costBulk} exists: use it
+   * 3. `lowerCache.isWithinBounds()`: look up in cache
+   * 4. `el === true`: use {@link calculateInverseFunction}
+   * 5. Otherwise: use {@link calculateInverseFunction} and {@link calculateSum}.
+   *
+   * - For {@link endLevel}s within the {@link lowerCache} bounds, this function has a max time complexity of O(log(n)) where n is the size of the {@link lowerCache}.
+   * - For sum upgrades, this function has a max time complexity of O(n^2) where n is the number of iterations ({@link maxUpperIterations}).
+   * - For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations ({@link maxUpperIterations}).
+   * @param value - The current value of the currency. Defaults to the current value of the currency.
+   * @param startLevel - The starting level of the upgrade. Defaults the current level of the upgrade.
+   * @param endLevel - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
+   * @param meanMode - The mode/mean method to use. See {@link MeanMode}
+   * @param maxUpperIterations - The amount of iterations to perform. Defaults to `15`.
+   * @returns a {@link UpgradeCalculationResult} or [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [0, 0].
+   * @see {@link UpgradeCalculationResult}
+   */
+  calculate(value = this.currency.value, startLevel = this.level, endLevel = Decimal.dInf, meanMode, maxUpperIterations) {
     value = Decimal.fromValue_noAlloc(value);
-    start = Decimal.fromValue_noAlloc(start ?? this.level);
-    end = Decimal.fromValue_noAlloc(end);
+    startLevel = Decimal.fromValue_noAlloc(startLevel);
+    endLevel = Decimal.fromValue_noAlloc(endLevel).min(this.maxLevel);
+    if (startLevel.gte(endLevel)) {
+      return [this.level, Decimal.dZero];
+    }
     const currentLevel = this.level;
-    const target = end.sub(start);
-    if (target.lt(Decimal.dZero)) {
-      console.warn("eMath.js: Invalid target for calculateItem: ", target);
+    const targetDifference = endLevel.sub(startLevel);
+    if (targetDifference.lt(Decimal.dZero)) {
+      console.warn("eMath.js: Invalid target for calculateItem: ", targetDifference);
       return [currentLevel, Decimal.dZero];
     }
-    el = (typeof this.el === "function" ? this.el() : this.el) ?? el;
-    if (target.eq(Decimal.dOne)) {
-      const cost = this.cost(this.level);
-      const canAfford = value.gte(cost);
+    const el = this.isEl();
+    if (targetDifference.eq(Decimal.dOne)) {
+      const cost2 = this.cost(this.level);
+      const canAfford = value.gte(cost2);
       let out = [Decimal.dZero, Decimal.dZero];
       if (el) {
         out[0] = canAfford ? currentLevel.add(Decimal.dOne) : currentLevel;
         return out;
       } else {
-        out = [canAfford ? currentLevel.add(Decimal.dOne) : currentLevel, canAfford ? cost : Decimal.dZero];
+        out = [canAfford ? currentLevel.add(Decimal.dOne) : currentLevel, canAfford ? cost2 : Decimal.dZero];
         return out;
       }
     }
     if (this.costBulk) {
-      const [amount, cost] = this.costBulk(value, start, target);
-      const canAfford = value.gte(cost);
-      const out = [canAfford ? amount : currentLevel, canAfford && !el ? cost : Decimal.dZero];
+      const [amount, cost2] = this.costBulk(value, startLevel, targetDifference);
+      const canAfford = value.gte(cost2);
+      const out = [
+        canAfford ? amount : currentLevel,
+        canAfford && !el ? cost2 : Decimal.dZero
+      ];
       return out;
     }
     const lookupMode = el ? 1 /* costAtLevel */ : 0 /* accumulatedCost */;
-    if (this.lowerCache.isWithinBounds(value, lookupMode)) {
-      const adjustment = !el ? this.lowerCache.getCostAtLevel(start, lookupMode) : Decimal.dZero;
-      const adjustedCurrencyValue = !el ? value.add(adjustment) : value;
+    const adjustment = !el ? this.lowerCache ? this.lowerCache.getCostAtLevel(startLevel, 0 /* accumulatedCost */) : calculateSum(this.cost, startLevel, Decimal.dZero) : Decimal.dZero;
+    const adjustedCurrencyValue = !el ? value.add(adjustment) : value;
+    if (this.lowerCache && this.lowerCache.isWithinBounds(value, lookupMode)) {
       const lookupResult = this.lowerCache.lookUp(adjustedCurrencyValue, lookupMode);
-      const cost = el ? Decimal.dZero : this.lowerCache.getCostAtLevel(lookupResult.lowerNode).sub(adjustment);
-      return [lookupResult.lowerNode, cost];
+      const resultLevel = lookupResult.lowerNode.min(endLevel);
+      const cost2 = el ? Decimal.dZero : this.lowerCache.getCostAtLevel(resultLevel).sub(adjustment);
+      return [resultLevel, cost2];
     }
-    return [currentLevel, Decimal.dZero];
-  }
-  // Chainable setters
-  // TODO: jsdoc
-  withName(name) {
-    this.name = name;
-    return this;
-  }
-  withCost(cost) {
-    this.cost = cost;
-    return this;
-  }
-  withCostBulk(costBulk) {
-    this.costBulk = costBulk;
-    return this;
-  }
-  withMaxLevel(maxLevel) {
-    this.maxLevel = maxLevel;
-    return this;
-  }
-  withEffect(effect) {
-    this.effect = effect;
-    return this;
-  }
-  withEffectOnAdd(effectOnAdd) {
-    this.effectOnAdd = effectOnAdd;
-    return this;
-  }
-  withEl(el) {
-    this.el = el;
-    return this;
-  }
-  withBounds(bounds) {
-    this.bounds = bounds;
-    return this;
-  }
-  withDefaultLevel(defaultLevel) {
-    this.defaultLevel = defaultLevel;
-    return this;
-  }
-  withDescriptionSupplier(descriptionSupplier) {
-    this.descriptionSupplier = descriptionSupplier;
-    return this;
-  }
-  withLevelProtectionOptions(newLevelProtections) {
-    this.levelProtections.setProtections(newLevelProtections);
-    return this;
-  }
-  withCacheSize(cacheSize) {
-    this.lowerCache.fill(Math.min(this.maxLevel.toNumber(), cacheSize), this.cost, this.defaultLevel);
-    return this;
+    if (this.lowerCache && this.lowerCache.getMaxLevel().gte(this.maxLevel)) {
+      const resultLevel = this.lowerCache.getMaxLevel().min(endLevel);
+      const cost2 = el ? Decimal.dZero : this.lowerCache.getCostAtLevel(resultLevel).sub(adjustment);
+      return [resultLevel, cost2];
+    }
+    const bounds = this.bounds ? this.bounds(adjustedCurrencyValue) : [Decimal.dZero, adjustedCurrencyValue];
+    if (el) {
+      const maxLevelAffordable2 = calculateInverseFunction(this.cost, value, {
+        mode: meanMode,
+        iterations: maxUpperIterations,
+        lowerBound: bounds[0],
+        upperBound: bounds[1]
+      }).value.min(endLevel).floor();
+      const cost2 = Decimal.dZero;
+      return [maxLevelAffordable2, cost2];
+    }
+    const maxLevelAffordable = calculateInverseFunction(
+      (x) => calculateSum(this.cost, x, Decimal.dZero),
+      adjustedCurrencyValue,
+      {
+        mode: meanMode,
+        iterations: maxUpperIterations,
+        lowerBound: bounds[0],
+        upperBound: bounds[1]
+      }
+    ).value.floor().clamp(Decimal.dZero, endLevel);
+    const cost = calculateSum(this.cost, maxLevelAffordable, Decimal.dZero, void 0, DEFAULT_ITERATIONS).sub(
+      adjustment
+    );
+    return [maxLevelAffordable, cost];
   }
   /**
+   * Calculates the cost and how many upgrades you can buy with an end level that is the current level plus the {@link additiveLevelTarget}.
+   * @param additiveLevelTarget - The additive level target to add to the current level.
+   * @returns a {@link UpgradeCalculationResult}.
+   * @see {@link calculate}
+   */
+  calculateWithAdditiveLevelTarget(additiveLevelTarget) {
+    return this.calculate(void 0, void 0, this.level.add(additiveLevelTarget));
+  }
+  /**
+   * Calculates the cost of the next upgrade after the maximum affordable quantity.
+   * @param calculationResult - The result of {@link calculate}. If not provided, it will calculate it using the current currency value and level.
+   * @returns The cost of the next upgrade. Equal to the cost of the upgrade at the level of `amountAffordable` plus the cost of the next upgrade
+   * @example
+   * // Calculate the cost of the next healthBoost upgrade
+   * currency.gain(1e6); // Gain 1 thousand currency
+   * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
+   * console.log(currency.getCumulativeSubsequentCost("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
+   */
+  getCumulativeSubsequentCost(calculationResult = this.calculate()) {
+    const nextCost = this.cost(calculationResult[0]).add(calculationResult[1]);
+    return nextCost;
+  }
+  /**
+   * Buys an upgrade based on its ID or array position if enough currency is available.
+   * @param calculationResult - The result of {@link Upgrade.calculate}. If not provided, it will calculate it using the current currency value and level.
+   * @returns Returns true if the purchase or upgrade is successful, or false if a level cannot be bought or the new level is less than the current level.
+   * @example
+   * // Attempt to buy up to 10 healthBoost upgrades at once
+   * currency.buyUpgrade("healthBoost", 10);
+   */
+  buyMax(calculationResult = this.calculate()) {
+    const [newLevel, cost] = calculationResult;
+    if (newLevel.lte(this.level)) {
+      return false;
+    }
+    this.currency.value = this.currency.value.sub(cost);
+    this.level = newLevel;
+    this.runEffect();
+    return true;
+  }
+  /**
+   * Buys one upgrade if enough currency is available.
+   * @returns Returns true if enough currency is available and the 1 upgrade is bought, or false if there is not enough currency.
+   */
+  buyOne() {
+    return this.buyMax(this.calculate(void 0, void 0, this.level.add(Decimal.dOne)));
+  }
+  // Chainable setters
+  /**
    * A helper function to set the cost and costBulk functions for upgrades with a non-scaling cost (cost is independent of the level).
+   * Functions same as the former `Item` from versions before v10.
    * @param cost - The cost of the upgrade.
    * @returns The upgrade object with the cost and costBulk functions set. The costBulk function is generated using {@link getCostBulkForNonScalingUpgrade}.
    */
   asNonScalingUpgrade(cost) {
-    cost = Decimal.fromValue_noAlloc(cost);
+    cost = new Decimal(cost);
     this.cost = () => cost;
     this.costBulk = _Upgrade.getCostBulkForNonScalingUpgrade(cost);
     return this;
   }
-  // Internal setters
+  /**
+   * Sets the size or disables the lower cache for the upgrade.
+   * @param cacheSize - The size of the lower cache. If `null`, the lower cache will be disabled.
+   * @returns this
+   */
+  withCacheSize(cacheSize) {
+    if (cacheSize === null) {
+      this.lowerCache = null;
+      return this;
+    }
+    this.lowerCache = new LowerCachedUpgradeLookup();
+    this.lowerCache.fill(Math.min(this.maxLevel.toNumber(), cacheSize), this.cost, this.defaultLevel);
+    return this;
+  }
+  /**
+   * Changes the {@link levelProtections} options for this upgrade.
+   * Equivalent to calling {@link InvalidDecimalProtections.setProtections} on the {@link levelProtections} object.
+   * @param newLevelProtections - The new level protections to set.
+   * @returns this
+   */
+  withLevelProtectionOptions(newLevelProtections) {
+    this.levelProtections.setProtections(newLevelProtections);
+    return this;
+  }
+  /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
+  /** @see {@link Upgrade.prototype.name} */
+  withName(name) {
+    this.name = name;
+    return this;
+  }
+  /** @see {@link Upgrade.cost} */
+  withCost(cost) {
+    this.cost = cost;
+    return this;
+  }
+  /** @see {@link Upgrade.costBulk} */
+  withCostBulk(costBulk) {
+    this.costBulk = costBulk;
+    return this;
+  }
+  /** @see {@link Upgrade.maxLevel} */
+  withMaxLevel(maxLevel) {
+    this.maxLevel = maxLevel;
+    return this;
+  }
+  /** @see {@link Upgrade.effect} */
+  withEffect(effect) {
+    this.effect = effect;
+    return this;
+  }
+  /** @see {@link Upgrade.effectOnAdd} */
+  withEffectOnAdd(effectOnAdd) {
+    this.effectOnAdd = effectOnAdd;
+    return this;
+  }
+  /** @see {@link Upgrade.el} */
+  withEl(el) {
+    this.el = el;
+    return this;
+  }
+  /** @see {@link Upgrade.bounds} */
+  withBounds(bounds) {
+    this.bounds = bounds;
+    return this;
+  }
+  /** @see {@link Upgrade.defaultLevel} */
+  withDefaultLevel(defaultLevel) {
+    this.defaultLevel = defaultLevel;
+    return this;
+  }
+  /** @see {@link Upgrade.descriptionSupplier} */
+  withDescriptionSupplier(descriptionSupplier) {
+    this.descriptionSupplier = descriptionSupplier;
+    return this;
+  }
+  /** @see {@link Upgrade.currencySupplier} */
+  // Internal setter
   withCurrencySupplier(currencySupplier) {
     this.currencySupplier = currencySupplier;
     return this;
   }
+  /* eslint-enable jsdoc/require-param, jsdoc/require-returns */
 };
-var SkillNode = class _SkillNode extends Upgrade2 {
+var SkillNode = class _SkillNode extends Upgrade {
   static fromUpgrade(upgrade) {
     const out = new _SkillNode(upgrade.id);
     Object.assign(out, upgrade);
@@ -8315,6 +8434,262 @@ var SkillNode = class _SkillNode extends Upgrade2 {
       }
       return requiredSkill.isUnlocked();
     });
+  }
+};
+
+// src/classes/Currency.ts
+var CurrencyData = class {
+  constructor() {
+    this.value = new Decimal(Decimal.dZero);
+  }
+  static {
+    /**
+     * A placeholder readonly currency data object that returns a value of 0.
+     */
+    this.placeholderCurrencyData = new class {
+      get value() {
+        return new Decimal(Decimal.dZero);
+      }
+      set value(level) {
+        console.warn(
+          "eMath.js: Attempted to set value on placeholder currency data. Possibly Currency dataSupplier has not been set yet."
+        );
+      }
+    }();
+  }
+};
+__decorateClass([
+  Type2(() => Decimal)
+], CurrencyData.prototype, "value", 2);
+var Currency = class _Currency {
+  /**
+   * Creates a new currency with the given id.
+   * @param id - The {@link id} of the currency.
+   */
+  constructor(id) {
+    /**
+     * Stores a list of each of this currency's upgrades and their corresponding data.
+     * To get an upgrade, either store a reference to the upgrade when it is created (recommended), or use {@link getUpgrade} to retrieve it by id.
+     */
+    this.upgrades = [];
+    /**
+     * @returns A reference to the data.
+     */
+    this.dataSupplier = () => {
+      console.warn("emath.js: Currency dataSupplier has not set. Returning placeholder data.");
+      return CurrencyData.placeholderCurrencyData;
+    };
+    /**
+     * A boost that affects the currency gain in {@link gain}.
+     * @see {@link Boost}
+     */
+    this.boost = new Boost();
+    /**
+     * The default value of the currency when it is {@link reset}.
+     * Note: This is not the same as the default value of the currency when it is created, which is always `0`.
+     * @see {@link reset}
+     */
+    this.defaultValue = Decimal.dZero;
+    /**
+     * The protections for {@link value}.
+     * See {@link InvalidDecimalProtections}.
+     */
+    this.valueProtections = new InvalidDecimalProtections({
+      allowNaN: false,
+      allowInfinite: false
+    });
+    /**
+     * A {@link SubscribableDataEntry} for the {@link value} of this currency.
+     * @see {@link SubscribableDataEntry}
+     */
+    this.valueDataEntry = SubscribableDataEntry.fromGetterSetter(
+      () => this.value,
+      (newValue) => {
+        this.value = newValue;
+      },
+      false
+    );
+    /**
+     * A reference to the {@link DataManager} that this currency is added to and where its data is stored.
+     * Set when {@link onAddToDataManager} is called.
+     */
+    this.dataManagerReference = null;
+    this.id = id;
+  }
+  static {
+    /**
+     * A placeholder currency object that returns a value of 0.
+     * Note: This is used for upgrades that are created before the currency is added to the data manager.
+     */
+    this.placeholderCurrency = (() => {
+      const out = new _Currency("placeholderCurrency");
+      out.dataSupplier = () => CurrencyData.placeholderCurrencyData;
+      return out;
+    })();
+  }
+  /**
+   * @returns The pointer of the data.
+   */
+  get data() {
+    return this.dataSupplier();
+  }
+  /**
+   * The current value of the currency.
+   * To add value to the currency based on its boost, use {@link gain} instead.
+   * @returns The current value of the currency.
+   */
+  get value() {
+    return this.data.value;
+  }
+  set value(value) {
+    this.data.value = this.valueProtections.validateValueOrElse(
+      value,
+      this.data.value,
+      `Currency "${this.id}" value`,
+      this
+    );
+    this.valueDataEntry.notifyListeners();
+  }
+  onLoadData() {
+    this.value = this.data.value;
+    for (const upgrade of this.upgrades) {
+      upgrade.runEffect();
+    }
+  }
+  onAddToDataManager(dataManager) {
+    this.dataManagerReference = dataManager;
+    this.dataSupplier = dataManager.setData(this.id, new CurrencyData());
+    for (const upgrade of this.upgrades) {
+      upgrade.onAddToDataManager(dataManager, this.id);
+    }
+  }
+  reset(resetCurrencyOrResetObj, resetUpgradeLevels, runUpgradeEffect) {
+    const resetObj = {
+      resetCurrency: true,
+      resetUpgradeLevels: true,
+      resetItemAmounts: true,
+      runUpgradeEffect: true
+    };
+    if (typeof resetCurrencyOrResetObj === "object") {
+      Object.assign(resetObj, resetCurrencyOrResetObj);
+    } else {
+      Object.assign(resetObj, {
+        resetCurrency: resetCurrencyOrResetObj,
+        resetUpgradeLevels,
+        runUpgradeEffect
+      });
+    }
+    if (resetObj.resetCurrency) this.value = this.defaultValue;
+    if (resetObj.resetUpgradeLevels) {
+      for (const upgrade of Object.values(this.upgrades)) {
+        upgrade.level = new Decimal(upgrade.defaultLevel);
+        if (resetObj.runUpgradeEffect) upgrade.runEffect();
+      }
+    }
+  }
+  /**
+   * Adds to the currency value based on the {@link boost}'s {@link Boost.calculate}d value.
+   * @param dtMultiplier - Delta time / multiplier, assuming you gain once every second. Ex. 0.5 = half gain.
+   * @returns What was gained, NOT the new value.
+   * @example
+   * // Gain a random number between 1 and 10, and return the amount gained.
+   * currency.gain(Math.random() * 10);
+   */
+  gain(dtMultiplier) {
+    let toAdd = this.boost.calculate();
+    if (dtMultiplier) {
+      toAdd = toAdd.mul(dtMultiplier);
+    }
+    this.value = this.value.add(toAdd);
+    return toAdd;
+  }
+  /**
+   * Retrieves an upgrade object based on the provided id.
+   * It is recommended to store a reference to the upgrade when it is created instead of using this method.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object if found, otherwise null.
+   * @example
+   * const upgrade = currency.getUpgrade("healthBoost");
+   * console.log(upgrade); // upgrade object
+   */
+  getUpgrade(id) {
+    return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
+  }
+  /**
+   * Retrieves an upgrade object as a {@link SkillNode} based on the provided id.
+   * If the upgrade is not a {@link SkillNode}, it will return null.
+   * It is recommended to store a reference to the skill node when it is created instead of using this method.
+   * @param id - The id of the upgrade to retrieve.
+   * @returns The upgrade object as a {@link SkillNode} if found and is a {@link SkillNode}, otherwise null.
+   */
+  getUpgradeAsSkillNode(id) {
+    const upgrade = this.getUpgrade(id);
+    if (!upgrade) {
+      return null;
+    }
+    if (upgrade instanceof SkillNode) {
+      return upgrade;
+    }
+    return null;
+  }
+  /**
+   * Adds an upgrade to the currency and runs its effect if specified.
+   * @param upgrade - The upgrade to add.
+   * @param runEffectInstantly - Whether to run the effect immediately. Defaults to `true`.
+   * @returns The added upgrades.
+   * @example
+   * const healthBoostUpgrade = currency.addUpgrade(
+   *     new Upgrade("healthBoost")
+   *         .withName("Health Boost")
+   *         .withDescriptionSupplier((upgradeContext) => `Increases health by ${upgradeContext.level.mul(10).format()}.`)
+   *         .withCost((level) => level.mul(10))
+   *         .withMaxLevel(10)
+   *         .withEffect((level, upgradeContext, currencyContext) => {
+   *             // Set / update the boost
+   *             // health: Currency
+   *             health.boost.setBoost(
+   *                 new BoostObject("healthBoost")
+   *                     .withName("Health Boost")
+   *                     .withDescriptionSupplier(() => `Boosts health by x${Decimal.pow(2, level.sub(1)).format()}.`)
+   *                     .withValue((n) => n.mul(Decimal.pow(2, level.sub(1))))
+   *                     .withOrder(OperationBoostOrder.multiply)
+   *             );
+   *         }
+   * );
+   */
+  addUpgrade(upgrade, runEffectInstantly = true) {
+    if (runEffectInstantly) upgrade.runEffect();
+    upgrade.runEffectOnAdd();
+    upgrade.withCurrencySupplier(() => this);
+    this.upgrades.push(upgrade);
+    if (this.dataManagerReference) {
+      upgrade.onAddToDataManager(this.dataManagerReference, this.id);
+    }
+    return upgrade;
+  }
+  /**
+   * Adds multiple upgrades to the currency and runs their effects if specified.
+   * @param upgrades - The upgrades to add.
+   * @param runEffectInstantly - Whether to run the effects immediately. Defaults to `true`.
+   * @returns The added upgrades.
+   * @see {@link addUpgrade}
+   */
+  addUpgrades(upgrades, runEffectInstantly = true) {
+    for (const upgrade of upgrades) {
+      this.addUpgrade(upgrade, runEffectInstantly);
+    }
+    return upgrades;
+  }
+  // Setters
+  /**
+   * Changes the {@link valueProtections} options for this currency.
+   * Equivalent to calling {@link InvalidDecimalProtections.setProtections} on the {@link valueProtections} object.
+   * @param newValueProtections - The new value protections to set.
+   * @returns this
+   */
+  withValueProtectionOptions(newValueProtections) {
+    this.valueProtections.setProtections(newValueProtections);
+    return this;
   }
 };
 
@@ -8854,32 +9229,6 @@ var Grid = class _Grid {
   }
 };
 
-// src/E/DecimalLRUCache.ts
-var DecimalLRUCache = class _DecimalLRUCache extends LRUCache {
-  /**
-   * Converts a decimal number to a JSON string.
-   * @deprecated Use an object index instead.
-   * @param n - The decimal number to convert.
-   * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
-   */
-  static decimalToKey(n) {
-    n = new Decimal(n);
-    return `${n.sign}/${n.mag}/${n.layer}`;
-  }
-  get(key) {
-    key = new Decimal(key);
-    return super.get(_DecimalLRUCache.decimalToKey(key));
-  }
-  set(key, value) {
-    key = new Decimal(key);
-    super.set(_DecimalLRUCache.decimalToKey(key), value);
-  }
-  has(key) {
-    key = new Decimal(key);
-    return super.has(_DecimalLRUCache.decimalToKey(key));
-  }
-};
-
 // src/classes/numericalAnalysis/sampling.ts
 function gaussianRandom(mean2 = Decimal.dZero, standardDeviation = Decimal.dOne) {
   const u = 1 - Math.random();
@@ -8909,6 +9258,32 @@ function sampleFromBinomialDistribution(numberOfTrials, probabilityOfSuccess) {
   }
   return poissonRandom(np).round().clamp(Decimal.dZero, numberOfTrials);
 }
+
+// src/E/DecimalLRUCache.ts
+var DecimalLRUCache = class _DecimalLRUCache extends LRUCache {
+  /**
+   * Converts a decimal number to a JSON string.
+   * @deprecated Use an object index instead.
+   * @param n - The decimal number to convert.
+   * @returns The decimal number in the form of a string. `sign/mag/layer` See {@link DecimalJSONString}
+   */
+  static decimalToKey(n) {
+    n = new Decimal(n);
+    return `${n.sign}/${n.mag}/${n.layer}`;
+  }
+  get(key) {
+    key = new Decimal(key);
+    return super.get(_DecimalLRUCache.decimalToKey(key));
+  }
+  set(key, value) {
+    key = new Decimal(key);
+    super.set(_DecimalLRUCache.decimalToKey(key), value);
+  }
+  has(key) {
+    key = new Decimal(key);
+    return super.has(_DecimalLRUCache.decimalToKey(key));
+  }
+};
 
 // src/classes/RandomSelector.ts
 var SelectionMethod = class {
@@ -9209,255 +9584,6 @@ var testEntries = [
 ];
 var randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
-// src/classes/numericalAnalysis/numericalAnalysis.ts
-var DEFAULT_ITERATIONS = 30;
-var DEFAULT_ITERATIONS_AS_DECIMAL = new Decimal(DEFAULT_ITERATIONS);
-var DEFAULT_TOLERANCE = 1e-4;
-var MeanMode = /* @__PURE__ */ ((MeanMode2) => {
-  MeanMode2[MeanMode2["arithmetic"] = 1] = "arithmetic";
-  MeanMode2[MeanMode2["geometric"] = 2] = "geometric";
-  MeanMode2[MeanMode2["harmonic"] = 3] = "harmonic";
-  MeanMode2[MeanMode2["logarithmic"] = 4] = "logarithmic";
-  return MeanMode2;
-})(MeanMode || {});
-var oneHalf = Decimal.dTwo.recip();
-function mean(a, b, mode = 2 /* geometric */) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  switch (mode) {
-    case 1 /* arithmetic */:
-      return a.add(b).mul(oneHalf);
-    case 2 /* geometric */:
-    default:
-      return a.mul(b).sqrt();
-    case 3 /* harmonic */:
-      return Decimal.dTwo.div(a.reciprocal().add(b.reciprocal()));
-    case 4 /* logarithmic */:
-      return Decimal.pow10(a.log10().mul(b.log10()).sqrt());
-  }
-}
-function geometricEqualsTolerance(a, b, tolerance = DEFAULT_TOLERANCE, verbose = false) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  const diff = decimalMagDifference(a, b) - 1;
-  const result = Math.abs(diff) < tolerance;
-  if (verbose === true || verbose === "onlyOnFail" && !result) {
-    console.log({ a, b, tolerance, diff, result });
-  }
-  return result;
-}
-function decimalMagDifference(a, b) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  if (a.layer === b.layer) {
-    return a.mag / b.mag;
-  }
-  if (a.layer - b.layer >= 2) {
-    return Infinity;
-  }
-  if (a.layer - b.layer <= -2) {
-    return 0;
-  }
-  if (a.layer > b.layer) {
-    return a.mag / f_maglog10(b.mag);
-  } else {
-    return f_maglog10(a.mag) / b.mag;
-  }
-}
-function roundingBase(x, base = Decimal.dTen, acc = Decimal.dZero) {
-  x = Decimal.fromValue_noAlloc(x);
-  base = Decimal.fromValue_noAlloc(base);
-  acc = Decimal.fromValue_noAlloc(acc);
-  if (base.lt(Decimal.dOne) || acc.lt(Decimal.dOne)) return Decimal.dNaN;
-  const xSign = x.sign;
-  x = x.abs();
-  const isBaseTen = base.equals(Decimal.dTen);
-  const powerN = isBaseTen ? x.log10().floor() : x.log(base).floor();
-  const highestSignificantNumber = isBaseTen ? powerN.pow10() : base.pow(powerN);
-  const factorToScaleWhenRounding = isBaseTen ? acc.pow10() : base.pow(acc);
-  let out = x.div(highestSignificantNumber);
-  out = out.mul(factorToScaleWhenRounding).round().div(factorToScaleWhenRounding);
-  out = out.mul(highestSignificantNumber);
-  out.sign = xSign;
-  return out;
-}
-function approximateDerivative(f, x, epsilon = 1e-12) {
-  x = Decimal.fromValue_noAlloc(x);
-  const fX = f(x);
-  let xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
-  let fXPlusH = f(xPlusH);
-  while (fXPlusH.equals(fX) && epsilon < 1) {
-    epsilon *= 10;
-    xPlusH = Decimal.fromComponents(x.sign, x.layer, x.mag * (1 + epsilon));
-    fXPlusH = f(xPlusH);
-  }
-  const deltaX = xPlusH.sub(x);
-  return fXPlusH.sub(fX).div(deltaX);
-}
-function newtonRaphson(initialGuess, f, fPrime, tolerance = DEFAULT_TOLERANCE, maxIterations = DEFAULT_ITERATIONS) {
-  let x = Decimal.fromValue_noAlloc(initialGuess);
-  fPrime ??= (x2) => approximateDerivative(f, x2);
-  for (let i = 0; i < maxIterations; i++) {
-    const fx = f(x);
-    const fxPrime = fPrime(x);
-    if (fxPrime.equals(Decimal.dZero)) {
-      console.warn("eMath.js: Derivative is zero. No solution found. Returning current approximation.");
-      return x;
-    }
-    const xNext = x.sub(fx.div(fxPrime));
-    if (geometricEqualsTolerance(xNext, x)) {
-      return xNext;
-    }
-    x = xNext;
-  }
-  return x;
-}
-
-// src/classes/numericalAnalysis/sum.ts
-function calculateSumLoop(f, b, a = Decimal.dZero, epsilon = DEFAULT_TOLERANCE) {
-  let sum = Decimal.dZero;
-  let n = Decimal.fromValue_noAlloc(b);
-  for (; n.gte(a); n = n.add(Decimal.dNegOne)) {
-    const initSum = sum;
-    const value = f(n);
-    sum = sum.add(value);
-    if (geometricEqualsTolerance(initSum, sum, epsilon)) break;
-  }
-  return sum;
-}
-function calculateSumApprox(f, b, a = Decimal.dZero, iterations = DEFAULT_ITERATIONS - 10, bSubA) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  let sum = Decimal.dZero;
-  const intervalWidth = bSubA ? bSubA.div(iterations) : b.sub(a).div(iterations);
-  let currentSample = b;
-  for (let i = iterations - 1; i >= 0; i--) {
-    const oldSum = sum;
-    currentSample = currentSample.sub(intervalWidth);
-    sum = sum.add(f(currentSample));
-    if (geometricEqualsTolerance(oldSum, sum)) break;
-  }
-  return sum.mul(intervalWidth);
-}
-function calculateSum(f, b, a = Decimal.dZero, epsilon, iterations) {
-  a = Decimal.fromValue_noAlloc(a);
-  b = Decimal.fromValue_noAlloc(b);
-  const bMinusA = b.sub(a);
-  if (bMinusA.lte(DEFAULT_ITERATIONS_AS_DECIMAL)) {
-    return calculateSumLoop(f, b, a, epsilon);
-  } else {
-    return calculateSumApprox(f, b, a, iterations, bMinusA);
-  }
-}
-
-// src/classes/numericalAnalysis/inverseFunction.ts
-function calculateInverseFunction(f, n, options = {}) {
-  const { iterations, tolerance, lowerBound, upperBound, round, mode } = options;
-  return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, upperBound, round);
-}
-function inverseFunctionApprox(f, n, mode = 2 /* geometric */, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE, lowerBound = Decimal.dOne, upperBound = n, round = false) {
-  lowerBound = Decimal.fromValue_noAlloc(lowerBound);
-  lowerBound = round ? lowerBound.floor() : lowerBound;
-  upperBound = Decimal.fromValue_noAlloc(upperBound);
-  upperBound = round ? upperBound.ceil() : upperBound;
-  n = Decimal.fromValue_noAlloc(n);
-  const BOUND_THRESHOLD = 5;
-  if (lowerBound.gt(upperBound)) {
-    [lowerBound, upperBound] = [upperBound, lowerBound];
-  }
-  const fInitialLowerBound = f(lowerBound);
-  const fInitialUpperBound = f(upperBound);
-  if (fInitialUpperBound.eq(Decimal.dZero)) {
-    return {
-      value: Decimal.dZero,
-      lowerBound: Decimal.dZero,
-      upperBound: Decimal.dZero
-    };
-  }
-  if (fInitialLowerBound.gt(n)) {
-    console.warn("eMath.js: The interval does not contain the value. (f(lowerBound) > n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": fInitialLowerBound,
-      "f(upperBound)": fInitialUpperBound
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!lowerBound.eq(Decimal.dZero)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, Decimal.dZero, upperBound, round);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  if (fInitialUpperBound.lt(n)) {
-    console.warn("eMath.js: The interval does not contain the value. (f(upperBound) < n)", {
-      lowerBound,
-      upperBound,
-      n,
-      /* eslint-disable @typescript-eslint/naming-convention */
-      "f(lowerBound)": fInitialLowerBound,
-      "f(upperBound)": fInitialUpperBound
-      /* eslint-enable @typescript-eslint/naming-convention */
-    });
-    if (!upperBound.eq(n)) {
-      return inverseFunctionApprox(f, n, mode, iterations, tolerance, lowerBound, n, round);
-    }
-    return {
-      value: upperBound,
-      lowerBound: upperBound,
-      upperBound
-    };
-  }
-  let mid = Decimal.dZero;
-  let midValue = Decimal.dZero;
-  let nextMid = mean(lowerBound, upperBound, mode);
-  for (let i = 0; i < iterations; i++) {
-    mid = nextMid;
-    mid = round ? mid.floor() : mid;
-    midValue = f(mid);
-    if (midValue.lt(n)) {
-      lowerBound = mid;
-    } else {
-      upperBound = mid;
-    }
-    if (geometricEqualsTolerance(midValue, n, tolerance)) {
-      break;
-    }
-    if (round && upperBound.sub(lowerBound).lte(BOUND_THRESHOLD)) {
-      let closest = upperBound;
-      let closestDiff = f(upperBound).sub(n).abs();
-      for (let j = lowerBound; j.lte(upperBound); j = j.add(Decimal.dOne)) {
-        const diff = f(j).sub(n).abs();
-        if (diff.lt(closestDiff)) {
-          closest = Decimal.fromValue_noAlloc(j);
-          closestDiff = diff;
-        }
-      }
-      return {
-        value: closest,
-        lowerBound,
-        upperBound
-      };
-    }
-    nextMid = mean(lowerBound, upperBound, mode);
-  }
-  const out = {
-    value: lowerBound,
-    lowerBound,
-    upperBound
-  };
-  return out;
-}
-function inverseFunctionApproxUsingNewtonRaphson(f, n, fPrime, initialGuess, iterations = DEFAULT_ITERATIONS, tolerance = DEFAULT_TOLERANCE) {
-  initialGuess = initialGuess ? Decimal.fromValue_noAlloc(initialGuess) : mean(Decimal.dOne, n, 2 /* geometric */);
-  fPrime ??= (x) => approximateDerivative(f, x);
-  return newtonRaphson(initialGuess, (x) => f(x).sub(n), fPrime, tolerance, iterations);
-}
-
 // src/E/eMain.ts
 var E = (() => {
   let shownWarning = false;
@@ -9506,7 +9632,7 @@ export {
   ST_NAMES,
   SelectionMethod,
   SkillNode,
-  Upgrade2 as Upgrade,
+  Upgrade,
   UpgradeData,
   approximateDerivative,
   calculateInverseFunction,

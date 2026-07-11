@@ -1534,9 +1534,9 @@ function decimalFormatGenerator(Decimal2) {
     ex = new Decimal2(ex);
     return format(ex.mul(100)) + "%";
   }
-  function formatMult(ex, acc = 2) {
+  function formatMult(ex, acc = 2, max = 9) {
     ex = new Decimal2(ex);
-    return ex.gte(1) ? "\xD7" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
+    return ex.gte(1) ? "\xD7" + ex.format(acc, max) : "/" + ex.recip().format(acc, max);
   }
   function expMult(a, b, base = 10) {
     return Decimal2.gte(a, 10) ? Decimal2.pow(base, Decimal2.log(a, base).pow(b)) : new Decimal2(a);
@@ -6316,12 +6316,12 @@ var EventManager = class _EventManager {
    */
   constructor(config, events) {
     /** The timer events stored in the event manager. */
-    this.events = {};
+    this.events = /* @__PURE__ */ Object.create(null);
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    this.callbackEvents = {};
+    this.callbackEvents = /* @__PURE__ */ Object.create(null);
     /**
      * Adds a new event.
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.

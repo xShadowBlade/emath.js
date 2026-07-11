@@ -44,9 +44,7 @@ __export(presets_exports, {
   AutoBuyer: () => AutoBuyer,
   GameFormatClass: () => GameFormatClass,
   formatOptions: () => formatOptions,
-  formatTimeOptions: () => formatTimeOptions,
-  gameFormat: () => gameFormat,
-  gameFormatGain: () => gameFormatGain
+  formatTimeOptions: () => formatTimeOptions
 });
 module.exports = __toCommonJS(presets_exports);
 
@@ -805,9 +803,9 @@ function decimalFormatGenerator(Decimal2) {
     ex = new Decimal2(ex);
     return format(ex.mul(100)) + "%";
   }
-  function formatMult(ex, acc = 2) {
+  function formatMult(ex, acc = 2, max = 9) {
     ex = new Decimal2(ex);
-    return ex.gte(1) ? "\xD7" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
+    return ex.gte(1) ? "\xD7" + ex.format(acc, max) : "/" + ex.recip().format(acc, max);
   }
   function expMult(a, b, base = 10) {
     return Decimal2.gte(a, 10) ? Decimal2.pow(base, Decimal2.log(a, base).pow(b)) : new Decimal2(a);
@@ -5377,67 +5375,59 @@ var { formats, FORMATS } = decimalFormatGenerator(Decimal);
 Decimal.formats = formats;
 
 // src/presets/GameFormats.ts
-function gameFormat(value, settings) {
-  settings = Object.assign(
-    {
+var GameFormatClass = class _GameFormatClass {
+  static {
+    this.defaultSettings = {
       formatType: "mixed_sc",
+      formatTimeType: "short",
       acc: 2,
       max: 9
-    },
-    settings
-  );
-  const { formatType, acc, max, time, multi, formatTimeType } = settings;
-  if (time) {
-    switch (formatTimeType) {
-      case "short":
-        return Decimal.formats.formatTime(value, acc, formatType);
-      case "long":
-        return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
-    }
+    };
   }
-  if (multi) {
-    return Decimal.formats.formatMult(value, acc);
-  }
-  return Decimal.format(value, acc, max, formatType);
-}
-function gameFormatGain(value, gain, settings) {
-  const { formatType, acc, max } = settings;
-  return Decimal.formatGain(value, gain, formatType, acc, max);
-}
-var GameFormatClass = class {
   constructor(settings) {
-    /**
-     * Formats a game value based on the settings.
-     * @param x - The value to format.
-     * @returns The formatted value as a string.
-     */
-    this.format = (x) => gameFormat(x, this.settings);
-    /**
-     * Formats the gain of a game format based on the provided settings.
-     * @param x - The value to format.
-     * @param gain - The gain to apply.
-     * @returns The formatted gain as a string.
-     */
-    this.gain = (x, gain) => gameFormatGain(x, gain, this.settings);
-    /**
-     * Formats a game value as a time based on the settings.
-     * @param x - The value to format.
-     * @returns The formatted value as a string.
-     */
-    this.time = (x) => gameFormat(x, { ...this.settings, time: true });
-    /**
-     * Formats a game value as a multiplier based on the settings.
-     * @param x - The value to format.
-     * @returns The formatted value as a string.
-     */
-    this.multi = (x) => gameFormat(x, { ...this.settings, multi: true });
-    this.settingsFn = typeof settings === "function" ? settings : () => settings;
+    this.settings = Object.assign({}, _GameFormatClass.defaultSettings, settings);
   }
   /**
-   * @returns The settings to use for formatting.
+   * Formats a game value based on the settings.
+   * @param x - The value to format.
+   * @returns The formatted value as a string.
    */
-  get settings() {
-    return this.settingsFn();
+  format(x) {
+    return Decimal.format(x, this.settings.acc, this.settings.max, this.settings.formatType);
+  }
+  formatInteger(x) {
+    return Decimal.formatInteger(
+      x,
+      new Decimal(this.settings.acc).pow10(),
+      this.settings.acc,
+      this.settings.max,
+      this.settings.formatType
+    );
+  }
+  /**
+   * Formats the gain of a game format based on the provided settings.
+   * @param x - The value to format.
+   * @param gain - The gain to apply.
+   * @returns The formatted gain as a string.
+   */
+  gain(x, gain) {
+    return Decimal.formatGain(x, gain, this.settings.formatType, this.settings.acc, this.settings.max);
+  }
+  /**
+   * Formats a game value as a time based on the settings.
+   * @param x - The value to format.
+   * @returns The formatted value as a string.
+   */
+  time(x) {
+    return Decimal.formats.formatTime(x, this.settings.acc, this.settings.formatType);
+  }
+  /**
+   * Formats a game value as a multiplier based on the settings.
+   * @param x - The value to format.
+   * @returns The formatted value as a string.
+   */
+  mult(x) {
+    return Decimal.formats.formatMult(x, this.settings.acc);
   }
 };
 var formatOptions = [
@@ -5555,12 +5545,12 @@ var EventManager = class _EventManager {
    */
   constructor(config, events) {
     /** The timer events stored in the event manager. */
-    this.events = {};
+    this.events = /* @__PURE__ */ Object.create(null);
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    this.callbackEvents = {};
+    this.callbackEvents = /* @__PURE__ */ Object.create(null);
     /**
      * Adds a new event.
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
@@ -5747,7 +5737,7 @@ var AutoBuyer = class _AutoBuyer {
     for (const upgrade of this.config.upgradesToAutoBuy) {
       const currency = upgrade.currency;
       const availableCurrency = this.config.maxCurrencyAllocated(currency);
-      currency.buyUpgrade(upgrade, void 0, void 0, void 0, availableCurrency);
+      upgrade.buyMax(upgrade.calculate(availableCurrency));
     }
   }
 };
