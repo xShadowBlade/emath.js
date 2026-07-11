@@ -38,8 +38,14 @@ class DecimalArray implements Iterable<Decimal> {
      */
     private magArray: Float64Array;
 
+    /**
+     * The type of the {@link layerAndSignArray}.
+     */
     private layerAndSignArrayType: DecimalLayerArrayType;
 
+    /**
+     * The number of Decimals stored in the array.
+     */
     public length: number;
 
     /**

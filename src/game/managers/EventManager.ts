@@ -172,13 +172,14 @@ class EventManager<TEvents extends string = string> {
     private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
 
     /** The timer events stored in the event manager. */
-    private readonly events: Record<string, IntervalEvent | TimeoutEvent> = {};
+    private readonly events: Record<string, IntervalEvent | TimeoutEvent> = Object.create(null);
 
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Partial<Record<TEvents | EventManagerInternalEvents, CallbackEvent[]>> = {};
+    private readonly callbackEvents: Partial<Record<TEvents | EventManagerInternalEvents, CallbackEvent[]>> =
+        Object.create(null);
 
     /** The interval for the event manager */
     private tickerInterval?: ReturnType<typeof setInterval>;

@@ -20,7 +20,7 @@
  * all copies or substantial portions of the Software.
  */
 
-import type { Decimal as DecimalType, DecimalSource } from "./e";
+import type { DecimalSource, Decimal as DecimalType } from "./e";
 
 type Decimal = DecimalType;
 
@@ -179,29 +179,29 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
                 /* eslint-disable prettier/prettier */
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 element_lists: [["H"],
-                    ["He", "Li", "Be", "B", "C", "N", "O", "F"],
-                    ["Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl"],
-                    [
-                        "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe",
-                        "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br",
-                    ],
-                    [
-                        "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru",
-                        "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I",
-                    ],
-                    [
-                        "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm",
-                        "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm",
-                        "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir",
-                        "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
-                    ],
-                    [
-                        "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np",
-                        "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md",
-                        "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt",
-                        "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts",
-                    ],
-                    ["Og"]],
+                ["He", "Li", "Be", "B", "C", "N", "O", "F"],
+                ["Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl"],
+                [
+                    "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe",
+                    "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br",
+                ],
+                [
+                    "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru",
+                    "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I",
+                ],
+                [
+                    "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm",
+                    "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm",
+                    "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir",
+                    "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
+                ],
+                [
+                    "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np",
+                    "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md",
+                    "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt",
+                    "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts",
+                ],
+                ["Og"]],
                 /* eslint-enable prettier/prettier */
             },
             getOffset(group: number): number {
@@ -661,9 +661,9 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
                         (a > 0
                             ? ex.toFixed(a)
                             : ex
-                                  .toFixed(a)
-                                  .toString()
-                                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"))
+                                .toFixed(a)
+                                .toString()
+                                .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"))
                     );
                 } else {
                     if (ex.gte("eeee10")) {
@@ -833,11 +833,12 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
      * Format the multiplier
      * @param ex - The value to format
      * @param acc - The accuracy
+     * @param max - The max
      * @returns - The formatted multiplier
      */
-    function formatMult(ex: DecimalSource, acc = 2): string {
+    function formatMult(ex: DecimalSource, acc = 2, max = 9): string {
         ex = new Decimal(ex);
-        return ex.gte(1) ? "×" + ex.format(acc) : "/" + ex.pow(-1).format(acc);
+        return ex.gte(1) ? "×" + ex.format(acc, max) : "/" + ex.recip().format(acc, max);
     }
 
     /**
@@ -928,8 +929,8 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
         const abbNum = num.lte(0)
             ? 0
             : Decimal.min(Decimal.log(num, 1000).sub(1), abb.length - 1)
-                  .floor()
-                  .toNumber();
+                .floor()
+                .toNumber();
         const abbMax = abb[abbNum];
         if (abbNum === 0) {
             switch (type) {
@@ -995,5 +996,5 @@ function decimalFormatGenerator(Decimal: typeof DecimalType) {
     };
 }
 
+export { decimalFormatGenerator, formatTypeList as FormatTypeList, ST_NAMES };
 export type { FormatType };
-export { decimalFormatGenerator, ST_NAMES, formatTypeList as FormatTypeList };

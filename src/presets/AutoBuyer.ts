@@ -102,7 +102,7 @@ class AutoBuyer {
             const currency = upgrade.currency;
             const availableCurrency = this.config.maxCurrencyAllocated(currency);
 
-            currency.buyUpgrade(upgrade, undefined, undefined, undefined, availableCurrency);
+            upgrade.buyMax(upgrade.calculate(availableCurrency));
         }
     }
 }

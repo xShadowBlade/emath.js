@@ -1,103 +1,49 @@
 /**
  * @file Game formats class.
  */
-import type { DecimalSource, FormatType } from "../E/e";
 import { Decimal } from "../E/e";
-import type { Pointer } from "../common/types";
+import type { DecimalSource, FormatType } from "../E/e";
 
 /**
  * Interface for format gain settings.
  */
-interface FormatGainSettings {
-    /** The format type to be using */
-    formatType?: FormatType;
-    /** The number of decimal places to display */
-    acc?: number;
-    /** The maximum number of digits to display */
-    max?: number;
-}
+interface FormatSettings {
+    /**
+     * The format type to be using
+     */
+    formatType: FormatType;
 
-/**
- * Interface for format settings.
- */
-interface FormatSettings extends FormatGainSettings {
-    /** Whether to format as time */
-    time?: boolean;
-    /** Whether to format as a multiplier */
-    multi?: boolean;
-    /** The format type to be using for time */
-    formatTimeType?: FormatTimeType;
-}
+    /**
+     * The format type to be using for time.
+     */
+    formatTimeType: FormatTimeType;
 
-/**
- * Function to format a game value with various settings.
- * @param value - The value to format.
- * @param settings - The settings to use for formatting.
- * @returns The formatted value.
- */
-function gameFormat(value: DecimalSource, settings: FormatSettings): string {
-    // Assign default settings (deprecated as default parameters are used instead)
-    settings = Object.assign(
-        {
-            formatType: "mixed_sc",
-            acc: 2,
-            max: 9,
-        },
-        settings,
-    );
+    /**
+     * The number of decimal places/significant figures to display.
+     */
+    acc: number;
 
-    // console.log("gameFormat settings", settings);
-
-    const { formatType, acc, max, time, multi, formatTimeType } = settings;
-
-    // Format time
-    if (time) {
-        switch (formatTimeType) {
-            case "short":
-                return Decimal.formats.formatTime(value, acc, formatType);
-            case "long":
-                return Decimal.formats.formatTimeLong(value, true, 0, max, formatType);
-        }
-    }
-
-    // Format multi
-    if (multi) {
-        // TODO: Fix params
-        return Decimal.formats.formatMult(value, acc);
-    }
-    return Decimal.format(value, acc, max, formatType);
-}
-
-/**
- * Formats the gain of a game format based on the provided settings.
- * @param value - The value to format.
- * @param gain - The gain to apply.
- * @param settings - The settings for formatting the gain.
- * @returns The formatted gain as a string.
- */
-function gameFormatGain(value: DecimalSource, gain: DecimalSource, settings: FormatGainSettings): string {
-    // return gameFormat(value, props.settings);
-    const { formatType, acc, max } = settings;
-    return Decimal.formatGain(value, gain, formatType, acc, max);
+    /**
+     * When in mixed scientific format, the maximum number of digits to display with commas before switching to abbreviations.
+     */
+    max: number;
 }
 
 /**
  * Class to represent a game format.
  */
 class GameFormatClass {
-    /**
-     * A pointer to the settings to use for formatting.
-     */
-    private readonly settingsFn: () => FormatSettings;
-    /**
-     * @returns The settings to use for formatting.
-     */
-    public get settings(): FormatSettings {
-        return this.settingsFn();
-    }
-    constructor(settings: Pointer<FormatSettings>) {
-        // this.settings = settings;
-        this.settingsFn = typeof settings === "function" ? settings : (): FormatSettings => settings;
+    private static readonly defaultSettings: FormatSettings = {
+        formatType: "mixed_sc",
+        formatTimeType: "short",
+        acc: 2,
+        max: 9,
+    };
+
+    public readonly settings: FormatSettings;
+
+    constructor(settings?: Partial<FormatSettings>) {
+        this.settings = Object.assign({}, GameFormatClass.defaultSettings, settings);
     }
 
     /**
@@ -105,7 +51,19 @@ class GameFormatClass {
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public format = (x: DecimalSource): string => gameFormat(x, this.settings);
+    public format(x: DecimalSource): string {
+        return Decimal.format(x, this.settings.acc, this.settings.max, this.settings.formatType);
+    }
+
+    public formatInteger(x: DecimalSource): string {
+        return Decimal.formatInteger(
+            x,
+            new Decimal(this.settings.acc).pow10(),
+            this.settings.acc,
+            this.settings.max,
+            this.settings.formatType,
+        );
+    }
 
     /**
      * Formats the gain of a game format based on the provided settings.
@@ -113,21 +71,27 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain = (x: DecimalSource, gain: DecimalSource): string => gameFormatGain(x, gain, this.settings);
+    public gain(x: DecimalSource, gain: DecimalSource): string {
+        return Decimal.formatGain(x, gain, this.settings.formatType, this.settings.acc, this.settings.max);
+    }
 
     /**
      * Formats a game value as a time based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public time = (x: DecimalSource): string => gameFormat(x, { ...this.settings, time: true });
+    public time(x: DecimalSource): string {
+        return Decimal.formats.formatTime(x, this.settings.acc, this.settings.formatType);
+    }
 
     /**
      * Formats a game value as a multiplier based on the settings.
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public multi = (x: DecimalSource): string => gameFormat(x, { ...this.settings, multi: true });
+    public mult(x: DecimalSource): string {
+        return Decimal.formats.formatMult(x, this.settings.acc);
+    }
 }
 
 /**
@@ -206,5 +170,5 @@ const formatTimeOptions: FormatOption<FormatTimeType>[] = (
     ] as FormatOption<FormatTimeType>[]
 ).sort((a, b) => a.name.localeCompare(b.name));
 
-export { GameFormatClass, formatOptions, formatTimeOptions, gameFormat, gameFormatGain };
-export type { FormatGainSettings, FormatSettings, FormatTimeType, FormatOption };
+export { GameFormatClass, formatOptions, formatTimeOptions };
+export type { FormatSettings, FormatTimeType, FormatOption };
