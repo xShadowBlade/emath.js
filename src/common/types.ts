@@ -25,7 +25,7 @@ type Mutable<T> = {
 };
 
 /** A class constructor */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type ClassType = new (...args: any[]) => any;
 
 /** A plain object with unknown properties. */

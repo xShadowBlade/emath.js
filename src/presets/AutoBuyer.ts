@@ -7,7 +7,7 @@ import type { Currency } from "../classes/Currency";
 import type { Decimal } from "../E/e";
 import { ConfigManager } from "../game/managers/ConfigManager";
 import { EventTypes } from "../game/managers/EventManager";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line @typescript-eslint/no-unused-vars
 import type { TimerEvent } from "../game/managers/EventManager";
 
 interface AutoBuyerConfig {

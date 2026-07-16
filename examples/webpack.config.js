@@ -1,8 +1,8 @@
 /**
  * @file Webpack configuration file.
  */
-/* eslint-disable jsdoc/check-tag-names */
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* oxlint-disable jsdoc/check-tag-names */
+/* oxlint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
 const { EsbuildPlugin } = require("esbuild-loader");
 const webpack = require("webpack");
@@ -41,14 +41,14 @@ module.exports = (env, argv) => {
         // },
         module: {
             rules: [
-            // Use esbuild to compile JavaScript & TypeScript
+                // Use esbuild to compile JavaScript & TypeScript
                 {
-                // Match `.js`, `.jsx`, `.ts` or `.tsx` files
+                    // Match `.js`, `.jsx`, `.ts` or `.tsx` files
                     test: /\.[jt]sx?$/,
                     exclude: /node_modules/,
                     loader: "esbuild-loader",
                     options: {
-                    // JavaScript version to compile to
+                        // JavaScript version to compile to
                         target: "es2015",
                         tsconfig: "./tsconfig.json",
                     },

@@ -92,21 +92,21 @@ class LRUCache<K, V> {
                 // so node - which is the original "last node" - must have a defined
                 // previous node. Therefore, this.last - set above - must be defined
                 // here.
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.last!.next = undefined;
             } else {
                 // This node is somewhere in the middle of the list, so there must be at
                 // least THREE items in the list, and this node's prev and next must be
                 // defined here.
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
                 node.prev!.next = node.next;
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
                 node.next!.prev = node.prev;
             }
             node.next = this.first;
             // From the invariants, there must be at least two items in the cache, so
             // this.first must be a valid ListNode.
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.first!.prev = node;
             this.first = node;
         }
@@ -147,11 +147,11 @@ class LRUCache<K, V> {
             // so this.map.size is guaranteed to be >= 2,
             // so this.first and this.last must be different valid ListNodes,
             // and this.last.prev must also be a valid ListNode (possibly this.first).
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
             const last = this.last!;
             this.map.delete(last.key);
             this.last = last.prev;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.last!.next = undefined;
         }
     }

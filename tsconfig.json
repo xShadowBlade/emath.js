@@ -1,25 +1,23 @@
 {
-	"compilerOptions": {
-		"emitDeclarationOnly": true,
+    "compilerOptions": {
+        "emitDeclarationOnly": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-		"declaration": true,
-		"allowJs": true,
+        "declaration": true,
+        "allowJs": true,
         "jsx": "react",
-		"target": "es5",
-		"module": "NodeNext",
-		"strict": true, // change later
-		"lib": ["ESNext", "dom"],
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"moduleResolution": "NodeNext",
-		"baseUrl": "./src",  // Adjust this based on your project structure
-		"outDir": "./dist",  // Adjust this based on your project structure
-		"sourceMap": true
-	},
-	"include": ["src/**/*.ts", "src/**/*.tsx"],
-	"exclude": [
-	  	"node_modules",
-	]
+        "target": "es2025",
+        "module": "NodeNext",
+        "strict": true,
+        "lib": ["ESNext", "dom"],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "NodeNext",
+        "rootDir": "./src",
+        "outDir": "./dist/types",
+        "sourceMap": true
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules"]
 }

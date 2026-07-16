@@ -24,7 +24,7 @@ const E: ((x?: DecimalSource) => Decimal) & typeof Decimal = ((): typeof E => {
     // Copy properties from Decimal to E
     Object.getOwnPropertyNames(Decimal)
         // Remove the properties that are not present in an empty class
-        // eslint-disable-next-line @typescript-eslint/no-extraneous-class
+        // oxlint-disable-next-line @typescript-eslint/no-extraneous-class
         .filter((b) => !Object.getOwnPropertyNames(class {}).includes(b))
         // Assign the rest
         .forEach((prop) => {
