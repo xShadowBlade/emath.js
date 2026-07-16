@@ -1,6 +1,8 @@
 documentation/production
 test/build
 
+dist
+
 # Logs
 logs
 *.log
