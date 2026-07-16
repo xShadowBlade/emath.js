@@ -116,7 +116,7 @@ class BoostObject {
     }
 
     // Setters
-    /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
+    /* oxlint-disable jsdoc/require-param, jsdoc/require-returns */
     /** @see {@link BoostObject.prototype.name} */
     public withName(name: typeof this.name): BoostObject {
         this.name = name;
@@ -137,7 +137,7 @@ class BoostObject {
         this.descriptionSupplier = descriptionSupplier;
         return this;
     }
-    /* eslint-enable jsdoc/require-param, jsdoc/require-returns */
+    /* oxlint-enable jsdoc/require-param, jsdoc/require-returns */
 }
 
 /**

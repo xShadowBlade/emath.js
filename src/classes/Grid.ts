@@ -538,7 +538,7 @@ class Grid<TProperties extends object = UnknownObject> {
 
         try {
             out = this.cells[y][x];
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // oxlint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             return undefined as never;
         }

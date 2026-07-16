@@ -4,7 +4,7 @@
 import type { PickOptional } from "../../common/types";
 import type { Decimal } from "../../E/e";
 import { ConfigManager } from "./ConfigManager";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line @typescript-eslint/no-unused-vars
 import type { DataManager } from "./DataManager";
 
 /**
@@ -285,7 +285,7 @@ class EventManager<TEvents extends string = string> {
                         event.callback(dt);
 
                         // Remove the event from the event manager.
-                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
                         delete this.events[event.name];
                     }
                 }
@@ -417,7 +417,7 @@ class EventManager<TEvents extends string = string> {
      * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
      */
     public removeEvent(name: string): void {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.events[name];
     }
 }

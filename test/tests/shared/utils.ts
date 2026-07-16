@@ -47,7 +47,7 @@ class LocalStorageTest implements Storage {
     }
 
     public removeItem(key: string): void {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.store[key];
     }
 }

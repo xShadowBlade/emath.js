@@ -8,7 +8,7 @@ enum DecimalLayerArrayType {
     int8Array = 126,
     int16Array = 32766,
     int32Array = 2147483646,
-    // eslint-disable-next-line @typescript-eslint/prefer-literal-enum-member
+    // oxlint-disable-next-line @typescript-eslint/prefer-literal-enum-member
     float64Array = Infinity,
 }
 

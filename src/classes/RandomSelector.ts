@@ -5,7 +5,6 @@ import type { Pointer } from "../common/types";
 import { DecimalLRUCache } from "../E/DecimalLRUCache";
 import type { DecimalSource } from "../E/e";
 import { Decimal } from "../E/e";
-import { LRUCache } from "../E/LRUCache";
 import { sampleFromBinomialDistribution } from "./numericalAnalysis/sampling";
 
 /**
@@ -131,7 +130,7 @@ interface WeightOptionEntry<
     TName extends string = string,
     /* eslint-disable @typescript-eslint/naming-convention */
     _TSortedState extends RandomArraySortedState = RandomArraySortedState.unsorted,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line @typescript-eslint/no-unused-vars
     _TNormalized extends WeightOptionNormalizationState = WeightOptionNormalizationState.unnormalized,
     /* eslint-enable @typescript-eslint/naming-convention */
 > extends Pick<RandomOptionEntry<TName, _TSortedState>, "name"> {
@@ -174,11 +173,11 @@ abstract class SelectionMethod {
      * @returns An array of objects representing the normalized weights of the entries. Should be sorted from lowest to highest weight ({@link RandomArraySortedState.sortedLowestToHighestWeight}). If the selection method does not support normalized weights, it should return `undefined`.
      */
     public getNormalizedWeights<T extends string>(
-        /* eslint-disable @typescript-eslint/no-unused-vars */
+        /* oxlint-disable @typescript-eslint/no-unused-vars */
         // entries: RandomOptionEntryArray<T, RandomArraySortedState.sortedHighestToLowestChance>,
         entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
         luck: Decimal,
-        /* eslint-enable @typescript-eslint/no-unused-vars */
+        /* oxlint-enable @typescript-eslint/no-unused-vars */
     ):
         | WeightOptionEntry<
               T,
@@ -662,15 +661,15 @@ class RandomSelector<TPossibleNames extends string = string> {
 }
 
 // Test
-const testEntries = [
-    { name: "Common", chance: new Decimal(2) },
-    { name: "Rare", chance: new Decimal(5) },
-    { name: "Epic", chance: new Decimal(10) },
-    { name: "Legendary", chance: new Decimal(2000) },
-    { name: "Mythic", chance: new Decimal(1e6) },
-] as const satisfies RandomOptionEntry[];
+// const testEntries = [
+//     { name: "Common", chance: new Decimal(2) },
+//     { name: "Rare", chance: new Decimal(5) },
+//     { name: "Epic", chance: new Decimal(10) },
+//     { name: "Legendary", chance: new Decimal(2000) },
+//     { name: "Mythic", chance: new Decimal(1e6) },
+// ] as const satisfies RandomOptionEntry[];
 
-const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
+// const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSelectionMethod());
 
 // const luckToTest = new Decimal(2);
 
@@ -736,5 +735,5 @@ const randomSelector = new RandomSelector(testEntries, new RarestFirstCascadeSel
 
 // console.log(manyEntriesSelected);
 
-export type { RandomOptionEntry, WeightOptionEntry, SelectedOptionEntry, RandomArraySortedState };
-export { SelectionMethod, RandomSelector, RarestFirstCascadeSelectionMethod };
+export { RandomSelector, RarestFirstCascadeSelectionMethod, SelectionMethod };
+export type { RandomArraySortedState, RandomOptionEntry, SelectedOptionEntry, WeightOptionEntry };

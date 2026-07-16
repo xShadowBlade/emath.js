@@ -605,7 +605,7 @@ class Upgrade implements StaticClassWithData {
         return this;
     }
 
-    /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
+    /* oxlint-disable jsdoc/require-param, jsdoc/require-returns */
     /** @see {@link Upgrade.prototype.name} */
     public withName(name: typeof this.name): this {
         this.name = name;
@@ -689,7 +689,7 @@ class Upgrade implements StaticClassWithData {
         this.currencySupplier = currencySupplier;
         return this;
     }
-    /* eslint-enable jsdoc/require-param, jsdoc/require-returns */
+    /* oxlint-enable jsdoc/require-param, jsdoc/require-returns */
 }
 
 /**
