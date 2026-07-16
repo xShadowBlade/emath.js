@@ -352,6 +352,8 @@ class Upgrade implements StaticClassWithData {
      * If the {@link endLevel} is within the {@link lowerCache} bounds, it will use the {@link lowerCache} to calculate the cost and amount significantly faster.
      * Otherwise, it will use {@link calculateInverseFunction} and {@link calculateSum} (if applicable) to calculate the cost and amount.
      *
+     * If this upgrade is a {@link SkillNode}, if this skill node has not been {@link SkillNode.isUnlocked} yet, an upgrade cannot be bought.
+     *
      * The priority is:
      * 1. `target === 1`: buy one, manual check next cost
      * 2. {@link costBulk} exists: use it
@@ -364,10 +366,10 @@ class Upgrade implements StaticClassWithData {
      * - For el upgrades, this function has a max time complexity of O(n) where n is the number of iterations ({@link maxUpperIterations}).
      * @param value - The current value of the currency. Defaults to the current value of the currency.
      * @param startLevel - The starting level of the upgrade. Defaults the current level of the upgrade.
-     * @param endLevel - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = Infinity).
+     * @param endLevel - The ending level or quantity to reach for the upgrade. If not provided, it will buy the maximum amount of upgrades possible (using target = `Infinity`).
      * @param meanMode - The mode/mean method to use. See {@link MeanMode}
      * @param maxUpperIterations - The amount of iterations to perform. Defaults to `15`.
-     * @returns a {@link UpgradeCalculationResult} or [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns [0, 0].
+     * @returns a {@link UpgradeCalculationResult} or [amount, cost] - Returns the amount of upgrades you can buy and the cost of the upgrades. If you can't afford any, it returns `[currentLevel, 0]`.
      * @see {@link UpgradeCalculationResult}
      */
     public calculate(
@@ -431,7 +433,7 @@ class Upgrade implements StaticClassWithData {
         const adjustment = !el
             ? this.lowerCache
                 ? this.lowerCache.getCostAtLevel(startLevel, CachedUpgradeLookupMode.accumulatedCost)
-                : calculateSum(this.cost, startLevel, Decimal.dZero)
+                : calculateSum(this.cost, startLevel, this.defaultLevel)
             : Decimal.dZero;
         const adjustedCurrencyValue = !el ? value.add(adjustment) : value;
 
@@ -463,15 +465,15 @@ class Upgrade implements StaticClassWithData {
 
         // Lower cache doesn't have the value, so we need to calculate it manually
 
-        const bounds = this.bounds ? this.bounds(adjustedCurrencyValue) : [Decimal.dZero, adjustedCurrencyValue];
+        const bounds = this.bounds ? this.bounds(adjustedCurrencyValue) : [this.defaultLevel, adjustedCurrencyValue];
 
         // Special case for el upgrades
         if (el) {
             const maxLevelAffordable = calculateInverseFunction(this.cost, value, {
                 mode: meanMode,
                 iterations: maxUpperIterations,
-                lowerBound: bounds[0],
-                upperBound: bounds[1],
+                lowerBound: bounds[0].max(startLevel),
+                upperBound: bounds[1].min(endLevel),
             })
                 .value.min(endLevel)
                 .floor();
@@ -481,20 +483,20 @@ class Upgrade implements StaticClassWithData {
         }
 
         const maxLevelAffordable = calculateInverseFunction(
-            (x: Decimal) => calculateSum(this.cost, x, Decimal.dZero),
+            (x: Decimal) => calculateSum(this.cost, x, this.defaultLevel),
             adjustedCurrencyValue,
             {
                 mode: meanMode,
                 iterations: maxUpperIterations,
-                lowerBound: bounds[0],
-                upperBound: bounds[1],
+                lowerBound: bounds[0].max(startLevel),
+                upperBound: bounds[1].min(endLevel),
             },
         )
             .value.floor()
-            .clamp(Decimal.dZero, endLevel);
+            .clamp(this.defaultLevel, endLevel);
 
         // After finding the max level affordable, calculate the cost at that level
-        const cost = calculateSum(this.cost, maxLevelAffordable, Decimal.dZero, undefined, DEFAULT_ITERATIONS).sub(
+        const cost = calculateSum(this.cost, maxLevelAffordable, this.defaultLevel, undefined, DEFAULT_ITERATIONS).sub(
             adjustment,
         );
 
@@ -518,14 +520,8 @@ class Upgrade implements StaticClassWithData {
      * Calculates the cost of the next upgrade after the maximum affordable quantity.
      * @param calculationResult - The result of {@link calculate}. If not provided, it will calculate it using the current currency value and level.
      * @returns The cost of the next upgrade. Equal to the cost of the upgrade at the level of `amountAffordable` plus the cost of the next upgrade
-     * @example
-     * // Calculate the cost of the next healthBoost upgrade
-     * currency.gain(1e6); // Gain 1 thousand currency
-     * console.log(currency.calculateUpgrade("healthBoost")); // The maximum affordable quantity and the cost of the upgrades. Ex. [new Decimal(100), new Decimal(1000)]
-     * console.log(currency.getCumulativeSubsequentCost("healthBoost")); // The cost of the next upgrade after the maximum affordable quantity. (The cost of the 101st upgrade)
      */
     public getCumulativeSubsequentCost(calculationResult: UpgradeCalculationResult = this.calculate()): Decimal {
-        // Calculate the cost of the next upgrade after the maximum affordable quantity
         const nextCost = this.cost(calculationResult[0]).add(calculationResult[1]);
         return nextCost;
     }
@@ -534,9 +530,6 @@ class Upgrade implements StaticClassWithData {
      * Buys an upgrade based on its ID or array position if enough currency is available.
      * @param calculationResult - The result of {@link Upgrade.calculate}. If not provided, it will calculate it using the current currency value and level.
      * @returns Returns true if the purchase or upgrade is successful, or false if a level cannot be bought or the new level is less than the current level.
-     * @example
-     * // Attempt to buy up to 10 healthBoost upgrades at once
-     * currency.buyUpgrade("healthBoost", 10);
      */
     public buyMax(calculationResult: UpgradeCalculationResult = this.calculate()): boolean {
         const [newLevel, cost] = calculationResult;
@@ -634,6 +627,12 @@ class Upgrade implements StaticClassWithData {
     /** @see {@link Upgrade.maxLevel} */
     public withMaxLevel(maxLevel: typeof this.maxLevel): this {
         this.maxLevel = maxLevel;
+
+        // If the lower cache exists, fill it with the new max level
+        if (this.lowerCache) {
+            this.lowerCache.fill(Math.min(maxLevel.toNumber(), Upgrade.defaultCacheSize), this.cost, this.defaultLevel);
+        }
+
         return this;
     }
 
@@ -664,6 +663,17 @@ class Upgrade implements StaticClassWithData {
     /** @see {@link Upgrade.defaultLevel} */
     public withDefaultLevel(defaultLevel: typeof this.defaultLevel): this {
         this.defaultLevel = defaultLevel;
+
+        // If the lower cache exists, fill it with the new default level
+        if (this.lowerCache) {
+            this.lowerCache.fill(Math.min(this.maxLevel.toNumber(), Upgrade.defaultCacheSize), this.cost, defaultLevel);
+        }
+
+        // If the current level is less than the new default level, set the level to the new default level
+        if (this.level.lt(defaultLevel)) {
+            this.level = defaultLevel;
+        }
+
         return this;
     }
 
@@ -759,6 +769,20 @@ class SkillNode extends Upgrade {
             // If the required skill is just a skill node, check if it is unlocked
             return requiredSkill.isUnlocked();
         });
+    }
+
+    public calculate(
+        value?: DecimalSource,
+        startLevel?: DecimalSource,
+        endLevel?: DecimalSource,
+        meanMode?: MeanMode,
+        maxUpperIterations?: number,
+    ): UpgradeCalculationResult {
+        if (!this.isUnlocked()) {
+            return [this.level, Decimal.dZero];
+        }
+
+        return super.calculate(value, startLevel, endLevel, meanMode, maxUpperIterations);
     }
 }
 
