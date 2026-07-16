@@ -422,14 +422,10 @@ class EventManager<TEvents extends string = string> {
     }
 }
 
-export type {
-    EventManagerConfig,
-    IntervalEvent,
-    TimeoutEvent,
-    TimerEvent,
-    Event,
-    EventInit,
-    CallbackEvent,
-    EventManagerInternalEvents as EventManagerEvents,
-};
 export { EventManager, EventTypes };
+export type {
+    CallbackEvent, Event,
+    EventInit, EventManagerConfig, EventManagerInternalEvents, IntervalEvent,
+    TimeoutEvent,
+    TimerEvent
+};
