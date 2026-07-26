@@ -309,7 +309,7 @@ class Currency implements StaticClassWithData {
      *         }
      * );
      */
-    public addUpgrade(upgrade: Upgrade, runEffectInstantly = true): Upgrade {
+    public addUpgrade<TUpgradeEffectReturnType>(upgrade: Upgrade<TUpgradeEffectReturnType>, runEffectInstantly = true): Upgrade<TUpgradeEffectReturnType> {
         // Run the effect instantly if needed
         if (runEffectInstantly) upgrade.runEffect();
         upgrade.runEffectOnAdd();
@@ -317,7 +317,7 @@ class Currency implements StaticClassWithData {
         upgrade.withCurrencySupplier(() => this);
 
         // Add the upgrade to this.upgrades
-        this.upgrades.push(upgrade);
+        this.upgrades.push(upgrade as Upgrade<unknown>);
 
         // If the data manager reference exists, add the upgrade to the data manager
         if (this.dataManagerReference) {
@@ -333,7 +333,7 @@ class Currency implements StaticClassWithData {
      * @returns The added upgrades.
      * @see {@link addUpgrade}
      */
-    public addUpgrades(upgrades: Upgrade[], runEffectInstantly = true): Upgrade[] {
+    public addUpgrades<TUpgradeEffectReturnType>(upgrades: Upgrade<TUpgradeEffectReturnType>[], runEffectInstantly = true): Upgrade<TUpgradeEffectReturnType>[] {
         for (const upgrade of upgrades) {
             this.addUpgrade(upgrade, runEffectInstantly);
         }

@@ -51,7 +51,7 @@ type UpgradeCalculationResult = [newLevelToSetTo: Decimal, cost: Decimal];
 /**
  * An upgrade that can be purchased with a currency.
  */
-class Upgrade implements StaticClassWithData {
+class Upgrade<TEffectReturnType = unknown> implements StaticClassWithData {
     /**
      * A helper function to generate a costBulk function for upgrades with a non-scaling cost (cost is independent of the level).
      * @param cost - The cost of the upgrade.
@@ -75,6 +75,7 @@ class Upgrade implements StaticClassWithData {
 
     /**
      * The name of the upgrade. Defaults to the ID.
+     * For display purposes only. Not used internally.
      */
     public name = "";
 
@@ -121,8 +122,9 @@ class Upgrade implements StaticClassWithData {
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency static class that the upgrade is being run on.
      */
-    public effect: (level: Decimal, upgradeContext: Upgrade, currencyContext: Currency) => void = () => {
+    public effect: (level: Decimal, upgradeContext: this, currencyContext: Currency) => TEffectReturnType = () => {
         // Empty effect placeholder
+        return undefined as unknown as TEffectReturnType;
     };
 
     /**
@@ -130,8 +132,9 @@ class Upgrade implements StaticClassWithData {
      * @param upgradeContext - The upgrade object that the effect is being run on.
      * @param currencyContext - The currency object that the upgrade is being run on.
      */
-    public effectOnAdd: (upgradeContext: Upgrade, currencyContext: Currency) => void = () => {
+    public effectOnAdd: (upgradeContext: this, currencyContext: Currency) => TEffectReturnType = () => {
         // Empty effect placeholder
+        return undefined as unknown as TEffectReturnType;
     };
 
     /**
@@ -246,7 +249,7 @@ class Upgrade implements StaticClassWithData {
      * // Getter property
      * console.log(upgrade.description); // "This upgrade is at level 1"
      */
-    public descriptionSupplier: (upgradeContext: Upgrade, currencyContext: Currency) => string = () => "";
+    public descriptionSupplier: (upgradeContext: this, currencyContext: Currency) => string = () => "";
 
     /**
      * @returns A description of the upgrade.
@@ -284,6 +287,9 @@ class Upgrade implements StaticClassWithData {
         false,
     );
 
+    public latestEffectOnAddResult: TEffectReturnType | undefined = undefined;
+    public latestEffectResult: TEffectReturnType | undefined = undefined;
+
     /**
      * Creates a new upgrade object with the given id.
      * @param id - The {@link id} of the upgrade.
@@ -305,14 +311,14 @@ class Upgrade implements StaticClassWithData {
      * Calls the {@link effect} function with the arguments for this and the currency.
      */
     public runEffect(): void {
-        this.effect(this.level, this, this.currency);
+        this.latestEffectResult = this.effect(this.level, this, this.currency);
     }
 
     /**
      * Calls the {@link runEffectOnAdd} function with the arguments for this and the currency.
      */
     public runEffectOnAdd(): void {
-        this.effectOnAdd(this, this.currency);
+        this.latestEffectOnAddResult = this.effectOnAdd(this, this.currency);
     }
 
     /**
@@ -629,7 +635,7 @@ class Upgrade implements StaticClassWithData {
         this.maxLevel = maxLevel;
 
         // If the lower cache exists, fill it with the new max level
-        if (this.lowerCache) {
+        if (this.lowerCache && this.lowerCache.hasBeenPopulated()) {
             this.lowerCache.fill(Math.min(maxLevel.toNumber(), Upgrade.defaultCacheSize), this.cost, this.defaultLevel);
         }
 
