@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "emitDeclarationOnly": true,
+        "declarationMap": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "declaration": true,
