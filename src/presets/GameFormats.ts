@@ -1,8 +1,10 @@
 /**
  * @file Game formats class.
  */
-import { Decimal } from "../E/e";
+import type { BoostObject } from "../classes/Boost";
+import { OperationBoostOrder } from "../classes/Boost";
 import type { DecimalSource, FormatType } from "../E/e";
+import { Decimal } from "../E/e";
 
 /**
  * Interface for format gain settings.
@@ -53,6 +55,60 @@ class GameFormatClass {
      */
     public format(x: DecimalSource): string {
         return Decimal.format(x, this.settings.acc, this.settings.max, this.settings.formatType);
+    }
+
+    /**
+     * Formats a boost object based on its order/behavior and the provided input value.
+     * @param boost - The boost object to format. Should have its {@link BoostObject.order} set to a {@link OperationBoostOrder} and {@link BoostObject.value} set.
+     * @param inputValue - The input value to use for formatting. Recommended to leave undefined to use the default input value based on the boost order.
+     * @returns The formatted boost object as a string.
+     */
+    public formatBoostObject(boost: BoostObject | undefined, inputValue?: DecimalSource): string {
+        if (!boost) {
+            console.warn("eMath.js: GameFormatClass.formatBoostObject: Boost object is undefined. Returning empty string.");
+            return "";
+        }
+
+        // Determine the input value to use for formatting
+        switch (boost.order) {
+            case OperationBoostOrder.add:
+            case OperationBoostOrder.set:
+                inputValue ??= Decimal.dZero;
+                break;
+            case OperationBoostOrder.multiply:
+            case OperationBoostOrder.exponential:
+                inputValue ??= Decimal.dOne;
+                break;
+            case OperationBoostOrder.polynomial:
+                inputValue ??= Decimal.dTen;
+            break;
+            default:
+                console.warn(`eMath.js: GameFormatClass.formatBoostObject: Unrecognized/unsupported boost order ${boost.order} (${OperationBoostOrder[boost.order]}). Defaulting input value to 1.`);
+                inputValue ??= Decimal.dOne;
+        }
+
+        inputValue = Decimal.fromValue_noAlloc(inputValue);
+        const boostValue = boost.value(inputValue);
+
+        switch (boost.order) {
+            case OperationBoostOrder.set:
+                return `=${this.format(boostValue)}`;
+            case OperationBoostOrder.add:
+                return `+${this.format(boostValue)}`;
+            case OperationBoostOrder.multiply:
+                return this.mult(boostValue);
+            case OperationBoostOrder.polynomial:
+                return `^${this.format(boostValue.absLog10())}`;
+            case OperationBoostOrder.exponential:
+                return `${this.format(boostValue)}^`;
+            // Technically unsupported, but we can still format it
+            case OperationBoostOrder.tetrate:
+                return `^^${this.format(boostValue)}`;
+            case OperationBoostOrder.pentate:
+                return `^^^${this.format(boostValue)}`;
+            default:
+                return this.format(boostValue);
+        }
     }
 
     public formatInteger(x: DecimalSource): string {
@@ -170,5 +226,5 @@ const formatTimeOptions: FormatOption<FormatTimeType>[] = (
     ] as FormatOption<FormatTimeType>[]
 ).sort((a, b) => a.name.localeCompare(b.name));
 
-export { GameFormatClass, formatOptions, formatTimeOptions };
-export type { FormatSettings, FormatTimeType, FormatOption };
+export { formatOptions, formatTimeOptions, GameFormatClass };
+export type { FormatOption, FormatSettings, FormatTimeType };
