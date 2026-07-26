@@ -17,8 +17,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: https://registry.npmjs.org/
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+
+      - run: vp install && vp run dev:setup
+      - run: vp build
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

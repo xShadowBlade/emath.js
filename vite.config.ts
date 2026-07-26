@@ -30,6 +30,7 @@ export default defineConfig({
         options: { typeAware: true, typeCheck: true },
     },
     build: {
+        sourcemap: true,
         lib: {
             entry: {
                 "emath": "src/index.ts",

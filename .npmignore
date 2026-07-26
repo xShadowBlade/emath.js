@@ -1,7 +1,6 @@
 # Ignore everything
 /*
-# Allow src and dist directories
-!/src
+# Allow dist directories
 !/dist
 
 # Ignore .md files
