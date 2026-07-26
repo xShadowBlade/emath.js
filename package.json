@@ -27,15 +27,6 @@
             "types": "./dist/types/presets/index.d.ts",
             "import": "./dist/eMath.presets.mjs",
             "default": "./dist/eMath.presets.js"
-        },
-        "./ts": {
-            "default": "./src/index.ts"
-        },
-        "./ts/game": {
-            "default": "./src/game/index.ts"
-        },
-        "./ts/presets": {
-            "default": "./src/presets/index.ts"
         }
     },
     "scripts": {
@@ -43,7 +34,7 @@
         "doc": "typedoc --options typedoc.json",
         "lint": "vp lint src/**/*.ts",
         "lint:fix": "vp lint --fix src/**/*.ts",
-        "test": "cd test && npm run test && cd .."
+        "test": "vp test"
     },
     "dependencies": {
         "class-transformer": "^0.5.1",
