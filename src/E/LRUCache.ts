@@ -1,19 +1,34 @@
 /**
  * @file Defines a LRU cache. From break_eternity.js (https://github.com/Patashu/break_eternity.js).
  */
-/* eslint-disable @typescript-eslint/naming-convention */
+
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 Timothy Stiles
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
 
 /**
  * A LRU cache intended for caching pure functions.
- * @template K The type of the key.
- * @template V The type of the value.
+ * @template K - The type of the key.
+ * @template V - The type of the value.
  */
-class LRUCache<K, V> {
+class LRUCache<K, V> implements Iterable<[K, V]> {
     /** The maximum size of the cache. */
     public readonly maxSize: number;
 
     /** The map of keys to ListNodes. */
-    private map = new Map<K, ListNode<K, V>>();
+    protected map = new Map<K, ListNode<K, V>>();
     // Invariant: Exactly one of the below is true before and after calling a
     // LRUCache method:
     // - first and last are both undefined, and map.size() is 0.
@@ -21,10 +36,10 @@ class LRUCache<K, V> {
     // - first and last are different objects, and map.size() is greater than 1.
 
     /** The first node in the list. */
-    private first: ListNode<K, V> | undefined = undefined;
+    protected first: ListNode<K, V> | undefined = undefined;
 
     /** The last node in the list. */
-    private last: ListNode<K, V> | undefined = undefined;
+    protected last: ListNode<K, V> | undefined = undefined;
 
     /**
      * Constructs a new instance of the LRUCache class.
@@ -37,6 +52,18 @@ class LRUCache<K, V> {
      */
     constructor(maxSize: number) {
         this.maxSize = maxSize;
+    }
+
+    public getFirst(): ListNode<K, V> | undefined {
+        return this.first;
+    }
+
+    public getLast(): ListNode<K, V> | undefined {
+        return this.last;
+    }
+
+    public getMap(): typeof this.map {
+        return this.map;
     }
 
     /**
@@ -155,6 +182,23 @@ class LRUCache<K, V> {
             this.last!.next = undefined;
         }
     }
+
+    public [Symbol.iterator](): IterableIterator<[K, V]> {
+        let current = this.first;
+        return {
+            [Symbol.iterator]() {
+                return this;
+            },
+            next(): IteratorResult<[K, V]> {
+                if (current === undefined) {
+                    return { done: true, value: undefined };
+                }
+                const result: [K, V] = [current.key, current.value];
+                current = current.next;
+                return { done: false, value: result };
+            },
+        };
+    }
 }
 
 /**
@@ -183,4 +227,4 @@ class ListNode<K, V> {
     }
 }
 
-export { LRUCache, ListNode };
+export { ListNode, LRUCache };
