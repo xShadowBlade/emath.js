@@ -273,6 +273,8 @@ class Upgrade<TEffectReturnType = unknown> implements StaticClassWithData {
             `Upgrade "${this.id}" level`,
             this,
         );
+
+        this.levelDataEntry.notifyListeners();
     }
 
     /**
@@ -307,18 +309,26 @@ class Upgrade<TEffectReturnType = unknown> implements StaticClassWithData {
         return typeof this.el === "function" ? this.el() : this.el;
     }
 
+    protected getEffect(): TEffectReturnType {
+        return this.effect(this.level, this, this.currency);
+    }
+
     /**
      * Calls the {@link effect} function with the arguments for this and the currency.
      */
     public runEffect(): void {
-        this.latestEffectResult = this.effect(this.level, this, this.currency);
+        this.latestEffectResult = this.getEffect();
+    }
+
+    protected getEffectOnAdd(): TEffectReturnType {
+        return this.effectOnAdd(this, this.currency);
     }
 
     /**
      * Calls the {@link runEffectOnAdd} function with the arguments for this and the currency.
      */
     public runEffectOnAdd(): void {
-        this.latestEffectOnAddResult = this.effectOnAdd(this, this.currency);
+        this.latestEffectOnAddResult = this.getEffectOnAdd();
     }
 
     /**
@@ -344,6 +354,33 @@ class Upgrade<TEffectReturnType = unknown> implements StaticClassWithData {
     public onLoadData(): void {
         // Run setter method to run protections and other side effects of setting the level.
         this.level = this.data.level;
+    }
+
+    /**
+     * Gets the value of a field with an alternate level.
+     * @param levelOverride - The level to temporarily override the current level with.
+     * @param supplier - A function that returns the value of the field to get.
+     * @returns The value of the field with the alternate level.
+     */
+    public getFieldWithAlternateLevel<T>(levelOverride: DecimalSource, supplier: () => T): T {
+        // Store and change the level to the alternate level
+        const originalLevel = this.level;
+        this.data.level = new Decimal(levelOverride);
+
+        const result = supplier();
+
+        // Set back original using .data directly to bypass protections (probably the original level is already valid)
+        this.data.level = originalLevel;
+
+        return result;
+    }
+
+    /**
+     * @param level - The level to get the description for.
+     * @returns A description of the upgrade at the given level.
+     */
+    public getDescriptionWithAlternateLevel(level: DecimalSource): string {
+        return this.getFieldWithAlternateLevel(level, () => this.description);
     }
 
     /**
