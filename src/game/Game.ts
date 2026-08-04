@@ -1,10 +1,10 @@
 /**
  * @file Declares the main game class.
  */
-import { KeyManager } from "./managers/KeyManager";
-import { EventManager } from "./managers/EventManager";
 import type { StaticClassWithData } from "./managers/DataManager";
 import { DataManager } from "./managers/DataManager";
+import { EventManager } from "./managers/EventManager";
+import { KeyManager } from "./managers/KeyManager";
 
 import type { RequiredDeep } from "./managers/ConfigManager";
 import { ConfigManager } from "./managers/ConfigManager";
@@ -104,9 +104,6 @@ class Game {
     /** The event manager for the game. */
     public readonly eventManager: EventManager;
 
-    /** The tickers for the game. */
-    protected readonly tickers: ((dt: number) => void)[];
-
     /**
      * Creates a new instance of the game class.
      * @param config - The configuration object for the game.
@@ -124,28 +121,16 @@ class Game {
         this.config = Game.configManager.parse(config);
 
         // Init managers
-        // Init separately to allow for manual initialization
         this.dataManager = new DataManager(this, this.config.localStorage as Storage | undefined);
-
-        this.keyManager = new KeyManager({
-            autoAddInterval: this.config.initIntervalBasedManagers,
-            fps: this.config.settings.framerate,
-        });
 
         this.eventManager = new EventManager({
             autoAddInterval: this.config.initIntervalBasedManagers,
             fps: this.config.settings.framerate,
         });
 
-        this.tickers = [];
-    }
-
-    /**
-     * Initializes the game. Also initializes the data manager.
-     * See {@link DataManager.init} for more information.
-     */
-    public init(): void {
-        // this.dataManager.init();
+        this.keyManager = new KeyManager(this, {
+            autoAddInterval: this.config.initIntervalBasedManagers,
+        });
     }
 
     /**
@@ -153,7 +138,6 @@ class Game {
      * @param fps - The new framerate to use.
      */
     public changeFps(fps: number): void {
-        this.keyManager.changeFps(fps);
         this.eventManager.changeFps(fps);
     }
 
@@ -161,102 +145,6 @@ class Game {
         this.dataManager.addCustomData(dataToAdd);
         return dataToAdd;
     }
-
-    // TODO: Implement clearTickers
-    // public clearTickers(): void {
-
-    // }
-
-    // /**
-    //  * Adds a new currency section to the game. {@link GameCurrency} is the class.
-    //  * It automatically adds the currency and currencyStatic objects to the data and static objects for saving and loading.
-    //  * @template TCurrencyName - The name
-    //  * @template U - The upgrade names for the currency. See {@link Currency} for more information.
-    //  * @template I - The item names for the currency. See {@link Currency} for more information.
-    //  * @param name - The name of the currency section. This is also the name of the data and static objects, so it must be unique.
-    //  * @param upgrades - The upgrades for the currency.
-    //  * @param items - The items for the currency.
-    //  * @returns A new instance of the gameCurrency class.
-    //  * @example
-    //  * const currency = game.addCurrency("currency");
-    //  * currency.static.gain();
-    //  * console.log(currency.value); // Decimal.dOne
-    //  */
-    // public addCurrency<
-    //     TCurrencyName extends string = string,
-    //     TUpgradeIds extends string = string,
-    //     TItemIds extends string = string,
-    // >(
-    //     name: TCurrencyName,
-    //     upgrades?: UpgradeInit<TUpgradeIds>[],
-    //     items?: ItemInit<TItemIds>[],
-    // ): GameCurrency<TCurrencyName, TUpgradeIds, TItemIds> {
-    //     // Create the class instance
-    //     const classInstance = new GameCurrency(
-    //         [this.dataManager.setData(name, new CurrencyData()), upgrades, items] as ConstructorParameters<
-    //             typeof Currency
-    //         >,
-    //         this,
-    //         name,
-    //     );
-
-    //     return classInstance;
-    // }
-
-    // /**
-    //  * Adds a new attribute to the game. {@link GameAttribute} is the class.
-    //  * It automatically adds the attribute and attributeStatic objects to the data and static objects for saving and loading.
-    //  * @param name - The name of the attribute.
-    //  * @param useBoost - Indicates whether to use boost for the attribute.
-    //  * @param initial - The initial value of the attribute.
-    //  * @returns The newly created attribute.
-    //  * @example
-    //  * const myAttribute = game.addAttribute("myAttribute");
-    //  */
-    // public addAttribute<TEnableBoost extends boolean = true>(
-    //     name: string,
-    //     useBoost: TEnableBoost = true as TEnableBoost,
-    //     initial: DecimalSource = 0,
-    // ): GameAttribute<TEnableBoost> {
-    //     const classInstance = new GameAttribute(
-    //         [this.dataManager.setData(name, new Attribute(initial)), useBoost, initial] as ConstructorParameters<
-    //             typeof AttributeStatic
-    //         >,
-    //         this,
-    //     );
-
-    //     return classInstance;
-    // }
-
-    // /**
-    //  * Adds a new skill tree to the game.
-    //  * This method automatically adds the skill tree and skillTreeStatic objects to the data and static objects for saving and loading.
-    //  * @template TSkillNames - The names of the skills in the skill tree.
-    //  * @param name - The name of the skill tree. This is also the name of the data and static objects, so it must be unique.
-    //  * @param skills - The skills to add to the skill tree. These are the skills that can be unlocked in the skill tree.
-    //  * @returns A new instance of the game skill tree class.
-    //  */
-    // public addSkillTree<TSkillNames extends string = string>(
-    //     name: string,
-    //     skills: SkillInit<TSkillNames>[],
-    // ): GameSkillTree<TSkillNames> {
-    //     // Set the data and static objects
-    //     this.dataManager.setData(name, {
-    //         skillTree: new SkillTreeData(),
-    //     });
-
-    //     // Create the class instance
-    //     const classInstance = new GameSkillTree<TSkillNames>(
-    //         [
-    //             skills,
-    //             (): SkillTreeData => (this.dataManager.getData(name) as { skillTree: SkillTreeData }).skillTree,
-    //         ] as ConstructorParameters<typeof SkillTreeStatic<TSkillNames>>,
-    //         this,
-    //         name,
-    //     );
-
-    //     return classInstance;
-    // }
 }
 
 // test
@@ -288,5 +176,5 @@ class Game {
 //     },
 // ] as const satisfies SkillInit[]);
 
-export type { GameConfigOptions };
 export { Game, gameDefaultConfig };
+export type { GameConfigOptions };
