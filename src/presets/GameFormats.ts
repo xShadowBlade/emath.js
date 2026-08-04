@@ -5,6 +5,7 @@ import type { BoostObject } from "../classes/Boost";
 import { OperationBoostOrder } from "../classes/Boost";
 import type { DecimalSource, FormatType } from "../E/e";
 import { Decimal } from "../E/e";
+import type { RecordToDataEntry } from "./AppSettings";
 
 /**
  * Interface for format gain settings.
@@ -23,12 +24,12 @@ interface FormatSettings {
     /**
      * The number of decimal places/significant figures to display.
      */
-    acc: number;
+    formatAcc: number;
 
     /**
      * When in mixed scientific format, the maximum number of digits to display with commas before switching to abbreviations.
      */
-    max: number;
+    formatMax: number;
 }
 
 /**
@@ -38,14 +39,34 @@ class GameFormatClass {
     private static readonly defaultSettings: FormatSettings = {
         formatType: "mixed_sc",
         formatTimeType: "short",
-        acc: 2,
-        max: 9,
+        formatAcc: 2,
+        formatMax: 9,
     };
 
     public readonly settings: FormatSettings;
 
-    constructor(settings?: Partial<FormatSettings>) {
-        this.settings = Object.assign({}, GameFormatClass.defaultSettings, settings);
+    constructor(initialSettings?: Partial<FormatSettings>) {
+        this.settings = Object.assign({}, GameFormatClass.defaultSettings, initialSettings);
+    }
+
+    /**
+     * Registers data entry settings to update the game format settings when they change.
+     * @param dataEntries - A record of {@link SubscribableDataEntry} instances for each property in the settings object.
+     */
+    public registerDataEntrySettings(dataEntries: RecordToDataEntry<FormatSettings>): void {
+        // For each data entry, subscribe to changes and update the corresponding setting in this.settings
+        dataEntries.formatType.subscribe(() => {
+            this.settings.formatType = dataEntries.formatType.get();
+        });
+        dataEntries.formatTimeType.subscribe(() => {
+            this.settings.formatTimeType = dataEntries.formatTimeType.get();
+        });
+        dataEntries.formatAcc.subscribe(() => {
+            this.settings.formatAcc = dataEntries.formatAcc.get();
+        });
+        dataEntries.formatMax.subscribe(() => {
+            this.settings.formatMax = dataEntries.formatMax.get();
+        });
     }
 
     /**
@@ -54,19 +75,15 @@ class GameFormatClass {
      * @returns The formatted value as a string.
      */
     public format(x: DecimalSource): string {
-        return Decimal.format(x, this.settings.acc, this.settings.max, this.settings.formatType);
+        return Decimal.format(x, this.settings.formatAcc, this.settings.formatMax, this.settings.formatType);
     }
 
-    /**
-     * Formats a boost object based on its order/behavior and the provided input value.
-     * @param boost - The boost object to format. Should have its {@link BoostObject.order} set to a {@link OperationBoostOrder} and {@link BoostObject.value} set.
-     * @param inputValue - The input value to use for formatting. Recommended to leave undefined to use the default input value based on the boost order.
-     * @returns The formatted boost object as a string.
-     */
-    public formatBoostObject(boost: BoostObject | undefined, inputValue?: DecimalSource): string {
+    public static getBoostObjectValue(boost: BoostObject | undefined, inputValue?: DecimalSource): Decimal {
         if (!boost) {
-            console.warn("eMath.js: GameFormatClass.formatBoostObject: Boost object is undefined. Returning empty string.");
-            return "";
+            console.warn(
+                "eMath.js: GameFormatClass.formatBoostObject: Boost object is undefined. Returning empty string.",
+            );
+            return Decimal.dZero;
         }
 
         // Determine the input value to use for formatting
@@ -81,14 +98,33 @@ class GameFormatClass {
                 break;
             case OperationBoostOrder.polynomial:
                 inputValue ??= Decimal.dTen;
-            break;
+                break;
             default:
-                console.warn(`eMath.js: GameFormatClass.formatBoostObject: Unrecognized/unsupported boost order ${boost.order} (${OperationBoostOrder[boost.order]}). Defaulting input value to 1.`);
+                console.warn(
+                    `eMath.js: GameFormatClass.formatBoostObject: Unrecognized/unsupported boost order ${boost.order} (${OperationBoostOrder[boost.order]}). Defaulting input value to 1.`,
+                );
                 inputValue ??= Decimal.dOne;
         }
 
         inputValue = Decimal.fromValue_noAlloc(inputValue);
-        const boostValue = boost.value(inputValue);
+        return boost.value(inputValue);
+    }
+
+    /**
+     * Formats a boost object based on its order/behavior and the provided input value.
+     * @param boost - The boost object to format. Should have its {@link BoostObject.order} set to a {@link OperationBoostOrder} and {@link BoostObject.value} set.
+     * @param inputValue - The input value to use for formatting. Recommended to leave undefined to use the default input value based on the boost order.
+     * @returns The formatted boost object as a string.
+     */
+    public formatBoostObject(boost: BoostObject | undefined, inputValue?: DecimalSource): string {
+        if (!boost) {
+            console.warn(
+                "eMath.js: GameFormatClass.formatBoostObject: Boost object is undefined. Returning empty string.",
+            );
+            return "";
+        }
+
+        const boostValue = GameFormatClass.getBoostObjectValue(boost, inputValue);
 
         switch (boost.order) {
             case OperationBoostOrder.set:
@@ -96,7 +132,7 @@ class GameFormatClass {
             case OperationBoostOrder.add:
                 return `+${this.format(boostValue)}`;
             case OperationBoostOrder.multiply:
-                return this.mult(boostValue);
+                return this.formatMult(boostValue);
             case OperationBoostOrder.polynomial:
                 return `^${this.format(boostValue.absLog10())}`;
             case OperationBoostOrder.exponential:
@@ -114,9 +150,9 @@ class GameFormatClass {
     public formatInteger(x: DecimalSource): string {
         return Decimal.formatInteger(
             x,
-            new Decimal(this.settings.acc).pow10(),
-            this.settings.acc,
-            this.settings.max,
+            new Decimal(this.settings.formatAcc).pow10(),
+            this.settings.formatAcc,
+            this.settings.formatMax,
             this.settings.formatType,
         );
     }
@@ -127,17 +163,28 @@ class GameFormatClass {
      * @param gain - The gain to apply.
      * @returns The formatted gain as a string.
      */
-    public gain(x: DecimalSource, gain: DecimalSource): string {
-        return Decimal.formatGain(x, gain, this.settings.formatType, this.settings.acc, this.settings.max);
+    public formatGain(x: DecimalSource, gain: DecimalSource): string {
+        return Decimal.formatGain(x, gain, this.settings.formatType, this.settings.formatAcc, this.settings.formatMax);
     }
 
     /**
      * Formats a game value as a time based on the settings.
-     * @param x - The value to format.
+     * @param xSeconds - The value to format (in seconds).
      * @returns The formatted value as a string.
      */
-    public time(x: DecimalSource): string {
-        return Decimal.formats.formatTime(x, this.settings.acc, this.settings.formatType);
+    public formatTime(xSeconds: DecimalSource): string {
+        return Decimal.formats.formatTime(xSeconds, this.settings.formatAcc, this.settings.formatType);
+    }
+
+    protected static readonly msToSecondsFactor = new Decimal(0.001);
+
+    /**
+     * Formats a game value in milliseconds as a time based on the settings.
+     * @param xMs - The value in milliseconds to format.
+     * @returns The formatted value as a string.
+     */
+    public formatTimeMs(xMs: DecimalSource): string {
+        return this.formatTime(Decimal.fromValue_noAlloc(xMs).mul(GameFormatClass.msToSecondsFactor));
     }
 
     /**
@@ -145,8 +192,8 @@ class GameFormatClass {
      * @param x - The value to format.
      * @returns The formatted value as a string.
      */
-    public mult(x: DecimalSource): string {
-        return Decimal.formats.formatMult(x, this.settings.acc);
+    public formatMult(x: DecimalSource): string {
+        return Decimal.formats.formatMult(x, this.settings.formatAcc);
     }
 }
 
