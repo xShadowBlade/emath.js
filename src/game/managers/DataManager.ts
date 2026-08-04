@@ -14,6 +14,7 @@ import { eMathMetadata } from "../../metadata";
 // Save validation
 import md5 from "md5";
 
+import { LRUCache } from "../..";
 import type { ConstructableObject, UnknownObject } from "../../common/types";
 
 /**
@@ -67,6 +68,8 @@ type UseDataReturnType<T> = [
     dataSetter: (newValueOrCallback: T | ((previousValue: T) => T)) => void,
 ];
 
+type RawSaveData = [SaveMetadata, Record<string, unknown>];
+
 /**
  * A class that manages game data, including saving, loading, and exporting data.
  *
@@ -75,48 +78,152 @@ type UseDataReturnType<T> = [
  */
 class DataManager {
     /**
+     * The default size of the {@link DataManager.lastSavesCached} cache.
+     */
+    public static readonly defaultLastSavesCacheSize = 5;
+
+    /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
-    private readonly data: Record<string, unknown> = Object.create(null);
+    protected readonly data: Record<string, unknown> = Object.create(null);
 
-    private readonly dataEntryInstances: Record<string, DataManagerEntry<unknown>> = Object.create(null);
+    protected readonly dataEntryInstances: Record<string, DataManagerEntry<unknown>> = Object.create(null);
 
     /** A reference to the game instance. */
-    private readonly gameRef: Game;
+    protected readonly gameRef: Game;
 
     /** The local storage object. */
-    private readonly localStorage: Storage | null;
+    protected readonly localStorage: Storage | null;
 
     /**
      * A queue of functions to call when the game data is loaded.
      * These functions are called when calling {@link DataManager.loadData} and the data is loaded.
      * (they should have been added using class-transformer's decorators, but esbuild doesn't support decorators yet)
      */
-    private readonly eventsOnLoad: (() => void)[] = [];
+    protected readonly eventsOnLoad: (() => void)[] = [];
 
-    private allowDataToBeSaved = true;
+    /**
+     * A flag to determine whether the data can be saved or not. If set to false, calling {@link DataManager.saveData} will not save the data.
+     * Set by {@link DataManager.resetData} to prevent saving data when resetting the game.
+     */
+    protected allowDataToBeSaved = true;
+
+    /**
+     * A cache of the last saved data.
+     * Maps the current timestamp ({@link Date.now()}) to the last saved data.
+     */
+    protected readonly lastSavesCached: LRUCache<number, RawSaveData>;
+
+    /**
+     * The last saved data before a rollback. Used to restore the data if the rollback fails or {@link DataManager.undoRollback} is called.
+     */
+    protected lastDataBeforeRollback: RawSaveData | null = null;
 
     /**
      * Creates a new instance of the game class.
      * @param gameRef - A function that returns the game instance.
      * @param localStorage - The local storage object. Defaults to `window.localStorage`.
+     * @param lastSavesCacheSize - The size of the cache for the last saved data. Defaults to {@link DataManager.defaultLastSavesCacheSize}.
      */
-    constructor(gameRef: Game, localStorage?: Storage) {
+    constructor(gameRef: Game, localStorage?: Storage, lastSavesCacheSize = DataManager.defaultLastSavesCacheSize) {
         this.gameRef = gameRef;
+        this.lastSavesCached = new LRUCache(lastSavesCacheSize);
 
         // Set the local storage object
-        this.localStorage =
-            localStorage ??
-            ((): Storage | null => {
-                if (typeof window === "undefined") {
-                    console.warn(
-                        "eMath.js: Local storage is not supported. Methods that rely on local storage will not work. You can use compileData() and decompileData() instead to implement a custom save system.",
-                    );
-                    return null;
-                }
-                return window.localStorage;
-            })();
+        if (localStorage) {
+            this.localStorage = localStorage;
+        } else if (typeof window === "undefined") {
+            console.warn(
+                "eMath.js: window.localStorage is not supported. Methods that rely on local storage will not work. You can use compileData() and decompileData() instead to implement a custom save system or use a different storage.",
+            );
+            this.localStorage = null;
+        } else {
+            this.localStorage = window.localStorage;
+        }
+    }
+
+    /**
+     * Adds the given data to the cache of last saved data.
+     * @param data - The data to add to the cache.
+     */
+    protected cacheSaveData(data: ReturnType<typeof this.compileDataRaw>): void {
+        const timestamp = Date.now();
+        this.lastSavesCached.set(timestamp, data);
+    }
+
+    /**
+     * Gets the most recent cached save data at the given depth.
+     * @param depth - The depth of the cached save data to get (how far back). Defaults to `1` (the most recent save).
+     * @returns The most recent cached save data at the given depth, or undefined if there is no cached save data at that depth.
+     */
+    public getMostRecentCachedSave(depth = 1): ReturnType<typeof this.compileDataRaw> | undefined {
+        let current = this.lastSavesCached.getFirst();
+
+        if (!current) {
+            console.warn(
+                `eMath.js: getMostRecentCachedSave(): No cached save found at depth ${depth} (no cached saves). Returning undefined.`,
+            );
+            return undefined;
+        }
+
+        for (let i = 1; i < depth && current; i++) {
+            if (!current.next) {
+                console.warn(
+                    `eMath.js: getLastCachedSave(): No cached save found at depth ${depth}. Returning last cached save at depth ${i}.`,
+                );
+                return current.value;
+            }
+
+            current = current.next;
+        }
+
+        // Should never happen, but just in case
+        if (!current) return undefined;
+
+        return current.value;
+    }
+
+    /**
+     * @returns All cached saves in the order they were saved, from newest to oldest.
+     */
+    public getAllCachedSaves(): ReturnType<typeof this.compileDataRaw>[] {
+        return Array.from(this.lastSavesCached, ([, node]) => node);
+    }
+
+    /**
+     * Rolls back the game data to the last cached save at the given depth.
+     * @param depth - The depth of the cached save to roll back to. See {@link DataManager.getMostRecentCachedSave} for more information.
+     * @returns If no cached save is found at the given depth, returns `null`. If a cached save is found, returns the result of {@link DataManager.loadData} after loading the cached save (whether the data is valid or not).
+     */
+    public rollbackToLastCachedSave(depth = 1): null | boolean {
+        const lastCachedSave = this.getMostRecentCachedSave(depth);
+        if (!lastCachedSave) {
+            console.warn(
+                `eMath.js: rollbackToLastCachedSave(): No cached save found at depth ${depth}. Rollback aborted.`,
+            );
+            return null;
+        }
+
+        // Save the current data before rolling back
+        this.lastDataBeforeRollback = this.compileDataRaw();
+
+        return this.loadData(lastCachedSave);
+    }
+
+    /**
+     * Undoes the last rollback by loading the last saved data before the rollback.
+     * @returns If there is no last saved data before the rollback, returns `null`. If there is last saved data before the rollback, returns the result of {@link DataManager.loadData} after loading the last saved data before the rollback (whether the data is valid or not).
+     */
+    public undoRollback(): null | boolean {
+        if (!this.lastDataBeforeRollback) {
+            console.warn("eMath.js: undoRollback(): No rollback to undo. Undo aborted.");
+            return null;
+        }
+
+        const result = this.loadData(this.lastDataBeforeRollback);
+        this.lastDataBeforeRollback = null;
+        return result;
     }
 
     /**
@@ -128,7 +235,7 @@ class DataManager {
         this.eventsOnLoad.push(event);
     }
 
-    private setDataInternal<T>(key: string, value: T): void {
+    protected setDataInternal<T>(key: string, value: T): void {
         this.data[key] = value;
 
         // Notify the data entry instance if it exists
@@ -188,6 +295,12 @@ class DataManager {
         ];
     }
 
+    /**
+     * Creates a new data entry for the given key and value, or returns an existing one if it already exists.
+     * @param key - The key to create the data entry for.
+     * @param value - The initial value to set the data entry to.
+     * @returns A new or existing data entry for the given key and value.
+     */
     public useDataEntry<T>(key: string, value: T): DataManagerEntry<T> {
         if (this.dataEntryInstances[key]) {
             return this.dataEntryInstances[key] as DataManagerEntry<T>;
@@ -229,9 +342,10 @@ class DataManager {
     /**
      * Compiles the given game data to a tuple containing the compressed game data and a hash.
      * @param data The game data to be compressed. Defaults to the current game data.
+     * @param shouldCache - Whether to cache the compiled data. Defaults to `true`.
      * @returns [hash, data] - The compressed game data and a hash as a base64-encoded string to use for saving.
      */
-    public compileDataRaw(data = this.data): [SaveMetadata, object] {
+    public compileDataRaw(data = this.data, shouldCache = true): RawSaveData {
         // Call the `beforeCompileData` event on the game eventManager
         this.gameRef.eventManager.dispatch(EventManagerInternalEvents.beforeCompileData);
 
@@ -256,7 +370,13 @@ class DataManager {
         };
 
         // Return a tuple containing the metadata and the data
-        return [saveMetadata, plainGameData];
+        const result = [saveMetadata, plainGameData] as RawSaveData;
+
+        if (shouldCache) {
+            this.cacheSaveData(result);
+        }
+
+        return result;
     }
 
     /**
@@ -269,12 +389,25 @@ class DataManager {
         return compressToUTF16(dataRawString);
     }
 
+    public getSizeOfDataBytes(data: typeof this.data): number;
+    public getSizeOfDataBytes(data: string): number;
+    /**
+     * Gets the size of the given data in bytes.
+     * @param data The data to get the size of. Can be either a string or the game data.
+     * @returns The size of the data in bytes.
+     */
+    public getSizeOfDataBytes(data: typeof this.data | string): number {
+        const stringifiedData = typeof data === "string" ? data : this.compileData(data);
+
+        return new Blob([stringifiedData]).size;
+    }
+
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
      * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData(data?: string | null): [SaveMetadata, UnknownObject] | null {
+    public decompileData(data?: string | null): RawSaveData | null {
         // If the data is not provided, get it from local storage
         if (!data) {
             // If local storage is not supported, return null
@@ -292,11 +425,11 @@ class DataManager {
         // If the data is empty, return null
         if (!data) return null;
 
-        let parsedData: [SaveMetadata, UnknownObject];
+        let parsedData: RawSaveData | null = null;
 
         try {
             // Decompress the data, then JSON parse it
-            parsedData = JSON.parse(decompressFromUTF16(data)) as [SaveMetadata, UnknownObject];
+            parsedData = JSON.parse(decompressFromUTF16(data)) as RawSaveData;
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
@@ -314,7 +447,7 @@ class DataManager {
      * @param data - [hash, data] The data to validate.
      * @returns Whether the data is valid / unchanged. False means that the data has been tampered with / save edited.
      */
-    public validateData(data: [SaveMetadata, object]): boolean {
+    public validateData(data: RawSaveData): boolean {
         const [saveMetadata, gameDataToValidate] = data;
 
         // Backwards compatibility: In versions before 8.x.x, data was of type [hash: string, data: object]. Now it's of type [SaveMetadata, data: object].
@@ -331,21 +464,10 @@ class DataManager {
 
     /**
      * Resets the game data to its initial state and saves it.
-     * @param reload - Whether to reload the page after resetting the data. Defaults to `false`.
+     * @param reload - Whether to reload the page after resetting the data. Defaults to `true`.
      * (Reloading may help with some issues with saving data)
      */
-    public resetData(reload = false): void {
-        // // If the normal data is not set, throw an error. If normalData is not set, there is nothing to reset to.
-        // if (!this.normalData) {
-        //     throw new Error("dataManager.resetData(): You must call init() before writing to data.");
-        // }
-        // // Reset the data
-        // this.data = this.normalData;
-        // // Save the data
-        // this.saveData();
-        // // Reload the page if specified
-        // if (reload) window.location.reload();
-
+    public resetData(reload = true): void {
         // TODO: implement resetData without reloading
         if (!reload) {
             console.warn(
@@ -443,8 +565,9 @@ class DataManager {
     /**
      * Loads game data and processes it.
      * @param dataToParse - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
+     * @see {@link DataManager.loadData} for a method that also validates the data and calls onLoadData on all objects.
      */
-    public parseData(dataToParse = this.decompileData()): void {
+    protected parseData(dataToParse = this.decompileData()): void {
         // No data to parse
         if (!dataToParse) return;
 
@@ -483,7 +606,7 @@ class DataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData(dataToLoad: [SaveMetadata, UnknownObject] | null | string = this.decompileData()): null | boolean {
+    public loadData(dataToLoad: RawSaveData | null | string = this.decompileData()): null | boolean {
         dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
 
         // If the data is empty, return null
