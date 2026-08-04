@@ -1,9 +1,9 @@
 /**
  * @file Document configuration for Docusaurus.
  */
-import { themes as prismThemes } from "prism-react-renderer";
-import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import type { Config } from "@docusaurus/types";
+import { themes as prismThemes } from "prism-react-renderer";
 
 const config: Config = {
     title: "eMath.js Documentation",
@@ -37,6 +37,7 @@ const config: Config = {
             loader: require.resolve("esbuild-loader"),
             options: {
                 loader: "tsx",
+                jsx: "automatic",
                 format: isServer ? "cjs" : undefined,
                 target: isServer ? "node12" : "es2017",
             },

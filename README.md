@@ -1,7 +1,7 @@
 ![Header](https://raw.githubusercontent.com/xShadowBlade/emath.js/main/documentation/static/img/banner.png)
 
 <div align="center">
-eMath.js is a JavaScript library designed to provide tools for incremental game development, built upon <a href="https://github.com/Patashu/break_eternity.js">break_eternity.js</a>. It provides classes for upgrades, saving/loading, and more!
+eMath.js is a library for incremental games, built upon <a href="https://github.com/Patashu/break_eternity.js">break_eternity.js</a>. It provides classes for upgrades, saving/loading, and more!
 
 <br>
 <!-- <a href="https://github.com/xShadowBlade/emath.js/commits/main" alt=""><img src="https://img.shields.io/github/last-commit/xShadowBlade/emath.js?label=last%20update&style=for-the-badge"></a>
@@ -33,11 +33,6 @@ This was done in order to implement the saving/loading system using [`class-tran
 
 You cannot import directly from `break_eternity.js` as the package [targets a version of javascript (es5)](https://github.com/Patashu/break_eternity.js/issues/114) that is not supported by `class-transformer` and `reflect-metadata`.
 
-<!-- ## Features
-
-- [**Currency System**]: Create currencies with upgrades and boosts (e.g. modifiers, multipliers, effect of upgrades, etc.)
-- [**Upgrade System**]: Create upgrades for currencies with costs, effects, and more. -->
-
 ## Example Usage
 
 This is a simple example of how to use the package. It creates a game with a currency called "coins" and an upgrade for that currency. It also includes hotkeys for gaining coins and buying upgrades, as well as saving and loading the game.
@@ -49,7 +44,7 @@ import { Decimal } from "emath.js";
 import { Game } from "emath.js/game";
 
 // For CDN usage:
-// const { Decimal, Game } = eMath; 
+// const { Decimal, Game } = window.eMath; 
 
 // Initialize game
 const coinGame = new Game();
