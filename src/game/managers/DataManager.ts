@@ -2,18 +2,19 @@
  * @file Declares classes and functions for managing game data.
  * Ex. Saving, loading, exporting, etc.
  */
-import "reflect-metadata"; // Required for class-transformer
 import { instanceToPlain, plainToInstance } from "class-transformer";
 import { compressToUTF16, decompressFromUTF16 } from "lz-string";
+import "reflect-metadata"; // Required for class-transformer
 import type { Game } from "../Game";
 import { DataManagerEntry } from "./DataEntry";
+import { EventManagerInternalEvents } from "./EventManager";
 
 import { eMathMetadata } from "../../metadata";
 
 // Save validation
 import md5 from "md5";
 
-import type { UnknownObject, ConstructableObject } from "../../common/types";
+import type { ConstructableObject, UnknownObject } from "../../common/types";
 
 /**
  * Interface for the metadata of a save file.
@@ -232,7 +233,7 @@ class DataManager {
      */
     public compileDataRaw(data = this.data): [SaveMetadata, object] {
         // Call the `beforeCompileData` event on the game eventManager
-        this.gameRef.eventManager.dispatch("beforeCompileData");
+        this.gameRef.eventManager.dispatch(EventManagerInternalEvents.beforeCompileData);
 
         // Convert the data to a plain object that can be stringified
         const plainGameData: UnknownObject = {};
@@ -391,7 +392,7 @@ class DataManager {
         }
 
         // Call the `beforeSaveData` event on the game eventManager
-        this.gameRef.eventManager.dispatch("beforeSaveData");
+        this.gameRef.eventManager.dispatch(EventManagerInternalEvents.beforeSaveData);
 
         // Save the data to local storage
 
@@ -404,7 +405,7 @@ class DataManager {
         this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
 
         // Call the `saveData` event on the game eventManager
-        this.gameRef.eventManager.dispatch("saveData");
+        this.gameRef.eventManager.dispatch(EventManagerInternalEvents.saveData);
     }
 
     /**
@@ -499,7 +500,7 @@ class DataManager {
         }
 
         // Call the `loadData` event on the game eventManager
-        this.gameRef.eventManager.dispatch("loadData");
+        this.gameRef.eventManager.dispatch(EventManagerInternalEvents.loadData);
 
         return isDataValid;
     }

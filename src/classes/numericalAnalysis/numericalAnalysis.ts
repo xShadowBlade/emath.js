@@ -352,15 +352,15 @@ function newtonRaphson(
 }
 
 export {
-    geometricEqualsTolerance,
     approximateDerivative,
-    newtonRaphson,
     decimalMagDifference,
-    roundingBase,
     DEFAULT_ITERATIONS,
     DEFAULT_ITERATIONS_AS_DECIMAL,
     DEFAULT_TOLERANCE,
+    geometricEqualsTolerance,
     MeanMode,
+    newtonRaphson,
+    roundingBase,
 };
 export type { EqualsToleranceConfig };
 

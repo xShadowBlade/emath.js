@@ -32,22 +32,13 @@ abstract class SubscribableDataEntry<T> {
         shouldNotify = true,
     ): SubscribableDataEntry<T> {
         return new (class extends SubscribableDataEntry<T> {
-            constructor() {
-                super();
-
-                // Bind methods for callbacks
-                this.get = this.get.bind(this);
-                this.set = this.set.bind(this);
-                this.subscribe = this.subscribe.bind(this);
-                this.notifyListeners = this.notifyListeners.bind(this);
-            }
-
             public get(): T {
                 return getter();
             }
 
             public set(value: T): void {
                 setter(value);
+
                 if (shouldNotify) {
                     this.notifyListeners();
                 }
@@ -60,6 +51,14 @@ abstract class SubscribableDataEntry<T> {
      * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
      */
     private readonly listeners: (() => void)[] = [];
+
+    protected constructor() {
+        // Bind methods for callbacks
+        this.get = this.get.bind(this);
+        this.set = this.set.bind(this);
+        this.subscribe = this.subscribe.bind(this);
+        this.notifyListeners = this.notifyListeners.bind(this);
+    }
 
     /**
      * Notifies all listeners that the data has changed.
@@ -110,19 +109,14 @@ abstract class SubscribableDataEntry<T> {
  * @see {@link DataManager.useDataEntry}
  */
 class DataManagerEntry<T> extends SubscribableDataEntry<T> {
-    private readonly dataManagerReference: DataManager;
-    private readonly dataKey: string;
+    protected readonly dataManagerReference: DataManager;
+    protected readonly dataKey: string;
 
     constructor(dataManager: DataManager, dataKey: string) {
         super();
 
         this.dataManagerReference = dataManager;
         this.dataKey = dataKey;
-
-        // Bind methods for callbacks
-        this.get = this.get.bind(this);
-        this.set = this.set.bind(this);
-        this.subscribe = this.subscribe.bind(this);
     }
 
     public get(): T {
