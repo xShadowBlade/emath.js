@@ -1,14 +1,12 @@
 /**
  * @file Declares the auto buyer preset.
  */
-import type { Game } from "../game/Game";
-import type { Upgrade } from "../classes/Upgrade";
 import type { Currency } from "../classes/Currency";
+import type { Upgrade } from "../classes/Upgrade";
 import type { Decimal } from "../E/e";
+import type { Game } from "../game/Game";
 import { ConfigManager } from "../game/managers/ConfigManager";
-import { EventTypes } from "../game/managers/EventManager";
-// oxlint-disable-next-line @typescript-eslint/no-unused-vars
-import type { TimerEvent } from "../game/managers/EventManager";
+import { GameIntervalEvent } from "../game/managers/EventManager";
 
 interface AutoBuyerConfig {
     /**
@@ -81,17 +79,14 @@ class AutoBuyer {
         this.config = AutoBuyer.configManager.parse(config);
 
         // Create the event
-        this.game.eventManager.setEvent({
-            name: this.id,
-            type: EventTypes.interval,
-            delay: this.config.delay,
-            callback: () => {
+        this.game.eventManager.setEvent(
+            new GameIntervalEvent(this.id, this.config.delay, () => {
                 // If the auto buyer is unlocked, buy the upgrades
                 if (typeof this.config.isUnlocked === "function" ? this.config.isUnlocked() : this.config.isUnlocked) {
                     this.buyUpgrades();
                 }
-            },
-        });
+            }),
+        );
     }
 
     /**

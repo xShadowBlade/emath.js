@@ -1,57 +1,19 @@
 /**
  * @file Declares classes for managing the event loop
  */
-import type { PickOptional } from "../../common/types";
-import type { Decimal } from "../../E/e";
 import { ConfigManager } from "./ConfigManager";
 // oxlint-disable-next-line @typescript-eslint/no-unused-vars
 import type { DataManager } from "./DataManager";
 
 /**
- * The type of event.
- * The use of this enum is discouraged.
+ * An event that could be executed by the event manager.
+ * Each event has a {@link shouldTrigger} method that determines if the event should be executed, and a {@link callback} method that is executed when the event is triggered.
  */
-enum EventTypes {
-    interval = "interval",
-    timeout = "timeout",
-}
-
-/**
- * The event interface.
- * @deprecated Use {@link TimerEvent} instead. This is only here for backwards compatibility.
- */
-type Event = TimerEvent;
-
-/**
- * The interface used for initializing an event.
- * See {@link EventManager.setEvent}.
- */
-type EventInit = PickOptional<Omit<TimerEvent, "timeCreated" | "intervalLast">, "type" | "delay">;
-
-/**
- * An event that is triggered after a certain delay.
- */
-interface TimerEvent {
+abstract class GameEvent {
     /**
      * The name / identifier of the event.
      */
-    name: string;
-
-    /**
-     * The type of the event.
-     * @default "timeout"
-     */
-    type: EventTypes;
-
-    /**
-     * The delay before the event triggers, in milliseconds.
-     * If the delay is less than the time between frames, it will trigger at most once every frame.
-     * - A delay of `0` will cause the event to trigger every frame regardless of the framerate.
-     * @example
-     * 1000 // 1 second
-     * @default 0
-     */
-    delay: number;
+    public id: string;
 
     /**
      * The callback function to execute when the event triggers.
@@ -59,20 +21,123 @@ interface TimerEvent {
      * For timeout events, this will be the time since the event was created..
      * For interval events, this will be the time since the last execution of the event (based on the frame rate).
      */
-    callback: (dt: number) => void;
+    public callback: (dt: number) => void;
+
+    protected constructor(id: string, callback: (dt: number) => void) {
+        this.id = id;
+        this.callback = callback;
+    }
 
     /**
-     * The time the event was created, as a Unix timestamp.
-     * Created automatically when the event is added to the event manager.
+     * Whether or not the event should trigger. Called every frame by the event manager.
+     * @param currentTime - The current time in milliseconds (`performance.now()`).
+     * @returns The time since the last execution of the event (delta time) in milliseconds, or `false` if the event should not trigger.
      */
-    timeCreated: number;
+    public abstract shouldTrigger(currentTime: number): false | number;
+
+    /**
+     * Simulates the passage of time for the event, as if `dt` milliseconds have passed.
+     * - For timeout events, this will adjust the time the event was created.
+     * - For interval events, this will adjust the last time the event was executed.
+     * @param dt - The time to warp by (in milliseconds).
+     */
+    public abstract timeWarp(dt: number): void;
+}
+
+class GameIntervalEvent extends GameEvent {
+    /**
+     * The delay before the event triggers, in milliseconds.
+     * If the delay is less than the time between frames, it will trigger at most once every frame.
+     * - A delay of `0` will cause the event to trigger every frame (at the framerate of the event manager).
+     * @example
+     * 1000 // 1 second
+     * @default 0
+     */
+    public delaySupplier: () => number = () => 0;
+
+    public get delay(): number {
+        return this.delaySupplier();
+    }
+    public set delay(value: number | (() => number)) {
+        this.delaySupplier = typeof value === "function" ? value : () => value;
+    }
 
     /**
      * The last time the event was executed.
      * Only used for interval events, but is still defined for all events.
      * Created automatically when the event is added to the event manager.
+     * @default performance.now()
      */
-    intervalLast: number;
+    public lastIntervalTime: number;
+
+    /**
+     * Creates a new interval event with a dynamic delay.
+     * @param id - The name / identifier of the event.
+     * @param delaySupplier - A function that returns the delay before the event triggers, in milliseconds.
+     * @param callback - The callback function to execute when the event triggers.
+     */
+    constructor(id: string, delaySupplier: () => number, callback: (dt: number) => void);
+    /**
+     * Creates a new interval event with a static delay.
+     * @param id - The name / identifier of the event.
+     * @param delay - The delay before the event triggers, in milliseconds.
+     * @param callback - The callback function to execute when the event triggers.
+     */
+    constructor(id: string, delay: number, callback: (dt: number) => void);
+
+    constructor(id: string, delayOrSupplier: number | (() => number), callback: (dt: number) => void) {
+        super(id, callback);
+        this.delay = delayOrSupplier;
+        this.lastIntervalTime = performance.now();
+    }
+
+    public shouldTrigger(currentTime: number): false | number {
+        if (currentTime - this.lastIntervalTime < this.delay) {
+            return false;
+        }
+
+        const dt = currentTime - this.lastIntervalTime;
+        this.lastIntervalTime = currentTime;
+        return dt;
+    }
+
+    public timeWarp(dt: number): void {
+        this.lastIntervalTime -= dt;
+    }
+}
+
+class GameTimeoutEvent extends GameEvent {
+    /**
+     * The delay before the event triggers, in milliseconds.
+     * @example
+     * 1000 // 1 second
+     * @default 0
+     */
+    public delay: number;
+
+    /**
+     * The time the event was created, in milliseconds.
+     * @default performance.now()
+     */
+    public timeCreated: number;
+
+    constructor(id: string, delay: number, callback: (dt: number) => void) {
+        super(id, callback);
+        this.delay = delay;
+        this.timeCreated = performance.now();
+    }
+
+    public shouldTrigger(currentTime: number): false | number {
+        if (currentTime - this.timeCreated >= this.delay) {
+            const dt = currentTime - this.timeCreated;
+            return dt;
+        }
+        return false;
+    }
+
+    public timeWarp(dt: number): void {
+        this.timeCreated -= dt;
+    }
 }
 
 /**
@@ -89,23 +154,6 @@ interface CallbackEvent {
      */
     callback: () => void;
 }
-
-/**
- * An event that is triggered at a set interval.
- */
-interface IntervalEvent extends TimerEvent {
-    type: EventTypes.interval;
-
-    /**
-     * The last time the event was executed.
-     */
-    intervalLast: number;
-}
-
-/**
- * The timeout event interface
- */
-type TimeoutEvent = TimerEvent;
 
 /**
  * The event manager configuration interface
@@ -128,7 +176,7 @@ interface EventManagerConfig {
 /**
  * The default configuration for the event manager.
  */
-const eventManagerDefaultConfig: EventManagerConfig = {
+const eventManagerDefaultConfig: Required<EventManagerConfig> = {
     autoAddInterval: true,
     fps: 30,
 };
@@ -138,17 +186,12 @@ const eventManagerDefaultConfig: EventManagerConfig = {
  */
 enum EventManagerInternalEvents {
     /**
-     * The event that is called before data is loaded (before {@link DataManager.decompileData}, which is called before {@link DataManager.loadData} with no arguments).
-     */
-    // beforeLoadData: "beforeLoadData";
-
-    /**
      * The event that is called before data is compiled ({@link DataManager.compileData}).
      */
     beforeCompileData,
 
     /**
-     * The event that is called before data is saved ({@link DataManager.saveData}).
+     * The event that is called before data is saved ({@link DataManager.saveData}) but after it is compiled ({@link DataManager.compileData}).
      */
     beforeSaveData,
 
@@ -168,48 +211,126 @@ enum EventManagerInternalEvents {
  * @template TEvents - Possible event names that can be used.
  */
 class EventManager<TEvents extends string = string> {
-    /** The static config manager for the event manager. */
-    private static readonly configManager = new ConfigManager(eventManagerDefaultConfig);
+    public static readonly defaultFramerateSampleSize = 60;
 
-    /** The timer events stored in the event manager. */
-    private readonly events: Record<string, IntervalEvent | TimeoutEvent> = Object.create(null);
+    /**
+     * The static config manager for the event manager.
+     */
+    protected static readonly configManager = new ConfigManager(eventManagerDefaultConfig, false);
+
+    /**
+     * The timed events stored in the event manager.
+     */
+    protected readonly events: GameEvent[] = [];
 
     /**
      * The callback events stored in the event manager.
      * Each event is stored as an array of callback functions, which are executed when the event is dispatched.
      */
-    private readonly callbackEvents: Partial<Record<TEvents | EventManagerInternalEvents, CallbackEvent[]>> =
+    protected readonly callbackEvents: Partial<Record<TEvents | EventManagerInternalEvents, CallbackEvent[]>> =
         Object.create(null);
 
-    /** The interval for the event manager */
-    private tickerInterval?: ReturnType<typeof setInterval>;
+    /**
+     * The interval for the event manager.
+     */
+    protected tickerInterval: number | undefined = undefined;
 
-    /** The config object */
-    public readonly config: EventManagerConfig;
+    /**
+     * The request animation frame ID for the event manager.
+     */
+    protected requestAnimationFrameId: number | undefined = undefined;
+
+    /**
+     * The config object.
+     */
+    public readonly config: Required<EventManagerConfig>;
+
+    protected vsyncEnabled: boolean = false;
+
+    // Framerate calculation
+    protected emaAverage: number | undefined = undefined;
+    protected lastFrameTime: number | undefined = undefined;
+
+    /**
+     * The number of samples to use for the framerate calculation.
+     */
+    public framerateSampleSize = EventManager.defaultFramerateSampleSize;
+    protected get alpha(): number {
+        return 2 / (this.framerateSampleSize + 1);
+    }
 
     /**
      * Creates a new event manager.
      * @param config - The config to use for this event manager.
-     * @param events - The events to add to the event manager.
+     * @param callbackEventNames - If using callback events, the names of the events to add to the event manager.
      * These events will be added to the event manager's callback events, although you could omit this and add events manually
      * (though this is not recommended as you won't get type checking).
      */
-    constructor(config?: EventManagerConfig, events?: readonly TEvents[]) {
+    constructor(config?: EventManagerConfig, callbackEventNames?: readonly TEvents[]) {
         this.config = EventManager.configManager.parse(config);
 
         // Add the events to the callback events.
-        if (events) {
-            for (const event of events) {
+        if (callbackEventNames) {
+            for (const event of callbackEventNames) {
                 this.callbackEvents[event] = [];
             }
         }
 
         if (this.config.autoAddInterval) {
-            const fps = this.config.fps ?? 30;
             this.tickerInterval = setInterval(() => {
                 this.tickerFunction();
-            }, 1000 / fps);
+            }, 1000 / this.config.fps);
         }
+    }
+
+    public isVsyncEnabled(): boolean {
+        return this.vsyncEnabled;
+    }
+
+    public setVsyncEnabled(enabled: boolean): void {
+        // Previously disabled, now enabled
+        if (enabled && !this.vsyncEnabled) {
+            if (this.tickerInterval === undefined) {
+                console.warn("eMath.js: VSync enabled but previously defined tickerInterval is undefined.");
+            } else {
+                clearInterval(this.tickerInterval);
+                this.tickerInterval = undefined;
+            }
+
+            this.vsyncEnabled = true;
+            this.vsyncTickerFunction();
+            return;
+        }
+
+        // Previously enabled, now disabled
+        if (!enabled && this.vsyncEnabled) {
+            if (this.requestAnimationFrameId === undefined) {
+                console.warn("eMath.js: VSync disabled but previously defined requestAnimationFrameId is undefined.");
+            } else {
+                cancelAnimationFrame(this.requestAnimationFrameId);
+                this.requestAnimationFrameId = undefined;
+            }
+
+            this.vsyncEnabled = false;
+            this.tickerInterval = setInterval(() => {
+                this.tickerFunction();
+            }, 1000 / this.config.fps);
+            return;
+        }
+    }
+
+    public getAverageFrameTimeMs(): number {
+        if (this.emaAverage === undefined) {
+            return 0;
+        }
+        return this.emaAverage;
+    }
+
+    public getFramerate(): number {
+        if (this.emaAverage === undefined) {
+            return 0;
+        }
+        return 1000 / this.emaAverage;
     }
 
     /**
@@ -244,54 +365,58 @@ class EventManager<TEvents extends string = string> {
         }
     }
 
+    protected handleEvent(event: GameEvent, currentTime: number): void {
+        const dt = event.shouldTrigger(currentTime);
+        if (dt === false) {
+            return;
+        }
+
+        event.callback(dt);
+    }
+
+    protected addFrameTimeSample(dt: number): void {
+        if (this.emaAverage === undefined) {
+            this.emaAverage = dt;
+        }
+
+        this.emaAverage = this.alpha * dt + (1 - this.alpha) * this.emaAverage;
+    }
+
+    /**
+     * The function that is called on each animation frame.
+     */
+    protected vsyncTickerFunction(): void {
+        if (typeof window === "undefined" || typeof window.requestAnimationFrame === "undefined") {
+            console.warn("eMath.js: window or window.requestAnimationFrame is undefined. VSync will not work.");
+            return;
+        }
+
+        this.requestAnimationFrameId = window.requestAnimationFrame((currentTime) => {
+            this.tickerFunction(currentTime);
+            this.vsyncTickerFunction();
+        });
+    }
+
     /**
      * The function that is called every frame, executes all events.
      */
-    private tickerFunction(): void {
-        /**
-         * The current time in milliseconds.
-         * Used to calculate the time since the last execution of the event,
-         * and to check if the event should trigger.
-         */
-        const currentTime = Date.now();
-
+    protected tickerFunction(currentTime: number = performance.now()): void {
         // Iterate through all events and execute them if they should trigger.
-        for (const event of Object.values(this.events)) {
-            switch (event.type) {
-                // prettier-ignore
-                case EventTypes.interval: {
-                    // Check if the time since the last execution of the event is greater than the delay.
-                    if (currentTime - event.intervalLast >= event.delay) {
-                        // Calculate the time since the last execution of the event.
-                        const dt = currentTime - event.intervalLast;
-
-                        // Execute the event callback.
-                        event.callback(dt);
-
-                        // Update the last execution time of the event.
-                        event.intervalLast = currentTime;
-                    }
-                }
-                break;
-
-                // prettier-ignore
-                case EventTypes.timeout: {
-                    // Check if the time since the event was created is greater than the delay.
-                    if (currentTime - event.timeCreated >= event.delay) {
-                        // Calculate the time since the last execution of the event.
-                        const dt = currentTime - event.timeCreated;
-
-                        // Execute the event callback.
-                        event.callback(dt);
-
-                        // Remove the event from the event manager.
-                        // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
-                        delete this.events[event.name];
-                    }
-                }
-                break;
-            }
+        for (const event of this.events) {
+            this.handleEvent(event, currentTime);
         }
+
+        // Update the framerate calculation.
+        if (this.lastFrameTime === undefined) {
+            this.lastFrameTime = currentTime;
+            return;
+        }
+
+        const dt = currentTime - this.lastFrameTime;
+
+        this.addFrameTimeSample(dt);
+
+        this.lastFrameTime = currentTime;
     }
 
     /**
@@ -302,14 +427,24 @@ class EventManager<TEvents extends string = string> {
         // Change the framerate in the config.
         this.config.fps = fps;
 
-        // Clear the old interval and create a new one with the new framerate.
-        if (this.tickerInterval) {
-            clearInterval(this.tickerInterval);
-
-            this.tickerInterval = setInterval(() => {
-                this.tickerFunction();
-            }, 1000 / fps);
+        if (this.vsyncEnabled) {
+            console.warn(
+                `eMath.js: VSync is enabled. Framerate change to "${fps}" will apply the next time VSync is disabled.`,
+            );
+            return;
         }
+
+        if (!this.tickerInterval) {
+            console.warn("eMath.js: Ticker interval is undefined. Cannot change framerate.");
+            return;
+        }
+
+        // Clear the old interval and create a new one with the new framerate.
+        clearInterval(this.tickerInterval);
+
+        this.tickerInterval = setInterval(() => {
+            this.tickerFunction();
+        }, 1000 / fps);
     }
 
     /**
@@ -320,86 +455,23 @@ class EventManager<TEvents extends string = string> {
      */
     public timeWarp(dt: number): void {
         // Iterate through all events and warp the time.
-        for (const event of Object.values(this.events)) {
-            switch (event.type) {
-                case EventTypes.interval:
-                    // If interval event, subtract the time warped from the last interval time.
-                    // This will cause the event to trigger as if the time has passed.
-                    event.intervalLast -= dt;
-                    break;
-
-                case EventTypes.timeout:
-                    // If timeout event, subtract the time warped from the time created.
-                    // ! might cause issues
-                    event.timeCreated -= dt;
-                    break;
-            }
+        for (const event of this.events) {
+            event.timeWarp(dt);
         }
+
+        this.tickerFunction();
     }
 
     /**
      * Adds a new event or changes an existing event to the event system.
      * If you want to add a callback event, use {@link EventManager.on} instead.
-     * @param name - The name of the event. If an event with this name already exists, it will be overwritten.
-     * @param type - The type of the event, either "interval" or "timeout".
-     * @param delay - The delay in milliseconds before the event triggers. (NOTE: If delay is less than the framerate, it will at trigger at max, once every frame.)
-     * @param callbackFn - The callback function to execute when the event triggers.
-     * @example
-     * const myEventManger = new eventManager();
-     * // Add an interval event that executes every 2 seconds.
-     * myEventManger.addEvent("IntervalEvent", "interval", 2000, () => {
-     *    console.log("Interval event executed.");
-     * });
-     *
-     * // Add a timeout event that executes after 5 seconds.
-     * myEventManger.addEvent("TimeoutEvent", "timeout", 5000, () => {
-     *   console.log("Timeout event executed.");
-     * });
+     * @param event - The event to add or change. If an event with the same name already exists, it will be replaced.
      */
-    public setEvent(
-        name: string,
-        type: EventTypes | "interval" | "timeout",
-        delay: number | Decimal,
-        callbackFn: (dt: number) => void,
-    ): void;
-    public setEvent(event: EventInit): void;
+    public addEvent(event: GameEvent): void {
+        // If the event already exists, remove it
+        this.removeEvent(event);
 
-    public setEvent(
-        nameOrEvent: string | EventInit,
-        type?: EventTypes | "interval" | "timeout",
-        delay?: number | Decimal,
-        callbackFn?: (dt: number) => void,
-    ): void {
-        /**
-         * - `true` if the event is being initialized with an object.
-         */
-        const isEventInit = typeof nameOrEvent !== "string";
-
-        const eventToAdd: IntervalEvent | TimeoutEvent = {
-            // Default values
-            // name: Symbol(),
-            type: EventTypes.timeout,
-            delay: 0,
-            // callback: () => {},
-
-            // If the event is being initialized with an object, spread the object.
-            // Otherwise, assign the values from the arguments.
-            // prettier-ignore
-            ...(isEventInit ? nameOrEvent : {
-                name: nameOrEvent as string,
-                type: type as EventTypes,
-                delay : delay as number,
-                callback: callbackFn as (dt: number) => void,
-            } as EventInit),
-
-            // Assign the default values.
-            timeCreated: Date.now(),
-
-            // If the event is an interval event, set the last interval time to now.
-            intervalLast: type === "interval" ? Date.now() : 0,
-        };
-
-        this.events[eventToAdd.name] = eventToAdd;
+        this.events.push(event);
     }
 
     /**
@@ -407,25 +479,21 @@ class EventManager<TEvents extends string = string> {
      * Alias for {@link EventManager.setEvent}. Only here for backwards compatibility.
      * @deprecated Use {@link EventManager.setEvent} instead.
      */
-    public addEvent = this.setEvent.bind(this);
+    public setEvent = this.addEvent.bind(this);
 
     /**
      * Removes a timer event from the event manager.
      * Does not remove callback events.
-     * @param name - The name of the event to remove.
-     * @example
-     * myEventManger.removeEvent("IntervalEvent"); // Removes the interval event with the name "IntervalEvent".
+     * @param name - The name or reference of the event to remove.
      */
-    public removeEvent(name: string): void {
-        // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete this.events[name];
+    public removeEvent(event: string | GameEvent): void {
+        const eventName = typeof event === "string" ? event : event.id;
+        const index = this.events.findIndex((e) => e.id === eventName);
+        if (index !== -1) {
+            this.events.splice(index, 1);
+        }
     }
 }
 
-export { EventManager, EventTypes };
-export type {
-    CallbackEvent, Event,
-    EventInit, EventManagerConfig, EventManagerInternalEvents, IntervalEvent,
-    TimeoutEvent,
-    TimerEvent
-};
+export { EventManager, EventManagerInternalEvents, GameEvent, GameIntervalEvent, GameTimeoutEvent };
+export type { CallbackEvent, EventManagerConfig };
