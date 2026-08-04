@@ -6,12 +6,12 @@
     "bugs": {
         "url": "https://github.com/xShadowBlade/emath.js/issues"
     },
+    "license": "MIT",
+    "author": "xShadowBlade",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/xShadowBlade/emath.js.git"
     },
-    "license": "MIT",
-    "author": "xShadowBlade",
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
