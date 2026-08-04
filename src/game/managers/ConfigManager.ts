@@ -34,24 +34,28 @@ function parseObject(obj: UnknownObject, template: UnknownObject, recurse = true
  * A class for managing configuration objects.
  * This class allows you to define a template for default values and then parse configuration objects to ensure that all required options are present.
  * @template T - The type of the configuration object.
+ * @template TIsParsingRecursive - The type of the recursive parsing option.
  */
-class ConfigManager<T extends UnknownObject | object> {
+class ConfigManager<T extends UnknownObject | object, TIsParsingRecursive extends boolean = true> {
     /**
      * The template to use for default values.
      */
-    private readonly configOptionTemplate: T;
+    private readonly configOptionTemplate: TIsParsingRecursive extends true ? RequiredDeep<T> : Required<T>;
 
     /**
      * Whether or not the configuration is being parsed recursively.
      */
-    private readonly isParsingRecursive: boolean;
+    private readonly isParsingRecursive: TIsParsingRecursive;
 
     /**
      * Constructs a new configuration manager.
      * @param configOptionTemplate - The template to use for default values.
      * @param isParsingRecursive - Whether or not the configuration is being parsed recursively. Defaults to `true`.
      */
-    constructor(configOptionTemplate: T, isParsingRecursive = true) {
+    constructor(
+        configOptionTemplate: typeof this.configOptionTemplate,
+        isParsingRecursive: TIsParsingRecursive = true as TIsParsingRecursive,
+    ) {
         this.configOptionTemplate = configOptionTemplate;
         this.isParsingRecursive = isParsingRecursive;
     }
@@ -61,7 +65,7 @@ class ConfigManager<T extends UnknownObject | object> {
      * @param config - The configuration object to parse.
      * @returns A new object with default values for any missing options.
      */
-    public parse(config?: UnknownObject | object): T {
+    public parse(config?: UnknownObject | object): typeof this.configOptionTemplate {
         // If the config is undefined, return the template directly.
         if (typeof config === "undefined") {
             return this.configOptionTemplate;
@@ -71,13 +75,13 @@ class ConfigManager<T extends UnknownObject | object> {
             config as UnknownObject,
             this.configOptionTemplate as UnknownObject,
             this.isParsingRecursive,
-        ) as T;
+        ) as typeof this.configOptionTemplate;
     }
 
     /**
      * @returns The template to use for default values.
      */
-    get options(): T {
+    get options(): typeof this.configOptionTemplate {
         return this.configOptionTemplate;
     }
 }
@@ -87,5 +91,5 @@ type RequiredDeep<T> = {
     [P in keyof T]-?: RequiredDeep<T[P]>;
 };
 
-export { parseObject, ConfigManager };
+export { ConfigManager, parseObject };
 export type { RequiredDeep };
