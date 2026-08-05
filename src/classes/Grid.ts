@@ -249,7 +249,9 @@ class GridCellCollection<TProperties extends object = UnknownObject> extends Arr
         });
 
         // Remove the duplicates
-        duplicatedIndexes.forEach((index) => this.splice(index, 1));
+        for (const index of duplicatedIndexes.reverse()) {
+            this.splice(index, 1);
+        }
     }
 
     // Directions
@@ -774,7 +776,7 @@ class Grid<TProperties extends object = UnknownObject> {
     }
 }
 
-export { GridCell, GridCellCollection, Grid };
+export { Grid, GridCell, GridCellCollection };
 export type { GridDirection, GridDirectionCell, GridDirectionCollection };
 
 // test

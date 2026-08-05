@@ -222,7 +222,7 @@ class RarestFirstCascadeSelectionMethod extends SelectionMethod {
         return undefined;
     }
 
-    public getNormalizedWeights<T extends string>(
+    public override getNormalizedWeights<T extends string>(
         entries: RandomOptionEntry<T, RandomArraySortedState.sortedHighestToLowestChance>[],
         luck: Decimal,
     ): WeightOptionEntry<
