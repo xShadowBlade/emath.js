@@ -23,6 +23,8 @@ import type { ConstructableObject, UnknownObject } from "../../common/types";
 type SaveMetadata = typeof eMathMetadata & {
     /** The hash of the game data (Default hash is MD5) Used to check for tampering. */
     hash: string;
+    /** The timestamp of when the save was created ({@link Date.now()}). */
+    timestamp: number;
     /** Metadata about the game. */
     game: {
         /** The title of the game. */
@@ -38,11 +40,6 @@ type SaveMetadata = typeof eMathMetadata & {
  * An interface for static classes that have data in the data manager.
  */
 interface StaticClassWithData {
-    /**
-     * The name of the data entry in the data manager.
-     */
-    // id: string;
-
     /**
      * Runs when {@link DataManager.loadData} is called and the data is loaded.
      */
@@ -82,12 +79,15 @@ class DataManager {
      */
     public static readonly defaultLastSavesCacheSize = 5;
 
+    protected static readonly defaultSlotNumber = 0;
+
     /**
      * The current game data.
      * To access the data, use {@link DataManager.setData} and {@link DataManager.getData}.
      */
     protected readonly data: Record<string, unknown> = Object.create(null);
 
+    /** A record of all data entry instances created by {@link DataManager.useDataEntry}. */
     protected readonly dataEntryInstances: Record<string, DataManagerEntry<unknown>> = Object.create(null);
 
     /** A reference to the game instance. */
@@ -144,11 +144,66 @@ class DataManager {
     }
 
     /**
+     * Gets the name of the storage entry for the given slot number.
+     * @param slot - The slot number to get the storage entry name for. Defaults to {@link DataManager.defaultSlotNumber}.
+     * @return The name of the storage entry for the given slot number.
+     */
+    public getStorageEntryName(slot = DataManager.defaultSlotNumber): string {
+        if (slot === DataManager.defaultSlotNumber) {
+            return `${this.gameRef.config.name.id}-data`;
+        }
+
+        return `${this.gameRef.config.name.id}-data-${slot}`;
+    }
+
+    /**
+     * Peeks at the data for the given key in the given save data without modifying the current game data.
+     * Useful for checking the data in a save file without loading it (like in a save slot selector).
+     * @param data - The save data to peek at.
+     * @param key - The key to peek at the data for.
+     * @returns The data for the given key in the given save data, or undefined if the key does not exist in the save data or the current game data.
+     * @see {@link DataManagerEntry.peek} for a stronger type-safe version of this method that is tied to a specific data entry.
+     */
+    public peekData<T>(data: RawSaveData | null, key: string): T | undefined {
+        if (!data) {
+            return undefined;
+        }
+
+        const [, loadedData] = data;
+
+        if (typeof loadedData[key] === "undefined") {
+            console.warn(
+                `eMath.js: peekData(): Loaded data has a key "${key}" that does not exist in the current game data. Returning undefined.`,
+            );
+            return undefined as unknown as T;
+        }
+
+        if (typeof this.data[key] === "undefined") {
+            console.warn(
+                `eMath.js: peekData(): Loaded data has a key "${key}" that does not exist in the current game data. Returning undefined.`,
+            );
+            return undefined as unknown as T;
+        }
+
+        // If there is not a constructor for the current key, it is probably a primitive value, so just return it directly
+        if (
+            // TODO: currently only exists to make compiler happy, might have side effects
+            this.data[key] == null ||
+            typeof this.data[key].constructor === "undefined"
+        ) {
+            return loadedData[key] as unknown as T;
+        }
+
+        // If there is a constructor for the current key, use class-transformer to convert the loaded data to an instance of the correct class
+        return plainToInstance((this.data[key] as ConstructableObject).constructor, loadedData[key]) as unknown as T;
+    }
+
+    /**
      * Adds the given data to the cache of last saved data.
      * @param data - The data to add to the cache.
+     * @param timestamp - The timestamp of when the save was created. Defaults to the current time.
      */
-    protected cacheSaveData(data: ReturnType<typeof this.compileDataRaw>): void {
-        const timestamp = Date.now();
+    protected cacheSaveData(data: ReturnType<typeof this.compileDataRaw>, timestamp = Date.now()): void {
         this.lastSavesCached.set(timestamp, data);
     }
 
@@ -359,6 +414,8 @@ class DataManager {
         const hashedData = md5(`${this.gameRef.config.name.id}/${JSON.stringify(plainGameData)}`);
 
         // Create the metadata for the save file
+        const timestamp = Date.now();
+
         const saveMetadata: SaveMetadata = {
             hash: hashedData,
             game: {
@@ -366,6 +423,7 @@ class DataManager {
                 id: this.gameRef.config.name.id,
                 version: this.gameRef.config.name.version,
             },
+            timestamp,
             ...eMathMetadata,
         };
 
@@ -373,7 +431,7 @@ class DataManager {
         const result = [saveMetadata, plainGameData] as RawSaveData;
 
         if (shouldCache) {
-            this.cacheSaveData(result);
+            this.cacheSaveData(result, timestamp);
         }
 
         return result;
@@ -404,12 +462,12 @@ class DataManager {
 
     /**
      * Decompiles the data stored in localStorage and returns the corresponding object.
-     * @param data - The data to decompile. If not provided, it will be fetched from localStorage using the key `${game.config.name.id}-data`.
+     * @param dataOrSlotNumber - The data to decompile. If it is a string, it will be decompressed and parsed. If it is a number, it will be used as a slot number to get the data from localStorage. If it is null or undefined, the data will be fetched from localStorage using the default slot number (0).
      * @returns The decompiled object, or null if the data is empty or invalid.
      */
-    public decompileData(data?: string | null): RawSaveData | null {
+    public decompileData(dataOrSlotNumber?: string | null | number): RawSaveData | null {
         // If the data is not provided, get it from local storage
-        if (!data) {
+        if (typeof dataOrSlotNumber !== "string") {
             // If local storage is not supported, return null
             if (!this.localStorage) {
                 console.warn(
@@ -419,27 +477,60 @@ class DataManager {
             }
 
             // Get the data from local storage
-            data = this.localStorage.getItem(`${this.gameRef.config.name.id}-data`);
+            const storageKey =
+                typeof dataOrSlotNumber === "number"
+                    ? this.getStorageEntryName(dataOrSlotNumber)
+                    : this.getStorageEntryName();
+
+            dataOrSlotNumber = this.localStorage.getItem(storageKey);
+
+            if (dataOrSlotNumber === null) {
+                console.warn(`eMath.js: No data found in local storage for key "${storageKey}". Returning null.`);
+            }
         }
 
         // If the data is empty, return null
-        if (!data) return null;
+        if (!dataOrSlotNumber) {
+            return null;
+        }
 
         let parsedData: RawSaveData | null = null;
 
         try {
             // Decompress the data, then JSON parse it
-            parsedData = JSON.parse(decompressFromUTF16(data)) as RawSaveData;
+            parsedData = JSON.parse(decompressFromUTF16(dataOrSlotNumber)) as RawSaveData;
             return parsedData;
         } catch (error) {
             // If the data is corrupted, return null
             if (error instanceof SyntaxError) {
-                console.error(`eMath.js: Failed to decompile data (corrupted) "${data}":`, error);
+                console.error(`eMath.js: Failed to decompile data (corrupted) "${dataOrSlotNumber}":`, error);
             } else {
                 throw error;
             }
             return null;
         }
+    }
+
+    /**
+     * Decompiles all saved data from local storage.
+     * @returns A record of all saved data, indexed by slot number.
+     */
+    public decompileAllSlots(): Record<number, RawSaveData> {
+        const localStorageKeys = Object.keys(this.localStorage ?? {});
+        const slotData: Record<number, RawSaveData> = {};
+
+        for (const key of localStorageKeys) {
+            const match = key.match(new RegExp(`^${this.gameRef.config.name.id}-data(?:-(\\d+))?$`));
+            if (!match) continue;
+
+            const slotNumber = match[1] ? parseInt(match[1], 10) : DataManager.defaultSlotNumber;
+            const data = this.decompileData(slotNumber);
+            if (data) {
+                slotData[slotNumber] = data;
+            }
+        }
+
+        return slotData;
     }
 
     /**
@@ -491,8 +582,9 @@ class DataManager {
      * Saves the game data to local storage under the key `${game.config.name.id}-data`.
      * If you don't want to save to local storage, use {@link compileData} instead.
      * @param dataToSave - The data to save. If not provided, it will be fetched from localStorage using {@link compileData}. If the data is null, the save will be cleared instead.
+     * @param slot - The slot number to save the data to. If not provided, it will be saved to the default slot (0).
      */
-    public saveData(dataToSave: string | null = this.compileData()): void {
+    public saveData(dataToSave: string | null = this.compileData(), slot?: number): void {
         // If the data is empty, throw
         if (typeof dataToSave === "undefined" || dataToSave === "") {
             console.warn("eMath.js: saveData(): Data to save is empty.");
@@ -517,14 +609,15 @@ class DataManager {
         this.gameRef.eventManager.dispatch(EventManagerInternalEvents.beforeSaveData);
 
         // Save the data to local storage
+        const storageKey = this.getStorageEntryName(slot);
 
         // If the data is null, remove the item from local storage instead of saving it as "null"
         if (dataToSave === null) {
-            this.localStorage.removeItem(`${this.gameRef.config.name.id}-data`);
+            this.localStorage.removeItem(storageKey);
             return;
         }
 
-        this.localStorage.setItem(`${this.gameRef.config.name.id}-data`, dataToSave);
+        this.localStorage.setItem(storageKey, dataToSave);
 
         // Call the `saveData` event on the game eventManager
         this.gameRef.eventManager.dispatch(EventManagerInternalEvents.saveData);
@@ -606,14 +699,35 @@ class DataManager {
      * @param dataToLoad - The data to load. If not provided, it will be fetched from localStorage using {@link decompileData}.
      * @returns Returns null if the data is empty or invalid, or false if the data is tampered with. Otherwise, returns true.
      */
-    public loadData(dataToLoad: RawSaveData | null | string = this.decompileData()): null | boolean {
-        dataToLoad = typeof dataToLoad === "string" ? this.decompileData(dataToLoad) : dataToLoad;
+    public loadData(dataToLoad: RawSaveData | null | string | number = this.decompileData()): null | boolean {
+        if (typeof dataToLoad === "string" || typeof dataToLoad === "number") {
+            dataToLoad = this.decompileData(dataToLoad);
+        }
 
         // If the data is empty, return null
-        if (!dataToLoad) return null;
+        if (dataToLoad === null) return null;
 
         // Check if the data is valid
         const isDataValid = this.validateData([dataToLoad[0], instanceToPlain(dataToLoad[1])]);
+
+        // Warnings
+        if (!isDataValid) {
+            console.warn(
+                "eMath.js: Loaded data is invalid. The data may have been edited or corrupted. Loading the data anyway.",
+            );
+        }
+
+        // Versioning warnings
+        if (dataToLoad[0].game.id !== this.gameRef.config.name.id) {
+            console.warn(
+                `eMath.js: Loaded data is from a different game. The loaded data is from game ID "${dataToLoad[0].game.id}", but the current game ID is "${this.gameRef.config.name.id}". Loading the data anyway.`,
+            );
+        }
+        if (dataToLoad[0].game.version !== this.gameRef.config.name.version) {
+            console.warn(
+                `eMath.js: Loaded data is from a different version of the game. The loaded data is from version ${dataToLoad[0].game.version}, but the current game version is ${this.gameRef.config.name.version}. Loading the data anyway.`,
+            );
+        }
 
         this.parseData(dataToLoad);
 
@@ -630,4 +744,4 @@ class DataManager {
 }
 
 export { DataManager };
-export type { SaveMetadata, StaticClassWithData, UseDataReturnType };
+export type { RawSaveData, SaveMetadata, StaticClassWithData, UseDataReturnType };

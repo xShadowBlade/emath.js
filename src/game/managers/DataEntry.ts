@@ -1,7 +1,7 @@
 /**
  * @file Declares classes related to subscribable data entries.
  */
-import type { DataManager } from "./DataManager";
+import type { DataManager, RawSaveData } from "./DataManager";
 
 /**
  * A data entry that can be {@link subscribe}d to for changes.
@@ -50,7 +50,7 @@ abstract class SubscribableDataEntry<T> {
      * A list of listeners that will be notified when the data changes.
      * Primarily useful for {@link https://react.dev/reference/react/useSyncExternalStore useSyncExternalStore} in React.
      */
-    private readonly listeners: (() => void)[] = [];
+    protected readonly listeners: (() => void)[] = [];
 
     protected constructor() {
         // Bind methods for callbacks
@@ -98,6 +98,10 @@ abstract class SubscribableDataEntry<T> {
      */
     public abstract set(value: T): void;
 
+    /**
+     * Sets the value of the data entry based on the previous value.
+     * @param callback - A function that takes the previous value and returns the new value to set.+
+     */
     public setCallback(callback: (previousValue: T) => T): void {
         this.set(callback(this.get()));
     }
@@ -119,20 +123,26 @@ class DataManagerEntry<T> extends SubscribableDataEntry<T> {
         this.dataKey = dataKey;
     }
 
-    public get(): T {
+    public override get(): T {
         // @ts-expect-error - Ignore readonly
         return this.dataManagerReference.data[this.dataKey] as T;
     }
 
-    /**
-     * Sets the value of the data entry and notifies all listeners.
-     * @param value - The new value to set.
-     */
-    public set(value: T): void {
+    public override set(value: T): void {
         // @ts-expect-error - Ignore readonly
         this.dataManagerReference.data[this.dataKey] = value;
 
         this.notifyListeners();
+    }
+
+    /**
+     * Peeks at the data for this entry in the given save data without modifying the current game data.
+     * @param data - The save data to peek at.
+     * @returns The data for this entry in the given save data, or undefined if the key does not exist in the save data or the current game data.
+     * @see {@link DataManager.peekData}
+     */
+    public peek(data: RawSaveData | null): T | undefined {
+        return this.dataManagerReference.peekData<T>(data, this.dataKey);
     }
 }
 
