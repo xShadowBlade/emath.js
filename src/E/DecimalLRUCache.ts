@@ -18,15 +18,15 @@ class DecimalLRUCache<V> extends LRUCache<DecimalKey, V> {
         return `${n.sign}/${n.mag}/${n.layer}`;
     }
 
-    public get(key: DecimalSource): V | undefined {
+    public override get(key: DecimalSource): V | undefined {
         return super.get(DecimalLRUCache.decimalToKey(key));
     }
 
-    public set(key: DecimalSource, value: V): void {
+    public override set(key: DecimalSource, value: V): void {
         super.set(DecimalLRUCache.decimalToKey(key), value);
     }
 
-    public has(key: DecimalSource): boolean {
+    public override has(key: DecimalSource): boolean {
         return super.has(DecimalLRUCache.decimalToKey(key));
     }
 }

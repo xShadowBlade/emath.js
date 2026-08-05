@@ -814,7 +814,7 @@ class SkillNode extends Upgrade {
         });
     }
 
-    public calculate(
+    public override calculate(
         value?: DecimalSource,
         startLevel?: DecimalSource,
         endLevel?: DecimalSource,

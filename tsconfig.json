@@ -4,6 +4,7 @@
         "declarationMap": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "noImplicitOverride": true,
         "declaration": true,
         "allowJs": true,
         "jsx": "react",

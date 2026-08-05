@@ -14,7 +14,6 @@ import { SkillNode, Upgrade } from "./Upgrade";
 interface CurrencyResetOptions {
     resetCurrency: boolean;
     resetUpgradeLevels: boolean;
-    resetItemAmounts: boolean;
     runUpgradeEffect: boolean;
 }
 
@@ -203,7 +202,6 @@ class Currency implements StaticClassWithData {
         const resetObj: CurrencyResetOptions = {
             resetCurrency: true,
             resetUpgradeLevels: true,
-            resetItemAmounts: true,
             runUpgradeEffect: true,
         };
         // Parse the arguments
@@ -242,7 +240,7 @@ class Currency implements StaticClassWithData {
      */
     public gain(dtMultiplier?: DecimalSource): Decimal {
         let toAdd = this.boost.calculate();
-        if (dtMultiplier) {
+        if (dtMultiplier !== undefined) {
             toAdd = toAdd.mul(dtMultiplier);
         }
 
@@ -309,7 +307,10 @@ class Currency implements StaticClassWithData {
      *         }
      * );
      */
-    public addUpgrade<TUpgradeEffectReturnType>(upgrade: Upgrade<TUpgradeEffectReturnType>, runEffectInstantly = true): Upgrade<TUpgradeEffectReturnType> {
+    public addUpgrade<TUpgradeEffectReturnType>(
+        upgrade: Upgrade<TUpgradeEffectReturnType>,
+        runEffectInstantly = true,
+    ): Upgrade<TUpgradeEffectReturnType> {
         // Run the effect instantly if needed
         if (runEffectInstantly) upgrade.runEffect();
         upgrade.runEffectOnAdd();
@@ -333,7 +334,10 @@ class Currency implements StaticClassWithData {
      * @returns The added upgrades.
      * @see {@link addUpgrade}
      */
-    public addUpgrades<TUpgradeEffectReturnType>(upgrades: Upgrade<TUpgradeEffectReturnType>[], runEffectInstantly = true): Upgrade<TUpgradeEffectReturnType>[] {
+    public addUpgrades<TUpgradeEffectReturnType>(
+        upgrades: Upgrade<TUpgradeEffectReturnType>[],
+        runEffectInstantly = true,
+    ): Upgrade<TUpgradeEffectReturnType>[] {
         for (const upgrade of upgrades) {
             this.addUpgrade(upgrade, runEffectInstantly);
         }
