@@ -94,10 +94,13 @@ class AutoBuyer {
      */
     public buyUpgrades(): void {
         for (const upgrade of this.config.upgradesToAutoBuy) {
-            const currency = upgrade.currency;
-            const availableCurrency = this.config.maxCurrencyAllocated(currency);
-
-            upgrade.buyMax(upgrade.calculate(availableCurrency));
+            upgrade.buyMax(
+                upgrade.calculate(
+                    undefined,
+                    undefined,
+                    upgrade.costs.map((cost) => this.config.maxCurrencyAllocated(cost.currency)),
+                ),
+            );
         }
     }
 }

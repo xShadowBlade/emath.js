@@ -6,4 +6,4 @@ export * from "./AppSettings";
 export * from "./AutoBuyer";
 export * from "./FramerateDisplay";
 export * from "./GameFormats";
-export * from "./UpgradeTabler";
+// export * from "./UpgradeTabler";

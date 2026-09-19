@@ -9,7 +9,6 @@ import type { DataManager, StaticClassWithData } from "../game";
 import { SubscribableDataEntry } from "../game/managers/DataEntry";
 import { Boost } from "./Boost";
 import { InvalidDecimalProtections } from "./InvalidDecimalProtections";
-import { SkillNode, Upgrade } from "./Upgrade";
 
 interface CurrencyResetOptions {
     resetCurrency: boolean;
@@ -66,12 +65,6 @@ class Currency implements StaticClassWithData {
      * Used to retrieve the currency when its data is stored in the data manager.
      */
     public readonly id: string;
-
-    /**
-     * Stores a list of each of this currency's upgrades and their corresponding data.
-     * To get an upgrade, either store a reference to the upgrade when it is created (recommended), or use {@link getUpgrade} to retrieve it by id.
-     */
-    public readonly upgrades: Upgrade[] = [];
 
     /**
      * @returns A reference to the data.
@@ -160,22 +153,12 @@ class Currency implements StaticClassWithData {
     public onLoadData(): void {
         // Run setter method to run protections and other side effects of setting the value.
         this.value = this.data.value;
-
-        // Call the effect function for each upgrade
-        for (const upgrade of this.upgrades) {
-            upgrade.runEffect();
-        }
     }
 
     public onAddToDataManager(dataManager: DataManager): void {
         this.dataManagerReference = dataManager;
 
         this.dataSupplier = dataManager.setData(this.id, new CurrencyData());
-
-        // Add existing upgrades to the data manager
-        for (const upgrade of this.upgrades) {
-            upgrade.onAddToDataManager(dataManager, this.id);
-        }
     }
 
     /**
@@ -219,15 +202,15 @@ class Currency implements StaticClassWithData {
         if (resetObj.resetCurrency) this.value = this.defaultValue;
 
         // Reset the upgrades
-        if (resetObj.resetUpgradeLevels) {
-            for (const upgrade of Object.values<Upgrade>(this.upgrades)) {
-                // Reset the level to the default level
-                upgrade.level = new Decimal(upgrade.defaultLevel);
+        // if (resetObj.resetUpgradeLevels) {
+        //     for (const upgrade of Object.values<Upgrade>(this.upgrades)) {
+        //         // Reset the level to the default level
+        //         upgrade.level = new Decimal(upgrade.defaultLevel);
 
-                // Call the effect function for each upgrade
-                if (resetObj.runUpgradeEffect) upgrade.runEffect();
-            }
-        }
+        //         // Call the effect function for each upgrade
+        //         if (resetObj.runUpgradeEffect) upgrade.runEffect();
+        //     }
+        // }
     }
 
     /**
@@ -246,40 +229,6 @@ class Currency implements StaticClassWithData {
 
         this.value = this.value.add(toAdd);
         return toAdd;
-    }
-
-    /**
-     * Retrieves an upgrade object based on the provided id.
-     * It is recommended to store a reference to the upgrade when it is created instead of using this method.
-     * @param id - The id of the upgrade to retrieve.
-     * @returns The upgrade object if found, otherwise null.
-     * @example
-     * const upgrade = currency.getUpgrade("healthBoost");
-     * console.log(upgrade); // upgrade object
-     */
-    public getUpgrade(id: string): Upgrade | null {
-        return this.upgrades.find((upgrade) => upgrade.id === id) ?? null;
-    }
-
-    /**
-     * Retrieves an upgrade object as a {@link SkillNode} based on the provided id.
-     * If the upgrade is not a {@link SkillNode}, it will return null.
-     * It is recommended to store a reference to the skill node when it is created instead of using this method.
-     * @param id - The id of the upgrade to retrieve.
-     * @returns The upgrade object as a {@link SkillNode} if found and is a {@link SkillNode}, otherwise null.
-     */
-    public getUpgradeAsSkillNode(id: string): SkillNode | null {
-        const upgrade = this.getUpgrade(id);
-
-        if (!upgrade) {
-            return null;
-        }
-
-        if (upgrade instanceof SkillNode) {
-            return upgrade;
-        }
-
-        return null;
     }
 
     /**
@@ -307,43 +256,26 @@ class Currency implements StaticClassWithData {
      *         }
      * );
      */
-    public addUpgrade<TUpgradeEffectReturnType>(
-        upgrade: Upgrade<TUpgradeEffectReturnType>,
-        runEffectInstantly = true,
-    ): Upgrade<TUpgradeEffectReturnType> {
-        // Run the effect instantly if needed
-        if (runEffectInstantly) upgrade.runEffect();
-        upgrade.runEffectOnAdd();
+    // public addUpgrade<TUpgradeEffectReturnType>(
+    //     upgrade: Upgrade<TUpgradeEffectReturnType>,
+    //     runEffectInstantly = true,
+    // ): Upgrade<TUpgradeEffectReturnType> {
+    //     // Run the effect instantly if needed
+    //     if (runEffectInstantly) upgrade.runEffect();
+    //     upgrade.runEffectOnAdd();
 
-        upgrade.withCurrencySupplier(() => this);
+    //     upgrade.withCurrencySupplier(() => this);
 
-        // Add the upgrade to this.upgrades
-        this.upgrades.push(upgrade as Upgrade<unknown>);
+    //     // Add the upgrade to this.upgrades
+    //     this.upgrades.push(upgrade as Upgrade<unknown>);
 
-        // If the data manager reference exists, add the upgrade to the data manager
-        if (this.dataManagerReference) {
-            upgrade.onAddToDataManager(this.dataManagerReference, this.id);
-        }
+    //     // If the data manager reference exists, add the upgrade to the data manager
+    //     if (this.dataManagerReference) {
+    //         upgrade.onAddToDataManager(this.dataManagerReference, this.id);
+    //     }
 
-        return upgrade;
-    }
-    /**
-     * Adds multiple upgrades to the currency and runs their effects if specified.
-     * @param upgrades - The upgrades to add.
-     * @param runEffectInstantly - Whether to run the effects immediately. Defaults to `true`.
-     * @returns The added upgrades.
-     * @see {@link addUpgrade}
-     */
-    public addUpgrades<TUpgradeEffectReturnType>(
-        upgrades: Upgrade<TUpgradeEffectReturnType>[],
-        runEffectInstantly = true,
-    ): Upgrade<TUpgradeEffectReturnType>[] {
-        for (const upgrade of upgrades) {
-            this.addUpgrade(upgrade, runEffectInstantly);
-        }
-
-        return upgrades;
-    }
+    //     return upgrade;
+    // }
 
     // Setters
     /**
