@@ -582,7 +582,7 @@ interface SkillRequirement {
     /**
      * The skill node that is required.
      */
-    skill: Upgrade;
+    skill: Upgrade<any> | SkillNode<any>;
 
     /**
      * The level that is required for the skill node.
@@ -595,7 +595,7 @@ interface SkillRequirement {
  * Represents an upgrade in the skill tree.
  * Each upgrade has its own id, name, description, cost, required skills, maximum level, and effect.
  */
-class SkillNode extends Upgrade {
+class SkillNode<TEffectReturnType = unknown> extends Upgrade<TEffectReturnType> {
     public static fromUpgrade(upgrade: Upgrade): SkillNode {
         const out = new SkillNode(upgrade.id);
 
@@ -612,8 +612,8 @@ class SkillNode extends Upgrade {
      */
     public requirements?:
         | (SkillNode | SkillRequirement)[]
-        | ((skillNodeContext: SkillNode) => (SkillNode | SkillRequirement)[])
-        | ((skillNodeContext: SkillNode) => boolean);
+        | ((skillNodeContext: SkillNode<TEffectReturnType>) => (SkillNode | SkillRequirement)[])
+        | ((skillNodeContext: SkillNode<TEffectReturnType>) => boolean);
 
     public withRequirements(requirements: typeof this.requirements): this {
         this.requirements = requirements;

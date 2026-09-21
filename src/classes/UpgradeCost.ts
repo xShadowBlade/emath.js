@@ -243,7 +243,7 @@ class UpgradeCost {
 
         // If target is 1, just check it manually
         if (targetDifference.eq(Decimal.dOne)) {
-            return this.currency.value.gte(this.cost(startLevel)) ? startLevel.add(Decimal.dOne) : startLevel;
+            return currencyValue.gte(this.cost(startLevel)) ? startLevel.add(Decimal.dOne) : startLevel;
         }
 
         // Use them if given

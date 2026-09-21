@@ -21,11 +21,20 @@ abstract class GameEvent {
      * For timeout events, this will be the time since the event was created..
      * For interval events, this will be the time since the last execution of the event (based on the frame rate).
      */
-    public callback: (dt: number) => void;
+    protected callback: (dt: number) => void;
 
     protected constructor(id: string, callback: (dt: number) => void) {
         this.id = id;
         this.callback = callback;
+    }
+
+    /**
+     * Executes the event's callback function.
+     * @param dt - The time since the last execution of the event in milliseconds.
+     * @param eventManagerContext - The {@link EventManager} that is executing the event.
+     */
+    public trigger(dt: number, eventManagerContext: EventManager): void {
+        this.callback(dt);
     }
 
     /**
@@ -44,6 +53,9 @@ abstract class GameEvent {
     public abstract timeWarp(dt: number): void;
 }
 
+/**
+ * An event that is executed repeatedly after a certain delay.
+ */
 class GameIntervalEvent extends GameEvent {
     /**
      * The delay before the event triggers, in milliseconds.
@@ -91,7 +103,7 @@ class GameIntervalEvent extends GameEvent {
         this.lastIntervalTime = performance.now();
     }
 
-    public shouldTrigger(currentTime: number): false | number {
+    public override shouldTrigger(currentTime: number): false | number {
         if (currentTime - this.lastIntervalTime < this.delay) {
             return false;
         }
@@ -101,11 +113,31 @@ class GameIntervalEvent extends GameEvent {
         return dt;
     }
 
-    public timeWarp(dt: number): void {
+    public override timeWarp(dt: number): void {
         this.lastIntervalTime -= dt;
     }
 }
 
+/**
+ * The behavior of a timeout event after it triggers.
+ */
+enum GameTimeoutEventEndBehavior {
+    /**
+     * The event will be removed from the event manager after it triggers.
+     */
+    removeAfterTrigger,
+
+    /**
+     * The event will not be removed from the event manager after it triggers.
+     * {@link GameTimeoutEvent.resetTimeCreated} can be used to reset the time the event was created to be triggered again.
+     * Warning: Can cause memory leaks if not handled properly because the event will never be removed from the event manager.
+     */
+    keepAfterTrigger,
+}
+
+/**
+ * An event that is executed once after a certain delay.
+ */
 class GameTimeoutEvent extends GameEvent {
     /**
      * The delay before the event triggers, in milliseconds.
@@ -121,13 +153,46 @@ class GameTimeoutEvent extends GameEvent {
      */
     public timeCreated: number;
 
-    constructor(id: string, delay: number, callback: (dt: number) => void) {
+    /**
+     * The {@link GameTimeoutEventEndBehavior} of the event which determines what happens after the event triggers.
+     */
+    public endBehavior: GameTimeoutEventEndBehavior;
+
+    constructor(
+        id: string,
+        delay: number,
+        callback: (dt: number) => void,
+        endBehavior: GameTimeoutEventEndBehavior = GameTimeoutEventEndBehavior.removeAfterTrigger,
+    ) {
         super(id, callback);
         this.delay = delay;
         this.timeCreated = performance.now();
+        this.endBehavior = endBehavior;
     }
 
-    public shouldTrigger(currentTime: number): false | number {
+    /**
+     * Resets the time the event was created to the current time.
+     * This is useful for restarting the timeout event without removing and re-adding it to the event manager.
+     */
+    public resetTimeCreated(): void {
+        this.timeCreated = performance.now();
+    }
+
+    public override trigger(dt: number, eventManagerContext: EventManager): void {
+        super.trigger(dt, eventManagerContext);
+
+        switch (this.endBehavior) {
+            case GameTimeoutEventEndBehavior.removeAfterTrigger:
+                eventManagerContext.removeEvent(this);
+                break;
+            case GameTimeoutEventEndBehavior.keepAfterTrigger:
+                // Prevents the event from triggering again until reset
+                this.timeCreated = Infinity;
+                break;
+        }
+    }
+
+    public override shouldTrigger(currentTime: number): false | number {
         if (currentTime - this.timeCreated >= this.delay) {
             const dt = currentTime - this.timeCreated;
             return dt;
@@ -135,7 +200,7 @@ class GameTimeoutEvent extends GameEvent {
         return false;
     }
 
-    public timeWarp(dt: number): void {
+    public override timeWarp(dt: number): void {
         this.timeCreated -= dt;
     }
 }
@@ -371,7 +436,7 @@ class EventManager<TEvents extends string = string> {
             return;
         }
 
-        event.callback(dt);
+        event.trigger(dt, this);
     }
 
     protected addFrameTimeSample(dt: number): void {
